@@ -1,16 +1,37 @@
-import { contextBridge } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
+import type {
+  EstimatePayload,
+  EstimatesApi,
+  ProductsApi,
+  SalePayload,
+  SalesApi
+} from "../shared/types";
 
-// Custom APIs for renderer
-const api = {};
+const productsApi: ProductsApi = {
+  getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
+  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit)
+};
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+const salesApi: SalesApi = {
+  getNextInvoiceNo: () => ipcRenderer.invoke("salesApi:getNextInvoiceNo"),
+  save: (payload: SalePayload) => ipcRenderer.invoke("salesApi:save", payload),
+  getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
+  getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id)
+};
+const estimatesApi: EstimatesApi = {
+  getNextEstimateNo: () => ipcRenderer.invoke("estimatesApi:getNextEstimateNo"),
+  save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
+  getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
+  getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id)
+};
+
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("electron", electronAPI);
-    contextBridge.exposeInMainWorld("api", api);
+    contextBridge.exposeInMainWorld("electronAPI", electronAPI);
+    contextBridge.exposeInMainWorld("productsApi", productsApi);
+    contextBridge.exposeInMainWorld("salesApi", salesApi);
+    contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
   } catch (error) {
     console.error(error);
   }
@@ -18,5 +39,9 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI;
   // @ts-ignore (define in dts)
-  window.api = api;
+  window.productsApi = productsApi;
+  // @ts-ignore (define in dts)
+  window.salesApi = salesApi;
+  // @ts-ignore (define in dts)
+  window.estimatesApi = estimatesApi;
 }

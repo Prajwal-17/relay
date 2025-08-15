@@ -1,6 +1,7 @@
 import { Building2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { navLinks } from "@/constants/Navlinks";
+import { Button } from "./ui/button";
 
 export const Sidebar = () => {
   const location = useLocation();
@@ -17,6 +18,18 @@ export const Sidebar = () => {
               <span className="font-sans text-2xl font-extrabold">SuperBill</span>
               <span className="text-muted-foreground text-md font-medium">POS Billing</span>
             </div>
+          </div>
+          <div className="mt-5 flex w-full flex-col items-center justify-center gap-3">
+            <Link to="/sales/new" className="w-full">
+              <Button variant="default" size="lg" className="w-full text-lg font-medium">
+                Create Sale
+              </Button>
+            </Link>
+            <Link to="/estimate/new" className="w-full">
+              <Button variant="default" size="lg" className="w-full text-lg font-medium">
+                Add Estimate
+              </Button>
+            </Link>
           </div>
           <div className="mt-12 w-full flex-1 space-y-4">
             {navLinks.map((item, idx) => {

@@ -15,5 +15,14 @@ const sqlite = new Database(dbPath);
 export const db = drizzle(sqlite, { schema, logger: true });
 
 // migrations are applied at startup only if there is a change
-const migrationsFolder = path.join(process.resourcesPath, "drizzle"); // path of resources directory in electron
-migrate(db, { migrationsFolder });
+const migrationsFolder = app.isPackaged
+  ? path.join(process.resourcesPath, "drizzle")
+  : path.join(__dirname, "../../drizzle");
+console.log("folder", migrationsFolder);
+
+// A simple check to ensure the folder exists before trying to migrate
+if (fs.existsSync(migrationsFolder)) {
+  migrate(db, { migrationsFolder });
+} else {
+  console.error("Drizzle migrations folder not found at:", migrationsFolder);
+}
