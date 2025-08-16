@@ -20,7 +20,6 @@ const migrationsFolder = app.isPackaged
   : path.join(__dirname, "../../drizzle");
 console.log("folder", migrationsFolder);
 
-// A simple check to ensure the folder exists before trying to migrate
 if (fs.existsSync(migrationsFolder)) {
   migrate(db, { migrationsFolder });
 } else {

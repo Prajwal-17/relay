@@ -19,7 +19,7 @@ export const customers = sqliteTable("customers", {
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull(),
   contact: text("contact").notNull(),
-  customerType: text("customer_type"),
+  customerType: text("customer_type"), // "cash" | "account" | "hotel"
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).$onUpdate(() => sql`CURRENT_TIMESTAMP`)
 });
@@ -34,6 +34,10 @@ export const products = sqliteTable("products", {
   mrp: integer("mrp"),
   price: integer("price").notNull(),
   totalQuantitySold: integer("total_quantity_sold").default(0),
+  isDisabled: integer("is_disabled", { mode: "boolean" }).notNull().default(false),
+  disabledAt: integer("disabled_at", { mode: "timestamp_ms" }),
+  isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
+  deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).default(sql`(CURRENT_TIMESTAMP)`),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).$onUpdate(() => sql`CURRENT_TIMESTAMP`)
 });
