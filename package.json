@@ -84,6 +84,13 @@
     "productName": "Billingapp",
     "win":{
       "target": "nsis"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Prajwal-17",
+        "repo": "pos"
+      }
+    ]
   }
 }
