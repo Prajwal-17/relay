@@ -1,7 +1,8 @@
+import { scrollStyles } from "@/constants/Styles";
 import useDebounce from "@/hooks/useDebounce";
 import { useBillingStore } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const SearchDropdown = ({ idx }: { idx: number }) => {
   const searchParam = useSearchDropdownStore((state) => state.searchParam);
@@ -110,7 +111,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
       {isDropdownOpen && searchRow === idx + 1 && (
         <div
           ref={dropdownRef}
-          className="border-primary absolute top-full right-0 left-32 z-20 mx-1 h-96 overflow-y-auto rounded-md border-2 bg-neutral-200 transition-all"
+          className={`border-primary absolute top-full right-0 left-32 z-20 mx-1 h-96 overflow-y-auto scroll-smooth rounded-md border-2 bg-neutral-200 transition-all ${scrollStyles} `}
         >
           <div
             className="text-accent-foreground border-border sticky top-0 grid w-full grid-cols-8 items-center border bg-white px-2 py-2 text-base font-semibold"

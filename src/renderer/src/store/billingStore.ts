@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import { v4 as uuidv4 } from "uuid";
 import type { ProductsType } from "src/shared/types";
+import { v4 as uuidv4 } from "uuid";
+import { create } from "zustand";
 
 type LineItemsType = {
   id: string;
@@ -23,8 +23,6 @@ type BillingStoreType = {
   setCustomerName: (newCustomerName: string) => void;
   customerContact: string | null;
   setCustomerContact: (newCustomerContact: string | null) => void;
-  paymentMethod: string;
-  setPaymentMethod: (method: string) => void;
   lineItems: LineItemsType[] | [];
   setLineItems: (itemsArray: LineItemsType[]) => void;
   addEmptyLineItem: () => void;
@@ -62,12 +60,6 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
 
   customerContact: "",
   setCustomerContact: (newCustomerContact) => set({ customerContact: newCustomerContact }),
-
-  paymentMethod: "cash",
-  setPaymentMethod: (method) =>
-    set(() => ({
-      paymentMethod: method
-    })),
 
   lineItems: [initialLineItem()],
 

@@ -7,10 +7,10 @@ import Sale from "@/components/Sale";
 import SettingsPage from "@/components/SettingsPage";
 import {
   ChartColumn,
-  Settings,
   House,
   Package,
   ReceiptText,
+  Settings,
   ShoppingCart,
   Users
 } from "lucide-react";
@@ -19,7 +19,7 @@ type NavlinkType = {
   href: string;
   title: string;
   element: React.ReactNode;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
 };
 export const navLinks: NavlinkType[] = [
   {

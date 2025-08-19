@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
+import FullPageLayout from "./components/layouts/FullPageLayout";
 import SidebarLayout from "./components/layouts/SidebarLayout";
 import { navLinks } from "./constants/Navlinks";
-import FullPageLayout from "./components/layouts/FullPageLayout";
-import SalesPage from "./pages/SalesPage/SalesPage";
 import EstimatePage from "./pages/EstimatePage/EstimatePage";
+import SalesPage from "./pages/SalesPage/SalesPage";
 
 const App = () => {
   return (
@@ -18,7 +18,7 @@ const App = () => {
           <Route path="/sales/new" element={<SalesPage />} />
           <Route path="/estimate/new" element={<EstimatePage />} />
           <Route path="/sales/edit/:id" element={<SalesPage />} />
-          <Route path="/estimate/edit/:id" element={<EstimatePage />} />
+          <Route path="/estimates/edit/:id" element={<EstimatePage />} />
         </Route>
       </Routes>
     </>

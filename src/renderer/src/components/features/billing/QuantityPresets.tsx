@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { scrollStyles } from "@/constants/Styles";
 import { useBillingStore } from "@/store/billingStore";
 import { useEffect, useRef } from "react";
 
@@ -17,15 +18,6 @@ const QuantityPresets = ({
   const popDownRef = useRef<HTMLDivElement | null>(null);
   const updateLineItems = useBillingStore((state) => state.updateLineItems);
   const numbers = Array.from({ length: 40 }, (_, i) => i + 1);
-
-  // https://preline.co/docs/custom-scrollbar.html#rounded-corners
-  const scrollStyles = `[&::-webkit-scrollbar]:w-2
-    [&::-webkit-scrollbar-track]:rounded-full
-    [&::-webkit-scrollbar-track]:bg-gray-200
-    [&::-webkit-scrollbar-thumb]:rounded-full
-    [&::-webkit-scrollbar-thumb]:bg-gray-400
-    dark:[&::-webkit-scrollbar-track]:bg-neutral-700
-    dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500`;
 
   function handlePresetClick(e: React.MouseEvent) {
     const button = (e.target as HTMLElement).closest("button");
@@ -114,7 +106,6 @@ const QuantityPresets = ({
 
         <div
           className={`grid max-h-48 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-2 py-1 ${scrollStyles}`}
-          onClick={() => console.log("clicked div")}
         >
           {numbers.map((i) => (
             <Button
@@ -123,7 +114,6 @@ const QuantityPresets = ({
               className="h-10 w-full hover:cursor-pointer"
               key={i}
               data-value={i}
-              // onClick={() => console.log("clicked")}
               onClick={(e) => {
                 handlePresetClick(e);
               }}
