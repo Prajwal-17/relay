@@ -1,6 +1,6 @@
+import { navLinks } from "@/constants/Navlinks";
 import { Building2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import { navLinks } from "@/constants/Navlinks";
 import { Button } from "./ui/button";
 
 export const Sidebar = () => {

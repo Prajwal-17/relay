@@ -1,17 +1,17 @@
 import { electronApp, is } from "@electron-toolkit/utils";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 
-app.commandLine.appendSwitch("high-dpi-support", "1"); // enable high dpi
-app.commandLine.appendSwitch("force-device-scale-factor", "1"); // overrides device scale factor
-
 function createWindow(): void {
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const zoomLevel = width <= 1355 ? 0.75 : 1.0;
+
   const mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
     webPreferences: {
-      zoomFactor: 1,
+      zoomFactor: zoomLevel,
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
