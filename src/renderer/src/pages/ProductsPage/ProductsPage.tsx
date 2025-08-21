@@ -1,3 +1,4 @@
+import { ProductDialog } from "@/components/productsPage/Product-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +17,9 @@ export default function ProductsPage() {
   const [filterType, setFilterType] = useState<FilterType>("all");
   const searchResult = useProductsStore((state) => state.searchResult);
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
+  const openProductDialog = useProductsStore((state) => state.openProductDialog);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const setActionType = useProductsStore((state) => state.setActionType);
 
   const debouncedSearchParam = useDebounce(searchParam, 300);
   const [hasMore, setHasMore] = useState(true);
@@ -88,10 +92,6 @@ export default function ProductsPage() {
 
   const formatPrice = (price: number) => `₹${price.toLocaleString()}`;
 
-  const handleAddNew = () => {
-    console.log("new product");
-  };
-
   return (
     <div ref={scrollRef} className="bg-muted/70 h-full flex-1 space-y-8 overflow-y-auto p-8">
       <div className="flex items-center justify-between">
@@ -100,7 +100,10 @@ export default function ProductsPage() {
           <p className="text-muted-foreground text-lg">Manage product inventory and pricing</p>
         </div>
         <Button
-          onClick={handleAddNew}
+          onClick={() => {
+            setActionType("add");
+            setOpenProductDialog();
+          }}
           size="lg"
           className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-base font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
         >
@@ -208,7 +211,10 @@ export default function ProductsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        // onClick={() => handleEdit(product)}
+                        onClick={() => {
+                          setActionType("edit");
+                          setOpenProductDialog();
+                        }}
                         className="text-muted-foreground hover:text-foreground h-9 px-3 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer hover:bg-slate-100"
                       >
                         <Edit className="mr-2 h-4 w-4" />
@@ -223,7 +229,7 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/*<ProductDialog />*/}
+      {openProductDialog && <ProductDialog />}
     </div>
   );
 }

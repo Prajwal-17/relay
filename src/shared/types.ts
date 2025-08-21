@@ -146,6 +146,7 @@ export type EstimatePayloadItems = {
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
+  addNewProduct: (payload: ProductsType) => Promise<ApiResponse<string>>;
 }
 
 export interface SalesApi {

@@ -9,7 +9,8 @@ import type {
 
 const productsApi: ProductsApi = {
   getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
-  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit)
+  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit),
+  addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload)
 };
 
 const salesApi: SalesApi = {
