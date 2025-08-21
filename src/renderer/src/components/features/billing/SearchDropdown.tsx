@@ -22,17 +22,17 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchProducts = useCallback(
-    async (term: string, fetchPage: number, mode: "replace" | "append") => {
+    async (term: string, fetchPage: number, mode: "replace" | "append", limit: number) => {
       setLoading(true);
       try {
         if (mode === "replace") {
           setSearchResult("replace", []);
         }
-        const response = await window.productsApi.search(term, fetchPage, 20);
+        const response = await window.productsApi.search(term, fetchPage, limit);
         if (response.status === "success") {
           setSearchResult(mode, response.data);
           setPage(fetchPage + 1);
-          if (response.data.length < 20) {
+          if (response.data.length < limit) {
             setHasMore(false);
           }
         } else {
@@ -53,7 +53,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
     if (debouncedSearchParam) {
       setHasMore(true);
       setPage(1);
-      fetchProducts(debouncedSearchParam, 1, "replace");
+      fetchProducts(debouncedSearchParam, 1, "replace", 20);
     } else {
       setSearchResult("replace", []);
       setHasMore(true);
@@ -69,7 +69,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
       (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
 
     if (scrollPercent >= 80) {
-      fetchProducts(searchParam, page, "append");
+      fetchProducts(searchParam, page, "append", 20);
     }
   }, [loading, hasMore, searchParam, page, fetchProducts]);
 

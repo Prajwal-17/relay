@@ -1,22 +1,11 @@
 import type { ProductsType } from "src/shared/types";
 import { create } from "zustand";
 
-// type SearchResultType = {
-//   id: string;
-//   name: string;
-//   weight: string | null;
-//   unit: string | null;
-//   mrp: number | null;
-//   price: number;
-// };
-
-// store
-
 type SearchDropdownStoreType = {
   searchParam: string;
   setSearchParam: (query: string) => void;
   searchResult: ProductsType[] | [];
-  setSearchResult: (mode: string, newResult: ProductsType[]) => void; // mode = "append" | "replace"
+  setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
   searchRow: number | null;
   setSearchRow: (rowIndex: number) => void;
   isDropdownOpen: boolean;

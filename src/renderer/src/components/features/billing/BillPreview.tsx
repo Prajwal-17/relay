@@ -73,7 +73,7 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="font-new flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
         <div ref={receiptRef} className="w-[320px] bg-white px-4 py-4 text-black">
           <div className="mb-2 space-y-2 py-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
