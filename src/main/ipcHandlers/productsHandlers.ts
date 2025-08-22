@@ -66,7 +66,8 @@ export function productHandlers() {
           .update(products)
           .set({
             ...updatePayload,
-            disabledAt
+            disabledAt,
+            updatedAt: sql`(datenow('now'))`
           })
           .where(eq(products.id, productId))
           .run();
@@ -98,8 +99,8 @@ export function productHandlers() {
           .update(products)
           .set({
             isDeleted: true,
-            deletedAt
-            // updatedAt: new Date()
+            deletedAt,
+            updatedAt: sql`(datenow('now'))`
           })
           .where(eq(products.id, productId))
           .run();
@@ -132,9 +133,7 @@ export function productHandlers() {
         console.log(page, limit);
         const offset = (page - 1) * limit;
 
-        const priorityOrder = sql`
-            CASE
-                WHEN ${products.name} LIKE ${query + "%"} THEN 1
+        const priorityOrder = sql` CASE WHEN ${products.name} LIKE ${query + "%"} THEN 1
                 ELSE 2
             END
           `;

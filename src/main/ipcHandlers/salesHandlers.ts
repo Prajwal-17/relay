@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
 import { db } from "../db/db";
@@ -118,7 +118,8 @@ export function salesHandlers() {
                 customerContact: saleObj.customerContact,
                 grandTotal: saleObj.grandTotal,
                 totalQuantity: saleObj.totalQuantity,
-                isPaid: saleObj.isPaid
+                isPaid: saleObj.isPaid,
+                updatedAt: sql`(datenow('now'))`
               })
               .where(eq(sales.id, saleObj.billingId))
               .run();

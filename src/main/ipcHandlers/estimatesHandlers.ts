@@ -1,3 +1,4 @@
+import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type {
   ApiResponse,
@@ -5,7 +6,6 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
-import { desc, eq } from "drizzle-orm";
 import { db } from "../db/db";
 import { estimateItems, estimates } from "../db/schema";
 
@@ -137,7 +137,8 @@ export function estimatesHandlers() {
                 customerContact: estimateObj.customerContact,
                 grandTotal: estimateObj.grandTotal,
                 totalQuantity: estimateObj.totalQuantity,
-                isPaid: estimateObj.isPaid
+                isPaid: estimateObj.isPaid,
+                updatedAt: sql`(datenow('now'))`
               })
               .where(eq(estimates.id, estimateObj.billingId))
               .run();
