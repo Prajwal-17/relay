@@ -6,10 +6,12 @@ on:
       - master
 
 jobs:
-  build:
+  release:
     runs-on: windows-latest
-    env:
-      GH_TOKEN: ${{secrets.GH_TOKEN}}
+
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
