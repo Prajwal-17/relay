@@ -30,12 +30,15 @@ jobs:
       - name: Build App
         run: pnpm run build:win
 
-      - name: Get Package Version
+      - name: Get package version
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
+        shell: powershell
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          echo "::set-output name=current-version::$version"
 
       - name: Create Github Release
-        id:   create_release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
