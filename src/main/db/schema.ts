@@ -70,7 +70,7 @@ export const sales = sqliteTable("sales", {
   customerContact: text("customer_contact"),
   grandTotal: integer("grand_total", { mode: "number" }),
   totalQuantity: real("total_quantity"),
-  isPaid: integer("is_paid", { mode: "boolean" }).default(true),
+  isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at").default(sql`(datetime('now'))`),
   updatedAt: text("updated_at").default(sql`(datetime('now'))`)
 });

@@ -85,6 +85,13 @@
       "when": 1755883047712,
       "tag": "0011_natural_paladin",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1755884437302,
+      "tag": "0012_cheerful_namora",
+      "breakpoints": true
     }
   ]
 }
