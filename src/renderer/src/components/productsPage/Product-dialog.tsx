@@ -13,6 +13,8 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { AlertTriangle, History, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const units = ["g", "kg", "ml", "l", "pcs", "bundle"];
@@ -25,6 +27,8 @@ export function ProductDialog() {
   const setFormData = useProductsStore((state) => state.setFormData);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
   const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSubmit = async (action: "add" | "edit") => {
     try {
@@ -52,6 +56,25 @@ export function ProductDialog() {
           setOpenProductDialog();
           setFormData({});
         }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = async (productId: string) => {
+    try {
+      const response = await window.productsApi.deleteProduct(productId);
+      if (response.status === "success") {
+        toast.success(response.data);
+        setOpenProductDialog();
+        setSearchResult("replace", []);
+        setSearchParam("");
+        setFormData({});
+      } else {
+        toast.error(response.error.message);
+        setOpenProductDialog();
+        setFormData({});
       }
     } catch (error) {
       console.log(error);
@@ -178,6 +201,85 @@ export function ProductDialog() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Version History */}
+                  {actionType === "edit" && (
+                    <div className="flex items-center justify-between rounded-lg border bg-slate-50/50 p-6">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-3 text-base font-semibold">
+                          <History className="h-5 w-5" />
+                          Version History
+                        </Label>
+                        <p className="text-base text-slate-600">
+                          View all changes made to this product
+                        </p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="default"
+                        className="gap-2 px-6 py-3"
+                      >
+                        View History
+                      </Button>
+                    </div>
+                  )}
+
+                  {actionType === "edit" && (
+                    <div className="space-y-4">
+                      <Separator />
+                      <div className="space-y-4">
+                        <h4 className="text-lg font-semibold text-slate-900">Danger Zone</h4>
+
+                        {!showDeleteConfirm ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowDeleteConfirm(true)}
+                            className="h-12 w-full justify-center gap-2 border-red-200 text-base text-red-600 hover:border-red-300 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-5 w-5" />
+                            Delete Product
+                          </Button>
+                        ) : (
+                          <div className="space-y-4 rounded-lg border border-red-200 bg-red-50/50 p-6">
+                            <div className="flex items-start gap-4">
+                              <AlertTriangle className="mt-0.5 h-6 w-6 flex-shrink-0 text-red-600" />
+                              <div className="space-y-3">
+                                <p className="text-base font-semibold text-red-900">
+                                  Are you sure you want to delete this product?
+                                </p>
+                                <p className="text-base text-red-700">
+                                  This action cannot be undone. The product will be permanently
+                                  removed from your inventory.
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex gap-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="default"
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="h-12 flex-1 text-lg"
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="default"
+                                onClick={() => handleDelete(formData.id)}
+                                className="h-12 flex-1 text-lg"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -12,7 +12,8 @@ const productsApi: ProductsApi = {
   search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit),
   addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload),
   updateProduct: (payload, productId) =>
-    ipcRenderer.invoke("productsApi:updateProduct", payload, productId)
+    ipcRenderer.invoke("productsApi:updateProduct", payload, productId),
+  deleteProduct: (productId) => ipcRenderer.invoke("productsApi:deleteProduct", productId)
 };
 
 const salesApi: SalesApi = {

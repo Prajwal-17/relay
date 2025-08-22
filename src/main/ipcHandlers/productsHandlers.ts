@@ -1,9 +1,8 @@
+import { eq, like, SQL, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, ProductPayload, ProductsType } from "../../shared/types";
-import { products } from "../db/schema";
 import { db } from "../db/db";
-import { eq, like, sql } from "drizzle-orm";
-import { PgRelationalQuery } from "drizzle-orm/pg-core/query-builders/query";
+import { products } from "../db/schema";
 
 export function productHandlers() {
   ipcMain.handle("productsApi:getAllProducts", async (): Promise<ApiResponse<ProductsType[]>> => {
@@ -16,6 +15,7 @@ export function productHandlers() {
     }
   });
 
+  // add New product
   ipcMain.handle(
     "productsApi:addNewProduct",
     async (_event, payload: ProductsType): Promise<ApiResponse<string>> => {
@@ -46,16 +46,17 @@ export function productHandlers() {
     }
   );
 
+  // update product
   ipcMain.handle(
     "productsApi:updateProduct",
     async (_event, payload: ProductPayload, productId: string): Promise<ApiResponse<string>> => {
       try {
         const product = db.select().from(products).where(eq(products.id, productId)).get();
 
-        let disabledAt: Date | null = null;
+        let disabledAt: SQL | null = null;
 
         if (product?.isDisabled !== payload.isDisabled) {
-          disabledAt = payload.isDisabled ? new Date() : null;
+          disabledAt = payload.isDisabled ? sql`(datetime('now'))` : null;
         }
 
         // eslint-disable-next-line
@@ -65,8 +66,7 @@ export function productHandlers() {
           .update(products)
           .set({
             ...updatePayload,
-            disabledAt,
-            updatedAt: new Date()
+            disabledAt
           })
           .where(eq(products.id, productId))
           .run();
@@ -82,6 +82,39 @@ export function productHandlers() {
       } catch (error) {
         console.log(error);
         return { status: "error", error: { message: "Could not update Product" } };
+      }
+    }
+  );
+
+  // delete product
+  // add a deleted flag
+  ipcMain.handle(
+    "productsApi:deleteProduct",
+    async (_event, productId: string): Promise<ApiResponse<string>> => {
+      try {
+        const deletedAt = sql`datetime('now')`;
+
+        const updatedObj = db
+          .update(products)
+          .set({
+            isDeleted: true,
+            deletedAt
+            // updatedAt: new Date()
+          })
+          .where(eq(products.id, productId))
+          .run();
+
+        if (updatedObj.changes > 0) {
+          return { status: "success", data: "Successfully deleted product" };
+        } else {
+          return {
+            status: "error",
+            error: { message: "No product was deleted. Database changes were 0." }
+          };
+        }
+      } catch (error) {
+        console.log(error);
+        return { status: "error", error: { message: "Could not delete Product" } };
       }
     }
   );

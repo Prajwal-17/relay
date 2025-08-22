@@ -1,8 +1,8 @@
+import { desc, eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
 import { db } from "../db/db";
 import { saleItems, sales } from "../db/schema";
-import { desc, eq } from "drizzle-orm";
 
 export function salesHandlers() {
   ipcMain.handle("salesApi:getNextInvoiceNo", async (): Promise<ApiResponse<number>> => {

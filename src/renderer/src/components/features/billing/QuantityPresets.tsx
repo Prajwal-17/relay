@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { scrollStyles } from "@/constants/Styles";
 import { useBillingStore } from "@/store/billingStore";
 import { useEffect, useRef } from "react";
 
@@ -104,9 +103,7 @@ const QuantityPresets = ({
 
         <Separator className="my-3 w-full bg-gray-300" />
 
-        <div
-          className={`grid max-h-48 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-2 py-1 ${scrollStyles}`}
-        >
+        <div className="grid max-h-48 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-2 py-1">
           {numbers.map((i) => (
             <Button
               variant="outline"
