@@ -78,6 +78,13 @@
       "when": 1755354036716,
       "tag": "0010_spotty_sentry",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1755883047712,
+      "tag": "0011_natural_paladin",
+      "breakpoints": true
     }
   ]
 }
