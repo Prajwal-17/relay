@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/Prajwal-17/pos"
+  } ,
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -80,10 +84,15 @@
     "vite": "^7.0.5"
   },
   "build":{
-    "appId": "pos.billingapp",
-    "productName": "Billingapp",
+    "appId": "pos.quickcart",
+    "productName": "QuickCart",
     "win":{
       "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "${productName}.${ext}"
     }
   }
 }
