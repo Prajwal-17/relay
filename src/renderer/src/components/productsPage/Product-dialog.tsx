@@ -12,9 +12,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { useProductsStore } from "@/store/productsStore";
-import { useState } from "react";
+import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { toast } from "sonner";
-import type { ProductsType } from "src/shared/types";
 
 const units = ["g", "kg", "ml", "l", "pcs", "bundle"];
 
@@ -22,20 +21,10 @@ export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const actionType = useProductsStore((state) => state.actionType);
-  const initialFormData = {
-    id: "",
-    name: "",
-    weight: "",
-    unit: "g",
-    mrp: 0,
-    price: 0,
-    isDisabled: false
-  };
-  const [formData, setFormData] = useState<ProductsType & { isDisabled: boolean }>(initialFormData);
-
-  const handleInputChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  const formData = useProductsStore((state) => state.formData);
+  const setFormData = useProductsStore((state) => state.setFormData);
+  const setSearchParam = useProductsStore((state) => state.setSearchParam);
+  const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
 
   const handleSubmit = async (action: "add" | "edit") => {
     try {
@@ -44,23 +33,25 @@ export function ProductDialog() {
         if (response.status === "success") {
           toast.success(response.data);
           setOpenProductDialog();
-          setFormData(initialFormData);
+          setFormData({});
         } else {
           toast.error(response.error.message);
           setOpenProductDialog();
-          setFormData(initialFormData);
+          setFormData({});
         }
       } else if (action === "edit") {
-        // const response = await window.productsApi.addNewProduct(formData);
-        // if (response.status === "success") {
-        //   toast.success(response.data);
-        //   setOpenProductDialog();
-        //   setFormData(initialFormData);
-        // } else {
-        //   toast.error(response.error.message);
-        //   setOpenProductDialog();
-        //   setFormData(initialFormData);
-        // }
+        const response = await window.productsApi.updateProduct(formData, formData.id);
+        if (response.status === "success") {
+          toast.success(response.data);
+          setSearchResult("replace", []);
+          setSearchParam(formData.name);
+          setOpenProductDialog();
+          setFormData({});
+        } else {
+          toast.error(response.error.message);
+          setOpenProductDialog();
+          setFormData({});
+        }
       }
     } catch (error) {
       console.log(error);
@@ -90,7 +81,7 @@ export function ProductDialog() {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onChange={(e) => setFormData({ name: e.target.value })}
                       placeholder="Enter product name"
                       className="px-4 py-6 !text-lg"
                     />
@@ -104,7 +95,7 @@ export function ProductDialog() {
                       <Input
                         id="weight"
                         value={formData.weight ?? ""}
-                        onChange={(e) => handleInputChange("weight", e.target.value)}
+                        onChange={(e) => setFormData({ weight: e.target.value })}
                         placeholder="e.g., 500"
                         className="px-4 py-6 !text-base"
                       />
@@ -115,7 +106,7 @@ export function ProductDialog() {
                       </Label>
                       <Select
                         value={formData.unit ?? ""}
-                        onValueChange={(value) => handleInputChange("unit", value)}
+                        onValueChange={(value) => setFormData({ unit: value })}
                       >
                         <SelectTrigger className="h-11">
                           <SelectValue />
@@ -141,7 +132,7 @@ export function ProductDialog() {
                         type="number"
                         value={formData.price || ""}
                         onChange={(e) =>
-                          handleInputChange("price", Number.parseInt(e.target.value) || 0)
+                          setFormData({ price: Number.parseInt(e.target.value) || 0 })
                         }
                         placeholder="0"
                         className="px-4 py-6 !text-base"
@@ -155,7 +146,7 @@ export function ProductDialog() {
                         id="mrp"
                         type="number"
                         value={formData.mrp || ""}
-                        onChange={(e) => handleInputChange("mrp", Number.parseInt(e.target.value))}
+                        onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) || 0 })}
                         placeholder="0"
                         className="px-4 py-6 !text-base"
                       />
@@ -181,7 +172,7 @@ export function ProductDialog() {
                         <Switch
                           id="status"
                           checked={!formData.isDisabled}
-                          onCheckedChange={(checked) => handleInputChange("isDisabled", !checked)}
+                          onCheckedChange={(checked) => setFormData({ isDisabled: !checked })}
                           className="scale-125"
                         />
                       </div>

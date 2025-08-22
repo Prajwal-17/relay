@@ -18,6 +18,8 @@ export type ProductsType = {
   unit: string | null;
   mrp: number | null;
   price: number;
+  totalQuantitySold?: number;
+  isDisabled: boolean;
 };
 
 export type ProductHistoryType = {
@@ -143,10 +145,13 @@ export type EstimatePayloadItems = {
   totalPrice: number;
 };
 
+export type ProductPayload = ProductsType & { isDisabled: boolean };
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
-  addNewProduct: (payload: ProductsType) => Promise<ApiResponse<string>>;
+  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
+  updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface SalesApi {

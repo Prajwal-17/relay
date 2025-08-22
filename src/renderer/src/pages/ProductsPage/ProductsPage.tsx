@@ -13,13 +13,15 @@ type FilterType = "all" | "active" | "inactive";
 
 export default function ProductsPage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const [searchParam, setSearchParam] = useState("");
+  const searchParam = useProductsStore((state) => state.searchParam);
+  const setSearchParam = useProductsStore((state) => state.setSearchParam);
   const [filterType, setFilterType] = useState<FilterType>("all");
   const searchResult = useProductsStore((state) => state.searchResult);
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
+  const setFormData = useProductsStore((state) => state.setFormData);
 
   const debouncedSearchParam = useDebounce(searchParam, 300);
   const [hasMore, setHasMore] = useState(true);
@@ -31,6 +33,7 @@ export default function ProductsPage() {
       setLoading(true);
       try {
         if (mode === "replace") {
+          console.log("replace here");
           setSearchResult("replace", []);
         }
         const response = await window.productsApi.search(term, fetchPage, limit);
@@ -214,6 +217,7 @@ export default function ProductsPage() {
                         onClick={() => {
                           setActionType("edit");
                           setOpenProductDialog();
+                          setFormData(product);
                         }}
                         className="text-muted-foreground hover:text-foreground h-9 px-3 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer hover:bg-slate-100"
                       >

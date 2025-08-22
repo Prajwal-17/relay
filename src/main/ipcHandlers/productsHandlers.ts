@@ -1,8 +1,9 @@
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductsType } from "../../shared/types";
+import type { ApiResponse, ProductPayload, ProductsType } from "../../shared/types";
 import { products } from "../db/schema";
 import { db } from "../db/db";
-import { like, sql } from "drizzle-orm";
+import { eq, like, sql } from "drizzle-orm";
+import { PgRelationalQuery } from "drizzle-orm/pg-core/query-builders/query";
 
 export function productHandlers() {
   ipcMain.handle("productsApi:getAllProducts", async (): Promise<ApiResponse<ProductsType[]>> => {
@@ -19,7 +20,6 @@ export function productHandlers() {
     "productsApi:addNewProduct",
     async (_event, payload: ProductsType): Promise<ApiResponse<string>> => {
       try {
-        console.log("here ");
         const result = db
           .insert(products)
           .values({
@@ -34,7 +34,6 @@ export function productHandlers() {
         if (result.changes > 0) {
           return { status: "success", data: "Successfully created new product" };
         } else {
-          // If changes is 0, no rows were affected.
           return {
             status: "error",
             error: { message: "No product was added. Database changes were 0." }
@@ -43,6 +42,46 @@ export function productHandlers() {
       } catch (error) {
         console.log(error);
         return { status: "error", error: { message: "Could not add a new Product" } };
+      }
+    }
+  );
+
+  ipcMain.handle(
+    "productsApi:updateProduct",
+    async (_event, payload: ProductPayload, productId: string): Promise<ApiResponse<string>> => {
+      try {
+        const product = db.select().from(products).where(eq(products.id, productId)).get();
+
+        let disabledAt: Date | null = null;
+
+        if (product?.isDisabled !== payload.isDisabled) {
+          disabledAt = payload.isDisabled ? new Date() : null;
+        }
+
+        // eslint-disable-next-line
+        const { id, createdAt, updatedAt, ...updatePayload } = payload as any;
+
+        const updatedObj = db
+          .update(products)
+          .set({
+            ...updatePayload,
+            disabledAt,
+            updatedAt: new Date()
+          })
+          .where(eq(products.id, productId))
+          .run();
+
+        if (updatedObj.changes > 0) {
+          return { status: "success", data: "Successfully updated product" };
+        } else {
+          return {
+            status: "error",
+            error: { message: "No product was updated. Database changes were 0." }
+          };
+        }
+      } catch (error) {
+        console.log(error);
+        return { status: "error", error: { message: "Could not update Product" } };
       }
     }
   );
