@@ -4,11 +4,36 @@ import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 import { setupMenu } from "./setupMenu";
 
+let mainWindow: BrowserWindow;
+const gotTheLock = app.requestSingleInstanceLock();
+
+// prevent creating multiple instance
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  app.whenReady().then(() => {
+    electronApp.setAppUserModelId("com.electron");
+    setupIpcHandlers();
+    createWindow();
+
+    app.on("activate", function () {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
+
 function createWindow(): void {
   const { width } = screen.getPrimaryDisplay().workAreaSize;
   const zoomLevel = width <= 1355 ? 0.75 : 1.0;
 
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
     webPreferences: {
@@ -45,16 +70,6 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 }
-
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.electron");
-  setupIpcHandlers();
-  createWindow();
-
-  app.on("activate", function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
