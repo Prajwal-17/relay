@@ -119,7 +119,7 @@ export function salesHandlers() {
                 grandTotal: saleObj.grandTotal,
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
-                updatedAt: sql`(datenow('now'))`
+                updatedAt: sql`(datetime('now'))`
               })
               .where(eq(sales.id, saleObj.billingId))
               .run();

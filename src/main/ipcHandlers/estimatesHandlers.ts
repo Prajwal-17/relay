@@ -138,7 +138,7 @@ export function estimatesHandlers() {
                 grandTotal: estimateObj.grandTotal,
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
-                updatedAt: sql`(datenow('now'))`
+                updatedAt: sql`(datetime('now'))`
               })
               .where(eq(estimates.id, estimateObj.billingId))
               .run();

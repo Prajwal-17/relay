@@ -1,4 +1,4 @@
-import { eq, like, SQL, sql } from "drizzle-orm";
+import { and, eq, like, ne, SQL, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, ProductPayload, ProductsType } from "../../shared/types";
 import { db } from "../db/db";
@@ -67,7 +67,7 @@ export function productHandlers() {
           .set({
             ...updatePayload,
             disabledAt,
-            updatedAt: sql`(datenow('now'))`
+            updatedAt: sql`(datetime('now'))`
           })
           .where(eq(products.id, productId))
           .run();
@@ -100,7 +100,7 @@ export function productHandlers() {
           .set({
             isDeleted: true,
             deletedAt,
-            updatedAt: sql`(datenow('now'))`
+            updatedAt: sql`(datetime('now'))`
           })
           .where(eq(products.id, productId))
           .run();
@@ -148,7 +148,7 @@ export function productHandlers() {
             price: products.price
           })
           .from(products)
-          .where(like(products.name, `%${query}%`))
+          .where(and(like(products.name, `%${query}%`), ne(products.isDeleted, true)))
           .orderBy(priorityOrder, products.name)
           .limit(limit)
           .offset(offset);
