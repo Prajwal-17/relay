@@ -1,8 +1,8 @@
 import csv from "csv-parser";
-import fs from "fs";
-import { products } from "./schema";
-import { v4 as uuidv4 } from "uuid";
 import { drizzle } from "drizzle-orm/better-sqlite3";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
+import { products } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
 const db = drizzle(dbPath);
@@ -18,9 +18,9 @@ async function main() {
       await db.insert(products).values({
         id: uuidv4(),
         name: product.name,
-        weight: "none", // temp
-        unit: "pc", // temp
-        mrp: 0, // temp
+        weight: product.weight === "nil" ? null : product.weight,
+        unit: product.unit,
+        mrp: product.mrp,
         price: product.price
       });
     });

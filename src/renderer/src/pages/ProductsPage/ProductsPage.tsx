@@ -28,6 +28,8 @@ export default function ProductsPage() {
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState(false);
 
+  const ignoredWeight = ["", "1ml", "1g"];
+
   const fetchProducts = useCallback(
     async (term: string, fetchPage: number, mode: "replace" | "append", limit: number) => {
       setLoading(true);
@@ -182,21 +184,34 @@ export default function ProductsPage() {
                     </div>
                     <div className="flex flex-1 items-center gap-6">
                       <div className="flex-1">
-                        <h3 className="text-lg font-semibold">{product.name}</h3>
+                        <div className="flex gap-2">
+                          <h3 className="text-lg font-semibold">{product.name}</h3>
+                          {product.weight !== null &&
+                            ignoredWeight.some((w) =>
+                              `${product.weight}+${product.unit}`.includes(w)
+                            ) && (
+                              <Badge
+                                variant="outline"
+                                className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
+                              >
+                                {product.weight}
+                                {product.unit}
+                              </Badge>
+                            )}
+                          <Badge
+                            variant="outline"
+                            className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
+                          >
+                            MRP ₹{product.mrp}
+                          </Badge>
+                        </div>
                         <p className="mt-1 text-sm font-medium text-slate-500">
-                          {product.weight} {product.unit} • {product.totalQuantitySold ?? "null"}{" "}
-                          sold
+                          {product.totalQuantitySold ?? "null"} sold
                         </p>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-bold">{formatPrice(product.price)}</span>
-                          {/*{product.mrp && product.mrp > product.price && (*/}
-                          <span className="text-muted-foreground text-xl line-through">
-                            {/* @ts-ignore: Temporary fix until mrp updates */}
-                            {formatPrice("null")}
-                          </span>
-                          {/*)}*/}
                         </div>
                       </div>
                       <Badge

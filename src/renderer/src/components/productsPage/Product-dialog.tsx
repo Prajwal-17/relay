@@ -17,7 +17,7 @@ import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const units = ["g", "kg", "ml", "l", "pcs", "bundle"];
+const units = ["g", "kg", "ml", "l", "pcs"];
 
 export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -202,7 +202,6 @@ export function ProductDialog() {
                     </div>
                   </div>
 
-                  {/* Version History */}
                   {actionType === "edit" && (
                     <div className="flex items-center justify-between rounded-lg border bg-slate-50/50 p-6">
                       <div className="space-y-2">
