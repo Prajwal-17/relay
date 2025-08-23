@@ -2,6 +2,7 @@ import { electronApp, is } from "@electron-toolkit/utils";
 import { app, BrowserWindow, screen } from "electron";
 import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
+import { setupMenu } from "./setupMenu";
 
 function createWindow(): void {
   const { width } = screen.getPrimaryDisplay().workAreaSize;
@@ -25,6 +26,8 @@ function createWindow(): void {
     }, 25);
     mainWindow.show();
   });
+
+  setupMenu();
 
   // catch keyboard events
   // https://stackoverflow.com/a/75716165/25649886
