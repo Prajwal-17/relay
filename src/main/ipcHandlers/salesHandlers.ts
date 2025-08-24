@@ -1,7 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
-import { formatToPaisa } from "../../shared/utils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
 import { saleItems, sales } from "../db/schema";
 
@@ -27,7 +27,15 @@ export function salesHandlers() {
     try {
       const salesArray = await db.select().from(sales).orderBy(desc(sales.createdAt));
 
-      return { status: "success", data: salesArray };
+      return {
+        status: "success",
+        data: salesArray.map((sale: SalesType) => {
+          return {
+            ...sale,
+            grandTotal: sale.grandTotal && formatToRupees(sale.grandTotal)
+          };
+        })
+      };
     } catch (error) {
       console.log(error);
       return { status: "error", error: { message: "Failed to retrieve sales" } };
@@ -40,12 +48,18 @@ export function salesHandlers() {
       try {
         const [saleRecord] = await db.select().from(sales).where(eq(sales.id, id));
         const saleItemsList = await db.select().from(saleItems).where(eq(saleItems.saleId, id));
-
         return {
           status: "success",
           data: {
             ...saleRecord,
-            items: saleItemsList
+            items: saleItemsList.map((item) => {
+              return {
+                ...item,
+                mrp: item.mrp && formatToRupees(item.mrp),
+                price: formatToRupees(item.price),
+                totalPrice: formatToRupees(item.totalPrice)
+              };
+            })
           }
         };
       } catch (error) {
@@ -67,7 +81,7 @@ export function salesHandlers() {
               .values({
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerName: "DEFAULT",
-                grandTotal: saleObj.grandTotal,
+                grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: true
               })
@@ -118,7 +132,7 @@ export function salesHandlers() {
               .set({
                 customerName: saleObj.customerName,
                 customerContact: saleObj.customerContact,
-                grandTotal: saleObj.grandTotal,
+                grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
                 updatedAt: sql`(datetime('now'))`
@@ -142,7 +156,7 @@ export function salesHandlers() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: item.totalPrice
+                  totalPrice: formatToPaisa(item.totalPrice)
                 })
                 .run();
             }

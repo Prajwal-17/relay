@@ -6,9 +6,9 @@ import LineItemsTable from "../../components/features/billing/LineItemsTable";
 
 const EstimatePage = () => {
   const location = useLocation();
-  const saleId = location.pathname.split("/")[3];
+  const estimateId = location.pathname.split("/")[3];
 
-  useLoadTransactionDetails("estimate", saleId);
+  useLoadTransactionDetails("estimate", estimateId);
 
   return (
     <div className="min-h-screen w-full">

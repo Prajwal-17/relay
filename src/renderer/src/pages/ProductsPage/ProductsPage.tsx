@@ -7,7 +7,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useDebounce from "@/hooks/useDebounce";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductsType } from "@shared/types";
-import { formatToRupees } from "@shared/utils";
 import { Edit, Package, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -203,7 +202,7 @@ export default function ProductsPage() {
                               variant="outline"
                               className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
                             >
-                              MRP ₹{product.mrp ? formatToRupees(product.mrp) : "sdf"}
+                              MRP ₹{product.mrp}
                             </Badge>
                           )}
                         </div>
@@ -213,9 +212,7 @@ export default function ProductsPage() {
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold">
-                            ₹ {formatToRupees(product.price)}
-                          </span>
+                          <span className="text-2xl font-bold">₹ {product.price}</span>
                         </div>
                       </div>
                       <Badge
@@ -238,8 +235,8 @@ export default function ProductsPage() {
                           setOpenProductDialog();
                           setFormData({
                             ...product,
-                            mrp: product.mrp ? formatToRupees(product.mrp) : null,
-                            price: formatToRupees(product.price)
+                            mrp: product.mrp,
+                            price: product.price
                           });
                         }}
                         className="text-muted-foreground hover:text-foreground h-9 px-3 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer hover:bg-slate-100"

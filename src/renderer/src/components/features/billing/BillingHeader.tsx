@@ -23,18 +23,23 @@ const BillingHeader = () => {
   useEffect(() => {
     async function getLatestInvoiceNumber() {
       try {
-        const response = await window.salesApi.getNextInvoiceNo();
+        setInvoiceNo(null);
+        let response;
+        page === "sales"
+          ? (response = await window.salesApi.getNextInvoiceNo())
+          : (response = await window.estimatesApi.getNextEstimateNo());
         if (response.status === "success") {
           setInvoiceNo(response.data);
         } else {
           console.log(response.error.message);
+          setInvoiceNo(null);
         }
       } catch (error) {
         console.log(error);
       }
     }
     getLatestInvoiceNumber();
-  }, [setInvoiceNo]);
+  }, [setInvoiceNo, page]);
 
   return (
     <>
@@ -115,7 +120,7 @@ const BillingHeader = () => {
                   id="customer-contact"
                   className="py-2 pl-16"
                   placeholder="Contact Number"
-                  // @ts-ignore
+                  // @ts-ignore : ignore null
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}
                 />

@@ -43,7 +43,7 @@ const Sale = () => {
                 <tr key={idx} className="transition hover:bg-gray-50">
                   <td className="px-6 py-3">{formatDateStr(row.createdAt)}</td>
                   <td className="px-6 py-3">{row.invoiceNo}</td>
-                  <td className="px-6 py-3">₹{row.grandTotal}</td>
+                  {row.grandTotal && <td className="px-6 py-3">₹ {row.grandTotal}</td>}
                   <td className="px-6 py-3 text-center">
                     <button
                       onClick={() => navigate(`/sales/edit/${row.id}`)}

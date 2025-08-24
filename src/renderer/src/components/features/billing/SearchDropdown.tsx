@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import useDebounce from "@/hooks/useDebounce";
 import { useBillingStore } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { formatToRupees } from "@shared/utils";
 import { Package } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -165,15 +164,13 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                                   variant="outline"
                                   className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
                                 >
-                                  MRP ₹{item.mrp ? formatToRupees(item.mrp) : "sdf"}
+                                  MRP ₹{item.mrp}
                                 </Badge>
                               )}
                             </div>
                           </div>
                           <div className="shrink-0 text-right">
-                            <span className="text-xl font-bold text-green-600">
-                              ₹ {formatToRupees(item.price)}
-                            </span>
+                            <span className="text-xl font-bold text-green-600">₹ {item.price}</span>
                           </div>
                         </div>
                       </div>

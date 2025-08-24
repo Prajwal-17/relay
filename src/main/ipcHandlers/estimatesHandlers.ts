@@ -6,7 +6,7 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
-import { formatToPaisa } from "../../shared/utils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
 import { estimateItems, estimates } from "../db/schema";
 
@@ -36,7 +36,15 @@ export function estimatesHandlers() {
     try {
       const estimatesArray = await db.select().from(estimates).orderBy(desc(estimates.createdAt));
 
-      return { status: "success", data: estimatesArray };
+      return {
+        status: "success",
+        data: estimatesArray.map((estimate: EstimateType) => {
+          return {
+            ...estimate,
+            grandTotal: estimate.grandTotal && formatToRupees(estimate.grandTotal)
+          };
+        })
+      };
     } catch (error) {
       console.log(error);
       return { status: "error", error: { message: "Failed to retrieve estimates" } };
@@ -60,7 +68,14 @@ export function estimatesHandlers() {
           status: "success",
           data: {
             ...estimateRecord,
-            items: estimateItemsList
+            items: estimateItemsList.map((item) => {
+              return {
+                ...item,
+                mrp: item.mrp && formatToRupees(item.mrp),
+                price: formatToRupees(item.price),
+                totalPrice: formatToRupees(item.totalPrice)
+              };
+            })
           }
         };
       } catch (error) {
@@ -137,7 +152,7 @@ export function estimatesHandlers() {
               .set({
                 customerName: estimateObj.customerName,
                 customerContact: estimateObj.customerContact,
-                grandTotal: estimateObj.grandTotal,
+                grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
                 updatedAt: sql`(datetime('now'))`
@@ -161,7 +176,7 @@ export function estimatesHandlers() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: item.totalPrice
+                  totalPrice: formatToPaisa(item.totalPrice)
                 })
                 .run();
             }
