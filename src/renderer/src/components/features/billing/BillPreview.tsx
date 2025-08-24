@@ -21,8 +21,12 @@ const BillPreview = () => {
   const handlePrint = useReactToPrint({
     contentRef: receiptRef
   });
-  const totalAmount = lineItems.reduce((sum, currentItem) => {
+  const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
+  }, 0);
+
+  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
+    return sum + currentItem.quantity;
   }, 0);
 
   async function handleSave() {
@@ -34,8 +38,8 @@ const BillPreview = () => {
           // customerId,
           customerName,
           customerContact,
-          grandTotal: totalAmount,
-          totalQuantity: 1,
+          grandTotal: calcTotalAmount,
+          totalQuantity: calcTotalQuantity,
           isPaid: true,
           items: [...lineItems]
         });
@@ -53,8 +57,8 @@ const BillPreview = () => {
           // customerId,
           customerName,
           customerContact,
-          grandTotal: totalAmount,
-          totalQuantity: 1,
+          grandTotal: calcTotalAmount,
+          totalQuantity: calcTotalQuantity,
           isPaid: true,
           items: [...lineItems]
         });
@@ -129,7 +133,7 @@ const BillPreview = () => {
           </div>
           <div className="py-3 text-right">
             <span className="text-base font-semibold">Total: </span>
-            <span className="text-lg font-semibold">{totalAmount}</span>
+            <span className="text-lg font-semibold">{calcTotalAmount}</span>
           </div>
           {/*<div className="py-4 text-center">*** You Saved ₹30 ***</div>*/}
           <div className="text-center">Thank You</div>

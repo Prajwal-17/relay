@@ -82,6 +82,7 @@ export function estimatesHandlers() {
                 estimateNo: Number(estimateObj.estimateNo),
                 customerName: "DEFAULT",
                 grandTotal: estimateObj.grandTotal,
+                totalQuantity: estimateObj.totalQuantity,
                 isPaid: true
               })
               .returning({ id: estimates.id })

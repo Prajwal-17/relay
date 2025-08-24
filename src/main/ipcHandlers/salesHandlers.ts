@@ -67,6 +67,7 @@ export function salesHandlers() {
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerName: "DEFAULT",
                 grandTotal: saleObj.grandTotal,
+                totalQuantity: saleObj.totalQuantity,
                 isPaid: true
               })
               .returning({ id: sales.id })
