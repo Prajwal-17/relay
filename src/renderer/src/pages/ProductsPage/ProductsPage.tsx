@@ -97,8 +97,6 @@ export default function ProductsPage() {
     };
   }, [handleScroll, searchParam]);
 
-  // const formatPrice = (price: number) => `₹${price.toLocaleString()}`;
-
   return (
     <div ref={scrollRef} className="bg-muted/70 h-full flex-1 space-y-8 overflow-y-auto p-8">
       <div className="flex items-center justify-between">
