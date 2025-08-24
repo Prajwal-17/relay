@@ -1,3 +1,4 @@
+import { formatDateStr } from "@shared/utils";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -40,7 +41,7 @@ const Sale = () => {
             <tbody className="divide-y divide-gray-200">
               {sales.map((row, idx) => (
                 <tr key={idx} className="transition hover:bg-gray-50">
-                  <td className="px-6 py-3">{row.createdAt?.toLocaleString("en-IN")}</td>
+                  <td className="px-6 py-3">{formatDateStr(row.createdAt)}</td>
                   <td className="px-6 py-3">{row.invoiceNo}</td>
                   <td className="px-6 py-3">₹{row.grandTotal}</td>
                   <td className="px-6 py-3 text-center">

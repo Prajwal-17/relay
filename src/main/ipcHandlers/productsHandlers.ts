@@ -1,6 +1,7 @@
 import { and, eq, like, ne, SQL, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, ProductPayload, ProductsType } from "../../shared/types";
+import { formatToPaisa } from "../../shared/utils";
 import { db } from "../db/db";
 import { products } from "../db/schema";
 
@@ -26,8 +27,8 @@ export function productHandlers() {
             name: payload.name,
             weight: payload.weight,
             unit: payload.unit,
-            mrp: payload.mrp,
-            price: payload.price
+            mrp: payload.mrp ? formatToPaisa(payload.mrp) : null,
+            price: formatToPaisa(payload.price)
           })
           .run();
 
@@ -66,6 +67,8 @@ export function productHandlers() {
           .update(products)
           .set({
             ...updatePayload,
+            mrp: updatePayload.mrp ? formatToPaisa(updatePayload.mrp) : null,
+            price: formatToPaisa(updatePayload.price),
             disabledAt,
             updatedAt: sql`(datetime('now'))`
           })

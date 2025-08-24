@@ -6,6 +6,7 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
+import { formatToPaisa } from "../../shared/utils";
 import { db } from "../db/db";
 import { estimateItems, estimates } from "../db/schema";
 
@@ -81,7 +82,7 @@ export function estimatesHandlers() {
               .values({
                 estimateNo: Number(estimateObj.estimateNo),
                 customerName: "DEFAULT",
-                grandTotal: estimateObj.grandTotal,
+                grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: true
               })
@@ -102,8 +103,8 @@ export function estimatesHandlers() {
                   estimateId: estimate.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
@@ -155,8 +156,8 @@ export function estimatesHandlers() {
                   estimateId: estimate.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,

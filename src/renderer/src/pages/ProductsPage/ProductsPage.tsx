@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import useDebounce from "@/hooks/useDebounce";
 import { useProductsStore } from "@/store/productsStore";
+import type { ProductsType } from "@shared/types";
+import { formatToRupees } from "@shared/utils";
 import { Edit, Package, Plus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -95,7 +97,7 @@ export default function ProductsPage() {
     };
   }, [handleScroll, searchParam]);
 
-  const formatPrice = (price: number) => `₹${price.toLocaleString()}`;
+  // const formatPrice = (price: number) => `₹${price.toLocaleString()}`;
 
   return (
     <div ref={scrollRef} className="bg-muted/70 h-full flex-1 space-y-8 overflow-y-auto p-8">
@@ -174,7 +176,7 @@ export default function ProductsPage() {
           <>
             <Card className="border-border border bg-white shadow-sm">
               <div className="divide-y divide-slate-100">
-                {searchResult.map((product, idx) => (
+                {searchResult.map((product: ProductsType, idx) => (
                   <div
                     key={idx}
                     className="group flex items-center justify-between gap-4 p-6 transition-colors hover:bg-slate-50"
@@ -198,12 +200,14 @@ export default function ProductsPage() {
                                 {product.unit}
                               </Badge>
                             )}
-                          <Badge
-                            variant="outline"
-                            className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
-                          >
-                            MRP ₹{product.mrp}
-                          </Badge>
+                          {product.mrp && (
+                            <Badge
+                              variant="outline"
+                              className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
+                            >
+                              MRP ₹{product.mrp ? formatToRupees(product.mrp) : "sdf"}
+                            </Badge>
+                          )}
                         </div>
                         <p className="mt-1 text-sm font-medium text-slate-500">
                           {product.totalQuantitySold ?? "null"} sold
@@ -211,7 +215,9 @@ export default function ProductsPage() {
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold">{formatPrice(product.price)}</span>
+                          <span className="text-2xl font-bold">
+                            ₹ {formatToRupees(product.price)}
+                          </span>
                         </div>
                       </div>
                       <Badge
@@ -232,7 +238,11 @@ export default function ProductsPage() {
                         onClick={() => {
                           setActionType("edit");
                           setOpenProductDialog();
-                          setFormData(product);
+                          setFormData({
+                            ...product,
+                            mrp: product.mrp ? formatToRupees(product.mrp) : null,
+                            price: formatToRupees(product.price)
+                          });
                         }}
                         className="text-muted-foreground hover:text-foreground h-9 px-3 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer hover:bg-slate-100"
                       >

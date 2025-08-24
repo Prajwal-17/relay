@@ -1,3 +1,4 @@
+import { formatToRupees } from "@shared/utils";
 import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -107,7 +108,9 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         id: uuidv4(),
         productId: newItem.id,
         quantity: 1,
-        totalPrice: parseFloat((1 * newItem.price).toFixed(2))
+        mrp: newItem.mrp ? formatToRupees(newItem.mrp) : 0,
+        price: formatToRupees(newItem.price),
+        totalPrice: parseFloat((1 * formatToRupees(newItem.price)).toFixed(2))
       };
 
       currLineItems[index] = { ...updatedItem };

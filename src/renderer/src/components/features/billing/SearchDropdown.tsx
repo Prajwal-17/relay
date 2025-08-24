@@ -1,6 +1,7 @@
 import useDebounce from "@/hooks/useDebounce";
 import { useBillingStore } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { formatToRupees } from "@shared/utils";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SearchDropdown = ({ idx }: { idx: number }) => {
@@ -132,8 +133,12 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                 }}
               >
                 <div className="col-span-4 border-r border-black px-1 py-1">{item.name}</div>
-                <div className="col-span-2 border-r border-black px-1 py-1">{item.price}</div>
-                <div className="col-span-2 px-1 py-1">{item.mrp}</div>
+                <div className="col-span-2 border-r border-black px-1 py-1">
+                  ₹ {formatToRupees(item.price)}
+                </div>
+                <div className="col-span-2 px-1 py-1">
+                  ₹ {item.mrp ? formatToRupees(item.mrp) : ""}
+                </div>
               </div>
             ))}
           </div>

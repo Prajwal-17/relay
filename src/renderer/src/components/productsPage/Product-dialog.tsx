@@ -17,7 +17,7 @@ import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const units = ["g", "kg", "ml", "l", "pcs"];
+const units = ["g", "kg", "ml", "l", "pc"];
 
 export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -33,6 +33,7 @@ export function ProductDialog() {
   const handleSubmit = async (action: "add" | "edit") => {
     try {
       if (action === "add") {
+        setFormData({});
         const response = await window.productsApi.addNewProduct(formData);
         if (response.status === "success") {
           toast.success(response.data);
@@ -44,6 +45,7 @@ export function ProductDialog() {
           setFormData({});
         }
       } else if (action === "edit") {
+        setFormData({});
         const response = await window.productsApi.updateProduct(formData, formData.id);
         if (response.status === "success") {
           toast.success(response.data);

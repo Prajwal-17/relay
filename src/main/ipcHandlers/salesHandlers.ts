@@ -1,6 +1,7 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
+import { formatToPaisa } from "../../shared/utils";
 import { db } from "../db/db";
 import { saleItems, sales } from "../db/schema";
 
@@ -87,8 +88,8 @@ export function salesHandlers() {
                   saleId: sale.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
@@ -136,8 +137,8 @@ export function salesHandlers() {
                   saleId: sale.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,

@@ -2,6 +2,7 @@ import csv from "csv-parser";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
+import { formatToPaisa } from "../../shared/utils";
 import { products } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
@@ -20,8 +21,8 @@ async function main() {
         name: product.name,
         weight: product.weight === "nil" ? null : product.weight,
         unit: product.unit,
-        mrp: product.mrp,
-        price: product.price
+        mrp: formatToPaisa(Number(product.mrp)),
+        price: formatToPaisa(Number(product.price))
       });
     });
     console.log("Finished CSV seeding Products");
