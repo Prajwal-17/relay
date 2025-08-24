@@ -18,7 +18,7 @@ export function estimatesHandlers() {
         .from(estimates)
         .orderBy(desc(estimates.createdAt))
         .limit(1);
-      const lastEstimateNo = lastEstimate[0].estimateNo;
+      const lastEstimateNo = lastEstimate[0]?.estimateNo;
       let nextEstimateNo = 1;
 
       if (lastEstimateNo) {

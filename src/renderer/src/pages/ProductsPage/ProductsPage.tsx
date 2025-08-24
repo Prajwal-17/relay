@@ -36,7 +36,6 @@ export default function ProductsPage() {
       setLoading(true);
       try {
         if (mode === "replace") {
-          console.log("replace here");
           setSearchResult("replace", []);
         }
         const response = await window.productsApi.search(term, fetchPage, limit);

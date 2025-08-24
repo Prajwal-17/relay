@@ -133,7 +133,6 @@ export function productHandlers() {
     ): Promise<ApiResponse<ProductsType[]>> => {
       try {
         if (query === "") return { status: "success", data: [] };
-        console.log(page, limit);
         const offset = (page - 1) * limit;
 
         const priorityOrder = sql` CASE WHEN ${products.name} LIKE ${query + "%"} THEN 1

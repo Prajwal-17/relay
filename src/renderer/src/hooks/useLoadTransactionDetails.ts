@@ -22,7 +22,6 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           response = await window.salesApi.getTransactionById(transactionId);
         } else if (type === "estimate") {
           response = await window.estimatesApi.getTransactionById(transactionId);
-          console.log("load", response);
         } else {
           toast.error("Something went wrong");
         }
@@ -31,7 +30,6 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           setInvoiceNo(response.data.invoiceNo);
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
-          console.log("items", response.data.items);
           setLineItems(response.data.items);
         } else {
           toast.error(response.error.message);

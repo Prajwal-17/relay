@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useBillingStore } from "@/store/billingStore";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { DateTime } from "./DateTime";
 
 const BillingHeader = () => {
@@ -19,9 +19,12 @@ const BillingHeader = () => {
 
   const location = useLocation();
   const page = location.pathname.split("/")[1];
+  const { id } = useParams();
 
   useEffect(() => {
     async function getLatestInvoiceNumber() {
+      if (id) return;
+
       try {
         setInvoiceNo(null);
         let response;
@@ -39,7 +42,7 @@ const BillingHeader = () => {
       }
     }
     getLatestInvoiceNumber();
-  }, [setInvoiceNo, page]);
+  }, [setInvoiceNo, id, page, location]);
 
   return (
     <>
