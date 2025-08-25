@@ -3,10 +3,10 @@
   "version": "2.0.0",
   "description": "An Electron application with React and TypeScript",
   "main": "./out/main/index.js",
-  "repository":{
+  "repository": {
     "type": "git",
     "url": "https://github.com/Prajwal-17/pos"
-  } ,
+  },
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
@@ -32,11 +32,11 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.7",
-    "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.6",
     "@radix-ui/react-tabs": "^1.1.13",
@@ -88,10 +88,10 @@
     "typescript": "^5.8.3",
     "vite": "^7.0.5"
   },
-  "build":{
+  "build": {
     "appId": "pos.quickcart",
     "productName": "QuickCart",
-    "win":{
+    "win": {
       "target": "nsis"
     },
     "nsis": {
