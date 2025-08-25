@@ -6,7 +6,7 @@ export default function SidebarLayout() {
     <>
       <div className="mx-auto flex h-screen min-h-screen w-full">
         <Sidebar />
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <Outlet />
         </div>
       </div>

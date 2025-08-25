@@ -12,6 +12,10 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
   useEffect(() => {
     async function fetchTransactionById() {
       if (!transactionId) return;
+      setBillingId("");
+      setCustomerName("");
+      setCustomerContact("");
+      setLineItems([]);
       try {
         let response;
         if (type === "sale") {

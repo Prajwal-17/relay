@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { useBillingStore } from "@/store/billingStore";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { DateTime } from "./DateTime";
-import { Link, useLocation } from "react-router-dom";
 
 const BillingHeader = () => {
   const invoiceNo = useBillingStore((state) => state.invoiceNo);
@@ -13,36 +13,42 @@ const BillingHeader = () => {
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const customerContact = useBillingStore((state) => state.customerContact);
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
-  const paymentMethod = useBillingStore((state) => state.paymentMethod);
-  const setPaymentMethod = useBillingStore((state) => state.setPaymentMethod);
 
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
 
   const location = useLocation();
   const page = location.pathname.split("/")[1];
+  const { id } = useParams();
 
   useEffect(() => {
     async function getLatestInvoiceNumber() {
+      if (id) return;
+
       try {
-        const response = await window.salesApi.getNextInvoiceNo();
+        setInvoiceNo(null);
+        let response;
+        page === "sales"
+          ? (response = await window.salesApi.getNextInvoiceNo())
+          : (response = await window.estimatesApi.getNextEstimateNo());
         if (response.status === "success") {
           setInvoiceNo(response.data);
         } else {
           console.log(response.error.message);
+          setInvoiceNo(null);
         }
       } catch (error) {
         console.log(error);
       }
     }
     getLatestInvoiceNumber();
-  }, [setInvoiceNo]);
+  }, [setInvoiceNo, id, page, location]);
 
   return (
     <>
       <div className="border-b-border flex w-full flex-col justify-center gap-10 border px-4 py-5">
         <div className="flex items-center justify-between gap-5 px-2 py-2">
-          <div>
+          <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
               <Link to="/">
                 <Button variant="default" size="lg" className="text-lg font-medium">
@@ -89,10 +95,10 @@ const BillingHeader = () => {
             <DateTime />
           </div>
         </div>
-        <div className="flex items-center">
+        <div className="flex max-w-4xl items-center">
           <div className="flex w-full flex-1 items-center gap-4">
             <div className="w-full">
-              <label htmlFor="customer-name" className="text-sm font-medium text-gray-700">
+              <label htmlFor="customer-name" className="text-lg font-medium text-gray-700">
                 Customer Name
               </label>
               <Input
@@ -103,7 +109,7 @@ const BillingHeader = () => {
               />
             </div>
             <div className="w-full">
-              <label htmlFor="customer-contact" className="text-sm font-medium text-gray-700">
+              <label htmlFor="customer-contact" className="text-lg font-medium text-gray-700">
                 Customer Phone Number
               </label>
 
@@ -115,28 +121,14 @@ const BillingHeader = () => {
                 <Input
                   type="number"
                   id="customer-contact"
-                  className="pl-16"
+                  className="py-2 pl-16"
                   placeholder="Contact Number"
-                  // @ts-ignore
+                  // @ts-ignore : ignore null
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}
                 />
               </div>
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-2 px-4">
-            <Button
-              variant={paymentMethod === "cash" ? "default" : "outline"}
-              onClick={() => setPaymentMethod("cash")}
-            >
-              Cash
-            </Button>
-            <Button
-              variant={paymentMethod === "credit" ? "default" : "outline"}
-              onClick={() => setPaymentMethod("credit")}
-            >
-              Credit
-            </Button>
           </div>
         </div>
       </div>

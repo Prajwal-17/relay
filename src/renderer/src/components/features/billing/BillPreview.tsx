@@ -11,9 +11,13 @@ const BillPreview = () => {
   const lineItems = useBillingStore((state) => state.lineItems);
   const setLineItems = useBillingStore((state) => state.setLineItems);
   const invoiceNo = useBillingStore((state) => state.invoiceNo);
+  const setInvoiceNo = useBillingStore((state) => state.setInvoiceNo);
   const customerName = useBillingStore((state) => state.customerName);
+  const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const customerContact = useBillingStore((state) => state.customerContact);
+  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
   const billingId = useBillingStore((state) => state.billingId);
+  const setBillingId = useBillingStore((state) => state.setBillingId);
 
   const location = useLocation();
   const type = location.pathname.split("/")[1];
@@ -21,8 +25,12 @@ const BillPreview = () => {
   const handlePrint = useReactToPrint({
     contentRef: receiptRef
   });
-  const totalAmount = lineItems.reduce((sum, currentItem) => {
+  const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
+  }, 0);
+
+  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
+    return sum + currentItem.quantity;
   }, 0);
 
   async function handleSave() {
@@ -34,13 +42,17 @@ const BillPreview = () => {
           // customerId,
           customerName,
           customerContact,
-          grandTotal: totalAmount,
-          totalQuantity: 1,
+          grandTotal: calcTotalAmount,
+          totalQuantity: calcTotalQuantity,
           isPaid: true,
           items: [...lineItems]
         });
         if (response.status === "success") {
           toast.success("Sale Saved successfully");
+          setBillingId("");
+          setInvoiceNo(null);
+          setCustomerName("");
+          setCustomerContact("");
           setLineItems([]);
           navigate("/");
         } else {
@@ -53,13 +65,17 @@ const BillPreview = () => {
           // customerId,
           customerName,
           customerContact,
-          grandTotal: totalAmount,
-          totalQuantity: 1,
+          grandTotal: calcTotalAmount,
+          totalQuantity: calcTotalQuantity,
           isPaid: true,
           items: [...lineItems]
         });
         if (response.status === "success") {
           toast.success("Estimate Saved successfully");
+          setBillingId("");
+          setInvoiceNo(null);
+          setCustomerName("");
+          setCustomerContact("");
           setLineItems([]);
           navigate("/");
         } else {
@@ -73,7 +89,7 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="font-new flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
         <div ref={receiptRef} className="w-[320px] bg-white px-4 py-4 text-black">
           <div className="mb-2 space-y-2 py-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -129,7 +145,7 @@ const BillPreview = () => {
           </div>
           <div className="py-3 text-right">
             <span className="text-base font-semibold">Total: </span>
-            <span className="text-lg font-semibold">{totalAmount}</span>
+            <span className="text-lg font-semibold">{calcTotalAmount}</span>
           </div>
           {/*<div className="py-4 text-center">*** You Saved ₹30 ***</div>*/}
           <div className="text-center">Thank You</div>

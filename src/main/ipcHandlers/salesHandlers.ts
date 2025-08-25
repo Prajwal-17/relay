@@ -1,8 +1,9 @@
+import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
+import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
 import { saleItems, sales } from "../db/schema";
-import { desc, eq } from "drizzle-orm";
 
 export function salesHandlers() {
   ipcMain.handle("salesApi:getNextInvoiceNo", async (): Promise<ApiResponse<number>> => {
@@ -26,7 +27,15 @@ export function salesHandlers() {
     try {
       const salesArray = await db.select().from(sales).orderBy(desc(sales.createdAt));
 
-      return { status: "success", data: salesArray };
+      return {
+        status: "success",
+        data: salesArray.map((sale: SalesType) => {
+          return {
+            ...sale,
+            grandTotal: sale.grandTotal && formatToRupees(sale.grandTotal)
+          };
+        })
+      };
     } catch (error) {
       console.log(error);
       return { status: "error", error: { message: "Failed to retrieve sales" } };
@@ -39,12 +48,18 @@ export function salesHandlers() {
       try {
         const [saleRecord] = await db.select().from(sales).where(eq(sales.id, id));
         const saleItemsList = await db.select().from(saleItems).where(eq(saleItems.saleId, id));
-
         return {
           status: "success",
           data: {
             ...saleRecord,
-            items: saleItemsList
+            items: saleItemsList.map((item) => {
+              return {
+                ...item,
+                mrp: item.mrp && formatToRupees(item.mrp),
+                price: formatToRupees(item.price),
+                totalPrice: formatToRupees(item.totalPrice)
+              };
+            })
           }
         };
       } catch (error) {
@@ -66,7 +81,8 @@ export function salesHandlers() {
               .values({
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerName: "DEFAULT",
-                grandTotal: saleObj.grandTotal,
+                grandTotal: formatToPaisa(saleObj.grandTotal),
+                totalQuantity: saleObj.totalQuantity,
                 isPaid: true
               })
               .returning({ id: sales.id })
@@ -86,8 +102,8 @@ export function salesHandlers() {
                   saleId: sale.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
@@ -116,9 +132,10 @@ export function salesHandlers() {
               .set({
                 customerName: saleObj.customerName,
                 customerContact: saleObj.customerContact,
-                grandTotal: saleObj.grandTotal,
+                grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
-                isPaid: saleObj.isPaid
+                isPaid: saleObj.isPaid,
+                updatedAt: sql`(datetime('now'))`
               })
               .where(eq(sales.id, saleObj.billingId))
               .run();
@@ -134,12 +151,12 @@ export function salesHandlers() {
                   saleId: sale.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: item.totalPrice
+                  totalPrice: formatToPaisa(item.totalPrice)
                 })
                 .run();
             }

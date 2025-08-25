@@ -1,3 +1,4 @@
+import { desc, eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type {
   ApiResponse,
@@ -5,7 +6,7 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
-import { desc, eq } from "drizzle-orm";
+import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
 import { estimateItems, estimates } from "../db/schema";
 
@@ -17,7 +18,7 @@ export function estimatesHandlers() {
         .from(estimates)
         .orderBy(desc(estimates.createdAt))
         .limit(1);
-      const lastEstimateNo = lastEstimate[0].estimateNo;
+      const lastEstimateNo = lastEstimate[0]?.estimateNo;
       let nextEstimateNo = 1;
 
       if (lastEstimateNo) {
@@ -35,7 +36,15 @@ export function estimatesHandlers() {
     try {
       const estimatesArray = await db.select().from(estimates).orderBy(desc(estimates.createdAt));
 
-      return { status: "success", data: estimatesArray };
+      return {
+        status: "success",
+        data: estimatesArray.map((estimate: EstimateType) => {
+          return {
+            ...estimate,
+            grandTotal: estimate.grandTotal && formatToRupees(estimate.grandTotal)
+          };
+        })
+      };
     } catch (error) {
       console.log(error);
       return { status: "error", error: { message: "Failed to retrieve estimates" } };
@@ -59,7 +68,14 @@ export function estimatesHandlers() {
           status: "success",
           data: {
             ...estimateRecord,
-            items: estimateItemsList
+            items: estimateItemsList.map((item) => {
+              return {
+                ...item,
+                mrp: item.mrp && formatToRupees(item.mrp),
+                price: formatToRupees(item.price),
+                totalPrice: formatToRupees(item.totalPrice)
+              };
+            })
           }
         };
       } catch (error) {
@@ -81,7 +97,8 @@ export function estimatesHandlers() {
               .values({
                 estimateNo: Number(estimateObj.estimateNo),
                 customerName: "DEFAULT",
-                grandTotal: estimateObj.grandTotal,
+                grandTotal: formatToPaisa(estimateObj.grandTotal),
+                totalQuantity: estimateObj.totalQuantity,
                 isPaid: true
               })
               .returning({ id: estimates.id })
@@ -101,8 +118,8 @@ export function estimatesHandlers() {
                   estimateId: estimate.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
@@ -135,9 +152,10 @@ export function estimatesHandlers() {
               .set({
                 customerName: estimateObj.customerName,
                 customerContact: estimateObj.customerContact,
-                grandTotal: estimateObj.grandTotal,
+                grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
-                isPaid: estimateObj.isPaid
+                isPaid: estimateObj.isPaid,
+                updatedAt: sql`(datetime('now'))`
               })
               .where(eq(estimates.id, estimateObj.billingId))
               .run();
@@ -153,12 +171,12 @@ export function estimatesHandlers() {
                   estimateId: estimate.id,
                   productId: item.productId,
                   name: item.name,
-                  mrp: item.mrp,
-                  price: item.price,
+                  mrp: item.mrp ? formatToPaisa(item.mrp) : null,
+                  price: formatToPaisa(item.price),
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: item.totalPrice
+                  totalPrice: formatToPaisa(item.totalPrice)
                 })
                 .run();
             }

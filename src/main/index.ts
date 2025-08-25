@@ -1,17 +1,43 @@
 import { electronApp, is } from "@electron-toolkit/utils";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
+import { setupMenu } from "./setupMenu";
 
-app.commandLine.appendSwitch("high-dpi-support", "1"); // enable high dpi
-app.commandLine.appendSwitch("force-device-scale-factor", "1"); // overrides device scale factor
+let mainWindow: BrowserWindow;
+const gotTheLock = app.requestSingleInstanceLock();
+
+// prevent creating multiple instance
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  app.whenReady().then(() => {
+    electronApp.setAppUserModelId("com.electron");
+    setupIpcHandlers();
+    createWindow();
+
+    app.on("activate", function () {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+  });
+}
 
 function createWindow(): void {
-  const mainWindow = new BrowserWindow({
+  const { width } = screen.getPrimaryDisplay().workAreaSize;
+  const zoomLevel = width <= 1355 ? 0.75 : 1.0;
+
+  mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
     webPreferences: {
-      zoomFactor: 1,
+      zoomFactor: zoomLevel,
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
@@ -25,6 +51,8 @@ function createWindow(): void {
     }, 25);
     mainWindow.show();
   });
+
+  setupMenu();
 
   // catch keyboard events
   // https://stackoverflow.com/a/75716165/25649886
@@ -42,16 +70,6 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
   }
 }
-
-app.whenReady().then(() => {
-  electronApp.setAppUserModelId("com.electron");
-  setupIpcHandlers();
-  createWindow();
-
-  app.on("activate", function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

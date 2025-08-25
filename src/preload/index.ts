@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from "electron";
 import { electronAPI } from "@electron-toolkit/preload";
+import { contextBridge, ipcRenderer } from "electron";
 import type {
   EstimatePayload,
   EstimatesApi,
@@ -10,7 +10,11 @@ import type {
 
 const productsApi: ProductsApi = {
   getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
-  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit)
+  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit),
+  addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload),
+  updateProduct: (payload, productId) =>
+    ipcRenderer.invoke("productsApi:updateProduct", payload, productId),
+  deleteProduct: (productId) => ipcRenderer.invoke("productsApi:deleteProduct", productId)
 };
 
 const salesApi: SalesApi = {
