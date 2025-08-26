@@ -116,7 +116,7 @@ export function estimatesHandlers() {
               tx.insert(estimateItems)
                 .values({
                   estimateId: estimate.id,
-                  productId: item.productId,
+                  productId: item.productId ? item.productId : null,
                   name: item.name,
                   mrp: item.mrp ? formatToPaisa(item.mrp) : null,
                   price: formatToPaisa(item.price),
@@ -169,7 +169,7 @@ export function estimatesHandlers() {
               tx.insert(estimateItems)
                 .values({
                   estimateId: estimate.id,
-                  productId: item.productId,
+                  productId: item.productId ? item.productId : null,
                   name: item.name,
                   mrp: item.mrp ? formatToPaisa(item.mrp) : null,
                   price: formatToPaisa(item.price),

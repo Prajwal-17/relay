@@ -133,8 +133,14 @@ export function ProductDialog() {
                         Unit
                       </Label>
                       <Select
-                        value={formData.unit ?? ""}
-                        onValueChange={(value) => setFormData({ unit: value, weight: null })}
+                        value={formData.unit ?? "none"}
+                        onValueChange={(value) => {
+                          if (value === "none") {
+                            setFormData({ unit: null, weight: null });
+                          } else {
+                            setFormData({ unit: value });
+                          }
+                        }}
                       >
                         <SelectTrigger className="h-11">
                           <SelectValue />

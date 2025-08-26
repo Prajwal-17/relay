@@ -18,9 +18,9 @@ function initialFormData() {
   return {
     id: "",
     name: "",
-    weight: "",
-    unit: "none",
-    mrp: 0,
+    weight: null,
+    unit: null,
+    mrp: null,
     price: 0,
     isDisabled: false
   };
