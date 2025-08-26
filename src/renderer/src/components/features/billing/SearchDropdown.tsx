@@ -121,7 +121,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
               {searchResult.length === 0 ? (
                 <div className="p-4 text-center text-gray-500">
                   <Package className="mx-auto mb-2 h-6 w-6 opacity-30" />
-                  <p className="text-sm">No products found</p>
+                  <p className="text-xl">No products found</p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100 py-0">
