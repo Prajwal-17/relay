@@ -31,7 +31,7 @@ if (!gotTheLock) {
 
 function createWindow(): void {
   const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const zoomLevel = width <= 1355 ? 0.75 : 1.0;
+  const zoomLevel = width <= 1388 ? 0.75 : 1.0;
 
   mainWindow = new BrowserWindow({
     show: false,
