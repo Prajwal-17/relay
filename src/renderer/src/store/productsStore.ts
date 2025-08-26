@@ -19,7 +19,7 @@ function initialFormData() {
     id: "",
     name: "",
     weight: "",
-    unit: "g",
+    unit: "none",
     mrp: 0,
     price: 0,
     isDisabled: false

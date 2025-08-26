@@ -29,7 +29,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState(false);
 
-  const ignoredWeight = ["", "1ml", "1g"];
+  const ignoredWeight = ["", "1ml", "1g", "none"];
 
   const fetchProducts = useCallback(
     async (term: string, fetchPage: number, mode: "replace" | "append", limit: number) => {

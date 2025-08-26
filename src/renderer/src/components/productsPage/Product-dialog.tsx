@@ -17,7 +17,7 @@ import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const units = ["g", "kg", "ml", "l", "pc"];
+const units = ["g", "kg", "ml", "l", "pc", "none"];
 
 export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -50,7 +50,10 @@ export function ProductDialog() {
         if (response.status === "success") {
           toast.success(response.data);
           setSearchResult("replace", []);
-          setSearchParam(formData.name);
+          setSearchParam("");
+          setTimeout(() => {
+            setSearchParam(formData.name);
+          }, 350);
           setOpenProductDialog();
           setFormData({});
         } else {
@@ -131,7 +134,7 @@ export function ProductDialog() {
                       </Label>
                       <Select
                         value={formData.unit ?? ""}
-                        onValueChange={(value) => setFormData({ unit: value })}
+                        onValueChange={(value) => setFormData({ unit: value, weight: null })}
                       >
                         <SelectTrigger className="h-11">
                           <SelectValue />
@@ -159,7 +162,6 @@ export function ProductDialog() {
                         onChange={(e) =>
                           setFormData({ price: Number.parseInt(e.target.value) || 0 })
                         }
-                        placeholder="0"
                         className="px-4 py-6 !text-base"
                       />
                     </div>
@@ -172,7 +174,6 @@ export function ProductDialog() {
                         type="number"
                         value={formData.mrp || ""}
                         onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) || 0 })}
-                        placeholder="0"
                         className="px-4 py-6 !text-base"
                       />
                     </div>
