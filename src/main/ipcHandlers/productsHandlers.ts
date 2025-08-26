@@ -132,13 +132,34 @@ export function productHandlers() {
       limit: number
     ): Promise<ApiResponse<ProductsType[]>> => {
       try {
-        if (query === "") return { status: "success", data: [] };
+        const cleanedQuery = query
+          .replace(/\d+\s*(rs?|₹)/gi, "")
+          .replace(/\d+\s*(g|kg|ml|l|pc|none)/gi, "")
+          .replace(/\b(g|kg|ml|l|pc|none)\b/gi, "")
+          .trim();
+
+        const searchTerms = cleanedQuery
+          .trim()
+          .toLowerCase()
+          .split(" ")
+          .filter((term) => term.length > 0);
+
+        if (searchTerms.length === 0) {
+          return { status: "success", data: [] };
+        }
+
         const offset = (page - 1) * limit;
 
-        const priorityOrder = sql` CASE WHEN ${products.name} LIKE ${query + "%"} THEN 1
-                ELSE 2
-            END
-          `;
+        const combinedSearchField = sql<string>`lower(${products.name} || ' ' || COALESCE(${products.weight}, '') || ' ' || COALESCE(${products.unit}, '') || ' ' || COALESCE(${products.mrp}, '') || ' ' || ${products.price})`;
+
+        const searchConditions = searchTerms.map((term) => like(combinedSearchField, `%${term}%`));
+
+        const priorityOrder = sql`
+        CASE
+          WHEN lower(${products.name}) LIKE ${searchTerms[0] + "%"} THEN 1
+          ELSE 2
+        END
+      `;
 
         const searchResult = await db
           .select({
@@ -150,20 +171,18 @@ export function productHandlers() {
             price: products.price
           })
           .from(products)
-          .where(and(like(products.name, `%${query}%`), ne(products.isDeleted, true)))
+          .where(and(ne(products.isDeleted, true), ...searchConditions))
           .orderBy(priorityOrder, products.name)
           .limit(limit)
           .offset(offset);
 
         return {
           status: "success",
-          data: searchResult.map((product) => {
-            return {
-              ...product,
-              mrp: product.mrp && formatToRupees(product.mrp),
-              price: formatToRupees(product.price)
-            };
-          })
+          data: searchResult.map((product) => ({
+            ...product,
+            mrp: product.mrp && formatToRupees(product.mrp),
+            price: formatToRupees(product.price)
+          }))
         };
       } catch (error) {
         console.log(error);

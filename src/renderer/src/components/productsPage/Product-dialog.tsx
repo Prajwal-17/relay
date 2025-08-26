@@ -17,7 +17,7 @@ import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const units = ["g", "kg", "ml", "l", "pc"];
+const units = ["g", "kg", "ml", "l", "pc", "none"];
 
 export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -27,10 +27,13 @@ export function ProductDialog() {
   const setFormData = useProductsStore((state) => state.setFormData);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
   const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
+  const setDropdownSearch = useSearchDropdownStore((state) => state.setSearchParam);
+  const setDropdownResult = useSearchDropdownStore((state) => state.setSearchResult);
+  const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleSubmit = async (action: "add" | "edit") => {
+  const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
     try {
       if (action === "add") {
         setFormData({});
@@ -50,8 +53,29 @@ export function ProductDialog() {
         if (response.status === "success") {
           toast.success(response.data);
           setSearchResult("replace", []);
-          setSearchParam(formData.name);
+          setSearchParam("");
+          setTimeout(() => {
+            setSearchParam(formData.name);
+          }, 350);
           setOpenProductDialog();
+          setFormData({});
+        } else {
+          toast.error(response.error.message);
+          setOpenProductDialog();
+          setFormData({});
+        }
+      } else if (action === "billing-page-edit") {
+        setFormData({});
+        const response = await window.productsApi.updateProduct(formData, formData.id);
+        if (response.status === "success") {
+          toast.success(response.data);
+          setDropdownResult("replace", []);
+          setDropdownSearch("");
+          setTimeout(() => {
+            setDropdownSearch(formData.name);
+          }, 220);
+          setOpenProductDialog();
+          setIsDropdownOpen();
           setFormData({});
         } else {
           toast.error(response.error.message);
@@ -130,8 +154,14 @@ export function ProductDialog() {
                         Unit
                       </Label>
                       <Select
-                        value={formData.unit ?? ""}
-                        onValueChange={(value) => setFormData({ unit: value })}
+                        value={formData.unit ?? "none"}
+                        onValueChange={(value) => {
+                          if (value === "none") {
+                            setFormData({ unit: null, weight: null });
+                          } else {
+                            setFormData({ unit: value });
+                          }
+                        }}
                       >
                         <SelectTrigger className="h-11">
                           <SelectValue />
@@ -159,7 +189,6 @@ export function ProductDialog() {
                         onChange={(e) =>
                           setFormData({ price: Number.parseInt(e.target.value) || 0 })
                         }
-                        placeholder="0"
                         className="px-4 py-6 !text-base"
                       />
                     </div>
@@ -172,7 +201,6 @@ export function ProductDialog() {
                         type="number"
                         value={formData.mrp || ""}
                         onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) || 0 })}
-                        placeholder="0"
                         className="px-4 py-6 !text-base"
                       />
                     </div>

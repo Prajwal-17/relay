@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ignoredWeight } from "@/constants/IgnoredWeights";
 import useDebounce from "@/hooks/useDebounce";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductsType } from "@shared/types";
@@ -28,8 +29,6 @@ export default function ProductsPage() {
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState<number>(1);
   const [loading, setLoading] = useState(false);
-
-  const ignoredWeight = ["", "1ml", "1g"];
 
   const fetchProducts = useCallback(
     async (term: string, fetchPage: number, mode: "replace" | "append", limit: number) => {

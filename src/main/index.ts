@@ -64,6 +64,12 @@ function createWindow(): void {
     }
   });
 
+  // force reset zoom
+  mainWindow.webContents.setZoomFactor(zoomLevel);
+  mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow.webContents.setZoomFactor(zoomLevel);
+  });
+
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
     mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
   } else {

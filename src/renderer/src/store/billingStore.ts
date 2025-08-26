@@ -1,3 +1,4 @@
+import { ignoredWeight } from "@/constants/IgnoredWeights";
 import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -102,9 +103,49 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
        */
       const currLineItems = [...state.lineItems];
 
+      const productName = () => {
+        let name = newItem.name;
+
+        // weight && mrp && weight+unit does not equal to ignoredWeights
+        if (
+          newItem.weight !== null &&
+          newItem.mrp &&
+          !ignoredWeight.some((w) => `${newItem.weight}${newItem.unit}` === w)
+        ) {
+          name += ` ${newItem.weight}${newItem.unit}`;
+          if (newItem.mrp) {
+            name += ` ${newItem.mrp}Rs`;
+          }
+        }
+
+        // weight && mrp && weight+unit equal to ignoredWeights
+        if (
+          newItem.weight !== null &&
+          newItem.mrp &&
+          ignoredWeight.some((w) => `${newItem.weight}${newItem.unit}` === w)
+        ) {
+          if (newItem.mrp) {
+            name += ` ${newItem.mrp}Rs`;
+          }
+        }
+
+        // weight = null && mrp
+        if (newItem.weight === null && newItem.mrp) {
+          name += ` ${newItem.mrp}Rs`;
+        }
+
+        // weight && mrp = null
+        if (newItem.weight !== null && !newItem.mrp) {
+          name += ` ${newItem.weight}${newItem.unit}`;
+        }
+
+        return name;
+      };
+
       const updatedItem = {
         ...newItem,
         id: uuidv4(),
+        name: productName(),
         productId: newItem.id,
         quantity: 1,
         totalPrice: parseFloat((1 * newItem.price).toFixed(2))

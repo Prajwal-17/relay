@@ -4,8 +4,8 @@ import { create } from "zustand";
 type ProductsStoreType = {
   openProductDialog: boolean;
   setOpenProductDialog: () => void;
-  actionType: "add" | "edit";
-  setActionType: (action: "add" | "edit") => void;
+  actionType: "add" | "edit" | "billing-page-edit";
+  setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
   searchParam: string;
   setSearchParam: (param: string) => void;
   searchResult: ProductsType[] | [];
@@ -18,9 +18,9 @@ function initialFormData() {
   return {
     id: "",
     name: "",
-    weight: "",
-    unit: "g",
-    mrp: 0,
+    weight: null,
+    unit: null,
+    mrp: null,
     price: 0,
     isDisabled: false
   };

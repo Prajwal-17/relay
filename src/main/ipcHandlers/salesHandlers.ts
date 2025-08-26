@@ -100,7 +100,7 @@ export function salesHandlers() {
               tx.insert(saleItems)
                 .values({
                   saleId: sale.id,
-                  productId: item.productId,
+                  productId: item.productId ? item.productId : null,
                   name: item.name,
                   mrp: item.mrp ? formatToPaisa(item.mrp) : null,
                   price: formatToPaisa(item.price),
@@ -149,7 +149,7 @@ export function salesHandlers() {
               tx.insert(saleItems)
                 .values({
                   saleId: sale.id,
-                  productId: item.productId,
+                  productId: item.productId ? item.productId : null,
                   name: item.name,
                   mrp: item.mrp ? formatToPaisa(item.mrp) : null,
                   price: formatToPaisa(item.price),
