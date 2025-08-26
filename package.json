@@ -1,7 +1,7 @@
 {
   "name": "pos",
   "version": "2.1.1",
-  "description": "An Electron application with React and TypeScript",
+  "description": "A billing software for creating and managing invoices and customer accounts.",
   "main": "./out/main/index.js",
   "repository": {
     "type": "git",
@@ -97,7 +97,7 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}.${ext}"
+      "artifactName": "${productName}-${version}.${ext}"
     }
   }
 }
