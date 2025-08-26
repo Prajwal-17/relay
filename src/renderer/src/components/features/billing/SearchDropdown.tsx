@@ -1,10 +1,12 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants/IgnoredWeights";
 import useDebounce from "@/hooks/useDebounce";
 import { useBillingStore } from "@/store/billingStore";
+import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { Package } from "lucide-react";
+import { Edit, Package } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SearchDropdown = ({ idx }: { idx: number }) => {
@@ -16,6 +18,9 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
   const addLineItem = useBillingStore((state) => state.addLineItem);
   const addEmptyLineItem = useBillingStore((state) => state.addEmptyLineItem);
   const searchRow = useSearchDropdownStore((state) => state.searchRow);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const setActionType = useProductsStore((state) => state.setActionType);
+  const setFormData = useProductsStore((state) => state.setFormData);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchParam = useDebounce(searchParam, 200);
@@ -124,7 +129,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                   <p className="text-xl">No products found</p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-100 py-0">
+                <div className="flex flex-col justify-center divide-y divide-gray-100 py-0">
                   {searchResult.map((item, index) => (
                     <div
                       key={index}
@@ -174,6 +179,24 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                           </div>
                         </div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActionType("billing-page-edit");
+                          setOpenProductDialog();
+                          setFormData({
+                            ...item,
+                            mrp: item.mrp,
+                            price: item.price
+                          });
+                        }}
+                        className="hover:cursor-pointer"
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
                     </div>
                   ))}
                 </div>

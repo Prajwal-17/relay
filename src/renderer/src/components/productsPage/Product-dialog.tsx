@@ -27,10 +27,13 @@ export function ProductDialog() {
   const setFormData = useProductsStore((state) => state.setFormData);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
   const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
+  const setDropdownSearch = useSearchDropdownStore((state) => state.setSearchParam);
+  const setDropdownResult = useSearchDropdownStore((state) => state.setSearchResult);
+  const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const handleSubmit = async (action: "add" | "edit") => {
+  const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
     try {
       if (action === "add") {
         setFormData({});
@@ -55,6 +58,24 @@ export function ProductDialog() {
             setSearchParam(formData.name);
           }, 350);
           setOpenProductDialog();
+          setFormData({});
+        } else {
+          toast.error(response.error.message);
+          setOpenProductDialog();
+          setFormData({});
+        }
+      } else if (action === "billing-page-edit") {
+        setFormData({});
+        const response = await window.productsApi.updateProduct(formData, formData.id);
+        if (response.status === "success") {
+          toast.success(response.data);
+          setDropdownResult("replace", []);
+          setDropdownSearch("");
+          setTimeout(() => {
+            setDropdownSearch(formData.name);
+          }, 220);
+          setOpenProductDialog();
+          setIsDropdownOpen();
           setFormData({});
         } else {
           toast.error(response.error.message);
