@@ -1,34 +1,59 @@
-# pos
+# Getting Started
 
-An Electron application with React and TypeScript
+### Stack
 
-## Recommended IDE Setup
+- Electron JS
+- Vite
+- React
+- Better-sqlite3
+- Drizzle
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+### Installation
 
-## Project Setup
-
-### Install
+Clone Repo
 
 ```bash
-$ npm install
+$ git clone https://github.com/Prajwal-17/pos.git
 ```
 
-### Development
+Install dependencies
 
 ```bash
-$ npm run dev
+$ pnpm install
+```
+
+### Devlopment
+
+```bash
+$ pnpm dev
 ```
 
 ### Build
 
 ```bash
-# For windows
-$ npm run build:win
+# Windows
+$ pnpm run build:win
 
-# For macOS
-$ npm run build:mac
+# Linux
+$ pnpm run build:linux
 
-# For Linux
-$ npm run build:linux
 ```
+
+The packaged app will be in `dist/` folder.
+
+### DB Paths
+
+- **LINUX** - `/home/prajwal/.config/<dbfolder>/<dbname>.db`
+- **WINDOWS** - `C:\Users\<username>\AppData\Roaming\<appfolder>\<dbname>.db`
+
+### Docs & References
+
+##### Electron Auto-update
+
+- https://www.electron.build/configuration
+
+- https://medium.com/@johndyer24/creating-and-deploying-an-auto-updating-electron-app-for-mac-and-windows-using-electron-builder-6a3982c0cee6
+
+- Basic Example - https://github.com/iffy/electron-updater-example/blob/master/main.js
+
+- Example - https://github.com/iffy/electron-updater-example/blob/master/main.js
