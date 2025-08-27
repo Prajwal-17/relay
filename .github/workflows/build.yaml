@@ -3,7 +3,7 @@ name: Build and Release
 on:
   push:
     branches:
-      - feat/auto-update
+      - master
 
 jobs:
   build:
@@ -52,6 +52,8 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
+            ./dist/latest.yml
+            ./dist/latest-linux.yml
             ./dist/*.exe
             ./dist/*.AppImage
 
@@ -106,3 +108,23 @@ jobs:
           asset_path: ./artifacts/build-ubuntu-latest/QuickCart-${{ steps.package-version.outputs.current-version }}.AppImage
           asset_name: QuickCart-${{ steps.package-version.outputs.current-version }}.AppImage
           asset_content_type: application/octet-stream
+
+      - name: Upload Windows YML
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/build-windows-latest/latest.yml
+          asset_name: latest.yml
+          asset_content_type: application/x-yaml
+
+      - name: Upload Linux YML
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/build-ubuntu-latest/latest-linux.yml
+          asset_name: latest-linux.yml
+          asset_content_type: application/x-yaml

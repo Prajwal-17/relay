@@ -28,3 +28,7 @@ linux:
 appImage:
   artifactName: ${productName}-${version}.${ext}
 npmRebuild: false
+publish:
+  provider: github
+  owner: Prajwal-17
+  repo: pos

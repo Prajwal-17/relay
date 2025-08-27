@@ -1,6 +1,6 @@
 {
   "name": "pos",
-  "version": "2.1.1",
+  "version": "2.1.8",
   "description": "A billing software for creating and managing invoices and customer accounts.",
   "main": "./out/main/index.js",
   "repository": {
@@ -26,7 +26,7 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win --publish never",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux --publish never"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -75,6 +75,7 @@
     "drizzle-kit": "^0.31.4",
     "electron": "^31.0.1",
     "electron-builder": "^25.1.8",
+    "electron-updater": "^6.6.2",
     "electron-vite": "^4.0.0",
     "eslint": "^9.31.0",
     "eslint-plugin-react": "^7.37.5",
@@ -98,6 +99,19 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "artifactName": "${productName}-${version}.${ext}"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Prajwal-17",
+        "repo": "pos"
+      }
+    ]
+  },
+  "linux": {
+    "target": [
+      "AppImage"
+    ],
+    "category": "Office"
   }
 }

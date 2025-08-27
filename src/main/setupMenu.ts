@@ -1,4 +1,5 @@
 import { Menu } from "electron";
+import { checkForUpdates } from "./updater";
 
 // Menu setup examples
 // - https://www.electronjs.org/docs/latest/api/menu#examples
@@ -6,47 +7,22 @@ import { Menu } from "electron";
 
 export function setupMenu() {
   const template: Electron.MenuItemConstructorOptions[] = [
-    // {
-    //   label: "Edit",
-    //   submenu: [
-    //     { role: "undo" },
-    //     { role: "redo" },
-    //     { type: "separator" },
-    //     { role: "cut" },
-    //     { role: "copy" },
-    //     { role: "paste" },
-    //     { role: "pasteAndMatchStyle" },
-    //     { role: "delete" },
-    //     { role: "selectAll" }
-    //   ]
-    // },
     {
       label: "View",
-      submenu: [
-        { role: "reload" },
-        { role: "forceReload" },
-        { role: "toggleDevTools" }
-        // { type: "separator" },
-        // { role: "resetZoom" },
-        // { role: "zoomIn" },
-        // { role: "zoomOut" },
-        // { type: "separator" },
-        // { role: "togglefullscreen" }
-      ]
+      submenu: [{ role: "reload" }, { role: "forceReload" }, { role: "toggleDevTools" }]
     },
-
-    { role: "window", submenu: [{ role: "minimize" }, { role: "close" }] }
-    // {
-    //   role: "help",
-    //   submenu: [
-    //     {
-    //       label: "Learn More",
-    //       click() {
-    //         electron.shell.openExternal("https://electron.atom.io");
-    //       }
-    //     }
-    //   ]
-    // }
+    { role: "window", submenu: [{ role: "minimize" }, { role: "close" }] },
+    {
+      label: "Help",
+      submenu: [
+        {
+          label: "Check for updates",
+          click(menuItem) {
+            checkForUpdates(menuItem);
+          }
+        }
+      ]
+    }
   ];
 
   const menu = Menu.buildFromTemplate(template);
