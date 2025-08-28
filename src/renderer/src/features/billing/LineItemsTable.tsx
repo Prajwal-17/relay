@@ -1,10 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { useBillingStore } from "@/store/billingStore";
-import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import useTransactionState from "@/hooks/useTransactionState";
 import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import QuantityPresets from "./QuantityPresets";
 import SearchDropdown from "../search/SearchDropdown";
+import QuantityPresets from "./QuantityPresets";
 
 export type ItemType = {
   id: string;
@@ -16,15 +15,16 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const lineItems = useBillingStore((state) => state.lineItems);
-  const addEmptyLineItem = useBillingStore((state) => state.addEmptyLineItem);
-  const updateLineItems = useBillingStore((state) => state.updateLineItems);
-  const deleteLineItem = useBillingStore((state) => state.deleteLineItem);
-  const setLineItems = useBillingStore((state) => state.setLineItems);
-
-  const setSearchParam = useSearchDropdownStore((state) => state.setSearchParam);
-  const setSearchRow = useSearchDropdownStore((state) => state.setSearchRow);
-  const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
+  const {
+    lineItems,
+    addEmptyLineItem,
+    updateLineItems,
+    deleteLineItem,
+    setLineItems,
+    setSearchRow,
+    setSearchParam,
+    setIsDropdownOpen
+  } = useTransactionState();
 
   const totalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);

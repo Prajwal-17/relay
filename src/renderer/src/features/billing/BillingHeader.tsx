@@ -1,18 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useBillingStore } from "@/store/billingStore";
+import useTransactionState from "@/hooks/useTransactionState";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { DateTime } from "./DateTime";
+import { DateTime } from "../../components/DateTime";
 
 const BillingHeader = () => {
-  const invoiceNo = useBillingStore((state) => state.invoiceNo);
-  const setInvoiceNo = useBillingStore((state) => state.setInvoiceNo);
-  const customerName = useBillingStore((state) => state.customerName);
-  const setCustomerName = useBillingStore((state) => state.setCustomerName);
-  const customerContact = useBillingStore((state) => state.customerContact);
-  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+  const {
+    invoiceNo,
+    setInvoiceNo,
+    customerName,
+    setCustomerName,
+    customerContact,
+    setCustomerContact
+  } = useTransactionState();
 
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
