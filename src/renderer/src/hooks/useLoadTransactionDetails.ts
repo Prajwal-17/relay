@@ -1,6 +1,6 @@
 import { useBillingStore } from "@/store/billingStore";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: string | null) => {
   const setInvoiceNo = useBillingStore((state) => state.setInvoiceNo);

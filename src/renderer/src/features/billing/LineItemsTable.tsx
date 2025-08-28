@@ -4,7 +4,7 @@ import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import QuantityPresets from "./QuantityPresets";
-import SearchDropdown from "./SearchDropdown";
+import SearchDropdown from "../search/SearchDropdown";
 
 export type ItemType = {
   id: string;

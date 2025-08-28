@@ -1,19 +1,19 @@
 import { formatDateStr } from "@shared/utils";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import type { EstimateType } from "src/shared/types";
+import type { SalesType } from "src/shared/types";
 
-const Estimate = () => {
-  const [estimates, setEstimates] = useState<EstimateType[]>([]);
+const SalesDashboard = () => {
+  const [sales, setSales] = useState<SalesType[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchEstimates() {
+    async function fetchSales() {
       try {
-        const response = await window.estimatesApi.getAllEstimates();
+        const response = await window.salesApi.getAllSales();
         if (response.status === "success") {
-          setEstimates(response.data);
+          setSales(response.data);
         } else {
           toast.error("Could not retrieve sales");
         }
@@ -21,13 +21,13 @@ const Estimate = () => {
         console.log(error);
       }
     }
-    fetchEstimates();
+    fetchSales();
   }, []);
 
   return (
     <>
       <div className="px-10 py-20">
-        <div className="py-5 text-4xl font-bold">Estimates</div>
+        <div className="py-5 text-4xl font-bold">Sales</div>
         <div className="overflow-x-auto rounded-lg shadow">
           <table className="min-w-full divide-y divide-gray-200 text-sm">
             <thead className="bg-gray-50">
@@ -39,14 +39,14 @@ const Estimate = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {estimates.map((row, idx) => (
+              {sales.map((row, idx) => (
                 <tr key={idx} className="transition hover:bg-gray-50">
                   <td className="px-6 py-3">{formatDateStr(row.createdAt)}</td>
-                  <td className="px-6 py-3">{row.estimateNo}</td>
+                  <td className="px-6 py-3">{row.invoiceNo}</td>
                   {row.grandTotal && <td className="px-6 py-3">₹ {row.grandTotal}</td>}
                   <td className="px-6 py-3 text-center">
                     <button
-                      onClick={() => navigate(`/estimates/edit/${row.id}`)}
+                      onClick={() => navigate(`/sales/edit/${row.id}`)}
                       className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                     >
                       View
@@ -62,4 +62,4 @@ const Estimate = () => {
   );
 };
 
-export default Estimate;
+export default SalesDashboard;

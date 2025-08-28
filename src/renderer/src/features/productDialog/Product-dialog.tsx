@@ -15,7 +15,7 @@ import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 
 const units = ["g", "kg", "ml", "l", "pc", "none"];
 

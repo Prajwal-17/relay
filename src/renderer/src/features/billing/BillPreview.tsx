@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { useBillingStore } from "@/store/billingStore";
 import { useRef } from "react";
+import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
-import { toast } from "sonner";
 
 const BillPreview = () => {
   const navigate = useNavigate();

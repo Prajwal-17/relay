@@ -1,10 +1,10 @@
-import Estimate from "@/components/Estimate";
-import Home from "@/components/Home";
-import Parties from "@/components/Parties";
-import Reports from "@/components/Reports";
-import Sale from "@/components/Sale";
-import SettingsPage from "@/components/SettingsPage";
-import ProductsPage from "@/pages/ProductsPage/ProductsPage";
+import EstimatesDashboard from "@/pages/EstimatesDashboard";
+import Home from "@/pages/Home";
+import Parties from "@/pages/Parties";
+import ProductsPage from "@/pages/ProductsPage";
+import Reports from "@/pages/Reports";
+import SalesDashboard from "@/pages/SalesDashboard";
+import SettingsPage from "@/pages/SettingsPage";
 import {
   ChartColumn,
   House,
@@ -43,13 +43,13 @@ export const navLinks: NavlinkType[] = [
   {
     href: "/sale",
     title: "Sale",
-    element: <Sale />,
+    element: <SalesDashboard />,
     icon: <ShoppingCart size={28} />
   },
   {
     href: "/estimate",
     title: "Estimate",
-    element: <Estimate />,
+    element: <EstimatesDashboard />,
     icon: <ReceiptText size={28} />
   },
   {

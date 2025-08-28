@@ -1,17 +1,17 @@
-import BillPreview from "@/components/features/billing/BillPreview";
-import { ProductDialog } from "@/components/productsPage/Product-dialog";
+import BillingHeader from "@/features/billing/BillingHeader";
+import BillPreview from "@/features/billing/BillPreview";
+import LineItemsTable from "@/features/billing/LineItemsTable";
+import { ProductDialog } from "@/features/productDialog/Product-dialog";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import { useProductsStore } from "@/store/productsStore";
 import { useLocation } from "react-router-dom";
-import BillingHeader from "../../components/features/billing/BillingHeader";
-import LineItemsTable from "../../components/features/billing/LineItemsTable";
 
-const SalesPage = () => {
+const NewEstimate = () => {
   const location = useLocation();
-  const saleId = location.pathname.split("/")[3];
+  const estimateId = location.pathname.split("/")[3];
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
 
-  useLoadTransactionDetails("sale", saleId);
+  useLoadTransactionDetails("estimate", estimateId);
 
   return (
     <div className="min-h-screen w-full">
@@ -21,10 +21,10 @@ const SalesPage = () => {
           <LineItemsTable />
         </div>
         <BillPreview />
+        {openProductDialog && <ProductDialog />}
       </div>
-      {openProductDialog && <ProductDialog />}
     </div>
   );
 };
 
-export default SalesPage;
+export default NewEstimate;

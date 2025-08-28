@@ -1,10 +1,10 @@
-import { ProductDialog } from "@/components/productsPage/Product-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ignoredWeight } from "@/constants/IgnoredWeights";
+import { ProductDialog } from "@/features/productDialog/Product-dialog";
 import useDebounce from "@/hooks/useDebounce";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductsType } from "@shared/types";
