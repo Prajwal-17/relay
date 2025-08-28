@@ -14,29 +14,46 @@ import toast from "react-hot-toast";
 
 export const CustomerDialog = () => {
   const formData = useCustomerStore((state) => state.formData);
+  const actionType = useCustomerStore((state) => state.actionType);
   const setFormData = useCustomerStore((state) => state.setFormData);
   const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
 
-  async function handleSubmit() {
+  const handleSubmit = async (action: "add" | "edit") => {
     try {
-      const response = await window.customersApi.addNewCustomer(formData);
-      if (response.status === "success") {
-        toast.success(response.data);
-        setOpenCustomerDialog();
+      if (action === "add") {
         setFormData({});
-      } else {
-        toast.error(response.error.message);
-        setFormData({});
+        const response = await window.customersApi.addNewCustomer(formData);
+        if (response.status === "success") {
+          toast.success(response.data);
+          setOpenCustomerDialog();
+          setFormData({});
+        } else {
+          toast.error(response.error.message);
+          setOpenCustomerDialog();
+          setFormData({});
+        }
+      } else if (action === "edit") {
+        const response = await window.customersApi.updateCustomer(formData);
+        if (response.status === "success") {
+          toast.success(response.data);
+          setOpenCustomerDialog();
+          setFormData({});
+        } else {
+          toast.error(response.error.message);
+          setOpenCustomerDialog();
+          setFormData({});
+        }
       }
     } catch (error) {
       console.log(error);
+      toast.error("Something went wrong");
     }
-  }
+  };
 
   return (
     <DialogContent className="w-full !max-w-3xl">
       <DialogHeader>
-        <DialogTitle>Add New Customer</DialogTitle>
+        <DialogTitle>{actionType === "add" ? "Add New Product" : "Edit Product"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4">
         <div>
@@ -49,7 +66,7 @@ export const CustomerDialog = () => {
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Enter customer name"
             required
-            className="h-12 text-base"
+            className="h-12 !text-lg"
           />
         </div>
         <div>
@@ -61,7 +78,7 @@ export const CustomerDialog = () => {
             value={formData.contact ?? ""}
             onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
             placeholder="Enter contact information"
-            className="h-12 text-base"
+            className="h-12 !text-lg"
           />
         </div>
         <div>
@@ -72,7 +89,7 @@ export const CustomerDialog = () => {
             value={formData.customerType}
             onValueChange={(value) => setFormData({ ...formData, customerType: value })}
           >
-            <SelectTrigger className="h-12 text-base">
+            <SelectTrigger className="h-12 !text-lg">
               <SelectValue placeholder="Select customer type" />
             </SelectTrigger>
             <SelectContent>
@@ -86,7 +103,9 @@ export const CustomerDialog = () => {
           <Button variant="outline" onClick={() => setOpenCustomerDialog()}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit}>Add Customer</Button>
+          <Button onClick={() => handleSubmit(actionType)}>
+            {actionType === "add" ? "Add Customer" : "Update Customer"}
+          </Button>
         </div>
       </div>
     </DialogContent>

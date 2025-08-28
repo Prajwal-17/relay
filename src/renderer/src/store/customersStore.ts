@@ -4,8 +4,10 @@ import { create } from "zustand";
 type CustomersStoreType = {
   openCustomerDialog: boolean;
   setOpenCustomerDialog: () => void;
-  selectedCustomer: string;
-  setSelectedCustomer: (id: string) => void;
+  actionType: "add" | "edit";
+  setActionType: (action: "add" | "edit") => void;
+  selectedCustomer: CustomersType | null;
+  setSelectedCustomer: (customer: CustomersType) => void;
   formData: CustomersType;
   setFormData: (data: Partial<CustomersType>) => void;
 };
@@ -26,10 +28,16 @@ export const useCustomerStore = create<CustomersStoreType>((set) => ({
       openCustomerDialog: !state.openCustomerDialog
     })),
 
-  selectedCustomer: "",
-  setSelectedCustomer: (id) =>
+  actionType: "add",
+  setActionType: (action) =>
     set(() => ({
-      selectedCustomer: id
+      actionType: action
+    })),
+
+  selectedCustomer: null,
+  setSelectedCustomer: (customer) =>
+    set(() => ({
+      selectedCustomer: customer
     })),
 
   formData: initialFormData(),

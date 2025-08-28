@@ -56,12 +56,12 @@ export default function customersHandlers() {
   );
 
   // update existing customer
-  ipcMain.handle("customerApi:updateCustomer", async (_event, customerPayload: CustomersType) => {
+  ipcMain.handle("customersApi:updateCustomer", async (_event, customerPayload: CustomersType) => {
     try {
       const result = db
         .update(customers)
         .set({
-          name: customerPayload.id,
+          name: customerPayload.name,
           contact: customerPayload.contact,
           customerType: customerPayload.customerType
         })
@@ -86,4 +86,28 @@ export default function customersHandlers() {
   });
 
   // delete existing customer
+  ipcMain.handle(
+    "customersApi:deleteCustomer",
+    async (_event, customerId: string): Promise<ApiResponse<string>> => {
+      try {
+        console.log(customerId);
+        const customer = await db.delete(customers).where(eq(customers.id, customerId));
+
+        if (customer.changes > 0) {
+          return { status: "success", data: "Successfully deleted customer" };
+        } else {
+          return {
+            status: "error",
+            error: { message: "Could not delete customer" }
+          };
+        }
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "Something went wrong in customer api" }
+        };
+      }
+    }
+  );
 }

@@ -38,7 +38,9 @@ const customersApi: CustomersApi = {
     ipcRenderer.invoke("customersApi:addNewCustomer", payload),
   updateCustomer: (payload: CustomersType) =>
     ipcRenderer.invoke("customersApi:updateCustomer", payload),
-  getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers")
+  getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
+  deleteCustomer: (customerId: string) =>
+    ipcRenderer.invoke("customersApi:deleteCustomer", customerId)
 };
 
 if (process.contextIsolated) {

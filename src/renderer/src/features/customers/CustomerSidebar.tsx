@@ -8,6 +8,7 @@ import { Download, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { CustomerDialog } from "./CustomerDialog";
+import { getCustomerTypeColor } from "./CustomerTypeColor";
 
 export const CustomerSidebar = () => {
   // temp state
@@ -17,33 +18,19 @@ export const CustomerSidebar = () => {
   const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
   const [searchTerm, setSearchTerm] = useState("");
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-
-  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
+  const setActionType = useCustomerStore((state) => state.setActionType);
   const openCustomerDialog = useCustomerStore((state) => state.openCustomerDialog);
+  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
   const setFormData = useCustomerStore((state) => state.setFormData);
-
-  const getCustomerTypeColor = (type: string | null) => {
-    switch (type) {
-      case "cash":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
-      case "account":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
-      case "hotel":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
-    }
-  };
 
   useEffect(() => {
     async function getAllCustomers() {
       try {
         const response = await window.customersApi.getAllCustomers();
         if (response.status === "success") {
-          console.log(response);
           setCustomers(response.data);
+          setSelectedCustomer(response.data[0]);
         } else {
-          console.log(response);
           toast.error("Something went wrong in getting customers");
         }
       } catch (error) {
@@ -52,7 +39,11 @@ export const CustomerSidebar = () => {
       }
     }
     getAllCustomers();
-  }, []);
+  }, [setSelectedCustomer]);
+
+  useEffect(() => {
+    console.log(selectedCustomer);
+  }, [selectedCustomer]);
 
   return (
     <>
@@ -67,6 +58,7 @@ export const CustomerSidebar = () => {
               open={openCustomerDialog}
               onOpenChange={() => {
                 setFormData({});
+                setActionType("add");
                 setOpenCustomerDialog();
               }}
             >
@@ -106,9 +98,9 @@ export const CustomerSidebar = () => {
               <div
                 key={customer.id}
                 className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${
-                  selectedCustomer === customer.id ? "bg-accent" : ""
+                  selectedCustomer?.id === customer.id ? "bg-accent" : ""
                 } ${idx === customers.length - 1 ? "border-b-0" : ""}`}
-                onClick={() => setSelectedCustomer(customer.id)}
+                onClick={() => setSelectedCustomer(customer)}
               >
                 <div className="flex items-center justify-between">
                   <div>
