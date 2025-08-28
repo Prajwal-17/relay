@@ -7,8 +7,10 @@ export type UsersType = {
 export type CustomersType = {
   id: string;
   name: string;
-  contact: string;
+  contact: string | null;
   customerType: string;
+  updatedAt?: string;
+  createdAt?: string;
 };
 
 export type ProductsType = {
@@ -169,4 +171,10 @@ export interface EstimatesApi {
   getTransactionById: (
     id: string
   ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
+}
+
+export interface CustomersApi {
+  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
 }

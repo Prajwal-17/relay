@@ -1,6 +1,8 @@
 import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  CustomersApi,
+  CustomersType,
   EstimatePayload,
   EstimatesApi,
   ProductsApi,
@@ -23,11 +25,20 @@ const salesApi: SalesApi = {
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
   getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id)
 };
+
 const estimatesApi: EstimatesApi = {
   getNextEstimateNo: () => ipcRenderer.invoke("estimatesApi:getNextEstimateNo"),
   save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
   getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
   getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id)
+};
+
+const customersApi: CustomersApi = {
+  addNewCustomer: (payload: CustomersType) =>
+    ipcRenderer.invoke("customersApi:addNewCustomer", payload),
+  updateCustomer: (payload: CustomersType) =>
+    ipcRenderer.invoke("customersApi:updateCustomer", payload),
+  getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers")
 };
 
 if (process.contextIsolated) {
@@ -36,6 +47,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
+    contextBridge.exposeInMainWorld("customersApi", customersApi);
   } catch (error) {
     console.error(error);
   }
