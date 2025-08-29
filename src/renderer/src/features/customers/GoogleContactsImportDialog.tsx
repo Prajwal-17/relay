@@ -19,20 +19,6 @@ export const GoogleContactsImportDialog = () => {
   const googleContacts = useCustomerStore((state) => state.googleContacts);
   const setOpenContactDialog = useCustomerStore((state) => state.setOpenContactDialog);
 
-  // TODO: Replace mock with store data
-  // const googleContacts: FilteredGoogleContactsType[] = [
-  //   { id: 1, name: "John Smith", contact: "+91-9876543220" },
-  //   { id: 2, name: "Sarah Johnson", contact: "+91-9876543221" },
-  //   { id: 3, name: "Mike Wilson", contact: "+91-9876543222" },
-  //   { id: 4, name: "Emily Davis", contact: "+91-9876543223" },
-  //   { id: 5, name: "David Brown", contact: "+91-9876543224" },
-  //   { id: 6, name: "Lisa Anderson", contact: "+91-9876543225" },
-  //   { id: 7, name: "Robert Taylor", contact: "+91-9876543226" },
-  //   { id: 8, name: "Jennifer Martinez", contact: "+91-9876543227" },
-  //   { id: 9, name: "Christopher Lee", contact: "+91-9876543228" },
-  //   { id: 10, name: "Amanda White", contact: "+91-9876543229" }
-  // ];
-
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedContacts(googleContacts);

@@ -20,6 +20,8 @@ type BillingStoreType = {
   setBillingId: (newId: string | null) => void;
   invoiceNo: number | null;
   setInvoiceNo: (newInvoiceNo: number | null) => void;
+  customerId: string | null;
+  setCustomerId: (id: string) => void;
   customerName: string;
   setCustomerName: (newCustomerName: string) => void;
   customerContact: string | null;
@@ -55,6 +57,12 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
 
   invoiceNo: null,
   setInvoiceNo: (newInvoiceNo) => set(() => ({ invoiceNo: newInvoiceNo })),
+
+  customerId: null,
+  setCustomerId: (id) =>
+    set(() => ({
+      customerId: id
+    })),
 
   customerName: "",
   setCustomerName: (newCustomerName) => set(() => ({ customerName: newCustomerName })),

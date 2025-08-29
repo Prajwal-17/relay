@@ -13,6 +13,8 @@ const BillPreview = () => {
     setLineItems,
     invoiceNo,
     setInvoiceNo,
+    customerId,
+    setCustomerId,
     customerName,
     setCustomerName,
     customerContact,
@@ -41,7 +43,7 @@ const BillPreview = () => {
         const response = await window.salesApi.save({
           billingId: billingId,
           invoiceNo: Number(invoiceNo),
-          // customerId,
+          customerId,
           customerName,
           customerContact,
           grandTotal: calcTotalAmount,
@@ -52,6 +54,7 @@ const BillPreview = () => {
         if (response.status === "success") {
           toast.success("Sale Saved successfully");
           setBillingId("");
+          setCustomerId("");
           setInvoiceNo(null);
           setCustomerName("");
           setCustomerContact("");
@@ -64,7 +67,7 @@ const BillPreview = () => {
         const response = await window.estimatesApi.save({
           billingId: billingId,
           estimateNo: Number(invoiceNo),
-          // customerId,
+          customerId,
           customerName,
           customerContact,
           grandTotal: calcTotalAmount,
@@ -75,6 +78,7 @@ const BillPreview = () => {
         if (response.status === "success") {
           toast.success("Estimate Saved successfully");
           setBillingId("");
+          setCustomerId("");
           setInvoiceNo(null);
           setCustomerName("");
           setCustomerContact("");

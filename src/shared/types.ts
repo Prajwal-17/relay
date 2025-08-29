@@ -104,6 +104,7 @@ export type ApiResponse<T> =
 export type SalePayload = {
   billingId: string | null;
   invoiceNo: number;
+  customerId: string | null;
   customerName: string;
   customerContact: string | null;
   grandTotal: number;
@@ -127,6 +128,7 @@ export type SalePayloadItems = {
 export type EstimatePayload = {
   billingId: string | null;
   estimateNo: number;
+  customerId: string | null;
   customerName: string;
   customerContact: string | null;
   grandTotal: number;
@@ -184,6 +186,7 @@ export interface EstimatesApi {
 export interface CustomersApi {
   addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
