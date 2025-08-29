@@ -40,7 +40,8 @@ const customersApi: CustomersApi = {
     ipcRenderer.invoke("customersApi:updateCustomer", payload),
   getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
   deleteCustomer: (customerId: string) =>
-    ipcRenderer.invoke("customersApi:deleteCustomer", customerId)
+    ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
+  importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle")
 };
 
 if (process.contextIsolated) {

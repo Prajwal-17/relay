@@ -3,6 +3,7 @@ import { ipcMain } from "electron";
 import type { ApiResponse, CustomersType } from "../../shared/types";
 import { db } from "../db/db";
 import { customers } from "../db/schema";
+import importContactsFromGoogle from "./importContactsFromGoogle";
 
 export default function customersHandlers() {
   // get all customers
@@ -103,6 +104,7 @@ export default function customersHandlers() {
         }
       } catch (error) {
         console.log(error);
+
         return {
           status: "error",
           error: { message: "Something went wrong in customer api" }
@@ -110,4 +112,7 @@ export default function customersHandlers() {
       }
     }
   );
+
+  // import contacts from google
+  importContactsFromGoogle();
 }
