@@ -1,4 +1,3 @@
-import { electronAPI } from "@electron-toolkit/preload";
 import { contextBridge, ipcRenderer } from "electron";
 import type {
   EstimatePayload,
@@ -32,7 +31,9 @@ const estimatesApi: EstimatesApi = {
 
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("electronAPI", electronAPI);
+    contextBridge.exposeInMainWorld("electronAPI", {
+      printReceipt: (html: string) => ipcRenderer.send("print-receipt", html)
+    });
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
