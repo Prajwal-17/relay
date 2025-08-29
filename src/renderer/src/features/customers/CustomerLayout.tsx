@@ -2,6 +2,7 @@ import { useCustomerStore } from "@/store/customersStore";
 import { Users } from "lucide-react";
 import { CustomerDetails } from "./CustomerDetails";
 import { CustomerSidebar } from "./CustomerSidebar";
+import { CustomerTransactions } from "./CustomerTransactions";
 
 export const CustomerLayout = () => {
   const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
@@ -14,7 +15,7 @@ export const CustomerLayout = () => {
           {selectedCustomer ? (
             <div>
               <CustomerDetails />
-              {/* <CustomerTransactions />  */}
+              <CustomerTransactions />
             </div>
           ) : (
             <div className="text-muted-foreground flex h-full items-center justify-center">

@@ -42,6 +42,8 @@ const customersApi: CustomersApi = {
   getCustomerById: (customerId: string) =>
     ipcRenderer.invoke("customersApi:getCustomerById", customerId),
   getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
+  getAllTransactionsById: (customerId: string) =>
+    ipcRenderer.invoke("customersApi:getAllTransactionsById", customerId),
   deleteCustomer: (customerId: string) =>
     ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
   importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle"),

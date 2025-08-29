@@ -188,6 +188,7 @@ export interface CustomersApi {
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
+  getAllTransactionsById: (customerId: string) => Promise<ApiResponse<any>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
   importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;

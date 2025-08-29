@@ -180,7 +180,7 @@ export default function customersHandlers() {
 
   // get transaction wrt to customer id
   ipcMain.handle(
-    "customersApi:getTransactionsById",
+    "customersApi:getAllTransactionsById",
     async (_event, customerId): Promise<ApiResponse<AllTransactionsType>> => {
       try {
         const allSales = await db.select().from(sales).where(eq(sales.customerId, customerId));
