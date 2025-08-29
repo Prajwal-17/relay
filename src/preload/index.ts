@@ -5,6 +5,7 @@ import type {
   CustomersType,
   EstimatePayload,
   EstimatesApi,
+  FilteredGoogleContactsType,
   ProductsApi,
   SalePayload,
   SalesApi
@@ -41,7 +42,9 @@ const customersApi: CustomersApi = {
   getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
   deleteCustomer: (customerId: string) =>
     ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
-  importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle")
+  importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle"),
+  importContacts: (customerPayload: FilteredGoogleContactsType[]) =>
+    ipcRenderer.invoke("customersApi:importContacts", customerPayload)
 };
 
 if (process.contextIsolated) {
@@ -63,4 +66,6 @@ if (process.contextIsolated) {
   window.salesApi = salesApi;
   // @ts-ignore (define in dts)
   window.estimatesApi = estimatesApi;
+  // @ts-ignore (define in dts)
+  window.customersApi = customersApi;
 }

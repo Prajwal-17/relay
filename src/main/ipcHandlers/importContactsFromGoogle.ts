@@ -2,9 +2,12 @@ import { BrowserWindow, ipcMain } from "electron";
 import { google } from "googleapis";
 import type { IncomingMessage, ServerResponse } from "http";
 import http from "node:http";
-import type { ApiResponse } from "../../shared/types";
+import type { ApiResponse, FilteredGoogleContactsType } from "../../shared/types";
 
-export const startAuthServer = (authWindow: BrowserWindow): Promise<string> => {
+export const startAuthServer = (
+  authWindow: BrowserWindow
+  // handleWindowClose: () => void
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     const host = "localhost";
     const port = 3000;
@@ -51,19 +54,18 @@ export const startAuthServer = (authWindow: BrowserWindow): Promise<string> => {
       } else {
         res.statusCode = 400;
         res.end("Not Found");
+        server.close();
       }
+    });
+
+    authWindow.on("close", () => {
+      server.close();
     });
 
     server.listen(port, host, () => {
       console.log(`Server is running on http://${host}:${port}`);
     });
   });
-};
-
-type FilteredGoogleContactsType = {
-  id: number;
-  name: string | null;
-  contact: string | null;
 };
 
 export default function importContactsFromGoogle() {

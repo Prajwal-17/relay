@@ -149,6 +149,12 @@ export type EstimatePayloadItems = {
 
 export type ProductPayload = ProductsType & { isDisabled?: boolean };
 
+export type FilteredGoogleContactsType = {
+  id: number;
+  name: string | null;
+  contact: string | null;
+};
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
@@ -178,5 +184,6 @@ export interface CustomersApi {
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
-  importContactsFromGoogle: () => Promise<ApiResponse<string>>;
+  importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
+  importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
 }

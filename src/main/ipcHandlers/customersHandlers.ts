@@ -1,11 +1,14 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron";
-import type { ApiResponse, CustomersType } from "../../shared/types";
+import type { ApiResponse, CustomersType, FilteredGoogleContactsType } from "../../shared/types";
 import { db } from "../db/db";
 import { customers } from "../db/schema";
 import importContactsFromGoogle from "./importContactsFromGoogle";
 
 export default function customersHandlers() {
+  // import contacts from google
+  importContactsFromGoogle();
+
   // get all customers
   ipcMain.handle(
     "customersApi:getAllCustomers",
@@ -113,6 +116,36 @@ export default function customersHandlers() {
     }
   );
 
-  // import contacts from google
-  importContactsFromGoogle();
+  // create imported customers
+  ipcMain.handle(
+    "customersApi:importContacts",
+    async (_event, customerPayload: FilteredGoogleContactsType[]): Promise<ApiResponse<string>> => {
+      try {
+        const customerPay = customerPayload.map((c: FilteredGoogleContactsType) => ({
+          name: c.name ?? "",
+          contact: c.contact ?? "",
+          customerType: "cash"
+        }));
+        const newCustomer = db
+          .insert(customers)
+          .values([...customerPay])
+          .run();
+
+        if (newCustomer.changes > 0) {
+          return { status: "success", data: "Successfully imported customers" };
+        } else {
+          return {
+            status: "error",
+            error: { message: "No customer was added. Database changes were 0." }
+          };
+        }
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "Something went wrong" }
+        };
+      }
+    }
+  );
 }

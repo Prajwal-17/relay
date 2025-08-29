@@ -1,14 +1,15 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useCustomerStore } from "@/store/customersStore";
-import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import type { CustomersType } from "@shared/types";
 import { Download, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { CustomerDialog } from "./CustomerDialog";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
+import { GoogleContactsImportDialog } from "./GoogleContactsImportDialog";
 
 export const CustomerSidebar = () => {
   // temp state
@@ -17,11 +18,17 @@ export const CustomerSidebar = () => {
   const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
   const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
   const setActionType = useCustomerStore((state) => state.setActionType);
   const openCustomerDialog = useCustomerStore((state) => state.openCustomerDialog);
   const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
+  const openContactDialog = useCustomerStore((state) => state.openContactDialog);
+  const setOpenContactDialog = useCustomerStore((state) => state.setOpenContactDialog);
   const setFormData = useCustomerStore((state) => state.setFormData);
+  const setLoading = useCustomerStore((state) => state.setLoading);
+  // const [googleContacts, setGoogleContacts] = useState<FilteredGoogleContactsType[] | []>();
+
+  // const googleContacts = useCustomerStore((state) => state.googleContacts);
+  const setGoogleContacts = useCustomerStore((state) => state.setGoogleContacts);
 
   useEffect(() => {
     async function getAllCustomers() {
@@ -41,9 +48,22 @@ export const CustomerSidebar = () => {
     getAllCustomers();
   }, [setSelectedCustomer]);
 
-  useEffect(() => {
-    console.log(selectedCustomer);
-  }, [selectedCustomer]);
+  async function importContactFromGoogle() {
+    try {
+      const response = await window.customersApi.importContactsFromGoogle();
+      console.log(response);
+      if (response.status === "success") {
+        setGoogleContacts(response.data);
+        setLoading();
+      } else {
+        toast.error("Something went wrong in getting customers");
+        setLoading();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+  }
 
   return (
     <>
@@ -70,9 +90,18 @@ export const CustomerSidebar = () => {
               </DialogTrigger>
               {openCustomerDialog && <CustomerDialog />}
             </Dialog>
-            <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+            <Dialog
+              open={openContactDialog}
+              onOpenChange={() => {
+                setOpenContactDialog();
+              }}
+            >
               <DialogTrigger asChild>
                 <Button
+                  onClick={() => {
+                    importContactFromGoogle();
+                    setLoading();
+                  }}
                   variant="outline"
                   className="h-12 flex-1 bg-transparent text-base font-semibold"
                 >
@@ -80,7 +109,7 @@ export const CustomerSidebar = () => {
                   Import
                 </Button>
               </DialogTrigger>
-              {/* <GoogleContactsImportDialog onImport={handleImportContacts} /> */}
+              {openContactDialog && <GoogleContactsImportDialog />}
             </Dialog>
           </div>
 
@@ -93,7 +122,7 @@ export const CustomerSidebar = () => {
               className="h-14 pl-10 !text-lg"
             />
           </div>
-          <div className="overflow-y-auto">
+          <div>
             {customers.map((customer, idx) => (
               <div
                 key={customer.id}
