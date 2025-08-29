@@ -44,7 +44,8 @@ const customersApi: CustomersApi = {
     ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
   importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle"),
   importContacts: (customerPayload: FilteredGoogleContactsType[]) =>
-    ipcRenderer.invoke("customersApi:importContacts", customerPayload)
+    ipcRenderer.invoke("customersApi:importContacts", customerPayload),
+  searchCustomers: (query: string) => ipcRenderer.invoke("customersApi:searchCustomers", query)
 };
 
 if (process.contextIsolated) {

@@ -155,6 +155,8 @@ export type FilteredGoogleContactsType = {
   contact: string | null;
 };
 
+export type AllTransactionsType = (SalesType | EstimateType)[];
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
@@ -186,4 +188,5 @@ export interface CustomersApi {
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
   importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
+  searchCustomers: (query: string) => Promise<ApiResponse<CustomersType[]>>;
 }

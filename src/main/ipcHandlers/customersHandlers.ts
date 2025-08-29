@@ -1,8 +1,13 @@
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import { ipcMain } from "electron";
-import type { ApiResponse, CustomersType, FilteredGoogleContactsType } from "../../shared/types";
+import type {
+  AllTransactionsType,
+  ApiResponse,
+  CustomersType,
+  FilteredGoogleContactsType
+} from "../../shared/types";
 import { db } from "../db/db";
-import { customers } from "../db/schema";
+import { customers, estimates, sales } from "../db/schema";
 import importContactsFromGoogle from "./importContactsFromGoogle";
 
 export default function customersHandlers() {
@@ -94,7 +99,6 @@ export default function customersHandlers() {
     "customersApi:deleteCustomer",
     async (_event, customerId: string): Promise<ApiResponse<string>> => {
       try {
-        console.log(customerId);
         const customer = await db.delete(customers).where(eq(customers.id, customerId));
 
         if (customer.changes > 0) {
@@ -139,6 +143,72 @@ export default function customersHandlers() {
             error: { message: "No customer was added. Database changes were 0." }
           };
         }
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "Something went wrong" }
+        };
+      }
+    }
+  );
+
+  // get transaction wrt to customer id
+  ipcMain.handle(
+    "customersApi:getTransactionsById",
+    async (_event, customerId): Promise<ApiResponse<AllTransactionsType>> => {
+      try {
+        const allSales = await db.select().from(sales).where(eq(sales.customerId, customerId));
+        const allEstimates = await db
+          .select()
+          .from(estimates)
+          .where(eq(estimates.customerId, customerId));
+
+        return { status: "success", data: [...allSales, ...allEstimates] };
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "Something went wrong" }
+        };
+      }
+    }
+  );
+
+  // search customers by name
+  ipcMain.handle(
+    "customersApi:searchCustomers",
+    async (_event, query): Promise<ApiResponse<CustomersType[]>> => {
+      try {
+        console.log(query);
+        if (query === "") {
+          const allCustomers = await db
+            .select({
+              id: customers.id,
+              name: customers.name,
+              contact: customers.contact,
+              customerType: customers.customerType,
+              createdAt: customers.createdAt,
+              updatedAt: customers.updatedAt
+            })
+            .from(customers);
+          return { status: "success", data: allCustomers };
+        }
+        const searchQuery = `${query}%`;
+        const filteredCustomers = await db
+          .select({
+            id: customers.id,
+            name: customers.name,
+            contact: customers.contact,
+            customerType: customers.customerType,
+            createdAt: customers.createdAt,
+            updatedAt: customers.updatedAt
+          })
+          .from(customers)
+          .where(like(customers.name, searchQuery))
+          .orderBy(customers.name);
+
+        return { status: "success", data: filteredCustomers };
       } catch (error) {
         console.log(error);
         return {

@@ -25,10 +25,26 @@ export const CustomerSidebar = () => {
   const setOpenContactDialog = useCustomerStore((state) => state.setOpenContactDialog);
   const setFormData = useCustomerStore((state) => state.setFormData);
   const setLoading = useCustomerStore((state) => state.setLoading);
-  // const [googleContacts, setGoogleContacts] = useState<FilteredGoogleContactsType[] | []>();
-
-  // const googleContacts = useCustomerStore((state) => state.googleContacts);
   const setGoogleContacts = useCustomerStore((state) => state.setGoogleContacts);
+
+  useEffect(() => {
+    async function searchCustomers() {
+      try {
+        const response = await window.customersApi.searchCustomers(searchTerm);
+        if (response.status === "success") {
+          console.log(response);
+          setCustomers(response.data);
+        } else {
+          console.log("error");
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong");
+      }
+    }
+
+    searchCustomers();
+  }, [searchTerm]);
 
   useEffect(() => {
     async function getAllCustomers() {
