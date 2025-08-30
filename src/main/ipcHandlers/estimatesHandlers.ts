@@ -169,6 +169,7 @@ export function estimatesHandlers() {
 
             tx.update(estimates)
               .set({
+                customerId: estimateObj.customerId,
                 customerName: estimateObj.customerName,
                 customerContact: estimateObj.customerContact,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),

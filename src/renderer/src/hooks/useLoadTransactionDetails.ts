@@ -8,11 +8,13 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
   const setBillingId = useBillingStore((state) => state.setBillingId);
+  const setCustomerId = useBillingStore((state) => state.setCustomerId);
 
   useEffect(() => {
     async function fetchTransactionById() {
       if (!transactionId) return;
       setBillingId("");
+      setCustomerId("");
       setCustomerName("");
       setCustomerContact("");
       setLineItems([]);
@@ -27,6 +29,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
         }
         if (response.status === "success") {
           setBillingId(response.data.id);
+          setCustomerId(response.data.customerId);
           setInvoiceNo(response.data.invoiceNo || response.data.estimateNo);
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
@@ -43,6 +46,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
     type,
     transactionId,
     setBillingId,
+    setCustomerId,
     setCustomerName,
     setCustomerContact,
     setInvoiceNo,

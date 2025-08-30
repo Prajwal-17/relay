@@ -146,6 +146,7 @@ export function salesHandlers() {
 
             tx.update(sales)
               .set({
+                customerId: saleObj.customerId,
                 customerName: saleObj.customerName,
                 customerContact: saleObj.customerContact,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
