@@ -30,6 +30,11 @@ const BillPreview = () => {
     contentRef: receiptRef
   });
 
+  const IndianRupees = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR"
+  });
+
   const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
@@ -97,7 +102,10 @@ const BillPreview = () => {
   return (
     <>
       <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
-        <div ref={receiptRef} className="receipt no-break bg-white px-4 py-4 text-black">
+        <div
+          ref={receiptRef}
+          className="receipt no-break font-roboto bg-white px-1 pt-2 pb-20 text-black"
+        >
           <div className="mb-2 space-y-2 py-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
             <p className="text-xs">6TH MAIN, RUKMINI NAGAR NAGASANDRA POST BANGALORE 560073</p>
@@ -123,6 +131,14 @@ const BillPreview = () => {
                 </span>{" "}
                 {invoiceNo}
               </div>
+              <div>
+                <span className="font-semibold">Name:</span>{" "}
+                {customerName === "DEFAULT"
+                  ? type === "sales"
+                    ? "Sale"
+                    : "Estimate"
+                  : customerName}
+              </div>
             </div>
             <div>
               <span className="font-semibold">Time:</span>{" "}
@@ -131,30 +147,40 @@ const BillPreview = () => {
           </div>
           <div className="grid grid-cols-12 border-b border-dashed border-black pb-1 text-xs font-bold">
             <div className="col-span-1">#</div>
-            <div className="col-span-5">ITEM</div>
+            <div className="col-span-3">ITEM</div>
             <div className="col-span-2 text-center">QTY</div>
-            <div className="col-span-2 text-right">RATE</div>
-            <div className="col-span-2 text-right">AMT</div>
+            <div className="col-span-3 text-right">RATE</div>
+            <div className="col-span-3 text-right">AMT</div>
           </div>
           <div className="border-b border-dashed border-black text-xs font-medium">
             {lineItems.map((item, idx) => {
               if (item.name === "") return <></>;
               return (
                 <div key={item.id} className="grid grid-cols-12 py-1">
-                  <div className="col-span-1">{idx + 1}</div>
+                  <div className="col-span-1">{idx + 1}.</div>
                   <div className="col-span-5">{item.name}</div>
-                  <div className="col-span-2 text-center">{item.quantity}</div>
-                  <div className="col-span-2 text-right">{item.price.toFixed(2)}</div>
-                  <div className="col-span-2 text-right">{item.totalPrice.toFixed(2)}</div>
+                  <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>
+                  <div className="col-span-2 text-right tracking-tight">
+                    {item.price.toFixed(2)}
+                  </div>
+                  <div className="col-span-2 text-right tracking-tight">
+                    {item.totalPrice.toFixed(2)}
+                  </div>
                 </div>
               );
             })}
           </div>
+          <div className="py-1 text-right">
+            <span className="text-xs font-semibold">SubTotal: </span>
+            <span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>
+          </div>
           <div className="py-3 text-right">
             <span className="text-base font-semibold">Total: </span>
-            <span className="text-lg font-semibold">{calcTotalAmount}</span>
+            <span className="text-lg font-semibold">
+              {IndianRupees.format(Math.round(calcTotalAmount))}
+            </span>
           </div>
-          {/*<div className="py-4 text-center">*** You Saved ₹30 ***</div>*/}
+          {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
           <div className="text-center">Thank You</div>
         </div>
         <div className="flex w-1/4">
