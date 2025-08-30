@@ -27,7 +27,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
         }
         if (response.status === "success") {
           setBillingId(response.data.id);
-          setInvoiceNo(response.data.invoiceNo);
+          setInvoiceNo(response.data.invoiceNo || response.data.estimateNo);
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
           setLineItems(response.data.items);

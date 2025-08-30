@@ -38,7 +38,7 @@ const LineItemsTable = () => {
 
   return (
     <>
-      <div className="relative min-h-[150vh] w-full flex-1">
+      <div className="relative w-full flex-1 pb-72">
         <div className="w-full space-y-0 py-5">
           <div className="text-accent-foreground border-border grid grid-cols-20 items-center border bg-gray-100 text-base font-semibold">
             <div className="col-span-2 border-r border-gray-300 py-2 text-center">#</div>
@@ -48,7 +48,7 @@ const LineItemsTable = () => {
             <div className="col-span-3 px-2 py-2 text-left">AMOUNT</div>
           </div>
 
-          <div className="relative w-full space-y-1 py-3">
+          <div className="relative h-full w-full space-y-1 pt-3 pb-72">
             {lineItems.map((item, idx: number) => (
               <div key={idx} className="relative">
                 <div className="group grid w-full grid-cols-20 border bg-neutral-100">

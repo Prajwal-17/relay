@@ -188,4 +188,23 @@
   body {
     @apply bg-background text-foreground font-sans;
   }
+   @media print {
+    @page {
+      size: auto;   /* let printer use roll */
+      margin: 0mm;  /* remove browser default margins */
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .receipt {
+      width: 80mm; /* common thermal printer width */
+    }
+
+    .no-break {
+      page-break-inside: avoid;
+    }
+  }
 }
