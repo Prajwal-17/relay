@@ -27,14 +27,7 @@ const BillPreview = () => {
   const type = location.pathname.split("/")[1];
 
   const handlePrint = useReactToPrint({
-    contentRef: receiptRef,
-    print: async (iframe) => {
-      const doc = iframe?.contentWindow?.document;
-
-      if (!doc) return;
-      const html = doc.documentElement.outerHTML;
-      console.log(html);
-    }
+    contentRef: receiptRef
   });
 
   const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
