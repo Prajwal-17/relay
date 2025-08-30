@@ -34,7 +34,7 @@ jobs:
       - name: Create .env.production
         run: |
           echo "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.production
-          echo "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env.production
+          echo "GOOGLE_SECRET_ID=${{ secrets.GOOGLE_CLIENT_SECRET }}" >> .env.production
 
       - name: Build App
         shell: bash
