@@ -4,12 +4,9 @@ import type { IncomingMessage, ServerResponse } from "http";
 import http from "node:http";
 import type { ApiResponse, FilteredGoogleContactsType } from "../../shared/types";
 
-export const startAuthServer = (
-  authWindow: BrowserWindow
-  // handleWindowClose: () => void
-): Promise<string> => {
+export const startAuthServer = (authWindow: BrowserWindow): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const host = "localhost";
+    const host = "127.0.0.1";
     const port = 3000;
     const server = http.createServer((req: IncomingMessage, res: ServerResponse) => {
       if (!req.url) {

@@ -1,15 +1,11 @@
 import { electronApp, is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow, screen } from "electron";
-import path, { join } from "node:path";
+import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 import { setupMenu } from "./setupMenu";
 
-if (app.isPackaged) {
-  dotenv.config({ path: path.join(process.resourcesPath, ".env") });
-} else {
-  dotenv.config();
-}
+dotenv.config();
 
 let mainWindow: BrowserWindow;
 const gotTheLock = app.requestSingleInstanceLock();

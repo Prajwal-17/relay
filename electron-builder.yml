@@ -32,6 +32,3 @@ publish:
   provider: github
   owner: Prajwal-17
   repo: pos
-extraResources
-  - from: .env.production
-    to: .env
