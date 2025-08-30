@@ -124,6 +124,20 @@ export default function customersHandlers() {
     "customersApi:deleteCustomer",
     async (_event, customerId: string): Promise<ApiResponse<string>> => {
       try {
+        const existingTransactions = await db
+          .select()
+          .from(sales)
+          .where(eq(sales.customerId, customerId));
+
+        if (existingTransactions.length > 0) {
+          return {
+            status: "error",
+            error: {
+              message: "Cannot delete customer with existing sales transactions."
+            }
+          };
+        }
+
         const customer = await db.delete(customers).where(eq(customers.id, customerId));
 
         if (customer.changes > 0) {
@@ -131,7 +145,7 @@ export default function customersHandlers() {
         } else {
           return {
             status: "error",
-            error: { message: "Could not delete customer" }
+            error: { message: "Customer not found" }
           };
         }
       } catch (error) {
