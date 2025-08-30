@@ -13,7 +13,7 @@ type CustomersStoreType = {
   actionType: "add" | "edit";
   setActionType: (action: "add" | "edit") => void;
   selectedCustomer: CustomersType | null;
-  setSelectedCustomer: (customer: CustomersType) => void;
+  setSelectedCustomer: (customer: CustomersType | null) => void;
   formData: CustomersType;
   setFormData: (data: Partial<CustomersType>) => void;
   googleContacts: FilteredGoogleContactsType[] | [];

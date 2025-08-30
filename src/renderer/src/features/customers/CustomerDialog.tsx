@@ -18,6 +18,7 @@ export const CustomerDialog = () => {
   const setFormData = useCustomerStore((state) => state.setFormData);
   const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
   const setRefreshState = useCustomerStore((state) => state.setRefreshState);
+  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
 
   const handleSubmit = async (action: "add" | "edit") => {
     try {
@@ -38,8 +39,9 @@ export const CustomerDialog = () => {
       } else if (action === "edit") {
         const response = await window.customersApi.updateCustomer(formData);
         if (response.status === "success") {
-          toast.success(response.data);
+          toast.success(response?.message || "Customer updated successfully");
           setOpenCustomerDialog();
+          setSelectedCustomer(response.data);
           setFormData({});
           setRefreshState(true);
         } else {

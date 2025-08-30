@@ -92,6 +92,7 @@ export type ApiResponse<T> =
   | {
       status: "success";
       data: T;
+      message?: string;
     }
   | {
       status: "error";
@@ -185,7 +186,7 @@ export interface EstimatesApi {
 
 export interface CustomersApi {
   addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
-  updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  updateCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
   getAllTransactionsById: (customerId: string) => Promise<ApiResponse<any>>;

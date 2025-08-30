@@ -90,34 +90,41 @@ export default function customersHandlers() {
   );
 
   // update existing customer
-  ipcMain.handle("customersApi:updateCustomer", async (_event, customerPayload: CustomersType) => {
-    try {
-      const result = db
-        .update(customers)
-        .set({
-          name: customerPayload.name,
-          contact: customerPayload.contact,
-          customerType: customerPayload.customerType
-        })
-        .where(eq(customers.id, customerPayload.id))
-        .run();
+  ipcMain.handle(
+    "customersApi:updateCustomer",
+    async (_event, customerPayload: CustomersType): Promise<ApiResponse<CustomersType>> => {
+      try {
+        const result = await db
+          .update(customers)
+          .set({
+            name: customerPayload.name,
+            contact: customerPayload.contact,
+            customerType: customerPayload.customerType
+          })
+          .where(eq(customers.id, customerPayload.id))
+          .returning();
 
-      if (result.changes > 0) {
-        return { status: "success", data: "Successfully updated customer details" };
-      } else {
+        if (result) {
+          return {
+            status: "success",
+            data: result[0],
+            message: "Customer updated successfully"
+          };
+        } else {
+          return {
+            status: "error",
+            error: { message: "Customer not found" }
+          };
+        }
+      } catch (error) {
+        console.log(error);
         return {
           status: "error",
-          error: { message: "Customer not found" }
+          error: { message: "Something went wrong" }
         };
       }
-    } catch (error) {
-      console.log(error);
-      return {
-        status: "error",
-        error: { message: "Something went wrong" }
-      };
     }
-  });
+  );
 
   // delete existing customer
   ipcMain.handle(

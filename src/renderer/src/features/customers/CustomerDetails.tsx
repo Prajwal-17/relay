@@ -27,6 +27,7 @@ export const CustomerDetails = () => {
   const openCustomerDialog = useCustomerStore((state) => state.openCustomerDialog);
   const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
   const setRefreshState = useCustomerStore((state) => state.setRefreshState);
+  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
 
   const handleDelete = async (customerId: string) => {
     try {
@@ -34,6 +35,7 @@ export const CustomerDetails = () => {
       if (response.status === "success") {
         toast.success(response.data);
         setFormData({});
+        setSelectedCustomer(null);
         setRefreshState(true);
       } else {
         toast.error(response.error.message);

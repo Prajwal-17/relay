@@ -50,6 +50,7 @@ export const CustomerSidebar = () => {
   useEffect(() => {
     async function getAllCustomers() {
       try {
+        console.log("here");
         const response = await window.customersApi.getAllCustomers();
         if (response.status === "success") {
           setCustomers(response.data);
