@@ -17,6 +17,7 @@ export const CustomerDialog = () => {
   const actionType = useCustomerStore((state) => state.actionType);
   const setFormData = useCustomerStore((state) => state.setFormData);
   const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
+  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
 
   const handleSubmit = async (action: "add" | "edit") => {
     try {
@@ -27,10 +28,12 @@ export const CustomerDialog = () => {
           toast.success(response.data);
           setOpenCustomerDialog();
           setFormData({});
+          setRefreshState(true);
         } else {
           toast.error(response.error.message);
           setOpenCustomerDialog();
           setFormData({});
+          setRefreshState(true);
         }
       } else if (action === "edit") {
         const response = await window.customersApi.updateCustomer(formData);
@@ -38,15 +41,18 @@ export const CustomerDialog = () => {
           toast.success(response.data);
           setOpenCustomerDialog();
           setFormData({});
+          setRefreshState(true);
         } else {
           toast.error(response.error.message);
           setOpenCustomerDialog();
           setFormData({});
+          setRefreshState(true);
         }
       }
     } catch (error) {
       console.log(error);
       toast.error("Something went wrong");
+      setRefreshState(true);
     }
   };
 

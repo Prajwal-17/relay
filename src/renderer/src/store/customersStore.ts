@@ -4,6 +4,8 @@ import { create } from "zustand";
 type CustomersStoreType = {
   loading: boolean;
   setLoading: () => void;
+  refreshState: boolean;
+  setRefreshState: (value: boolean) => void;
   openCustomerDialog: boolean;
   setOpenCustomerDialog: () => void;
   openContactDialog: boolean;
@@ -32,6 +34,12 @@ export const useCustomerStore = create<CustomersStoreType>((set) => ({
   setLoading: () =>
     set((state) => ({
       loading: !state.loading
+    })),
+
+  refreshState: false,
+  setRefreshState: (value) =>
+    set(() => ({
+      refreshState: value
     })),
 
   openCustomerDialog: false,

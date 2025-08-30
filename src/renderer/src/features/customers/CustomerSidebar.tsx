@@ -26,13 +26,14 @@ export const CustomerSidebar = () => {
   const setFormData = useCustomerStore((state) => state.setFormData);
   const setLoading = useCustomerStore((state) => state.setLoading);
   const setGoogleContacts = useCustomerStore((state) => state.setGoogleContacts);
+  const refreshState = useCustomerStore((state) => state.refreshState);
+  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
 
   useEffect(() => {
     async function searchCustomers() {
       try {
         const response = await window.customersApi.searchCustomers(searchTerm);
         if (response.status === "success") {
-          console.log(response);
           setCustomers(response.data);
         } else {
           console.log("error");
@@ -52,17 +53,19 @@ export const CustomerSidebar = () => {
         const response = await window.customersApi.getAllCustomers();
         if (response.status === "success") {
           setCustomers(response.data);
-          setSelectedCustomer(response.data[0]);
+          setRefreshState(false);
         } else {
           toast.error("Something went wrong in getting customers");
+          setRefreshState(false);
         }
       } catch (error) {
         console.log(error);
         toast.error("Something went wrong");
+        setRefreshState(false);
       }
     }
     getAllCustomers();
-  }, [setSelectedCustomer]);
+  }, [setSelectedCustomer, refreshState, setRefreshState]);
 
   async function importContactFromGoogle() {
     try {

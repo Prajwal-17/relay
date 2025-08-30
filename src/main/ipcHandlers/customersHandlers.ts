@@ -124,12 +124,14 @@ export default function customersHandlers() {
     "customersApi:deleteCustomer",
     async (_event, customerId: string): Promise<ApiResponse<string>> => {
       try {
-        const existingTransactions = await db
-          .select()
-          .from(sales)
-          .where(eq(sales.customerId, customerId));
+        const existingSales = await db.select().from(sales).where(eq(sales.customerId, customerId));
 
-        if (existingTransactions.length > 0) {
+        const existingEstimates = await db
+          .select()
+          .from(estimates)
+          .where(eq(estimates.customerId, customerId));
+
+        if (existingSales.length > 0 || existingEstimates.length > 0) {
           return {
             status: "error",
             error: {

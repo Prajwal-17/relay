@@ -34,7 +34,6 @@ export const CustomerTransactions = () => {
     async function getAllTransactionsById(customerId: string) {
       try {
         const response = await window.customersApi.getAllTransactionsById(customerId);
-        console.log(response);
         if (response.status === "success") {
           setTransactions(
             response.data.map((t) => ({
