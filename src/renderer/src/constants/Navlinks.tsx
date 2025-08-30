@@ -1,6 +1,6 @@
+import Customers from "@/pages/Customers";
 import EstimatesDashboard from "@/pages/EstimatesDashboard";
 import Home from "@/pages/Home";
-import Parties from "@/pages/Parties";
 import ProductsPage from "@/pages/ProductsPage";
 import Reports from "@/pages/Reports";
 import SalesDashboard from "@/pages/SalesDashboard";
@@ -35,9 +35,9 @@ export const navLinks: NavlinkType[] = [
     icon: <Package size={28} />
   },
   {
-    href: "/parties",
-    title: "Parties",
-    element: <Parties />,
+    href: "/customers",
+    title: "Customers",
+    element: <Customers />,
     icon: <Users size={28} />
   },
   {

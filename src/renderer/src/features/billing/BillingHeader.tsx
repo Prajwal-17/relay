@@ -5,16 +5,10 @@ import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { DateTime } from "../../components/DateTime";
+import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
-  const {
-    invoiceNo,
-    setInvoiceNo,
-    customerName,
-    setCustomerName,
-    customerContact,
-    setCustomerContact
-  } = useTransactionState();
+  const { invoiceNo, setInvoiceNo, customerContact, setCustomerContact } = useTransactionState();
 
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
@@ -99,17 +93,7 @@ const BillingHeader = () => {
         </div>
         <div className="flex max-w-4xl items-center">
           <div className="flex w-full flex-1 items-center gap-4">
-            <div className="w-full">
-              <label htmlFor="customer-name" className="text-lg font-medium text-gray-700">
-                Customer Name
-              </label>
-              <Input
-                placeholder="Enter Name"
-                id="customer-name"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-              />
-            </div>
+            <CustomerNameInput />
             <div className="w-full">
               <label htmlFor="customer-contact" className="text-lg font-medium text-gray-700">
                 Customer Phone Number
@@ -121,11 +105,9 @@ const BillingHeader = () => {
                 </div>
 
                 <Input
-                  type="number"
                   id="customer-contact"
                   className="py-2 pl-16"
                   placeholder="Contact Number"
-                  // @ts-ignore : ignore null
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}
                 />

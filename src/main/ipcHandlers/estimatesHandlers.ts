@@ -8,7 +8,7 @@ import type {
 } from "../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
-import { estimateItems, estimates } from "../db/schema";
+import { customers, estimateItems, estimates } from "../db/schema";
 
 export function estimatesHandlers() {
   ipcMain.handle("estimatesApi:getNextEstimateNo", async (): Promise<ApiResponse<number>> => {
@@ -89,6 +89,24 @@ export function estimatesHandlers() {
     "estimatesApi:save",
     async (_event, estimateObj: EstimatePayload): Promise<ApiResponse<string>> => {
       try {
+        let customer;
+        if (!estimateObj.customerName) {
+          customer = await db.select().from(customers).where(eq(customers.name, "DEFAULT"));
+        } else if (estimateObj.customerId && estimateObj.customerName) {
+          customer = await db
+            .select()
+            .from(customers)
+            .where(eq(customers.id, estimateObj.customerId));
+        } else if (!estimateObj.customerId && estimateObj.customerName) {
+          customer = await db
+            .insert(customers)
+            .values({
+              name: estimateObj.customerName,
+              customerType: "cash"
+            })
+            .returning({ id: customers.id, name: customers.name, contact: customers.contact });
+        }
+
         // --- CREATE ESTIMATE ---
         if (!estimateObj.billingId) {
           const result = db.transaction((tx) => {
@@ -96,7 +114,8 @@ export function estimatesHandlers() {
               .insert(estimates)
               .values({
                 estimateNo: Number(estimateObj.estimateNo),
-                customerName: "DEFAULT",
+                customerId: customer[0].id,
+                customerName: customer[0].name,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: true

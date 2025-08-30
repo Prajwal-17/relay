@@ -23,7 +23,7 @@ export const customers = sqliteTable("customers", {
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull(),
   contact: text("contact"),
-  customerType: text("customer_type"), // "cash" | "account" | "hotel"
+  customerType: text("customer_type").notNull(), // "cash" | "account" | "hotel"
   createdAt: text("created_at")
     .default(sql`(datetime('now'))`)
     .notNull(),

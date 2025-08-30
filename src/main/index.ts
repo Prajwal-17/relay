@@ -1,8 +1,11 @@
 import { electronApp, is } from "@electron-toolkit/utils";
+import dotenv from "dotenv";
 import { app, BrowserWindow, screen } from "electron";
 import { join } from "node:path";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 import { setupMenu } from "./setupMenu";
+
+dotenv.config();
 
 let mainWindow: BrowserWindow;
 const gotTheLock = app.requestSingleInstanceLock();

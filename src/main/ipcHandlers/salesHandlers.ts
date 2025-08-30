@@ -3,7 +3,7 @@ import { ipcMain } from "electron/main";
 import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
-import { saleItems, sales } from "../db/schema";
+import { customers, saleItems, sales } from "../db/schema";
 
 export function salesHandlers() {
   ipcMain.handle("salesApi:getNextInvoiceNo", async (): Promise<ApiResponse<number>> => {
@@ -73,6 +73,21 @@ export function salesHandlers() {
     "salesApi:save",
     async (_event, saleObj: SalePayload): Promise<ApiResponse<string>> => {
       try {
+        let customer;
+        if (!saleObj.customerName) {
+          customer = await db.select().from(customers).where(eq(customers.name, "DEFAULT"));
+        } else if (saleObj.customerId && saleObj.customerName) {
+          customer = await db.select().from(customers).where(eq(customers.id, saleObj.customerId));
+        } else if (!saleObj.customerId && saleObj.customerName) {
+          customer = await db
+            .insert(customers)
+            .values({
+              name: saleObj.customerName,
+              customerType: "cash"
+            })
+            .returning({ id: customers.id, name: customers.name, contact: customers.contact });
+        }
+
         // --- CREATE SALE ---
         if (!saleObj.billingId) {
           const result = db.transaction((tx) => {
@@ -80,7 +95,8 @@ export function salesHandlers() {
               .insert(sales)
               .values({
                 invoiceNo: Number(saleObj.invoiceNo),
-                customerName: "DEFAULT",
+                customerId: customer[0].id,
+                customerName: customer[0].name,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: true

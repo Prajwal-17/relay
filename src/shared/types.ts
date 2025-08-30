@@ -7,8 +7,10 @@ export type UsersType = {
 export type CustomersType = {
   id: string;
   name: string;
-  contact: string;
+  contact: string | null;
   customerType: string;
+  updatedAt?: string;
+  createdAt?: string;
 };
 
 export type ProductsType = {
@@ -102,6 +104,7 @@ export type ApiResponse<T> =
 export type SalePayload = {
   billingId: string | null;
   invoiceNo: number;
+  customerId: string | null;
   customerName: string;
   customerContact: string | null;
   grandTotal: number;
@@ -125,6 +128,7 @@ export type SalePayloadItems = {
 export type EstimatePayload = {
   billingId: string | null;
   estimateNo: number;
+  customerId: string | null;
   customerName: string;
   customerContact: string | null;
   grandTotal: number;
@@ -146,6 +150,14 @@ export type EstimatePayloadItems = {
 };
 
 export type ProductPayload = ProductsType & { isDisabled?: boolean };
+
+export type FilteredGoogleContactsType = {
+  id: number;
+  name: string | null;
+  contact: string | null;
+};
+
+export type AllTransactionsType = (SalesType | EstimateType)[];
 
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
@@ -169,4 +181,16 @@ export interface EstimatesApi {
   getTransactionById: (
     id: string
   ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
+}
+
+export interface CustomersApi {
+  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  updateCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
+  getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
+  getAllTransactionsById: (customerId: string) => Promise<ApiResponse<any>>;
+  deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
+  importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
+  importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
+  searchCustomers: (query: string) => Promise<ApiResponse<CustomersType[]>>;
 }
