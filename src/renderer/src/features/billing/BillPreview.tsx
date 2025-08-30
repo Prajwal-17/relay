@@ -181,7 +181,7 @@ const BillPreview = () => {
             </span>
           </div>
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
-          <div className="text-center">Thank You</div>
+          <div className="pb-6 text-center">Thank You</div>
         </div>
         <div className="flex w-1/4">
           <Button className="" onClick={handleSave}>
