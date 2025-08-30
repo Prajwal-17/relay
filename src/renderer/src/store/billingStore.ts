@@ -111,6 +111,9 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
        */
       const currLineItems = [...state.lineItems];
 
+      // existing line item at index
+      const oldItem = currLineItems[index];
+
       const productName = () => {
         let name = newItem.name;
 
@@ -155,7 +158,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         id: uuidv4(),
         name: productName(),
         productId: newItem.id,
-        quantity: 1,
+        quantity: oldItem.quantity > 1 ? oldItem.quantity : 1,
         totalPrice: parseFloat((1 * newItem.price).toFixed(2))
       };
 

@@ -104,7 +104,7 @@ const BillPreview = () => {
       <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
         <div
           ref={receiptRef}
-          className="receipt no-break font-roboto bg-white px-1 pt-2 pb-20 text-black"
+          className="receipt no-break font-roboto bg-white px-1 pt-1 pb-36 text-black"
         >
           <div className="mb-2 space-y-2 py-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -133,7 +133,7 @@ const BillPreview = () => {
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}
-                {customerName === "DEFAULT"
+                {customerName === "DEFAULT" || customerName === ""
                   ? type === "sales"
                     ? "Sale"
                     : "Estimate"
@@ -174,7 +174,7 @@ const BillPreview = () => {
             <span className="text-xs font-semibold">SubTotal: </span>
             <span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>
           </div>
-          <div className="py-3 text-right">
+          <div className="py-2 text-right">
             <span className="text-base font-semibold">Total: </span>
             <span className="text-lg font-semibold">
               {IndianRupees.format(Math.round(calcTotalAmount))}
