@@ -160,6 +160,11 @@ export type FilteredGoogleContactsType = {
 
 export type AllTransactionsType = (SalesType | EstimateType)[];
 
+export type DateRangeType = {
+  from: Date;
+  to: Date;
+};
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
@@ -173,6 +178,7 @@ export interface SalesApi {
   save: (payload: SalePayload) => Promise<ApiResponse<string>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
+  getSalesDateRange: (range: DateRangeType) => Promise<ApiResponse<SalesType[] | []>>;
 }
 
 export interface EstimatesApi {

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import type { DateRangeType } from "@shared/types";
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
+import toast from "react-hot-toast";
 
 export const DatePicker = ({ selected }: { selected: string }) => {
   const [open, setOpen] = useState(false);
@@ -42,6 +44,25 @@ export const DatePicker = ({ selected }: { selected: string }) => {
       setDate({ from: today });
     }
   }, [selected, setDate]);
+
+  useEffect(() => {
+    async function fetchSales() {
+      if (!date) return;
+      try {
+        const response = await window.salesApi.getSalesDateRange(date as DateRangeType);
+        if (response.status === "success") {
+          console.log("all sales", response.data);
+          // setSales(response.data);
+        } else {
+          console.log("error");
+          toast.error("Could not retrieve sales");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchSales();
+  }, [date]);
 
   const formatDate = () => {
     if (

@@ -1,6 +1,12 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, SaleItemsType, SalePayload, SalesType } from "../../shared/types";
+import type {
+  ApiResponse,
+  DateRangeType,
+  SaleItemsType,
+  SalePayload,
+  SalesType
+} from "../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
 import { customers, saleItems, sales } from "../db/schema";
@@ -205,6 +211,83 @@ export function salesHandlers() {
         return {
           status: "error",
           error: { message: "An error occurred while saving the sale." }
+        };
+      }
+    }
+  );
+
+  /**
+   * always convert date to ISOstring format for querying
+   * IN Browser console -> the date is displayed as 28 Aug 2025 to 30 Aug 2025
+   * But in ISO format it is -> { from: 2025-08-27T18:30:00.000Z, to: 2025-08-29T18:30:00.000Z }
+   */
+  ipcMain.handle(
+    "salesApi:getSalesDateRange",
+    async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
+      if (!range.from && !range.to) {
+        return {
+          status: "error",
+          error: {
+            message: "Invalid date range provided."
+          }
+        };
+      }
+
+      if (range.from === undefined && range.to === undefined) {
+        return {
+          status: "error",
+          error: {
+            message: "Invalid Dates"
+          }
+        };
+      }
+
+      try {
+        const fromDate = range.from?.toISOString().slice(0, 10); // slice time
+        let toDate;
+        if (range.to !== undefined) {
+          const tempToDate = new Date(range.to);
+          tempToDate.setDate(tempToDate.getDate() + 1);
+          toDate = tempToDate.toISOString().slice(0, 10); // slice time
+        }
+
+        let result: SalesType[] | [];
+        if (fromDate && toDate) {
+          result = await db
+            .select()
+            .from(sales)
+            .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)));
+          // .limit(10);
+        } else if (fromDate) {
+          console.log("from date");
+          result = await db.select().from(sales).where(gte(sales.createdAt, fromDate));
+        } else if (toDate) {
+          console.log("to date");
+          result = await db.select().from(sales).where(lt(sales.createdAt, toDate));
+        } else {
+          return {
+            status: "error",
+            error: {
+              message: "Provide Date Range"
+            }
+          };
+        }
+
+        return {
+          status: "success",
+          data:
+            result.length > 0
+              ? result.map((sale: SalesType) => ({
+                  ...sale,
+                  grandTotal: sale.grandTotal && formatToRupees(sale.grandTotal)
+                }))
+              : []
+        };
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "An error occurred while filtering sales." }
         };
       }
     }

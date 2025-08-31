@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type {
   CustomersApi,
   CustomersType,
+  DateRangeType,
   EstimatePayload,
   EstimatesApi,
   FilteredGoogleContactsType,
@@ -23,7 +24,9 @@ const salesApi: SalesApi = {
   getNextInvoiceNo: () => ipcRenderer.invoke("salesApi:getNextInvoiceNo"),
   save: (payload: SalePayload) => ipcRenderer.invoke("salesApi:save", payload),
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
-  getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id)
+  getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id),
+  getSalesDateRange: (range: DateRangeType) =>
+    ipcRenderer.invoke("salesApi:getSalesDateRange", range)
 };
 
 const estimatesApi: EstimatesApi = {

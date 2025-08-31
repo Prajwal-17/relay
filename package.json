@@ -15,7 +15,7 @@
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "start": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
-    "dev": "cross-env ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
+    "dev": "pnpm run rebuild:electron && cross-env ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
     "rebuild:node": "pnpm rebuild better-sqlite3",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "db:seed": "pnpm run rebuild:node && tsx src/main/db/seed.ts",
