@@ -101,12 +101,12 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 py-7">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 border-neutral-100 border ">
         <div
           ref={receiptRef}
-          className="receipt no-break font-roboto bg-white px-1 pt-1 pb-36 text-black"
+          className="receipt no-break font-roboto bg-white px-1 pt-1 mb-24 mt-0 border border-neutral-100 text-black"
         >
-          <div className="mb-2 space-y-2 py-4 text-center">
+          <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
             <p className="text-xs">6TH MAIN, RUKMINI NAGAR NAGASANDRA POST BANGALORE 560073</p>
             {type === "sales" && (
@@ -170,18 +170,20 @@ const BillPreview = () => {
               );
             })}
           </div>
-          <div className="py-1 text-right">
+          {/* <div className="py-1 text-right">
             <span className="text-xs font-semibold">SubTotal: </span>
             <span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>
-          </div>
-          <div className="py-2 text-right">
+          </div> */}
+          <div className="mb-8 text-right">
             <span className="text-base font-semibold">Total: </span>
             <span className="text-lg font-semibold">
               {IndianRupees.format(Math.round(calcTotalAmount))}
             </span>
+            <div className="pb-2 text-center">Thank You</div>
           </div>
+          {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
-          <div className="pb-6 text-center">Thank You</div>
+          <div className="h-12"></div>
         </div>
         <div className="flex w-1/4">
           <Button className="" onClick={handleSave}>
