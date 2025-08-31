@@ -101,10 +101,10 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 border-neutral-100 border ">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 border-green-500 border ">
         <div
           ref={receiptRef}
-          className="receipt no-break font-roboto bg-white px-1 pt-1 mb-24 mt-0 border border-neutral-100 text-black"
+          className="receipt no-break font-roboto bg-white px-1 pt-1 mb-24 mt-0 border border-green-500 text-black"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -179,7 +179,7 @@ const BillPreview = () => {
             <span className="text-lg font-semibold">
               {IndianRupees.format(Math.round(calcTotalAmount))}
             </span>
-            <div className="pb-2 text-center">Thank You</div>
+            <div className="pb-4 text-center">Thank You</div>
           </div>
           {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
