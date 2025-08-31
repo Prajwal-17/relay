@@ -3,7 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { DateRangeType } from "@shared/types";
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
 
@@ -13,6 +13,8 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     from: new Date(),
     to: undefined
   });
+
+  const previousDate = useRef(date);
 
   const today = new Date();
   const [dropdown, setDropdown] =
@@ -43,7 +45,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     } else {
       setDate({ from: today });
     }
-  }, [selected, setDate]);
+  }, [selected]);
 
   useEffect(() => {
     async function fetchSales() {
@@ -61,8 +63,16 @@ export const DatePicker = ({ selected }: { selected: string }) => {
         console.log(error);
       }
     }
+    if (
+      !open &&
+      (date?.from !== previousDate.current?.from || date?.from !== previousDate.current?.to)
+    ) {
+      fetchSales();
+
+      previousDate.current = date;
+    }
     fetchSales();
-  }, [date]);
+  }, [date, open]);
 
   const formatDate = () => {
     if (
@@ -99,7 +109,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full min-w-lg justify-between py-8 text-lg font-semibold"
+                className="w-full min-w-lg justify-between py-8 text-lg font-semibold hover:cursor-pointer hover:bg-neutral-200"
               >
                 <CalendarIcon className="text-foreground" size={40} />
                 {formatDate()}

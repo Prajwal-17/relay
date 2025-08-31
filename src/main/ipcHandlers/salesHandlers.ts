@@ -224,6 +224,7 @@ export function salesHandlers() {
   ipcMain.handle(
     "salesApi:getSalesDateRange",
     async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
+      console.log(range);
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -243,12 +244,14 @@ export function salesHandlers() {
       }
 
       try {
-        const fromDate = range.from?.toISOString().slice(0, 10); // slice time
+        const fromDate = range.from?.toISOString();
         let toDate;
         if (range.to !== undefined) {
           const tempToDate = new Date(range.to);
+          console.log(tempToDate);
           tempToDate.setDate(tempToDate.getDate() + 1);
-          toDate = tempToDate.toISOString().slice(0, 10); // slice time
+          console.log(tempToDate);
+          toDate = tempToDate.toISOString();
         }
 
         let result: SalesType[] | [];
@@ -259,10 +262,8 @@ export function salesHandlers() {
             .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)));
           // .limit(10);
         } else if (fromDate) {
-          console.log("from date");
           result = await db.select().from(sales).where(gte(sales.createdAt, fromDate));
         } else if (toDate) {
-          console.log("to date");
           result = await db.select().from(sales).where(lt(sales.createdAt, toDate));
         } else {
           return {
