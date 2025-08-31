@@ -1,20 +1,29 @@
-import { formatDateStr } from "@shared/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DatePicker } from "@/features/transactionDashboard/DatePicker";
+import type { SalesType } from "@shared/types";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import type { SalesType } from "src/shared/types";
 
 const SalesDashboard = () => {
   const [sales, setSales] = useState<SalesType[]>([]);
   const navigate = useNavigate();
+  const [date, setDate] = useState<Date | undefined>(new Date());
+
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState("");
 
   useEffect(() => {
     async function fetchSales() {
       try {
         const response = await window.salesApi.getAllSales();
         if (response.status === "success") {
+          console.log("all sales", response.data);
           setSales(response.data);
         } else {
+          console.log("error");
           toast.error("Could not retrieve sales");
         }
       } catch (error) {
@@ -26,37 +35,72 @@ const SalesDashboard = () => {
 
   return (
     <>
-      <div className="px-10 py-20">
-        <div className="py-5 text-4xl font-bold">Sales</div>
-        <div className="overflow-x-auto rounded-lg shadow">
-          <table className="min-w-full divide-y divide-gray-200 text-sm">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Date</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Invoice No</th>
-                <th className="px-6 py-3 text-left font-semibold text-gray-700">Total</th>
-                <th className="px-6 py-3 text-center font-semibold text-gray-700">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sales.map((row, idx) => (
-                <tr key={idx} className="transition hover:bg-gray-50">
-                  <td className="px-6 py-3">{formatDateStr(row.createdAt)}</td>
-                  <td className="px-6 py-3">{row.invoiceNo}</td>
-                  {row.grandTotal && <td className="px-6 py-3">₹ {row.grandTotal}</td>}
-                  <td className="px-6 py-3 text-center">
-                    <button
-                      onClick={() => navigate(`/sales/edit/${row.id}`)}
-                      className="rounded bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="bg-muted/70 h-full flex-1 space-y-6 overflow-y-auto px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold">Sales</h1>
+            <p className="text-muted-foreground text-lg">View Sales</p>
+          </div>
+          <Button
+            size="lg"
+            className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-lg font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
+          >
+            <Plus className="h-5 w-5" />
+            Create Estimate
+          </Button>
         </div>
+
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-foreground text-xl font-medium">Filter by</span>
+                <span className="rounded-md bg-black/10 px-2.5 py-1 text-lg font-medium text-black">
+                  Date Range
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2" aria-label="Quick presets">
+                <Button
+                  variant={selected === "today" ? "default" : "outline"}
+                  size="lg"
+                  onClick={() => setSelected("today")}
+                  className="text-lg"
+                >
+                  Today
+                </Button>
+                <Button
+                  variant={selected === "week" ? "default" : "outline"}
+                  size="lg"
+                  onClick={() => setSelected("week")}
+                  className="text-lg"
+                >
+                  This week
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  className="text-lg"
+                  onClick={() => setSelected("")}
+                >
+                  Clear
+                </Button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex w-full items-stretch justify-between">
+              <Card className="py-6 pr-16 pl-4">
+                <div className="space-y-2">
+                  <div className="text-muted-foreground text-lg font-medium">Total Estimate</div>
+                  <div className="text-4xl font-bold">₹ 17.00</div>
+                  <div className="text-muted-foreground text-lg">17 transactions</div>
+                </div>
+              </Card>
+              <DatePicker selected={selected} />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

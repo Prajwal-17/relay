@@ -18,3 +18,12 @@ export function formatDateStr(dateStr?: string): string {
     dateStyle: "medium"
   });
 }
+
+export function formatTimeStr(dateStr?: string): string {
+  if (!dateStr) return "-";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "-";
+  return date.toLocaleString("en-IN", {
+    timeStyle: "short"
+  });
+}
