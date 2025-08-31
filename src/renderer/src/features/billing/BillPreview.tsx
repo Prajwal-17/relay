@@ -170,10 +170,10 @@ const BillPreview = () => {
               );
             })}
           </div>
-          {/* <div className="py-1 text-right">
+          <div className="py-1 text-right">
             <span className="text-xs font-semibold">SubTotal: </span>
             <span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>
-          </div> */}
+          </div>
           <div className="mb-8 text-right">
             <span className="text-base font-semibold">Total: </span>
             <span className="text-lg font-semibold">
