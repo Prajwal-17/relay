@@ -18,8 +18,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
   const setEstimates = useDashboardStore((state) => state.setEstimates);
   const previousDate = useRef(date);
   const today = new Date();
-  const [dropdown, setDropdown] =
-    useState<React.ComponentProps<typeof Calendar>["captionLayout"]>("dropdown");
+  const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 
   function InitialDate() {
     const startofDay = new Date();
