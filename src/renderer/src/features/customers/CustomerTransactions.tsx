@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,6 +13,7 @@ import { useCustomerStore } from "@/store/customersStore";
 import { formatDateStr, formatToRupees } from "@shared/utils";
 import { ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 
 type TransactionType = {
@@ -27,6 +29,7 @@ type TransactionType = {
 export const CustomerTransactions = () => {
   const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!selectedCustomer?.id) return;
@@ -74,6 +77,7 @@ export const CustomerTransactions = () => {
                     <TableHead className="text-base font-semibold">Date</TableHead>
                     <TableHead className="text-right text-base font-semibold">Total</TableHead>
                     <TableHead className="text-base font-semibold">Status</TableHead>
+                    <TableHead className="text-base font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -99,6 +103,16 @@ export const CustomerTransactions = () => {
                         >
                           {transaction.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          onClick={() => navigate(`/sales/edit/${transaction.id}`)}
+                          className="hover:cursor-pointer"
+                          variant="outline"
+                          size="sm"
+                        >
+                          View
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

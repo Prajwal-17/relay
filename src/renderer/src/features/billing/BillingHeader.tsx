@@ -3,12 +3,21 @@ import { Input } from "@/components/ui/input";
 import useTransactionState from "@/hooks/useTransactionState";
 import { Check, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { DateTime } from "../../components/DateTime";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
-  const { invoiceNo, setInvoiceNo, customerContact, setCustomerContact } = useTransactionState();
+  const navigate = useNavigate();
+  const {
+    invoiceNo,
+    setBillingId,
+    setInvoiceNo,
+    setCustomerId,
+    setCustomerName,
+    customerContact,
+    setCustomerContact
+  } = useTransactionState();
 
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
@@ -46,11 +55,19 @@ const BillingHeader = () => {
         <div className="flex items-center justify-between gap-5 px-2 py-2">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
-              <Link to="/">
-                <Button variant="default" size="lg" className="text-lg font-medium">
-                  Home
-                </Button>
-              </Link>
+              <Button
+                onClick={() => {
+                  setBillingId(null);
+                  setCustomerId(null);
+                  setCustomerName("");
+                  navigate("/");
+                }}
+                variant="default"
+                size="lg"
+                className="text-lg font-medium"
+              >
+                Home
+              </Button>
               <h1 className="text-3xl font-bold">{page.charAt(0).toUpperCase() + page.slice(1)}</h1>
             </div>
             <div className="flex items-center justify-center gap-2">

@@ -21,7 +21,7 @@ type BillingStoreType = {
   invoiceNo: number | null;
   setInvoiceNo: (newInvoiceNo: number | null) => void;
   customerId: string | null;
-  setCustomerId: (id: string) => void;
+  setCustomerId: (id: string | null) => void;
   customerName: string;
   setCustomerName: (newCustomerName: string) => void;
   customerContact: string | null;
@@ -113,6 +113,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
 
       // existing line item at index
       const oldItem = currLineItems[index];
+      const totalQuantity = oldItem.quantity > 1 ? oldItem.quantity : 1;
 
       const productName = () => {
         let name = newItem.name;
@@ -159,7 +160,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         name: productName(),
         productId: newItem.id,
         quantity: oldItem.quantity > 1 ? oldItem.quantity : 1,
-        totalPrice: parseFloat((1 * newItem.price).toFixed(2))
+        totalPrice: parseFloat((totalQuantity * newItem.price).toFixed(2))
       };
 
       currLineItems[index] = { ...updatedItem };

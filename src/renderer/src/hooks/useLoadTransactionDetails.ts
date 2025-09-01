@@ -14,6 +14,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
     async function fetchTransactionById() {
       if (!transactionId) return;
       setBillingId("");
+      setInvoiceNo(null);
       setCustomerId("");
       setCustomerName("");
       setCustomerContact("");

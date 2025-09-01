@@ -2,11 +2,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
+import { useSalesStore } from "@/store/salesStore";
+import { formatToPaisa, formatToRupees } from "@shared/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const SalesDashboard = () => {
   const [selected, setSelected] = useState("");
+  const sales = useSalesStore((state) => state.sales);
+  const navigate = useNavigate();
+
+  const calculateTotal =
+    sales?.reduce((sum, curr) => {
+      if (!curr.grandTotal) return sum;
+      return sum + formatToPaisa(curr.grandTotal);
+    }, 0) || 0;
+
+  const IndianRupees = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR"
+  });
 
   return (
     <>
@@ -18,10 +34,11 @@ const SalesDashboard = () => {
           </div>
           <Button
             size="lg"
+            onClick={() => navigate("/sales/new")}
             className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-lg font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
           >
             <Plus className="h-5 w-5" />
-            Create Estimate
+            Create Sale
           </Button>
         </div>
 
@@ -67,9 +84,13 @@ const SalesDashboard = () => {
             <div className="flex w-full items-stretch justify-between">
               <Card className="py-6 pr-16 pl-4">
                 <div className="space-y-2">
-                  <div className="text-muted-foreground text-lg font-medium">Total Estimate</div>
-                  <div className="text-4xl font-bold">₹ 17.00</div>
-                  <div className="text-muted-foreground text-lg">17 transactions</div>
+                  <div className="text-muted-foreground text-lg font-medium">Total Sales</div>
+                  <div className="text-4xl font-bold">
+                    {IndianRupees.format(formatToRupees(calculateTotal))}
+                  </div>
+                  <div className="text-muted-foreground text-lg">
+                    {sales?.length || 0} transactions
+                  </div>
                 </div>
               </Card>
               <DatePicker selected={selected} />
