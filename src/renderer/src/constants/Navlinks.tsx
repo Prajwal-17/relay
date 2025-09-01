@@ -1,9 +1,8 @@
 import Customers from "@/pages/Customers";
-import EstimatesDashboard from "@/pages/EstimatesDashboard";
+import Dashboard from "@/pages/Dashboard";
 import Home from "@/pages/Home";
 import ProductsPage from "@/pages/ProductsPage";
 import Reports from "@/pages/Reports";
-import SalesDashboard from "@/pages/SalesDashboard";
 import SettingsPage from "@/pages/SettingsPage";
 import {
   ChartColumn,
@@ -43,13 +42,13 @@ export const navLinks: NavlinkType[] = [
   {
     href: "/sale",
     title: "Sale",
-    element: <SalesDashboard />,
+    element: <Dashboard />,
     icon: <ShoppingCart size={28} />
   },
   {
     href: "/estimate",
     title: "Estimate",
-    element: <EstimatesDashboard />,
+    element: <Dashboard />,
     icon: <ReceiptText size={28} />
   },
   {

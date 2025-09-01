@@ -20,16 +20,21 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { useSalesStore } from "@/store/salesStore";
+import { useDashboardStore } from "@/store/salesStore";
 import { formatDateTimeToIST } from "@shared/utils";
 import { ReceiptIndianRupee, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const DashboardTable = () => {
   const navigate = useNavigate();
-  const sales = useSalesStore((state) => state.sales);
-  const setSales = useSalesStore((state) => state.setSales);
+  const location = useLocation();
+  const pathname = location.pathname;
+  const sales = useDashboardStore((state) => state.sales);
+  const setSales = useDashboardStore((state) => state.setSales);
+  const estimates = useDashboardStore((state) => state.estimates);
+  const setEstimates = useDashboardStore((state) => state.setEstimates);
+  const dataToRender = pathname === "/sale" ? sales : estimates;
 
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -43,6 +48,23 @@ export const DashboardTable = () => {
         toast.success("Successfully deleted sale");
         if (sales.length > 0) {
           setSales(sales.filter((sale) => sale.id !== saleId));
+        }
+      } else {
+        toast.error(response.error.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleDeleteEstimate = async (estimateId: string) => {
+    try {
+      const response = await window.estimatesApi.deleteEstimate(estimateId);
+      if (response.status === "success") {
+        toast.success("Successfully deleted estimate");
+        if (estimates.length > 0) {
+          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
         }
       } else {
         toast.error(response.error.message);
@@ -74,20 +96,22 @@ export const DashboardTable = () => {
     <>
       <Card className="my-0 py-3">
         <CardContent className="px-3">
-          {sales.length > 0 ? (
+          {dataToRender.length > 0 ? (
             <div className="max-h-[415px] overflow-y-auto rounded-lg border">
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>
                     <TableHead className="text-lg font-semibold">Date</TableHead>
-                    <TableHead className="text-lg font-semibold">Invoice No</TableHead>
+                    <TableHead className="text-lg font-semibold">
+                      {pathname === "/sale" ? "Invoice No" : "Estimate No"}
+                    </TableHead>
                     <TableHead className="text-lg font-semibold">Name</TableHead>
                     <TableHead className="text-lg font-semibold">Amount</TableHead>
                     <TableHead className="text-lg font-semibold">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sales.map((transaction) => (
+                  {dataToRender.map((transaction) => (
                     <TableRow key={transaction.id} className="h-14">
                       <TableCell className="py-4">
                         <Badge variant="outline" className="px-3 py-1 text-lg capitalize">
@@ -95,7 +119,7 @@ export const DashboardTable = () => {
                         </Badge>
                       </TableCell>
                       <TableCell className="py-4 text-left text-lg font-medium">
-                        {transaction.invoiceNo}
+                        {transaction.invoiceNo || transaction.estimateNo}
                       </TableCell>
                       <TableCell className="py-4 text-left text-lg font-medium">
                         {transaction.customerName}
@@ -128,7 +152,11 @@ export const DashboardTable = () => {
                           </AlertDialog>
                           <Button
                             size="sm"
-                            onClick={() => navigate(`/sales/edit/${transaction.id}`)}
+                            onClick={() => {
+                              pathname === "/sale"
+                                ? navigate(`/sales/edit/${transaction.id}`)
+                                : navigate(`/estimates/edit/${transaction.id}`);
+                            }}
                           >
                             View
                           </Button>
@@ -156,7 +184,11 @@ export const DashboardTable = () => {
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                   className="bg-destructive hover:bg-destructive/80"
-                                  onClick={() => handleDeleteSale(transaction.id)}
+                                  onClick={() => {
+                                    pathname === "/sale"
+                                      ? handleDeleteSale(transaction.id)
+                                      : handleDeleteEstimate(transaction.id);
+                                  }}
                                 >
                                   Confirm Delete
                                 </AlertDialogAction>

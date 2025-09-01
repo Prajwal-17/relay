@@ -36,7 +36,11 @@ const estimatesApi: EstimatesApi = {
   getNextEstimateNo: () => ipcRenderer.invoke("estimatesApi:getNextEstimateNo"),
   save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
   getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
-  getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id)
+  getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id),
+  getEstimatesDateRange: (range: DateRangeType) =>
+    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range),
+  deleteEstimate: (estimateId: string) =>
+    ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId)
 };
 
 const customersApi: CustomersApi = {

@@ -2,19 +2,28 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
-import { useSalesStore } from "@/store/salesStore";
+import { useDashboardStore } from "@/store/salesStore";
 import { formatToPaisa, formatToRupees } from "@shared/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const SalesDashboard = () => {
+const Dashboard = () => {
   const [selected, setSelected] = useState("");
-  const sales = useSalesStore((state) => state.sales);
+  const sales = useDashboardStore((state) => state.sales);
+  const estimates = useDashboardStore((state) => state.estimates);
   const navigate = useNavigate();
+  const location = useLocation();
+  const pathname = location.pathname;
 
-  const calculateTotal =
+  const calculateSalesTotal =
     sales?.reduce((sum, curr) => {
+      if (!curr.grandTotal) return sum;
+      return sum + formatToPaisa(curr.grandTotal);
+    }, 0) || 0;
+
+  const calculateEstimatesTotal =
+    estimates?.reduce((sum, curr) => {
       if (!curr.grandTotal) return sum;
       return sum + formatToPaisa(curr.grandTotal);
     }, 0) || 0;
@@ -29,16 +38,20 @@ const SalesDashboard = () => {
       <div className="bg-muted/70 h-full flex-1 space-y-6 overflow-y-auto px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">Sales</h1>
-            <p className="text-muted-foreground text-lg">View Sales</p>
+            <h1 className="text-4xl font-bold">{pathname === "/sale" ? "Sales" : "Estimates"}</h1>
+            <p className="text-muted-foreground text-lg">
+              {pathname === "/sale" ? "View Sales " : "View Estimates"}
+            </p>
           </div>
           <Button
             size="lg"
-            onClick={() => navigate("/sales/new")}
+            onClick={() => {
+              pathname === "/sale" ? navigate("/sales/new") : navigate("/estimate/new");
+            }}
             className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-lg font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
           >
             <Plus className="h-5 w-5" />
-            Create Sale
+            {pathname === "/sale" ? "Create Sale" : "Add Estimate"}
           </Button>
         </div>
 
@@ -84,12 +97,17 @@ const SalesDashboard = () => {
             <div className="flex w-full items-stretch justify-between">
               <Card className="py-6 pr-16 pl-4">
                 <div className="space-y-2">
-                  <div className="text-muted-foreground text-lg font-medium">Total Sales</div>
+                  <div className="text-muted-foreground text-lg font-medium">
+                    {pathname === "/sale" ? "Sales Total" : "Estimates Total"}
+                  </div>
                   <div className="text-4xl font-bold">
-                    {IndianRupees.format(formatToRupees(calculateTotal))}
+                    {pathname === "/sale"
+                      ? `${IndianRupees.format(formatToRupees(calculateSalesTotal))}`
+                      : `${IndianRupees.format(formatToRupees(calculateEstimatesTotal))}`}
                   </div>
                   <div className="text-muted-foreground text-lg">
-                    {sales?.length || 0} transactions
+                    {pathname === "/sale" ? `${sales.length || 0}` : `${estimates.length || 0}`}{" "}
+                    transactions
                   </div>
                 </div>
               </Card>
@@ -104,4 +122,4 @@ const SalesDashboard = () => {
   );
 };
 
-export default SalesDashboard;
+export default Dashboard;

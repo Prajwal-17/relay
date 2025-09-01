@@ -1,17 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useSalesStore } from "@/store/salesStore";
+import { useDashboardStore } from "@/store/salesStore";
 import type { DateRangeType } from "@shared/types";
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
+import { useLocation } from "react-router-dom";
 
 export const DatePicker = ({ selected }: { selected: string }) => {
+  const location = useLocation();
+  const pathname = location.pathname;
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(InitialDate());
-  const setSales = useSalesStore((state) => state.setSales);
+  const setSales = useDashboardStore((state) => state.setSales);
+  const setEstimates = useDashboardStore((state) => state.setEstimates);
   const previousDate = useRef(date);
   const today = new Date();
   const [dropdown, setDropdown] =
@@ -71,15 +75,40 @@ export const DatePicker = ({ selected }: { selected: string }) => {
         console.log(error);
       }
     }
+
+    async function fetchEstimates() {
+      if (!date) return;
+      try {
+        console.log("before request", date);
+        const response = await window.estimatesApi.getEstimatesDateRange(date as DateRangeType);
+        if (response.status === "success") {
+          console.log("all estimates in date picker", response.data);
+          setEstimates(response.data);
+        } else {
+          console.log("error");
+          toast.error("Could not retrieve estimates");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
     if (
       !open &&
       (date?.from !== previousDate.current?.from || date?.from !== previousDate.current?.to)
     ) {
-      fetchSales();
+      if (pathname === "/sale") {
+        fetchSales();
+      } else {
+        fetchEstimates();
+      }
 
       previousDate.current = date;
     }
-    fetchSales();
+    if (pathname === "/sale") {
+      fetchSales();
+    } else {
+      fetchEstimates();
+    }
   }, [date, open]);
 
   const formatDate = () => {

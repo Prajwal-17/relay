@@ -1,7 +1,8 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lt, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type {
   ApiResponse,
+  DateRangeType,
   EstimateItemsType,
   EstimatePayload,
   EstimateType
@@ -228,6 +229,121 @@ export function estimatesHandlers() {
         return {
           status: "error",
           error: { message: "An error occurred while saving the estimate." }
+        };
+      }
+    }
+  );
+
+  // get estimates by filtering date range
+  ipcMain.handle(
+    "estimatesApi:getEstimatesDateRange",
+    async (_event, range: DateRangeType): Promise<ApiResponse<EstimateType[] | []>> => {
+      console.log(range);
+      if (!range.from && !range.to) {
+        return {
+          status: "error",
+          error: {
+            message: "Invalid date range provided."
+          }
+        };
+      }
+
+      if (range.from === undefined && range.to === undefined) {
+        return {
+          status: "error",
+          error: {
+            message: "Invalid Dates"
+          }
+        };
+      }
+
+      try {
+        const fromDate = range.from?.toISOString();
+        let toDate;
+        if (range.to !== undefined) {
+          const tempToDate = new Date(range.to);
+          console.log(tempToDate);
+          tempToDate.setDate(tempToDate.getDate() + 1);
+          console.log(tempToDate);
+          toDate = tempToDate.toISOString();
+        }
+
+        let result: EstimateType[] | [];
+        if (fromDate && toDate) {
+          console.log("both ", fromDate, toDate);
+          result = await db
+            .select()
+            .from(estimates)
+            .where(and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)));
+          // .limit(10);
+        } else if (fromDate) {
+          console.log("from date", fromDate);
+          result = await db.select().from(estimates).where(gte(estimates.createdAt, fromDate));
+        } else if (toDate) {
+          console.log("todate", toDate);
+          result = await db.select().from(estimates).where(lt(estimates.createdAt, toDate));
+        } else {
+          return {
+            status: "error",
+            error: {
+              message: "Provide Date Range"
+            }
+          };
+        }
+
+        return {
+          status: "success",
+          data:
+            result.length > 0
+              ? result.map((estimate: EstimateType) => ({
+                  ...estimate,
+                  grandTotal: estimate.grandTotal && formatToRupees(estimate.grandTotal)
+                }))
+              : []
+        };
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: { message: "An error occurred while filtering estimates." }
+        };
+      }
+    }
+  );
+
+  // delete a estimate
+  ipcMain.handle(
+    "estimatesApi:deleteEstimate",
+    async (_event, estimateId): Promise<ApiResponse<string>> => {
+      try {
+        if (!estimateId) {
+          return {
+            status: "error",
+            error: {
+              message: "Estimates does not exist"
+            }
+          };
+        }
+
+        const result = await db.delete(estimates).where(eq(estimates.id, estimateId));
+
+        if (result.changes > 0) {
+          return { status: "success", data: "Estimate deleted successfully" };
+        }
+
+        return {
+          status: "error",
+          error: {
+            message: "Estimate not found.Could be already deleted"
+          }
+        };
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: {
+            message: "Something went wrong in estimates api"
+          }
         };
       }
     }
