@@ -106,7 +106,11 @@ export const CustomerTransactions = () => {
                       </TableCell>
                       <TableCell>
                         <Button
-                          onClick={() => navigate(`/sales/edit/${transaction.id}`)}
+                          onClick={() => {
+                            transaction.type === "invoice"
+                              ? navigate(`/sales/edit/${transaction.id}`)
+                              : navigate(`/estimates/edit/${transaction.id}`);
+                          }}
                           className="hover:cursor-pointer"
                           variant="outline"
                           size="sm"
