@@ -26,7 +26,10 @@ const salesApi: SalesApi = {
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
   getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id),
   getSalesDateRange: (range: DateRangeType) =>
-    ipcRenderer.invoke("salesApi:getSalesDateRange", range)
+    ipcRenderer.invoke("salesApi:getSalesDateRange", range),
+  deleteSale: (saleId: string) => ipcRenderer.invoke("salesApi:deleteSale", saleId),
+  convertSaletoEstimate: (saleId: string) =>
+    ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId)
 };
 
 const estimatesApi: EstimatesApi = {

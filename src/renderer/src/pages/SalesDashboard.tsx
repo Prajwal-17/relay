@@ -1,37 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
-import type { SalesType } from "@shared/types";
 import { Plus } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const SalesDashboard = () => {
-  const [sales, setSales] = useState<SalesType[]>([]);
-  const navigate = useNavigate();
-  const [date, setDate] = useState<Date | undefined>(new Date());
-
-  const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState("");
-
-  useEffect(() => {
-    async function fetchSales() {
-      try {
-        const response = await window.salesApi.getAllSales();
-        if (response.status === "success") {
-          console.log("all sales", response.data);
-          setSales(response.data);
-        } else {
-          console.log("error");
-          toast.error("Could not retrieve sales");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    fetchSales();
-  }, []);
 
   return (
     <>
@@ -101,6 +76,8 @@ const SalesDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        <DashboardTable />
       </div>
     </>
   );

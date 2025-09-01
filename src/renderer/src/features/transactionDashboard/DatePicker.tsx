@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useSalesStore } from "@/store/salesStore";
 import type { DateRangeType } from "@shared/types";
 import { CalendarIcon, ChevronDownIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -9,25 +10,29 @@ import toast from "react-hot-toast";
 
 export const DatePicker = ({ selected }: { selected: string }) => {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: undefined
-  });
-
+  const [date, setDate] = useState<DateRange | undefined>(InitialDate());
+  const setSales = useSalesStore((state) => state.setSales);
   const previousDate = useRef(date);
-
   const today = new Date();
   const [dropdown, setDropdown] =
     useState<React.ComponentProps<typeof Calendar>["captionLayout"]>("dropdown");
-  // const [date, setDate] = React.useState<Date | undefined>(new Date(2025, 5, 12));
 
-  useEffect(() => {
-    console.log("date", date);
-  }, [date]);
+  function InitialDate() {
+    const startofDay = new Date();
+    startofDay.setHours(0, 0, 0, 0);
+    console.log("start", startofDay);
+
+    return {
+      from: startofDay,
+      to: undefined
+    };
+  }
 
   useEffect(() => {
     if (selected === "today") {
-      setDate({ from: today, to: today });
+      const startofDay = new Date();
+      startofDay.setHours(0, 0, 0, 0);
+      setDate({ from: startofDay });
     } else if (selected === "week") {
       const previous = today;
       previous.setDate(previous.getDate() - 7);
@@ -43,7 +48,9 @@ export const DatePicker = ({ selected }: { selected: string }) => {
 
       setDate({ from: startOfWeek, to: endOfWeek });
     } else {
-      setDate({ from: today });
+      const startofDay = new Date();
+      startofDay.setHours(0, 0, 0, 0);
+      setDate({ from: startofDay });
     }
   }, [selected]);
 
@@ -51,10 +58,11 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     async function fetchSales() {
       if (!date) return;
       try {
+        console.log("before request", date);
         const response = await window.salesApi.getSalesDateRange(date as DateRangeType);
         if (response.status === "success") {
-          console.log("all sales", response.data);
-          // setSales(response.data);
+          console.log("all sales in date picker", response.data);
+          setSales(response.data);
         } else {
           console.log("error");
           toast.error("Could not retrieve sales");

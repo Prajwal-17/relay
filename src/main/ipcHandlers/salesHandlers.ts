@@ -12,6 +12,7 @@ import { db } from "../db/db";
 import { customers, saleItems, sales } from "../db/schema";
 
 export function salesHandlers() {
+  // get next invoice no
   ipcMain.handle("salesApi:getNextInvoiceNo", async (): Promise<ApiResponse<number>> => {
     try {
       const lastInvoice = await db.select().from(sales).orderBy(desc(sales.createdAt)).limit(1);
@@ -29,9 +30,10 @@ export function salesHandlers() {
     }
   });
 
+  // get all sales
   ipcMain.handle("salesApi:getAllSales", async (): Promise<ApiResponse<SalesType[]>> => {
     try {
-      const salesArray = await db.select().from(sales).orderBy(desc(sales.createdAt));
+      const salesArray = await db.select().from(sales).orderBy(desc(sales.createdAt)).limit(40);
 
       return {
         status: "success",
@@ -48,6 +50,7 @@ export function salesHandlers() {
     }
   });
 
+  //get sale by id
   ipcMain.handle(
     "salesApi:getTransactionById",
     async (_event, id: string): Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>> => {
@@ -75,6 +78,7 @@ export function salesHandlers() {
     }
   );
 
+  // save & update
   ipcMain.handle(
     "salesApi:save",
     async (_event, saleObj: SalePayload): Promise<ApiResponse<string>> => {
@@ -221,6 +225,7 @@ export function salesHandlers() {
    * IN Browser console -> the date is displayed as 28 Aug 2025 to 30 Aug 2025
    * But in ISO format it is -> { from: 2025-08-27T18:30:00.000Z, to: 2025-08-29T18:30:00.000Z }
    */
+  // get sales by filtering date range
   ipcMain.handle(
     "salesApi:getSalesDateRange",
     async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
@@ -256,14 +261,17 @@ export function salesHandlers() {
 
         let result: SalesType[] | [];
         if (fromDate && toDate) {
+          console.log("both ", fromDate, toDate);
           result = await db
             .select()
             .from(sales)
             .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)));
           // .limit(10);
         } else if (fromDate) {
+          console.log("from date", fromDate);
           result = await db.select().from(sales).where(gte(sales.createdAt, fromDate));
         } else if (toDate) {
+          console.log("todate", toDate);
           result = await db.select().from(sales).where(lt(sales.createdAt, toDate));
         } else {
           return {
@@ -293,4 +301,39 @@ export function salesHandlers() {
       }
     }
   );
+
+  // delete a sale
+  ipcMain.handle("salesApi:deleteSale", async (_event, saleId): Promise<ApiResponse<string>> => {
+    try {
+      if (!saleId) {
+        return {
+          status: "error",
+          error: {
+            message: "Sales does not exist"
+          }
+        };
+      }
+
+      const result = await db.delete(sales).where(eq(sales.id, saleId));
+
+      if (result.changes > 0) {
+        return { status: "success", data: "Sale delted successfull" };
+      }
+
+      return {
+        status: "error",
+        error: {
+          message: "Sale not found.Could be already deleted"
+        }
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        status: "error",
+        error: {
+          message: "Something went wrong in sales api"
+        }
+      };
+    }
+  });
 }

@@ -179,6 +179,8 @@ export interface SalesApi {
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
   getSalesDateRange: (range: DateRangeType) => Promise<ApiResponse<SalesType[] | []>>;
+  deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
+  convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface EstimatesApi {

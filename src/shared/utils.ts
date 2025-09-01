@@ -19,11 +19,45 @@ export function formatDateStr(dateStr?: string): string {
   });
 }
 
-export function formatTimeStr(dateStr?: string): string {
+// export function formatTimeStr(dateStr?: string): string {
+//   if (!dateStr) return "-";
+//   console.log(dateStr);
+//   const IndianTime = Intl.DateTimeFormat("en-IN", {
+//     timeStyle: "medium",
+//     timeZone: "Asia/kolkata"
+//   });
+//   const date = new Date(dateStr);
+//   const utcTimestamp = dateStr?.replace(" ", "T") + "Z";
+//   const value = date.toLocaleTimeString("en-IN", {
+//     timeZone: "Asia/kolkata",
+//     hour: "2-digit",
+//     minute: "2-digit",
+//     hour12: true
+//   });
+//   console.log(value);
+//   if (isNaN(date.getTime())) return "-";
+//   return IndianTime.format(date);
+//   // return date.toLocaleString("en-IN", {
+
+//   //   timeStyle: "short"
+//   // });
+// }
+
+export function formatDateTimeToIST(dateStr?: string): string {
   if (!dateStr) return "-";
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return "-";
+
+  // '2025-08-31 06:38:13' -> '2025-08-31T06:38:13Z'
+  const utcTimestamp = dateStr.replace(" ", "T") + "Z";
+
+  const date = new Date(utcTimestamp);
+
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+
   return date.toLocaleString("en-IN", {
-    timeStyle: "short"
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata"
   });
 }

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 
@@ -100,7 +100,7 @@ export const saleItems = sqliteTable("sale_items", {
     .primaryKey()
     .$defaultFn(() => uuidv4()),
   saleId: text("sale_id")
-    .references(() => sales.id)
+    .references(() => sales.id, { onDelete: "cascade" })
     .notNull(),
   productId: text("product_id").references(() => products.id),
   name: text("name").notNull(),
@@ -142,7 +142,7 @@ export const estimateItems = sqliteTable("estimate_items", {
     .primaryKey()
     .$defaultFn(() => uuidv4()),
   estimateId: text("estimate_id")
-    .references(() => estimates.id)
+    .references(() => estimates.id, { onDelete: "cascade" })
     .notNull(),
   productId: text("product_id").references(() => products.id),
   name: text("name").notNull(),
@@ -159,3 +159,25 @@ export const estimateItems = sqliteTable("estimate_items", {
     .default(sql`(datetime('now'))`)
     .notNull()
 });
+
+export const salesRelations = relations(sales, ({ many }) => ({
+  saleItems: many(saleItems)
+}));
+
+export const saleItemsRelations = relations(saleItems, ({ one }) => ({
+  sale: one(sales, {
+    fields: [saleItems.saleId],
+    references: [sales.id]
+  })
+}));
+
+export const estimatesRelations = relations(estimates, ({ many }) => ({
+  estimateItems: many(estimateItems)
+}));
+
+export const estimateItemsRelations = relations(estimateItems, ({ one }) => ({
+  estimate: one(estimates, {
+    fields: [estimateItems.estimateId],
+    references: [estimates.id]
+  })
+}));
