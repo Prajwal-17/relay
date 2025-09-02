@@ -22,6 +22,7 @@ function initialFormData() {
     unit: null,
     mrp: null,
     price: 0,
+    purchasePrice: null,
     isDisabled: false
   };
 }

@@ -21,6 +21,7 @@ export function productHandlers() {
     "productsApi:addNewProduct",
     async (_event, payload: ProductsType): Promise<ApiResponse<string>> => {
       try {
+        console.log(payload);
         const result = db
           .insert(products)
           .values({
@@ -28,7 +29,8 @@ export function productHandlers() {
             weight: payload.weight,
             unit: payload.unit,
             mrp: payload.mrp ? formatToPaisa(payload.mrp) : null,
-            price: formatToPaisa(payload.price)
+            price: formatToPaisa(payload.price),
+            purchasePrice: payload.purchasePrice ? formatToPaisa(payload.purchasePrice) : null
           })
           .run();
 
@@ -69,6 +71,9 @@ export function productHandlers() {
             ...updatePayload,
             mrp: updatePayload.mrp ? formatToPaisa(updatePayload.mrp) : null,
             price: formatToPaisa(updatePayload.price),
+            purchasePrice: updatePayload.purchasePrice
+              ? formatToPaisa(updatePayload.purchasePrice)
+              : null,
             disabledAt,
             updatedAt: sql`(datetime('now'))`
           })
@@ -168,7 +173,8 @@ export function productHandlers() {
             weight: products.weight,
             unit: products.unit,
             mrp: products.mrp,
-            price: products.price
+            price: products.price,
+            purchasePrice: products.purchasePrice
           })
           .from(products)
           .where(and(ne(products.isDeleted, true), ...searchConditions))
@@ -181,7 +187,8 @@ export function productHandlers() {
           data: searchResult.map((product) => ({
             ...product,
             mrp: product.mrp && formatToRupees(product.mrp),
-            price: formatToRupees(product.price)
+            price: formatToRupees(product.price),
+            purchasePrice: product.purchasePrice && formatToRupees(product.purchasePrice)
           }))
         };
       } catch (error) {

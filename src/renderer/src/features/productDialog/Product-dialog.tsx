@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const units = ["g", "kg", "ml", "l", "pc", "none"];
@@ -88,6 +88,12 @@ export function ProductDialog() {
     }
   };
 
+  useEffect(() => {
+    if (actionType === "add") {
+      setFormData({});
+    }
+  }, [actionType, setFormData]);
+
   const handleDelete = async (productId: string) => {
     try {
       const response = await window.productsApi.deleteProduct(productId);
@@ -137,43 +143,59 @@ export function ProductDialog() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="weight" className="text-base font-semibold">
-                        Weight
-                      </Label>
-                      <Input
-                        id="weight"
-                        value={formData.weight ?? ""}
-                        onChange={(e) => setFormData({ weight: e.target.value })}
-                        placeholder="e.g., 500"
-                        className="px-4 py-6 !text-base"
-                      />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="w-full space-y-2">
+                        <Label htmlFor="weight" className="text-base font-semibold">
+                          Weight
+                        </Label>
+                        <Input
+                          id="weight"
+                          value={formData.weight ?? ""}
+                          onChange={(e) => setFormData({ weight: e.target.value })}
+                          placeholder="e.g., 500"
+                          className="px-4 py-6 !text-base"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="unit" className="text-base font-semibold">
+                          Unit
+                        </Label>
+                        <Select
+                          value={formData.unit ?? "none"}
+                          onValueChange={(value) => {
+                            if (value === "none") {
+                              setFormData({ unit: null, weight: null });
+                            } else {
+                              setFormData({ unit: value });
+                            }
+                          }}
+                        >
+                          <SelectTrigger className="h-11 text-lg">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {units.map((unit) => (
+                              <SelectItem className="text-base" key={unit} value={unit}>
+                                {unit}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="unit" className="text-base font-semibold">
-                        Unit
+                      <Label htmlFor="price" className="text-base font-semibold">
+                        Purchase Price (Optional)
                       </Label>
-                      <Select
-                        value={formData.unit ?? "none"}
-                        onValueChange={(value) => {
-                          if (value === "none") {
-                            setFormData({ unit: null, weight: null });
-                          } else {
-                            setFormData({ unit: value });
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {units.map((unit) => (
-                            <SelectItem key={unit} value={unit}>
-                              {unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        id="price"
+                        type="number"
+                        value={formData.purchasePrice ?? undefined}
+                        onChange={(e) =>
+                          setFormData({ purchasePrice: Number.parseInt(e.target.value) })
+                        }
+                        className="px-4 py-6 !text-base"
+                      />
                     </div>
                   </div>
 
@@ -186,9 +208,7 @@ export function ProductDialog() {
                         id="price"
                         type="number"
                         value={formData.price || ""}
-                        onChange={(e) =>
-                          setFormData({ price: Number.parseInt(e.target.value) || 0 })
-                        }
+                        onChange={(e) => setFormData({ price: Number.parseInt(e.target.value) })}
                         className="px-4 py-6 !text-base"
                       />
                     </div>
@@ -199,7 +219,7 @@ export function ProductDialog() {
                       <Input
                         id="mrp"
                         type="number"
-                        value={formData.mrp || ""}
+                        value={formData.mrp ?? undefined}
                         onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) || 0 })}
                         className="px-4 py-6 !text-base"
                       />

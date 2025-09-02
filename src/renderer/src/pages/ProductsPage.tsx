@@ -182,7 +182,7 @@ export default function ProductsPage() {
                     <div className="flex flex-1 items-center gap-6">
                       <div className="flex-1">
                         <div className="flex gap-2">
-                          <h3 className="text-lg font-semibold">{product.name}</h3>
+                          <h3 className="text-xl font-semibold">{product.name}</h3>
                           {product.weight !== null &&
                             ignoredWeight.some((w) =>
                               `${product.weight}+${product.unit}`.includes(w)
@@ -204,9 +204,19 @@ export default function ProductsPage() {
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-1 text-sm font-medium text-slate-500">
-                          {product.totalQuantitySold ?? "null"} sold
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <p className="mt-1 text-base font-medium text-slate-500">
+                            {product.totalQuantitySold ?? "null"} sold
+                          </p>
+                          {product.purchasePrice && (
+                            <>
+                              <span className="text-slate-400">•</span>
+                              <p className="mt-1 text-base font-semibold text-slate-800">
+                                Purchase Price ₹ {product.purchasePrice}
+                              </p>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="flex items-center gap-2">

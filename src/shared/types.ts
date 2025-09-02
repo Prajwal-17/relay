@@ -20,6 +20,7 @@ export type ProductsType = {
   unit: string | null;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   totalQuantitySold?: number | null;
   isDisabled?: boolean;
 };
@@ -32,6 +33,8 @@ export type ProductHistoryType = {
   productId: string;
   oldPrice: number;
   newPrice: number;
+  oldPurchasePrice: number;
+  newPurchasePrice: number;
   oldMrp: number;
   newMrp: number;
 };
@@ -69,6 +72,7 @@ export type SaleItemsType = {
   name: string;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
   quantity: number;
@@ -82,6 +86,7 @@ export type EstimateItemsType = {
   name: string;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
   quantity: number;
@@ -120,6 +125,7 @@ export type SalePayloadItems = {
   name: string;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
   quantity: number;
@@ -144,6 +150,7 @@ export type EstimatePayloadItems = {
   name: string;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
   quantity: number;

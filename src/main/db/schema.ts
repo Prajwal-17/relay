@@ -41,6 +41,7 @@ export const products = sqliteTable("products", {
   unit: text("unit"),
   mrp: integer("mrp"),
   price: integer("price").notNull(),
+  purchasePrice: integer("purchase_price"),
   totalQuantitySold: integer("total_quantity_sold").default(0),
   isDisabled: integer("is_disabled", { mode: "boolean" }).notNull().default(false),
   disabledAt: text("disabled_at"),
@@ -68,6 +69,8 @@ export const productHistory = sqliteTable("product_history", {
   newPrice: integer("new_price"),
   oldMrp: integer("old_mrp"),
   newMrp: integer("new_mrp"),
+  oldPurchasePrice: integer("old_purchase_price"),
+  newPurchasePrice: integer("new_purchase_price"),
   createdAt: text("created_at")
     .default(sql`(datetime('now'))`)
     .notNull(),
@@ -106,6 +109,7 @@ export const saleItems = sqliteTable("sale_items", {
   name: text("name").notNull(),
   mrp: integer("mrp"),
   price: integer("price").notNull(),
+  purchasePrice: integer("purchase_price"),
   weight: text("weight"),
   unit: text("unit"),
   quantity: integer("quantity").notNull(),
@@ -148,6 +152,7 @@ export const estimateItems = sqliteTable("estimate_items", {
   name: text("name").notNull(),
   mrp: integer("mrp"),
   price: integer("price").notNull(),
+  purchasePrice: integer("purchase_price"),
   weight: text("weight"),
   unit: text("unit"),
   quantity: integer("quantity").notNull(),

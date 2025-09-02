@@ -133,7 +133,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                   {searchResult.map((item, index) => (
                     <div
                       key={index}
-                      className="group flex items-center gap-4 border-l-4 border-transparent px-4 py-4 transition-all duration-200 hover:cursor-pointer hover:border-blue-400 hover:bg-blue-50"
+                      className="group flex items-center gap-4 border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer hover:border-blue-400 hover:bg-blue-50"
                       onClick={() => {
                         addLineItem(idx, item);
                         setIsDropdownOpen();

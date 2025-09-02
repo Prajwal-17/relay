@@ -101,10 +101,10 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto bg-neutral-100 border-green-500 border ">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">
         <div
           ref={receiptRef}
-          className="receipt no-break font-roboto bg-white px-1 pt-1 mb-24 mt-0 border border-green-500 text-black"
+          className="receipt no-break font-roboto mt-0 mb-24 border border-green-500 bg-white px-1 pt-1 text-black"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -154,9 +154,9 @@ const BillPreview = () => {
           </div>
           <div className="border-b border-dashed border-black text-xs font-medium">
             {lineItems.map((item, idx) => {
-              if (item.name === "") return <></>;
+              if (item.name === "") return;
               return (
-                <div key={item.id} className="grid grid-cols-12 py-1">
+                <div key={idx} className="grid grid-cols-12 py-1">
                   <div className="col-span-1">{idx + 1}.</div>
                   <div className="col-span-5">{item.name}</div>
                   <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>

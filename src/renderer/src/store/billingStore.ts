@@ -12,6 +12,7 @@ type LineItemsType = {
   quantity: number;
   mrp: number | null;
   price: number;
+  purchasePrice: number | null;
   totalPrice: number;
 };
 
@@ -44,6 +45,7 @@ function initialLineItem() {
     quantity: 0,
     mrp: 0,
     price: 0,
+    purchasePrice: null,
     totalPrice: 0
   };
 }
@@ -90,6 +92,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
           quantity: item.quantity,
           mrp: item.mrp,
           price: item.price,
+          purchasePrice: item.purchasePrice,
           totalPrice: item.quantity * item.price
         }))
       };
