@@ -61,7 +61,6 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     async function fetchSales() {
       if (!date) return;
       try {
-        console.log("before request", date);
         const response = await window.salesApi.getSalesDateRange(date as DateRangeType);
         if (response.status === "success") {
           console.log("all sales in date picker", response.data);

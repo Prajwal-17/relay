@@ -79,6 +79,7 @@ export const DashboardTable = () => {
     try {
       const response = await window.salesApi.convertSaletoEstimate(saleId);
       if (response.status === "success") {
+        console.log(response.data);
         toast.success(response.data);
         if (sales.length > 0) {
           setSales(sales.filter((sale) => sale.id !== saleId));
@@ -144,7 +145,13 @@ export const DashboardTable = () => {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleConvert(transaction.id)}>
+                                <AlertDialogAction
+                                  onClick={() => {
+                                    pathname === "/sale"
+                                      ? handleConvert(transaction.id)
+                                      : handleConvert(transaction.id);
+                                  }}
+                                >
                                   Confirm Convert
                                 </AlertDialogAction>
                               </AlertDialogFooter>

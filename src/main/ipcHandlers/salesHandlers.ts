@@ -9,7 +9,7 @@ import type {
 } from "../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../shared/utils";
 import { db } from "../db/db";
-import { customers, saleItems, sales } from "../db/schema";
+import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
 export function salesHandlers() {
   // get next invoice no
@@ -338,4 +338,112 @@ export function salesHandlers() {
       };
     }
   });
+
+  // Convert a sale to estimate
+  ipcMain.handle(
+    "salesApi:convertSaletoEstimate",
+    async (_event, saleId): Promise<ApiResponse<string>> => {
+      try {
+        if (!saleId) {
+          return {
+            status: "error",
+            error: {
+              message: "Sales does not exist"
+            }
+          };
+        }
+
+        const saleObj = await db.query.sales.findFirst({
+          where: eq(sales.id, saleId),
+          with: {
+            saleItems: true
+          }
+        });
+
+        if (!saleObj) {
+          return {
+            status: "error",
+            error: {
+              message: "Sales does not exist"
+            }
+          };
+        }
+
+        const lastEstimate = await db
+          .select()
+          .from(estimates)
+          .orderBy(desc(estimates.createdAt))
+          .limit(1);
+        const lastEstimateNo = lastEstimate[0]?.estimateNo;
+        let nextEstimateNo = 1;
+
+        if (nextEstimateNo) {
+          nextEstimateNo = lastEstimateNo + 1;
+        }
+
+        db.transaction((tx) => {
+          const estimate = tx
+            .insert(estimates)
+            .values({
+              estimateNo: nextEstimateNo,
+              customerId: saleObj.customerId,
+              customerName: saleObj.customerName,
+              customerContact: saleObj.customerContact,
+              grandTotal: saleObj.grandTotal,
+              totalQuantity: saleObj.totalQuantity,
+              isPaid: saleObj.isPaid
+            })
+            .returning({ id: estimates.id })
+            .get();
+
+          if (!estimate.id) {
+            tx.rollback();
+          }
+
+          /**
+           * @returns {{ changes: number, lastInsertRowid: number }[]}
+           */
+          const insertItems = saleObj.saleItems.map((i) =>
+            tx
+              .insert(estimateItems)
+              .values({
+                estimateId: estimate.id,
+                productId: i.productId,
+                name: i.name,
+                mrp: i.mrp,
+                price: i.price,
+                weight: i.weight,
+                unit: i.unit,
+                quantity: i.quantity,
+                totalPrice: i.totalPrice
+              })
+              .run()
+          );
+
+          if (insertItems.length !== saleObj.saleItems.length) {
+            tx.rollback();
+            return;
+          }
+
+          const deleteSale = tx.delete(sales).where(eq(sales.id, saleId)).run();
+
+          if (deleteSale.changes <= 0) {
+            return "Sale not converted";
+          }
+
+          return "Sale converted successfull";
+        });
+
+        return { status: "success", data: "Successfully converted sales to estimate" };
+      } catch (error) {
+        console.log(error);
+        return {
+          status: "error",
+          error: {
+            message: "Something went wrong while converting"
+          }
+        };
+      }
+    }
+  );
 }
