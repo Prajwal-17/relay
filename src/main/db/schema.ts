@@ -83,7 +83,7 @@ export const sales = sqliteTable("sales", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv4()),
-  invoiceNo: integer("invoice_no").notNull(),
+  invoiceNo: integer("invoice_no").notNull().unique(),
   customerId: text("customer_id").references(() => customers.id),
   customerName: text("customer_name").notNull(), // "name = DEFAULT"
   customerContact: text("customer_contact"),
@@ -126,7 +126,7 @@ export const estimates = sqliteTable("estimates", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv4()),
-  estimateNo: integer("estimate_no").notNull(),
+  estimateNo: integer("estimate_no").notNull().unique(),
   customerId: text("customer_id").references(() => customers.id),
   customerName: text("customer_name").notNull(),
   customerContact: text("customer_contact"),
