@@ -40,7 +40,9 @@ const estimatesApi: EstimatesApi = {
   getEstimatesDateRange: (range: DateRangeType) =>
     ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range),
   deleteEstimate: (estimateId: string) =>
-    ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId)
+    ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId),
+  convertEstimateToSale: (estimateId: string) =>
+    ipcRenderer.invoke("estimatesApi:convertEstimateToSale", estimateId)
 };
 
 const customersApi: CustomersApi = {

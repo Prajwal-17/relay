@@ -199,6 +199,7 @@ export interface EstimatesApi {
   ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
   getEstimatesDateRange: (range: DateRangeType) => Promise<ApiResponse<EstimateType[] | []>>;
   deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
+  convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface CustomersApi {

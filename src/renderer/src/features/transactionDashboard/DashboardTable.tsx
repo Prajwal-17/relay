@@ -75,14 +75,30 @@ export const DashboardTable = () => {
     }
   };
 
-  const handleConvert = async (saleId: string) => {
+  const handleSaleConvert = async (saleId: string) => {
     try {
       const response = await window.salesApi.convertSaletoEstimate(saleId);
       if (response.status === "success") {
-        console.log(response.data);
         toast.success(response.data);
         if (sales.length > 0) {
           setSales(sales.filter((sale) => sale.id !== saleId));
+        }
+      } else {
+        toast.error(response.error.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    }
+  };
+
+  const handleEstimateConvert = async (estimateId: string) => {
+    try {
+      const response = await window.estimatesApi.convertEstimateToSale(estimateId);
+      if (response.status === "success") {
+        toast.success(response.data);
+        if (estimates.length > 0) {
+          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
         }
       } else {
         toast.error(response.error.message);
@@ -148,8 +164,8 @@ export const DashboardTable = () => {
                                 <AlertDialogAction
                                   onClick={() => {
                                     pathname === "/sale"
-                                      ? handleConvert(transaction.id)
-                                      : handleConvert(transaction.id);
+                                      ? handleSaleConvert(transaction.id)
+                                      : handleEstimateConvert(transaction.id);
                                   }}
                                 >
                                   Confirm Convert

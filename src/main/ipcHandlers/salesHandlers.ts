@@ -397,7 +397,7 @@ export function salesHandlers() {
             .get();
 
           if (!estimate.id) {
-            tx.rollback();
+            throw new Error("Failed to insert estimate");
           }
 
           /**
@@ -421,17 +421,20 @@ export function salesHandlers() {
           );
 
           if (insertItems.length !== saleObj.saleItems.length) {
-            tx.rollback();
             return;
+          }
+
+          if (!estimate?.id) {
+            throw new Error("Failed to insert estimate");
           }
 
           const deleteSale = tx.delete(sales).where(eq(sales.id, saleId)).run();
 
           if (deleteSale.changes <= 0) {
-            return "Sale not converted";
+            throw new Error("Failed to delete sale during conversion");
           }
 
-          return "Sale converted successfull";
+          return "Sale converted successfully";
         });
 
         return { status: "success", data: "Successfully converted sales to estimate" };
@@ -440,7 +443,7 @@ export function salesHandlers() {
         return {
           status: "error",
           error: {
-            message: "Something went wrong while converting"
+            message: (error as Error).message ?? "Something went wrong"
           }
         };
       }
