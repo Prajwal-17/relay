@@ -1,8 +1,8 @@
-import { customers, products, sales, users } from "./schema";
+import { faker } from "@faker-js/faker";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { v4 as uuidv4 } from "uuid";
-import { faker } from "@faker-js/faker";
 import type { CustomersType, ProductsType, SalesType, UsersType } from "../../shared/types";
+import { customers, products, sales, users } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
 const db = drizzle(dbPath);
@@ -31,7 +31,8 @@ export async function main() {
       weight: faker.string.numeric(2),
       unit: faker.string.alpha(1),
       mrp: Number(faker.commerce.price()),
-      price: Number(faker.commerce.price())
+      price: Number(faker.commerce.price()),
+      purchasePrice: Number(faker.commerce.price())
     }));
 
     const salesData: SalesType[] = Array.from({ length: 3 }).map(() => {

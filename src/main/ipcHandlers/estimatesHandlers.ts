@@ -276,14 +276,23 @@ export function estimatesHandlers() {
           result = await db
             .select()
             .from(estimates)
-            .where(and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)));
+            .where(and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)))
+            .orderBy(desc(estimates.createdAt));
           // .limit(10);
         } else if (fromDate) {
           console.log("from date", fromDate);
-          result = await db.select().from(estimates).where(gte(estimates.createdAt, fromDate));
+          result = await db
+            .select()
+            .from(estimates)
+            .where(gte(estimates.createdAt, fromDate))
+            .orderBy(desc(estimates.createdAt));
         } else if (toDate) {
           console.log("todate", toDate);
-          result = await db.select().from(estimates).where(lt(estimates.createdAt, toDate));
+          result = await db
+            .select()
+            .from(estimates)
+            .where(lt(estimates.createdAt, toDate))
+            .orderBy(desc(estimates.createdAt));
         } else {
           return {
             status: "error",

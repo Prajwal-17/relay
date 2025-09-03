@@ -267,14 +267,23 @@ export function salesHandlers() {
           result = await db
             .select()
             .from(sales)
-            .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)));
+            .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)))
+            .orderBy(desc(sales.createdAt));
           // .limit(10);
         } else if (fromDate) {
           console.log("from date", fromDate);
-          result = await db.select().from(sales).where(gte(sales.createdAt, fromDate));
+          result = await db
+            .select()
+            .from(sales)
+            .where(gte(sales.createdAt, fromDate))
+            .orderBy(desc(sales.createdAt));
         } else if (toDate) {
           console.log("todate", toDate);
-          result = await db.select().from(sales).where(lt(sales.createdAt, toDate));
+          result = await db
+            .select()
+            .from(sales)
+            .where(lt(sales.createdAt, toDate))
+            .orderBy(desc(sales.createdAt));
         } else {
           return {
             status: "error",
