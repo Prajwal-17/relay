@@ -45,11 +45,10 @@ export default function ProductsPage() {
             setHasMore(false);
           }
         } else {
-          console.log(response.error);
           setHasMore(false);
         }
       } catch (error) {
-        console.log("error", error);
+        console.log(error);
         setHasMore(false);
       } finally {
         setLoading(false);

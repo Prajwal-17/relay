@@ -245,7 +245,6 @@ export function estimatesHandlers() {
   ipcMain.handle(
     "estimatesApi:getEstimatesDateRange",
     async (_event, range: DateRangeType): Promise<ApiResponse<EstimateType[] | []>> => {
-      console.log(range);
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -269,15 +268,12 @@ export function estimatesHandlers() {
         let toDate;
         if (range.to !== undefined) {
           const tempToDate = new Date(range.to);
-          console.log(tempToDate);
           tempToDate.setDate(tempToDate.getDate() + 1);
-          console.log(tempToDate);
           toDate = tempToDate.toISOString();
         }
 
         let result: EstimateType[] | [];
         if (fromDate && toDate) {
-          console.log("both ", fromDate, toDate);
           result = await db
             .select()
             .from(estimates)
@@ -285,14 +281,12 @@ export function estimatesHandlers() {
             .orderBy(desc(estimates.createdAt));
           // .limit(10);
         } else if (fromDate) {
-          console.log("from date", fromDate);
           result = await db
             .select()
             .from(estimates)
             .where(gte(estimates.createdAt, fromDate))
             .orderBy(desc(estimates.createdAt));
         } else if (toDate) {
-          console.log("todate", toDate);
           result = await db
             .select()
             .from(estimates)

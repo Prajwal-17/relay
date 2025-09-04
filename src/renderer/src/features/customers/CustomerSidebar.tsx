@@ -50,7 +50,6 @@ export const CustomerSidebar = () => {
   useEffect(() => {
     async function getAllCustomers() {
       try {
-        console.log("here");
         const response = await window.customersApi.getAllCustomers();
         if (response.status === "success") {
           setCustomers(response.data);
@@ -71,7 +70,6 @@ export const CustomerSidebar = () => {
   async function importContactFromGoogle() {
     try {
       const response = await window.customersApi.importContactsFromGoogle();
-      console.log(response);
       if (response.status === "success") {
         setGoogleContacts(response.data);
         setLoading();

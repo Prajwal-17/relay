@@ -228,7 +228,6 @@ export default function customersHandlers() {
     "customersApi:searchCustomers",
     async (_event, query): Promise<ApiResponse<CustomersType[]>> => {
       try {
-        console.log(query);
         if (query === "") {
           const allCustomers = await db
             .select({

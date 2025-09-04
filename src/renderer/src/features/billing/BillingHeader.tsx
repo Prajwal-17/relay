@@ -43,7 +43,6 @@ const BillingHeader = () => {
         if (response.status === "success") {
           setInvoiceNo(response.data);
         } else {
-          console.log(response.error.message);
           setInvoiceNo(null);
         }
       } catch (error) {

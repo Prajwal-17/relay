@@ -23,7 +23,6 @@ export const DatePicker = ({ selected }: { selected: string }) => {
   function InitialDate() {
     const startofDay = new Date();
     startofDay.setHours(0, 0, 0, 0);
-    console.log("start", startofDay);
 
     return {
       from: startofDay,
@@ -63,10 +62,8 @@ export const DatePicker = ({ selected }: { selected: string }) => {
       try {
         const response = await window.salesApi.getSalesDateRange(date as DateRangeType);
         if (response.status === "success") {
-          console.log("all sales in date picker", response.data);
           setSales(response.data);
         } else {
-          console.log("error");
           toast.error("Could not retrieve sales");
         }
       } catch (error) {
@@ -77,13 +74,10 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     async function fetchEstimates() {
       if (!date) return;
       try {
-        console.log("before request", date);
         const response = await window.estimatesApi.getEstimatesDateRange(date as DateRangeType);
         if (response.status === "success") {
-          console.log("all estimates in date picker", response.data);
           setEstimates(response.data);
         } else {
-          console.log("error");
           toast.error("Could not retrieve estimates");
         }
       } catch (error) {

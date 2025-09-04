@@ -30,7 +30,7 @@ export function formatDateTimeToIST(dateStr?: string): string {
   if (isNaN(date.getTime())) {
     return "Invalid Date";
   }
-  console.log(dateStr);
+
   return date.toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",

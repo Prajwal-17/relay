@@ -260,15 +260,12 @@ export function salesHandlers() {
         let toDate;
         if (range.to !== undefined) {
           const tempToDate = new Date(range.to);
-          console.log(tempToDate);
           tempToDate.setDate(tempToDate.getDate() + 1);
-          console.log(tempToDate);
           toDate = tempToDate.toISOString();
         }
 
         let result: SalesType[] | [];
         if (fromDate && toDate) {
-          console.log("both ", fromDate, toDate);
           result = await db
             .select()
             .from(sales)
@@ -276,14 +273,12 @@ export function salesHandlers() {
             .orderBy(desc(sales.createdAt));
           // .limit(10);
         } else if (fromDate) {
-          console.log("from date", fromDate);
           result = await db
             .select()
             .from(sales)
             .where(gte(sales.createdAt, fromDate))
             .orderBy(desc(sales.createdAt));
         } else if (toDate) {
-          console.log("todate", toDate);
           result = await db
             .select()
             .from(sales)

@@ -21,7 +21,6 @@ export function productHandlers() {
     "productsApi:addNewProduct",
     async (_event, payload: ProductsType): Promise<ApiResponse<string>> => {
       try {
-        console.log(payload);
         const result = db
           .insert(products)
           .values({
