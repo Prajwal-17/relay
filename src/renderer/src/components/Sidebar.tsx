@@ -9,7 +9,7 @@ import { Button } from "./ui/button";
 export const Sidebar = () => {
   const location = useLocation();
   const pathname = location.pathname;
-  const billingPages = ["/sales/new", "/estimate/new"];
+  const billingPages = ["/sales/new", "/estimates/new"];
   const isBillingPage = billingPages.includes(pathname);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 
@@ -96,7 +96,7 @@ export const Sidebar = () => {
                     Create Sale
                   </Button>
                 </Link>
-                <Link to="/estimate/new" className="w-full">
+                <Link to="/estimates/new" className="w-full">
                   <Button variant="default" size="lg" className="w-full text-lg font-medium">
                     Add Estimate
                   </Button>

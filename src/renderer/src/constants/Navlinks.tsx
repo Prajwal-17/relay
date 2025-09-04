@@ -41,13 +41,13 @@ export const navLinks: NavlinkType[] = [
   },
   {
     href: "/sale",
-    title: "Sale",
+    title: "Sales",
     element: <Dashboard />,
     icon: <ShoppingCart size={28} />
   },
   {
     href: "/estimate",
-    title: "Estimate",
+    title: "Estimates",
     element: <Dashboard />,
     icon: <ReceiptText size={28} />
   },

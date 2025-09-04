@@ -13,7 +13,7 @@ const App = () => {
             <Route key={idx} path={item.href} element={item.element} />
           ))}
           <Route path="/sales/new" element={<NewSale />} />
-          <Route path="/estimate/new" element={<NewEstimate />} />
+          <Route path="/estimates/new" element={<NewEstimate />} />
           <Route path="/sales/edit/:id" element={<NewSale />} />
           <Route path="/estimates/edit/:id" element={<NewEstimate />} />
         </Route>

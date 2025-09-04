@@ -46,7 +46,7 @@ const Dashboard = () => {
           <Button
             size="lg"
             onClick={() => {
-              pathname === "/sale" ? navigate("/sales/new") : navigate("/estimate/new");
+              pathname === "/sale" ? navigate("/sales/new") : navigate("/estimates/new");
             }}
             className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-lg font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
           >
