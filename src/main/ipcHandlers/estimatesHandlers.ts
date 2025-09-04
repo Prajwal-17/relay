@@ -129,8 +129,8 @@ export function estimatesHandlers() {
             }
 
             for (const item of estimateObj.items) {
-              if (!item.name || !item.productId) {
-                continue;
+              if (!item.name) {
+                throw new Error("Item name field cannot be empty");
               }
 
               tx.insert(estimateItems)
@@ -186,7 +186,7 @@ export function estimatesHandlers() {
 
             for (const item of estimateObj.items) {
               if (!item.name) {
-                continue;
+                throw new Error("Item name field cannot be empty");
               }
               tx.insert(estimateItems)
                 .values({
@@ -230,7 +230,9 @@ export function estimatesHandlers() {
 
         return {
           status: "error",
-          error: { message: "An error occurred while saving the estimate." }
+          error: {
+            message: (error as Error).message ?? "An error occurred while saving the estimate."
+          }
         };
       }
     }

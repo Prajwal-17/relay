@@ -119,8 +119,8 @@ export function salesHandlers() {
             }
 
             for (const item of saleObj.items) {
-              if (!item.name || !item.productId) {
-                continue;
+              if (!item.name) {
+                throw new Error("Item name field cannot be empty");
               }
 
               tx.insert(saleItems)
@@ -172,7 +172,7 @@ export function salesHandlers() {
 
             for (const item of saleObj.items) {
               if (!item.name) {
-                continue;
+                throw new Error("Item name field cannot be empty");
               }
               tx.insert(saleItems)
                 .values({
@@ -209,14 +209,16 @@ export function salesHandlers() {
           if (error.message === "NoSaleFound") {
             return {
               status: "error",
-              error: { message: "The sale you are trying to update could not be found." }
+              error: {
+                message: "The sale you are trying to update could not be found."
+              }
             };
           }
         }
 
         return {
           status: "error",
-          error: { message: "An error occurred while saving the sale." }
+          error: { message: (error as Error).message ?? "An error occurred while saving the sale." }
         };
       }
     }
