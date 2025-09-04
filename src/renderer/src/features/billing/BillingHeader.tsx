@@ -1,18 +1,30 @@
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { DateTime } from "../../components/DateTime";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
-  const { invoiceNo, setInvoiceNo, customerContact, setCustomerContact } = useTransactionState();
+  const {
+    invoiceNo,
+    setInvoiceNo,
+    customerContact,
+    setCustomerContact,
+    billingDate,
+    setBillingDate
+  } = useTransactionState();
 
+  const [open, setOpen] = useState(false);
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
+  const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
 
   const location = useLocation();
   const page = location.pathname.split("/")[1];
@@ -41,6 +53,14 @@ const BillingHeader = () => {
     getLatestInvoiceNumber();
   }, [setInvoiceNo, id, page, location]);
 
+  const handleTimeChange = (e) => {
+    const [hours, minutes] = e.target.value.split(":");
+    const udpatedDate = new Date(billingDate);
+    udpatedDate.setHours(hours);
+    udpatedDate.setMinutes(minutes);
+    setBillingDate(udpatedDate);
+  };
+
   return (
     <>
       <div className="border-border my-5 flex flex-col justify-center gap-5 rounded-xl border px-6 py-6 shadow-xl">
@@ -50,6 +70,7 @@ const BillingHeader = () => {
               <button
                 onClick={() => {
                   setIsSidebarOpen(true);
+                  setIsSidebarPinned(true);
                 }}
                 className="border-border text-foreground hover:b rounded-lg border px-2 py-2 shadow-lg hover:cursor-pointer hover:bg-neutral-200/80"
               >
@@ -91,8 +112,46 @@ const BillingHeader = () => {
               {/*<SquarePen size={20} onClick={() => setEditInvoice(true)} />*/}
             </div>
           </div>
-          <div className="flex items-center justify-center gap-4">
-            <DateTime />
+          <div className="flex items-center gap-5">
+            <div>
+              <Label className="text-muted-foreground text-lg">Date</Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-36 justify-start bg-transparent text-left text-lg font-normal"
+                  >
+                    {billingDate.toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={billingDate}
+                    onSelect={(date) => {
+                      date && setBillingDate(date);
+                      setOpen(false);
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            <div>
+              <Label htmlFor="time-picker" className="px-1 text-lg">
+                Time
+              </Label>
+              <Input
+                type="time"
+                id="time-picker"
+                step="60"
+                defaultValue={billingDate.toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit"
+                })}
+                onChange={(e) => handleTimeChange(e)}
+                className="bg-background appearance-none !text-lg [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+              />
+            </div>
           </div>
         </div>
         <div className="flex max-w-4xl items-center">

@@ -15,6 +15,8 @@ export const Sidebar = () => {
 
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
+  const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
+  const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
 
   useEffect(() => {
     if (isBillingPage) {
@@ -28,6 +30,7 @@ export const Sidebar = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
         setIsSidebarOpen(false);
+        setIsSidebarPinned(false);
       }
     };
 
@@ -37,10 +40,22 @@ export const Sidebar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen, setIsSidebarOpen, isBillingPage]);
+  }, [isSidebarOpen, isSidebarPinned, setIsSidebarOpen, setIsSidebarPinned, isBillingPage]);
+
+  const handleMouseLeave = () => {
+    if (!isSidebarPinned && isBillingPage) {
+      setIsSidebarOpen(false);
+    }
+  };
 
   return (
     <>
+      {isBillingPage && (
+        <div
+          className="fixed top-0 left-0 z-30 h-full w-4"
+          onMouseEnter={() => setIsSidebarOpen(true)}
+        />
+      )}
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
@@ -50,6 +65,7 @@ export const Sidebar = () => {
             transition={{ duration: 0.2, ease: "easeInOut" }}
             ref={sidebarRef}
             className={`text-sidebar-foreground bg-sidebar border-border h-full w-full max-w-xs border-r px-4 py-4 ${isBillingPage ? "absolute z-20" : "relative"}`}
+            onMouseLeave={handleMouseLeave}
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between">
@@ -64,7 +80,10 @@ export const Sidebar = () => {
                 </div>
                 {isBillingPage && (
                   <button
-                    onClick={() => setIsSidebarOpen(false)}
+                    onClick={() => {
+                      setIsSidebarOpen(false);
+                      setIsSidebarPinned(false);
+                    }}
                     className="text-foreground hover:b rounded-lg px-2 py-2 hover:cursor-pointer hover:bg-neutral-200/80"
                   >
                     <X />

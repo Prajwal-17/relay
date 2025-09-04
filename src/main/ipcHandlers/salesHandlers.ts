@@ -7,7 +7,7 @@ import type {
   SalePayload,
   SalesType
 } from "../../shared/types";
-import { formatToPaisa, formatToRupees } from "../../shared/utils";
+import { formatToPaisa, formatToRupees, removeTandZ } from "../../shared/utils";
 import { db } from "../db/db";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
@@ -15,7 +15,7 @@ export function salesHandlers() {
   // get next invoice no
   ipcMain.handle("salesApi:getNextInvoiceNo", async (): Promise<ApiResponse<number>> => {
     try {
-      const lastInvoice = await db.select().from(sales).orderBy(desc(sales.createdAt)).limit(1);
+      const lastInvoice = await db.select().from(sales).orderBy(desc(sales.invoiceNo)).limit(1);
       const lastInvoiceNo = lastInvoice[0]?.invoiceNo;
       let nextInvoiceNo = 1;
 
@@ -109,7 +109,10 @@ export function salesHandlers() {
                 customerName: customer[0].name,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
-                isPaid: true
+                isPaid: true,
+                createdAt: saleObj.createdAt
+                  ? removeTandZ(saleObj.createdAt)
+                  : sql`(datetime('now'))`
               })
               .returning({ id: sales.id })
               .get();
@@ -383,7 +386,7 @@ export function salesHandlers() {
         const lastEstimate = await db
           .select()
           .from(estimates)
-          .orderBy(desc(estimates.createdAt))
+          .orderBy(desc(estimates.estimateNo))
           .limit(1);
         const lastEstimateNo = lastEstimate[0]?.estimateNo;
         let nextEstimateNo = 1;

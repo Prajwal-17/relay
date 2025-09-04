@@ -19,30 +19,6 @@ export function formatDateStr(dateStr?: string): string {
   });
 }
 
-// export function formatTimeStr(dateStr?: string): string {
-//   if (!dateStr) return "-";
-//   console.log(dateStr);
-//   const IndianTime = Intl.DateTimeFormat("en-IN", {
-//     timeStyle: "medium",
-//     timeZone: "Asia/kolkata"
-//   });
-//   const date = new Date(dateStr);
-//   const utcTimestamp = dateStr?.replace(" ", "T") + "Z";
-//   const value = date.toLocaleTimeString("en-IN", {
-//     timeZone: "Asia/kolkata",
-//     hour: "2-digit",
-//     minute: "2-digit",
-//     hour12: true
-//   });
-//   console.log(value);
-//   if (isNaN(date.getTime())) return "-";
-//   return IndianTime.format(date);
-//   // return date.toLocaleString("en-IN", {
-
-//   //   timeStyle: "short"
-//   // });
-// }
-
 export function formatDateTimeToIST(dateStr?: string): string {
   if (!dateStr) return "-";
 
@@ -54,10 +30,15 @@ export function formatDateTimeToIST(dateStr?: string): string {
   if (isNaN(date.getTime())) {
     return "Invalid Date";
   }
-
+  console.log(dateStr);
   return date.toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
     timeZone: "Asia/Kolkata"
   });
+}
+
+export function removeTandZ(isoString: string) {
+  if (!isoString) return;
+  return isoString.replaceAll("T", " ").replaceAll("Z", " ").slice(0, -5);
 }

@@ -9,6 +9,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
   const setBillingId = useBillingStore((state) => state.setBillingId);
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
+  const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
   useEffect(() => {
     async function fetchTransactionById() {
@@ -34,6 +35,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           setInvoiceNo(response.data.invoiceNo || response.data.estimateNo);
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
+          setBillingDate(new Date(response.data.createdAt));
           setLineItems(response.data.items);
         } else {
           toast.error(response.error.message);
@@ -51,6 +53,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
     setCustomerName,
     setCustomerContact,
     setInvoiceNo,
+    setBillingDate,
     setLineItems
   ]);
 

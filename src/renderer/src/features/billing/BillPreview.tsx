@@ -20,7 +20,8 @@ const BillPreview = () => {
     customerContact,
     setCustomerContact,
     billingId,
-    setBillingId
+    setBillingId,
+    billingDate
   } = useTransactionState();
 
   const location = useLocation();
@@ -55,6 +56,7 @@ const BillPreview = () => {
           grandTotal: calcTotalAmount,
           totalQuantity: calcTotalQuantity,
           isPaid: true,
+          createdAt: billingDate.toISOString(),
           items: [...lineItems]
         });
         if (response.status === "success") {
@@ -79,6 +81,7 @@ const BillPreview = () => {
           grandTotal: calcTotalAmount,
           totalQuantity: calcTotalQuantity,
           isPaid: true,
+          createdAt: billingDate.toISOString(),
           items: [...lineItems]
         });
         if (response.status === "success") {

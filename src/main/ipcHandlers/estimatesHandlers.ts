@@ -7,7 +7,7 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
-import { formatToPaisa, formatToRupees } from "../../shared/utils";
+import { formatToPaisa, formatToRupees, removeTandZ } from "../../shared/utils";
 import { db } from "../db/db";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
@@ -17,7 +17,7 @@ export function estimatesHandlers() {
       const lastEstimate = await db
         .select()
         .from(estimates)
-        .orderBy(desc(estimates.createdAt))
+        .orderBy(desc(estimates.estimateNo))
         .limit(1);
       const lastEstimateNo = lastEstimate[0]?.estimateNo;
       let nextEstimateNo = 1;
@@ -119,7 +119,10 @@ export function estimatesHandlers() {
                 customerName: customer[0].name,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
-                isPaid: true
+                isPaid: true,
+                createdAt: estimateObj.createdAt
+                  ? removeTandZ(estimateObj.createdAt)
+                  : sql`(datetime('now'))`
               })
               .returning({ id: estimates.id })
               .get();
@@ -392,7 +395,7 @@ export function estimatesHandlers() {
           };
         }
 
-        const lastSale = await db.select().from(sales).orderBy(desc(sales.createdAt)).limit(1);
+        const lastSale = await db.select().from(sales).orderBy(desc(sales.invoiceNo)).limit(1);
         const lastSaleNo = lastSale[0]?.invoiceNo;
         let nextSaleNo = 1;
 

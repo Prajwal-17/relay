@@ -116,6 +116,7 @@ export type SalePayload = {
   grandTotal: number;
   totalQuantity: number | null;
   isPaid: boolean;
+  createdAt?: string;
   items: SalePayloadItems[];
 };
 
@@ -141,6 +142,7 @@ export type EstimatePayload = {
   grandTotal: number;
   totalQuantity: number | null;
   isPaid: boolean;
+  createdAt: string;
   items: EstimatePayloadItems[];
 };
 
