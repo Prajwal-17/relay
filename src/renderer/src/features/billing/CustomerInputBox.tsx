@@ -64,7 +64,7 @@ export const CustomerNameInput = () => {
           placeholder="Enter Name"
           id="customer-name"
           value={customerName}
-          className="px-4 py-6 !text-lg font-medium"
+          className="px-4 py-6 !text-lg font-medium focus:border-none"
           onClick={() => setOpenDropdown((prev) => !prev)}
           onChange={(e) => setCustomerName(e.target.value)}
         />

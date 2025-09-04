@@ -4,7 +4,7 @@ import { Sidebar } from "../Sidebar";
 export default function SidebarLayout() {
   return (
     <>
-      <div className="mx-auto flex h-screen min-h-screen w-full">
+      <div className="relative mx-auto flex h-screen min-h-screen w-full">
         <Sidebar />
         <div className="flex-1 overflow-y-auto">
           <Outlet />

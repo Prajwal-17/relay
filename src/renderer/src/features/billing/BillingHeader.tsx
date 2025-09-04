@@ -1,26 +1,18 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useTransactionState from "@/hooks/useTransactionState";
-import { Check, X } from "lucide-react";
+import { useSidebarStore } from "@/store/sidebarStore";
+import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { DateTime } from "../../components/DateTime";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
-  const navigate = useNavigate();
-  const {
-    invoiceNo,
-    setBillingId,
-    setInvoiceNo,
-    setCustomerId,
-    setCustomerName,
-    customerContact,
-    setCustomerContact
-  } = useTransactionState();
+  const { invoiceNo, setInvoiceNo, customerContact, setCustomerContact } = useTransactionState();
 
   const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
+  const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
 
   const location = useLocation();
   const page = location.pathname.split("/")[1];
@@ -51,27 +43,22 @@ const BillingHeader = () => {
 
   return (
     <>
-      <div className="border-b-border flex w-full flex-col justify-center gap-10 border px-4 py-5">
-        <div className="flex items-center justify-between gap-5 px-2 py-2">
+      <div className="border-border my-5 flex flex-col justify-center gap-5 rounded-xl border px-6 py-6 shadow-xl">
+        <div className="flex items-start justify-between gap-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
-              <Button
+              <button
                 onClick={() => {
-                  setBillingId(null);
-                  setCustomerId(null);
-                  setCustomerName("");
-                  navigate("/");
+                  setIsSidebarOpen(true);
                 }}
-                variant="default"
-                size="lg"
-                className="text-lg font-medium"
+                className="border-border text-foreground hover:b rounded-lg border px-2 py-2 shadow-lg hover:cursor-pointer hover:bg-neutral-200/80"
               >
-                Home
-              </Button>
+                <PanelLeftOpen size={23} />
+              </button>
               <h1 className="text-3xl font-bold">{page.charAt(0).toUpperCase() + page.slice(1)}</h1>
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <span className="text-muted-foreground text-base font-medium">Invoice Number</span>
+            <div className="flex items-center justify-center gap-2 py-2">
+              <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>
               <span className="text-bold text-primary text-3xl font-semibold">#</span>
               {editInvoice ? (
                 <>
@@ -118,12 +105,12 @@ const BillingHeader = () => {
 
               <div className="relative mt-1">
                 <div className="border-r-border pointer-events-none absolute inset-y-0 left-0 flex items-center rounded-l-md border border-gray-300 bg-gray-50 px-3">
-                  <span className="text-gray-500 sm:text-sm">+91</span>
+                  <span className="text-lg text-gray-500">+91</span>
                 </div>
 
                 <Input
                   id="customer-contact"
-                  className="py-2 pl-16"
+                  className="py-6 pl-16 !text-lg font-medium focus:border-none"
                   placeholder="Contact Number"
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}
