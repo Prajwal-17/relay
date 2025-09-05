@@ -3,13 +3,19 @@ import { useSidebarStore } from "@/store/sidebarStore";
 import { Building2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { Button } from "./ui/button";
 
 export const Sidebar = () => {
   const location = useLocation();
   const pathname = location.pathname;
-  const billingPages = ["/sales/new", "/estimates/new"];
+  const { id } = useParams();
+  const billingPages = [
+    "/sales/new",
+    "/estimates/new",
+    `/sales/edit/${id}`,
+    `/estimates/edit/${id}`
+  ];
   const isBillingPage = billingPages.includes(pathname);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
 

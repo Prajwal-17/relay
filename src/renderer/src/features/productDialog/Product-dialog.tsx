@@ -220,7 +220,7 @@ export function ProductDialog() {
                         id="mrp"
                         type="number"
                         value={formData.mrp ?? undefined}
-                        onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) })}
                         className="px-4 py-6 !text-base"
                       />
                     </div>
