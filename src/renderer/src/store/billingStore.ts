@@ -184,6 +184,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
   // update on field change
   updateLineItems: (id, field, value) =>
     set((state) => {
+      // console.log(id, field, value);
       const updatedLineItems = state.lineItems.map((item: LineItemsType) => {
         if (id !== item.id) return item;
 
@@ -200,7 +201,8 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         }
         return updatedItem;
       });
-
+      //
+      // console.log("billing store", updatedLineItems);
       return {
         lineItems: updatedLineItems
       };
