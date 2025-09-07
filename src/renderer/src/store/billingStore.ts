@@ -3,7 +3,7 @@ import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
-type LineItemsType = {
+export type LineItemsType = {
   id: string;
   productId: string;
   name: string;
