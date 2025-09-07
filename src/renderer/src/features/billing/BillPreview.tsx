@@ -1,106 +1,21 @@
 import { Button } from "@/components/ui/button";
+import { useTransactionActions } from "@/hooks/useTransactionActions";
 import useTransactionState from "@/hooks/useTransactionState";
-import { useRef } from "react";
-import toast from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useReactToPrint } from "react-to-print";
+import { useLocation } from "react-router-dom";
 
 const BillPreview = () => {
-  const navigate = useNavigate();
-  const receiptRef = useRef<HTMLDivElement | null>(null);
-  const {
-    lineItems,
-    setLineItems,
-    invoiceNo,
-    setInvoiceNo,
-    customerId,
-    setCustomerId,
-    customerName,
-    setCustomerName,
-    customerContact,
-    setCustomerContact,
-    billingId,
-    setBillingId,
-    billingDate
-  } = useTransactionState();
-
   const location = useLocation();
   const type = location.pathname.split("/")[1];
 
-  const handlePrint = useReactToPrint({
-    contentRef: receiptRef
-  });
+  const { lineItems, invoiceNo, customerName } = useTransactionState();
+  const { receiptRef, calcTotalAmount, handleAction } = useTransactionActions(
+    type === "sales" ? "sales" : "estimates"
+  );
 
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR"
   });
-
-  const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
-    return sum + Number(currentItem.totalPrice || 0);
-  }, 0);
-
-  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
-    return sum + currentItem.quantity;
-  }, 0);
-
-  async function handleSave() {
-    try {
-      if (type === "sales") {
-        const response = await window.salesApi.save({
-          billingId: billingId,
-          invoiceNo: Number(invoiceNo),
-          customerId,
-          customerName,
-          customerContact,
-          grandTotal: calcTotalAmount,
-          totalQuantity: calcTotalQuantity,
-          isPaid: true,
-          createdAt: billingDate.toISOString(),
-          items: [...lineItems]
-        });
-        if (response.status === "success") {
-          toast.success("Sale Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
-          navigate("/");
-        } else {
-          toast.error(response.error.message);
-        }
-      } else {
-        const response = await window.estimatesApi.save({
-          billingId: billingId,
-          estimateNo: Number(invoiceNo),
-          customerId,
-          customerName,
-          customerContact,
-          grandTotal: calcTotalAmount,
-          totalQuantity: calcTotalQuantity,
-          isPaid: true,
-          createdAt: billingDate.toISOString(),
-          items: [...lineItems]
-        });
-        if (response.status === "success") {
-          toast.success("Estimate Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
-          navigate("/");
-        } else {
-          toast.error(response.error.message);
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
 
   return (
     <>
@@ -189,17 +104,10 @@ const BillPreview = () => {
           <div className="h-12"></div>
         </div>
         <div className="flex w-1/4">
-          <Button className="" onClick={handleSave}>
+          <Button className="" onClick={() => handleAction("save")}>
             Save
           </Button>
-          <Button
-            onClick={() => {
-              handleSave();
-              handlePrint();
-            }}
-          >
-            Print
-          </Button>
+          <Button onClick={() => handleAction("save&print")}>Print</Button>
         </div>
       </div>
     </>

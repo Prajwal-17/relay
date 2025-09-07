@@ -1,4 +1,5 @@
 import { ignoredWeight } from "@/constants/IgnoredWeights";
+import type React from "react";
 import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -216,4 +217,16 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         lineItems: updatedLineItems
       };
     })
+}));
+
+type TransactionState = {
+  receiptRef: React.RefObject<HTMLDivElement> | null;
+  setReceiptRef: (ref: React.RefObject<HTMLDivElement>) => void;
+};
+
+export const useTransactionStore = create<TransactionState>((set) => ({
+  receiptRef: null,
+  setReceiptRef: (ref) => set({ receiptRef: ref })
+  // handlePrint: null,
+  // setHandlePrint: (fn) => set({ handlePrint: fn }),
 }));

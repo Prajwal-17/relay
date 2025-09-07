@@ -7,15 +7,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import useTransactionState from "@/hooks/useTransactionState";
+import { useTransactionActions } from "@/hooks/useTransactionActions";
 import { ChevronDown, FileText, MessageSquare, Printer, Save, Send } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export const SummaryFooter = () => {
-  const { lineItems } = useTransactionState();
+  const location = useLocation();
+  const type = location.pathname.split("/")[1];
 
-  const totalAmount = lineItems.reduce((sum, currentItem) => {
-    return sum + Number(currentItem.totalPrice || 0);
-  }, 0);
+  const { calcTotalAmount, handleAction } = useTransactionActions(
+    type === "sales" ? "sales" : "estimates"
+  );
 
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -32,13 +34,13 @@ export const SummaryFooter = () => {
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground text-lg">Subtotal:</span>
             <span className="text-foreground text-lg font-semibold">
-              {IndianRupees.format(totalAmount)}
+              {IndianRupees.format(calcTotalAmount)}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-xl font-medium">Total:</span>
             <span className="text-primary text-3xl font-bold">
-              {IndianRupees.format(Math.round(totalAmount))}
+              {IndianRupees.format(Math.round(calcTotalAmount))}
             </span>
           </div>
         </div>
@@ -50,12 +52,18 @@ export const SummaryFooter = () => {
             variant="default"
             size="lg"
             className="bg-primary hover:bg-primary/90 h-12 cursor-pointer text-lg"
+            onClick={() => handleAction("save&print")}
           >
             <Printer className="mr-2 h-8 w-8" size={20} />
             Save & Print
           </Button>
 
-          <Button variant="outline" size="lg" className="h-12 text-lg hover:cursor-pointer">
+          <Button
+            onClick={() => handleAction("save")}
+            variant="outline"
+            size="lg"
+            className="h-12 text-lg hover:cursor-pointer"
+          >
             <Save className="mr-2 h-4 w-4" />
             Save
           </Button>
