@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import type { LineItemsType } from "@/store/billingStore";
+import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
@@ -6,7 +7,6 @@ import useTransactionState from "./useTransactionState";
 
 export const useTransactionActions = (transactionType: "sales" | "estimates") => {
   const navigate = useNavigate();
-  const receiptRef = useRef<HTMLDivElement | null>(null);
   const {
     lineItems,
     setLineItems,
@@ -23,8 +23,9 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
     billingDate
   } = useTransactionState();
 
+  const receiptRef = useReceiptRefStore((state) => state.receiptRef);
   const handlePrint = useReactToPrint({
-    contentRef: receiptRef
+    contentRef: receiptRef || undefined
   });
 
   const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
@@ -44,7 +45,22 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
     totalQuantity: calcTotalQuantity,
     isPaid: true,
     createdAt: billingDate.toISOString(),
-    items: [...lineItems]
+    items: [
+      ...lineItems
+        .filter((item: LineItemsType) => item.name !== "")
+        .map((item: LineItemsType) => ({
+          id: item.id,
+          productId: item.productId,
+          name: item.name,
+          weight: item.weight,
+          unit: item.unit,
+          quantity: item.quantity,
+          mrp: item.mrp,
+          price: item.price,
+          purchasePrice: item.purchasePrice,
+          totalPrice: item.totalPrice
+        }))
+    ]
   };
 
   async function handleSave() {
@@ -59,7 +75,6 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
           setCustomerName("");
           setCustomerContact("");
           setLineItems([]);
-          navigate("/");
           return true;
         } else {
           toast.error(response.error.message);
@@ -78,7 +93,6 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
           setCustomerName("");
           setCustomerContact("");
           setLineItems([]);
-          navigate("/");
           return true;
         } else {
           toast.error(response.error.message);
@@ -94,14 +108,22 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
 
   const handleAction = async (type: "save" | "save&print") => {
     const isSaveSuccessfull = await handleSave();
-    if (!receiptRef) {
-      console.log("no ref ", receiptRef);
+    if (!isSaveSuccessfull) return;
+
+    if (type === "save&print") {
+      if (!receiptRef || !receiptRef.current) {
+        toast.error("There is nothing to print");
+        return;
+      }
+      try {
+        await handlePrint();
+      } catch (error) {
+        toast.error("Something went wrong");
+        console.log(error);
+      }
     }
-    if (isSaveSuccessfull && type === "save&print" && receiptRef) {
-      console.log("here");
-      console.log("receipt ref", receiptRef.current);
-      handlePrint();
-    }
+
+    navigate("/");
   };
 
   return {

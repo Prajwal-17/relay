@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
 import useTransactionState from "@/hooks/useTransactionState";
+import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
 const BillPreview = () => {
@@ -8,9 +9,14 @@ const BillPreview = () => {
   const type = location.pathname.split("/")[1];
 
   const { lineItems, invoiceNo, customerName } = useTransactionState();
-  const { receiptRef, calcTotalAmount, handleAction } = useTransactionActions(
-    type === "sales" ? "sales" : "estimates"
-  );
+  const { calcTotalAmount } = useTransactionActions(type === "sales" ? "sales" : "estimates");
+  const { setReceiptRef } = useReceiptRefStore();
+  const localReceiptRef = useRef<HTMLDivElement | null>(null);
+
+  // update global ref whenever component renders
+  useEffect(() => {
+    setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
+  }, [setReceiptRef]);
 
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -21,7 +27,7 @@ const BillPreview = () => {
     <>
       <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">
         <div
-          ref={receiptRef}
+          ref={localReceiptRef}
           className="receipt no-break font-roboto mt-0 mb-24 border border-green-500 bg-white px-1 pt-1 text-black"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
@@ -101,13 +107,6 @@ const BillPreview = () => {
           </div>
           {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
-          <div className="h-12"></div>
-        </div>
-        <div className="flex w-1/4">
-          <Button className="" onClick={() => handleAction("save")}>
-            Save
-          </Button>
-          <Button onClick={() => handleAction("save&print")}>Print</Button>
         </div>
       </div>
     </>

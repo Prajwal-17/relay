@@ -236,7 +236,6 @@ export function salesHandlers() {
   ipcMain.handle(
     "salesApi:getSalesDateRange",
     async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
-      console.log(range);
       if (!range.from && !range.to) {
         return {
           status: "error",

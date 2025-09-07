@@ -77,7 +77,7 @@ const LineItemRow = memo(
                   e.preventDefault();
                   setQtyPresetOpen(idx);
                 }}
-                value={item.quantity === 0 ? null : item.quantity}
+                value={item.quantity === 0 ? "" : item.quantity}
                 className="focus:border-ring focus:ring-ring w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold placeholder-gray-400 transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
                   updateLineItems(item.id, "quantity", e.target.value);

@@ -1,5 +1,4 @@
 import { ignoredWeight } from "@/constants/IgnoredWeights";
-import type React from "react";
 import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -185,7 +184,6 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
   // update on field change
   updateLineItems: (id, field, value) =>
     set((state) => {
-      // console.log(id, field, value);
       const updatedLineItems = state.lineItems.map((item: LineItemsType) => {
         if (id !== item.id) return item;
 
@@ -202,8 +200,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         }
         return updatedItem;
       });
-      //
-      // console.log("billing store", updatedLineItems);
+
       return {
         lineItems: updatedLineItems
       };
@@ -217,16 +214,4 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         lineItems: updatedLineItems
       };
     })
-}));
-
-type TransactionState = {
-  receiptRef: React.RefObject<HTMLDivElement> | null;
-  setReceiptRef: (ref: React.RefObject<HTMLDivElement>) => void;
-};
-
-export const useTransactionStore = create<TransactionState>((set) => ({
-  receiptRef: null,
-  setReceiptRef: (ref) => set({ receiptRef: ref })
-  // handlePrint: null,
-  // setHandlePrint: (fn) => set({ handlePrint: fn }),
 }));

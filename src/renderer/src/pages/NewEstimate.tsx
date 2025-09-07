@@ -1,6 +1,7 @@
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
+import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import { ProductDialog } from "@/features/productDialog/Product-dialog";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import { useProductsStore } from "@/store/productsStore";
@@ -14,15 +15,16 @@ const NewEstimate = () => {
   useLoadTransactionDetails("estimate", estimateId);
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="flex h-full w-full overflow-hidden">
-        <div className="flex h-full w-full flex-1 flex-col overflow-y-auto">
+    <div className="flex h-full overflow-hidden">
+      <div className="relative flex h-full flex-1 flex-col">
+        <div className="overflow-y-auto">
           <BillingHeader />
           <LineItemsTable />
         </div>
-        <BillPreview />
-        {openProductDialog && <ProductDialog />}
+        <SummaryFooter />
       </div>
+      <BillPreview />
+      {openProductDialog && <ProductDialog />}
     </div>
   );
 };
