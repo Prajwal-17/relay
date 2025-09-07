@@ -117,9 +117,10 @@ export function estimatesHandlers() {
                 estimateNo: Number(estimateObj.estimateNo),
                 customerId: customer[0].id,
                 customerName: customer[0].name,
+                customerContact: customer[0].contact,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
-                isPaid: true,
+                isPaid: estimateObj.isPaid,
                 createdAt: estimateObj.createdAt
                   ? removeTandZ(estimateObj.createdAt)
                   : sql`(datetime('now'))`
@@ -128,7 +129,7 @@ export function estimatesHandlers() {
               .get();
 
             if (!estimate || !estimate.id) {
-              throw new Error("EstimateCreationFailure");
+              throw new Error("Failed to Create Estimate");
             }
 
             for (const item of estimateObj.items) {
@@ -158,18 +159,14 @@ export function estimatesHandlers() {
         // --- UPDATE ESTIMATE ---
         else {
           const result = db.transaction((tx) => {
-            if (!estimateObj.billingId) {
-              throw new Error("MissingBillingId");
-            }
-
             const estimate = tx
               .select()
               .from(estimates)
-              .where(eq(estimates.id, estimateObj.billingId))
+              .where(eq(estimates.id, estimateObj.billingId!))
               .get();
 
             if (!estimate || !estimate.id) {
-              throw new Error("NoEstimateFound");
+              throw new Error("Estimate Not Found!");
             }
 
             tx.update(estimates)
@@ -182,10 +179,20 @@ export function estimatesHandlers() {
                 isPaid: estimateObj.isPaid,
                 updatedAt: sql`(datetime('now'))`
               })
-              .where(eq(estimates.id, estimateObj.billingId))
+              .where(eq(estimates.id, estimateObj.billingId!))
               .run();
 
-            tx.delete(estimateItems).where(eq(estimateItems.estimateId, estimate.id)).run();
+            /**
+             * @returns deletedItems = { changes: 5, lastInsertRowid: 0 }
+             */
+            const deletedItems = tx
+              .delete(estimateItems)
+              .where(eq(estimateItems.estimateId, estimate.id))
+              .run();
+
+            if (deletedItems.changes <= 0) {
+              throw new Error("Something went wrong. Could not save estimate");
+            }
 
             for (const item of estimateObj.items) {
               if (!item.name) {
@@ -202,7 +209,8 @@ export function estimatesHandlers() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: formatToPaisa(item.totalPrice)
+                  totalPrice: formatToPaisa(item.totalPrice),
+                  updatedAt: sql`(datetime('now'))`
                 })
                 .run();
             }
@@ -212,24 +220,6 @@ export function estimatesHandlers() {
         }
       } catch (error) {
         console.error("Error in estimatesApi:save transaction:", error);
-
-        if (error instanceof Error) {
-          if (error.message === "EstimateCreationFailure") {
-            return {
-              status: "error",
-              error: { message: "Could not create the estimate record in the database." }
-            };
-          }
-          if (error.message === "MissingBillingId") {
-            return { status: "error", error: { message: "Billing ID is missing for the update." } };
-          }
-          if (error.message === "NoEstimateFound") {
-            return {
-              status: "error",
-              error: { message: "The estimate you are trying to update could not be found." }
-            };
-          }
-        }
 
         return {
           status: "error",

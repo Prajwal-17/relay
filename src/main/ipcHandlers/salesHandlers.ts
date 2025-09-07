@@ -82,6 +82,7 @@ export function salesHandlers() {
   ipcMain.handle(
     "salesApi:save",
     async (_event, saleObj: SalePayload): Promise<ApiResponse<string>> => {
+      console.log(saleObj);
       try {
         let customer;
         if (!saleObj.customerName) {
@@ -107,9 +108,10 @@ export function salesHandlers() {
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerId: customer[0].id,
                 customerName: customer[0].name,
+                customerContact: customer[0].contact,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
-                isPaid: true,
+                isPaid: saleObj.isPaid,
                 createdAt: saleObj.createdAt
                   ? removeTandZ(saleObj.createdAt)
                   : sql`(datetime('now'))`
@@ -118,7 +120,7 @@ export function salesHandlers() {
               .get();
 
             if (!sale || !sale.id) {
-              throw new Error("SaleCreationFailure");
+              throw new Error("Failed to Create Sale");
             }
 
             for (const item of saleObj.items) {
@@ -148,14 +150,10 @@ export function salesHandlers() {
         // --- UPDATE SALE ---
         else {
           const result = db.transaction((tx) => {
-            if (!saleObj.billingId) {
-              throw new Error("MissingBillingId");
-            }
+            const sale = tx.select().from(sales).where(eq(sales.id, saleObj.billingId!)).get();
 
-            const sale = tx.select().from(sales).where(eq(sales.id, saleObj.billingId)).get();
-
-            if (!sale) {
-              throw new Error("NoSaleFound");
+            if (!sale || !sale.id) {
+              throw new Error("Sale not found!");
             }
 
             tx.update(sales)
@@ -168,15 +166,23 @@ export function salesHandlers() {
                 isPaid: saleObj.isPaid,
                 updatedAt: sql`(datetime('now'))`
               })
-              .where(eq(sales.id, saleObj.billingId))
+              .where(eq(sales.id, saleObj.billingId!))
               .run();
 
-            tx.delete(saleItems).where(eq(saleItems.saleId, sale.id)).run();
+            /**
+             * @returns deletedItems = { changes: number, lastInsertRowid: number }
+             */
+            const deletedItems = tx.delete(saleItems).where(eq(saleItems.saleId, sale.id)).run();
+
+            if (deletedItems.changes <= 0) {
+              throw new Error("Something went wrong. Could not save sale");
+            }
 
             for (const item of saleObj.items) {
               if (!item.name) {
                 throw new Error("Item name field cannot be empty");
               }
+              console.log("items", saleObj.items);
               tx.insert(saleItems)
                 .values({
                   saleId: sale.id,
@@ -188,7 +194,8 @@ export function salesHandlers() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: formatToPaisa(item.totalPrice)
+                  totalPrice: formatToPaisa(item.totalPrice),
+                  updatedAt: sql`(datetime('now'))`
                 })
                 .run();
             }
@@ -198,26 +205,6 @@ export function salesHandlers() {
         }
       } catch (error) {
         console.error("Error in salesApi:save transaction:", error);
-
-        if (error instanceof Error) {
-          if (error.message === "SaleCreationFailure") {
-            return {
-              status: "error",
-              error: { message: "Could not create the sale record in the database." }
-            };
-          }
-          if (error.message === "MissingBillingId") {
-            return { status: "error", error: { message: "Billing ID is missing for the update." } };
-          }
-          if (error.message === "NoSaleFound") {
-            return {
-              status: "error",
-              error: {
-                message: "The sale you are trying to update could not be found."
-              }
-            };
-          }
-        }
 
         return {
           status: "error",
