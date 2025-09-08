@@ -82,7 +82,6 @@ export function salesHandlers() {
   ipcMain.handle(
     "salesApi:save",
     async (_event, saleObj: SalePayload): Promise<ApiResponse<string>> => {
-      console.log(saleObj);
       try {
         let customer;
         if (!saleObj.customerName) {
@@ -182,7 +181,6 @@ export function salesHandlers() {
               if (!item.name) {
                 throw new Error("Item name field cannot be empty");
               }
-              console.log("items", saleObj.items);
               tx.insert(saleItems)
                 .values({
                   saleId: sale.id,

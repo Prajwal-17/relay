@@ -2,6 +2,7 @@ import { useBillingStore } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 
 const useTransactionState = () => {
+  // billing store
   const billingId = useBillingStore((state) => state.billingId);
   const setBillingId = useBillingStore((state) => state.setBillingId);
   const invoiceNo = useBillingStore((state) => state.invoiceNo);
@@ -19,9 +20,22 @@ const useTransactionState = () => {
   const addEmptyLineItem = useBillingStore((state) => state.addEmptyLineItem);
   const updateLineItems = useBillingStore((state) => state.updateLineItems);
   const deleteLineItem = useBillingStore((state) => state.deleteLineItem);
+  // search drop down store
   const setSearchParam = useSearchDropdownStore((state) => state.setSearchParam);
   const setSearchRow = useSearchDropdownStore((state) => state.setSearchRow);
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
+
+  function clearTransactionState() {
+    setBillingId(null);
+    setInvoiceNo(null);
+    setCustomerId(null);
+    setCustomerName("");
+    setCustomerContact(null);
+    setBillingDate(new Date());
+    setLineItems([]);
+    setSearchRow(null);
+    setSearchParam("");
+  }
 
   return {
     billingId,
@@ -43,7 +57,8 @@ const useTransactionState = () => {
     deleteLineItem,
     setSearchRow,
     setSearchParam,
-    setIsDropdownOpen
+    setIsDropdownOpen,
+    clearTransactionState
   };
 };
 

@@ -9,18 +9,13 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
   const navigate = useNavigate();
   const {
     lineItems,
-    setLineItems,
     invoiceNo,
-    setInvoiceNo,
     customerId,
-    setCustomerId,
     customerName,
-    setCustomerName,
     customerContact,
-    setCustomerContact,
     billingId,
-    setBillingId,
-    billingDate
+    billingDate,
+    clearTransactionState
   } = useTransactionState();
 
   const receiptRef = useReceiptRefStore((state) => state.receiptRef);
@@ -69,12 +64,7 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
         const response = await window.salesApi.save({ ...payload, invoiceNo: Number(invoiceNo) });
         if (response.status === "success") {
           toast.success("Sale Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
+          clearTransactionState();
           return true;
         } else {
           toast.error(response.error.message);
@@ -87,12 +77,7 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
         });
         if (response.status === "success") {
           toast.success("Estimate Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
+          clearTransactionState();
           return true;
         } else {
           toast.error(response.error.message);
