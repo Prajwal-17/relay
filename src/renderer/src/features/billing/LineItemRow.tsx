@@ -1,13 +1,13 @@
-import { useBillingStore } from "@/store/billingStore";
+import { useBillingStore, type LineItemsType } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import SearchDropdown from "../search/SearchDropdown";
+import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
 const LineItemRow = memo(
-  ({ idx, item }: any) => {
+  ({ idx, item }: { idx: number; item: LineItemsType }) => {
     // using 'useShallow' to compare only the top level properties does not check nested objects.
     // since they are function their references are stable which dont require re-renders
     const { updateLineItems, deleteLineItem } = useBillingStore(
@@ -17,13 +17,16 @@ const LineItemRow = memo(
       }))
     );
 
-    const { setSearchRow, setSearchParam, setIsDropdownOpen } = useSearchDropdownStore(
-      useShallow((state) => ({
-        setSearchRow: state.setSearchRow,
-        setSearchParam: state.setSearchParam,
-        setIsDropdownOpen: state.setIsDropdownOpen
-      }))
-    );
+    const { searchRow, setSearchRow, isDropdownOpen, setSearchParam, setIsDropdownOpen } =
+      useSearchDropdownStore(
+        useShallow((state) => ({
+          searchRow: state.searchRow,
+          setSearchRow: state.setSearchRow,
+          isDropdownOpen: state.isDropdownOpen,
+          setSearchParam: state.setSearchParam,
+          setIsDropdownOpen: state.setIsDropdownOpen
+        }))
+      );
 
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
 
@@ -111,7 +114,7 @@ const LineItemRow = memo(
               </span>
               <input
                 type="number"
-                value={item.price === 0 ? null : item.price}
+                value={item.price === 0 ? "" : item.price}
                 onChange={(e) => updateLineItems(item.id, "price", e.target.value)}
                 className="focus:border-ring focus:ring-ring h-full w-full appearance-none rounded-lg border bg-white py-2 pr-7 pl-10 text-right text-base font-semibold text-black placeholder-gray-400 focus:ring-2 focus:outline-none"
                 placeholder="0"
@@ -134,7 +137,7 @@ const LineItemRow = memo(
           </div>
         </div>
 
-        <SearchDropdown idx={idx} />
+        {isDropdownOpen && searchRow === idx + 1 && <MemoizedSearchDropdown idx={idx} />}
       </div>
     );
   },

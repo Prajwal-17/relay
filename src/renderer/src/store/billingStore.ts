@@ -200,7 +200,6 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
         }
         return updatedItem;
       });
-
       return {
         lineItems: updatedLineItems
       };

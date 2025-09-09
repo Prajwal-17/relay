@@ -22,7 +22,7 @@ const LineItemsTable = () => {
 
   return (
     <>
-      <div className="mx-6 pb-96">
+      <div className="mx-6 h-full">
         <div className="relative w-full flex-1 rounded-xl px-1 py-2 shadow-2xl">
           <div className="text-accent-foreground border-border grid grid-cols-20 items-center rounded-tl-lg rounded-tr-lg border bg-gray-100 py-1 text-base font-semibold">
             <div className="col-span-2 py-2 text-center">#</div>
@@ -50,6 +50,7 @@ const LineItemsTable = () => {
             </div>
           </div>
         </div>
+        <div className="h-[500px] w-full" />
       </div>
     </>
   );

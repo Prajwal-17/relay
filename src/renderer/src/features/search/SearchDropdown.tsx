@@ -23,7 +23,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
   const setFormData = useProductsStore((state) => state.setFormData);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const debouncedSearchParam = useDebounce(searchParam, 200);
+  const debouncedSearchParam = useDebounce(searchParam, 150);
 
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState<number>(1);
