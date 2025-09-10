@@ -10,7 +10,8 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useCustomerStore } from "@/store/customersStore";
-import { formatDateStr, formatToRupees } from "@shared/utils";
+import { formatDateStr } from "@shared/utils/dateUtils";
+import { formatToRupees } from "@shared/utils/utils";
 import { ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";

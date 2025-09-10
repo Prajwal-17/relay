@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
 import { useDashboardStore } from "@/store/salesStore";
-import { formatToPaisa, formatToRupees } from "@shared/utils";
+import { formatToPaisa, formatToRupees } from "@shared/utils/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";

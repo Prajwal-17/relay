@@ -7,7 +7,8 @@ import type {
   SalePayload,
   SalesType
 } from "../../shared/types";
-import { formatToPaisa, formatToRupees, removeTandZ } from "../../shared/utils";
+import { removeTandZ } from "../../shared/utils/dateUtils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
 import { db } from "../db/db";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
@@ -107,9 +108,10 @@ export function salesHandlers() {
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerId: customer[0].id,
                 customerName: customer[0].name,
+                customerContact: customer[0].contact,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
-                isPaid: true,
+                isPaid: saleObj.isPaid,
                 createdAt: saleObj.createdAt
                   ? removeTandZ(saleObj.createdAt)
                   : sql`(datetime('now'))`
@@ -118,7 +120,7 @@ export function salesHandlers() {
               .get();
 
             if (!sale || !sale.id) {
-              throw new Error("SaleCreationFailure");
+              throw new Error("Failed to Create Sale");
             }
 
             for (const item of saleObj.items) {
@@ -148,14 +150,10 @@ export function salesHandlers() {
         // --- UPDATE SALE ---
         else {
           const result = db.transaction((tx) => {
-            if (!saleObj.billingId) {
-              throw new Error("MissingBillingId");
-            }
+            const sale = tx.select().from(sales).where(eq(sales.id, saleObj.billingId!)).get();
 
-            const sale = tx.select().from(sales).where(eq(sales.id, saleObj.billingId)).get();
-
-            if (!sale) {
-              throw new Error("NoSaleFound");
+            if (!sale || !sale.id) {
+              throw new Error("Sale not found!");
             }
 
             tx.update(sales)
@@ -166,12 +164,22 @@ export function salesHandlers() {
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
-                updatedAt: sql`(datetime('now'))`
+                updatedAt: sql`(datetime('now'))`,
+                createdAt: saleObj.createdAt
+                  ? removeTandZ(saleObj.createdAt)
+                  : sql`(datetime('now'))`
               })
-              .where(eq(sales.id, saleObj.billingId))
+              .where(eq(sales.id, saleObj.billingId!))
               .run();
 
-            tx.delete(saleItems).where(eq(saleItems.saleId, sale.id)).run();
+            /**
+             * @returns deletedItems = { changes: number, lastInsertRowid: number }
+             */
+            const deletedItems = tx.delete(saleItems).where(eq(saleItems.saleId, sale.id)).run();
+
+            if (deletedItems.changes <= 0) {
+              throw new Error("Something went wrong. Could not save sale");
+            }
 
             for (const item of saleObj.items) {
               if (!item.name) {
@@ -188,7 +196,8 @@ export function salesHandlers() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: formatToPaisa(item.totalPrice)
+                  totalPrice: formatToPaisa(item.totalPrice),
+                  updatedAt: sql`(datetime('now'))`
                 })
                 .run();
             }
@@ -198,26 +207,6 @@ export function salesHandlers() {
         }
       } catch (error) {
         console.error("Error in salesApi:save transaction:", error);
-
-        if (error instanceof Error) {
-          if (error.message === "SaleCreationFailure") {
-            return {
-              status: "error",
-              error: { message: "Could not create the sale record in the database." }
-            };
-          }
-          if (error.message === "MissingBillingId") {
-            return { status: "error", error: { message: "Billing ID is missing for the update." } };
-          }
-          if (error.message === "NoSaleFound") {
-            return {
-              status: "error",
-              error: {
-                message: "The sale you are trying to update could not be found."
-              }
-            };
-          }
-        }
 
         return {
           status: "error",
@@ -236,7 +225,6 @@ export function salesHandlers() {
   ipcMain.handle(
     "salesApi:getSalesDateRange",
     async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
-      console.log(range);
       if (!range.from && !range.to) {
         return {
           status: "error",

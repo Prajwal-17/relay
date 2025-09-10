@@ -1,112 +1,33 @@
-import { Button } from "@/components/ui/button";
+import { useTransactionActions } from "@/hooks/useTransactionActions";
 import useTransactionState from "@/hooks/useTransactionState";
-import { useRef } from "react";
-import toast from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useReactToPrint } from "react-to-print";
+import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
 const BillPreview = () => {
-  const navigate = useNavigate();
-  const receiptRef = useRef<HTMLDivElement | null>(null);
-  const {
-    lineItems,
-    setLineItems,
-    invoiceNo,
-    setInvoiceNo,
-    customerId,
-    setCustomerId,
-    customerName,
-    setCustomerName,
-    customerContact,
-    setCustomerContact,
-    billingId,
-    setBillingId,
-    billingDate
-  } = useTransactionState();
-
   const location = useLocation();
   const type = location.pathname.split("/")[1];
 
-  const handlePrint = useReactToPrint({
-    contentRef: receiptRef
-  });
+  const { lineItems, invoiceNo, customerName } = useTransactionState();
+  const { calcTotalAmount } = useTransactionActions(type === "sales" ? "sales" : "estimates");
+  const { setReceiptRef } = useReceiptRefStore();
+  const localReceiptRef = useRef<HTMLDivElement | null>(null);
+
+  // update global ref whenever component renders
+  useEffect(() => {
+    setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
+  }, [setReceiptRef]);
 
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR"
   });
 
-  const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
-    return sum + Number(currentItem.totalPrice || 0);
-  }, 0);
-
-  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
-    return sum + currentItem.quantity;
-  }, 0);
-
-  async function handleSave() {
-    try {
-      if (type === "sales") {
-        const response = await window.salesApi.save({
-          billingId: billingId,
-          invoiceNo: Number(invoiceNo),
-          customerId,
-          customerName,
-          customerContact,
-          grandTotal: calcTotalAmount,
-          totalQuantity: calcTotalQuantity,
-          isPaid: true,
-          createdAt: billingDate.toISOString(),
-          items: [...lineItems]
-        });
-        if (response.status === "success") {
-          toast.success("Sale Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
-          navigate("/");
-        } else {
-          toast.error(response.error.message);
-        }
-      } else {
-        const response = await window.estimatesApi.save({
-          billingId: billingId,
-          estimateNo: Number(invoiceNo),
-          customerId,
-          customerName,
-          customerContact,
-          grandTotal: calcTotalAmount,
-          totalQuantity: calcTotalQuantity,
-          isPaid: true,
-          createdAt: billingDate.toISOString(),
-          items: [...lineItems]
-        });
-        if (response.status === "success") {
-          toast.success("Estimate Saved successfully");
-          setBillingId("");
-          setCustomerId("");
-          setInvoiceNo(null);
-          setCustomerName("");
-          setCustomerContact("");
-          setLineItems([]);
-          navigate("/");
-        } else {
-          toast.error(response.error.message);
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   return (
     <>
       <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">
         <div
-          ref={receiptRef}
+          ref={localReceiptRef}
           className="receipt no-break font-roboto mt-0 mb-24 border border-green-500 bg-white px-1 pt-1 text-black"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
@@ -186,20 +107,6 @@ const BillPreview = () => {
           </div>
           {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
-          <div className="h-12"></div>
-        </div>
-        <div className="flex w-1/4">
-          <Button className="" onClick={handleSave}>
-            Save
-          </Button>
-          <Button
-            onClick={() => {
-              handleSave();
-              handlePrint();
-            }}
-          >
-            Print
-          </Button>
         </div>
       </div>
     </>

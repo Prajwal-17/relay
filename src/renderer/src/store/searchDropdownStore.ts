@@ -7,7 +7,7 @@ type SearchDropdownStoreType = {
   searchResult: ProductsType[] | [];
   setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
   searchRow: number | null;
-  setSearchRow: (rowIndex: number) => void;
+  setSearchRow: (rowIndex: number | null) => void;
   isDropdownOpen: boolean;
   setIsDropdownOpen: () => void;
 };

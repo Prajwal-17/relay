@@ -1,25 +1,24 @@
-import { useBillingStore } from "@/store/billingStore";
+import { formatDateStrToISTDateObject } from "@shared/utils/dateUtils";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import useTransactionState from "./useTransactionState";
 
 const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: string | null) => {
-  const setInvoiceNo = useBillingStore((state) => state.setInvoiceNo);
-  const setLineItems = useBillingStore((state) => state.setLineItems);
-  const setCustomerName = useBillingStore((state) => state.setCustomerName);
-  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
-  const setBillingId = useBillingStore((state) => state.setBillingId);
-  const setCustomerId = useBillingStore((state) => state.setCustomerId);
-  const setBillingDate = useBillingStore((state) => state.setBillingDate);
+  const {
+    setInvoiceNo,
+    setLineItems,
+    setCustomerName,
+    setCustomerContact,
+    setBillingId,
+    setCustomerId,
+    setBillingDate,
+    clearTransactionState
+  } = useTransactionState();
 
   useEffect(() => {
     async function fetchTransactionById() {
       if (!transactionId) return;
-      setBillingId("");
-      setInvoiceNo(null);
-      setCustomerId("");
-      setCustomerName("");
-      setCustomerContact("");
-      setLineItems([]);
+      clearTransactionState();
       try {
         let response;
         if (type === "sale") {
@@ -35,7 +34,7 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           setInvoiceNo(response.data.invoiceNo || response.data.estimateNo);
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
-          setBillingDate(new Date(response.data.createdAt));
+          setBillingDate(formatDateStrToISTDateObject(response.data.createdAt));
           setLineItems(response.data.items);
         } else {
           toast.error(response.error.message);
@@ -45,6 +44,8 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
       }
     }
     fetchTransactionById();
+    // adding `clearTransactionState` to deps is unnecessary & causes infinte re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     type,
     transactionId,

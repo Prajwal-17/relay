@@ -1,31 +1,35 @@
+import { useBillingStore, type LineItemsType } from "@/store/billingStore";
+import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
-import { memo } from "react";
-import SearchDropdown from "../search/SearchDropdown";
+import { memo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
+import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
-const areEqualProps = (prevProps, nextProps) => {
-  // if (prevProps.item.name === nextProps.item.name) {
-  //   return false;
-  // }
-  // console.log("prevProps", prevProps);
-  // console.log("nextProps", nextProps);
-  // return true;
-  return prevProps.item === nextProps.item;
-};
-
 const LineItemRow = memo(
-  ({
-    idx,
-    item,
-    deleteLineItem,
-    updateLineItems,
-    setSearchRow,
-    setIsDropdownOpen,
-    setSearchParam,
-    setQtyPresetOpen,
-    qtyPresetOpen
-  }: any) => {
-    console.log("item idx", idx);
+  ({ idx, item }: { idx: number; item: LineItemsType }) => {
+    // using 'useShallow' to compare only the top level properties does not check nested objects.
+    // since they are function their references are stable which dont require re-renders
+    const { updateLineItems, deleteLineItem } = useBillingStore(
+      useShallow((state) => ({
+        updateLineItems: state.updateLineItems,
+        deleteLineItem: state.deleteLineItem
+      }))
+    );
+
+    const { searchRow, setSearchRow, isDropdownOpen, setSearchParam, setIsDropdownOpen } =
+      useSearchDropdownStore(
+        useShallow((state) => ({
+          searchRow: state.searchRow,
+          setSearchRow: state.setSearchRow,
+          isDropdownOpen: state.isDropdownOpen,
+          setSearchParam: state.setSearchParam,
+          setIsDropdownOpen: state.setIsDropdownOpen
+        }))
+      );
+
+    const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
+
     return (
       <div key={idx} className="relative">
         <div className="group grid w-full grid-cols-20 border bg-neutral-100">
@@ -46,7 +50,7 @@ const LineItemRow = memo(
           <div className="col-span-9 border-r px-1 py-1">
             <input
               value={item.name}
-              className="focus:border-ring focus:ring-ring w-full rounded-lg border bg-white px-2 py-2 text-lg font-bold shadow-sm transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus:border-ring focus:ring-ring w-full rounded-lg border bg-white px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={() => {
                 setSearchRow(idx + 1);
                 setIsDropdownOpen();
@@ -58,7 +62,7 @@ const LineItemRow = memo(
             />
           </div>
           <div className="col-span-3 h-full w-full border-r px-1 py-1">
-            <div className="border-border relative flex h-full w-full items-center rounded-lg border bg-white font-bold shadow-sm">
+            <div className="border-border relative flex h-full w-full items-center rounded-lg border bg-white font-bold shadow-xs">
               <button
                 onClick={() => {
                   if (item.quantity >= 0) {
@@ -76,7 +80,7 @@ const LineItemRow = memo(
                   e.preventDefault();
                   setQtyPresetOpen(idx);
                 }}
-                value={item.quantity === 0 ? null : item.quantity}
+                value={item.quantity === 0 ? "" : item.quantity}
                 className="focus:border-ring focus:ring-ring w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold placeholder-gray-400 transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
                   updateLineItems(item.id, "quantity", e.target.value);
@@ -110,14 +114,14 @@ const LineItemRow = memo(
               </span>
               <input
                 type="number"
-                value={item.price === 0 ? null : item.price}
+                value={item.price === 0 ? "" : item.price}
                 onChange={(e) => updateLineItems(item.id, "price", e.target.value)}
                 className="focus:border-ring focus:ring-ring h-full w-full appearance-none rounded-lg border bg-white py-2 pr-7 pl-10 text-right text-base font-semibold text-black placeholder-gray-400 focus:ring-2 focus:outline-none"
                 placeholder="0"
               />
             </div>
           </div>
-          <div className="col-span-3 border-r px-1 py-1">
+          <div className="col-span-3 px-1 py-1">
             <div className="relative h-full w-full">
               <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={18} />
@@ -133,11 +137,13 @@ const LineItemRow = memo(
           </div>
         </div>
 
-        <SearchDropdown idx={idx} />
+        {isDropdownOpen && searchRow === idx + 1 && <MemoizedSearchDropdown idx={idx} />}
       </div>
     );
   },
-  areEqualProps
+  (prevProps, nextProps) => {
+    return prevProps.item === nextProps.item;
+  }
 );
 
 LineItemRow.displayName = "LineItemRow";

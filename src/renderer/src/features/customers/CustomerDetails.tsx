@@ -15,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCustomerStore } from "@/store/customersStore";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Label } from "@radix-ui/react-label";
-import { formatDateStr } from "@shared/utils";
+import { formatDateStr } from "@shared/utils/dateUtils";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCustomerTypeColor } from "./CustomerTypeColor";

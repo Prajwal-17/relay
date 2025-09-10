@@ -1,7 +1,7 @@
 import { and, eq, like, ne, SQL, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, ProductPayload, ProductsType } from "../../shared/types";
-import { formatToPaisa, formatToRupees } from "../../shared/utils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
 import { db } from "../db/db";
 import { products } from "../db/schema";
 
