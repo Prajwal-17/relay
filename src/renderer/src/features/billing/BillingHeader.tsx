@@ -3,6 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
@@ -72,7 +73,7 @@ const BillingHeader = () => {
     if (isToday) {
       selectedDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
     } else {
-      selectedDate.setHours(8, 0, 0, 0);
+      selectedDate.setHours(DEFAULT_HOUR, 0, 0, 0);
     }
 
     setBillingDate(selectedDate);

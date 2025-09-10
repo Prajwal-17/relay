@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import useTransactionState from "./useTransactionState";
-import { useEffect } from "react";
 
 export const useTransactionActions = (transactionType: "sales" | "estimates") => {
   const navigate = useNavigate();
@@ -27,10 +26,6 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
   const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
-
-  useEffect(() => {
-    console.log(receiptRef?.current)
-  }, [receiptRef])
 
   const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
     return sum + currentItem.quantity;
@@ -113,7 +108,7 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
       }
     }
 
-    clearTransactionState()
+    clearTransactionState();
     navigate("/");
   };
 

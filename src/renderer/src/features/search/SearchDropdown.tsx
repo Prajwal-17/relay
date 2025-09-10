@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { SEARCH_DROPDOWN_DELAY, SEARCH_DROPDOWN_ITEMS_LIMIT } from "@/constants";
 import { ignoredWeight } from "@/constants/IgnoredWeights";
 import useDebounce from "@/hooks/useDebounce";
 import { useBillingStore } from "@/store/billingStore";
@@ -23,7 +24,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
   const setFormData = useProductsStore((state) => state.setFormData);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
-  const debouncedSearchParam = useDebounce(searchParam, 150);
+  const debouncedSearchParam = useDebounce(searchParam, SEARCH_DROPDOWN_DELAY);
 
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState<number>(1);
@@ -60,7 +61,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
     if (debouncedSearchParam) {
       setHasMore(true);
       setPage(1);
-      fetchProducts(debouncedSearchParam, 1, "replace", 20);
+      fetchProducts(debouncedSearchParam, 1, "replace", SEARCH_DROPDOWN_ITEMS_LIMIT);
     } else {
       setSearchResult("replace", []);
       setHasMore(true);
@@ -76,7 +77,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
       (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
 
     if (scrollPercent >= 80) {
-      fetchProducts(searchParam, page, "append", 20);
+      fetchProducts(searchParam, page, "append", SEARCH_DROPDOWN_ITEMS_LIMIT);
     }
   }, [loading, hasMore, searchParam, page, fetchProducts]);
 

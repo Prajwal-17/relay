@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { MAX_PRESET_COUNT } from "@/constants";
 import { weights } from "@/constants/Weights";
 import { useBillingStore } from "@/store/billingStore";
 import { useEffect, useRef } from "react";
@@ -17,7 +18,7 @@ const QuantityPresets = ({
 }) => {
   const popDownRef = useRef<HTMLDivElement | null>(null);
   const updateLineItems = useBillingStore((state) => state.updateLineItems);
-  const numbers = Array.from({ length: 40 }, (_, i) => i + 1);
+  const numbers = Array.from({ length: MAX_PRESET_COUNT }, (_, i) => i + 1);
 
   function handlePresetClick(e: React.MouseEvent) {
     const button = (e.target as HTMLElement).closest("button");

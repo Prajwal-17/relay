@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PRODUCTS_LIMIT } from "@/constants";
 import { ignoredWeight } from "@/constants/IgnoredWeights";
 import { ProductDialog } from "@/features/productDialog/Product-dialog";
 import useDebounce from "@/hooks/useDebounce";
@@ -61,7 +62,7 @@ export default function ProductsPage() {
     if (debouncedSearchParam) {
       setHasMore(true);
       setPage(1);
-      fetchProducts(debouncedSearchParam, 1, "replace", 20);
+      fetchProducts(debouncedSearchParam, 1, "replace", PRODUCTS_LIMIT);
     } else {
       setSearchResult("replace", []);
       setHasMore(true);
@@ -77,7 +78,7 @@ export default function ProductsPage() {
       (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
 
     if (scrollPercent >= 80) {
-      fetchProducts(searchParam, page, "append", 20);
+      fetchProducts(searchParam, page, "append", PRODUCTS_LIMIT);
     }
   }, [loading, hasMore, searchParam, page, fetchProducts]);
 

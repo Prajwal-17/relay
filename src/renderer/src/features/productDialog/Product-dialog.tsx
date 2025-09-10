@@ -11,13 +11,12 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
+import { PRODUCT_UNITS } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-
-const units = ["g", "kg", "ml", "l", "pc", "none"];
 
 export function ProductDialog() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -174,7 +173,7 @@ export function ProductDialog() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {units.map((unit) => (
+                            {PRODUCT_UNITS.map((unit) => (
                               <SelectItem className="text-base" key={unit} value={unit}>
                                 {unit}
                               </SelectItem>

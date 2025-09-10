@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
 import { useDashboardStore } from "@/store/salesStore";
-import { formatToPaisa, formatToRupees } from "@shared/utils/utils";
+import { formatToPaisa, formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,11 +27,6 @@ const Dashboard = () => {
       if (!curr.grandTotal) return sum;
       return sum + formatToPaisa(curr.grandTotal);
     }, 0) || 0;
-
-  const IndianRupees = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR"
-  });
 
   return (
     <>

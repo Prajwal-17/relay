@@ -7,7 +7,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { TRANSACTION_TYPES } from "@/constants";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
+import { IndianRupees } from "@shared/utils/utils";
 import { ChevronDown, FileText, MessageSquare, Printer, Save, Send } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -16,13 +18,8 @@ export const SummaryFooter = () => {
   const type = location.pathname.split("/")[1];
 
   const { calcTotalAmount, handleAction } = useTransactionActions(
-    type === "sales" ? "sales" : "estimates"
+    type === TRANSACTION_TYPES.SALES ? TRANSACTION_TYPES.SALES : TRANSACTION_TYPES.ESTIMATES
   );
-
-  const IndianRupees = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR"
-  });
 
   return (
     <footer
