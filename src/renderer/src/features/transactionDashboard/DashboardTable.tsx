@@ -21,7 +21,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { useDashboardStore } from "@/store/salesStore";
-import { formatDateTimeToIST } from "@shared/utils";
+import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { ReceiptIndianRupee, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -132,7 +132,7 @@ export const DashboardTable = () => {
                     <TableRow key={transaction.id} className="h-14">
                       <TableCell className="py-4">
                         <Badge variant="outline" className="px-3 py-1 text-lg capitalize">
-                          {formatDateTimeToIST(transaction.createdAt)}
+                          {formatDateStrToISTDateStr(transaction.createdAt)}
                         </Badge>
                       </TableCell>
                       <TableCell className="py-4 text-left text-lg font-medium">

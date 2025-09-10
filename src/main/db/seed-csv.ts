@@ -2,7 +2,7 @@ import csv from "csv-parser";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
-import { formatToPaisa } from "../../shared/utils";
+import { formatToPaisa } from "../../shared/utils/utils";
 import { products } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";

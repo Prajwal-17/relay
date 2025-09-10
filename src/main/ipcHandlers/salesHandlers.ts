@@ -7,7 +7,8 @@ import type {
   SalePayload,
   SalesType
 } from "../../shared/types";
-import { formatToPaisa, formatToRupees, removeTandZ } from "../../shared/utils";
+import { removeTandZ } from "../../shared/utils/dateUtils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
 import { db } from "../db/db";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
@@ -163,7 +164,10 @@ export function salesHandlers() {
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
-                updatedAt: sql`(datetime('now'))`
+                updatedAt: sql`(datetime('now'))`,
+                createdAt: saleObj.createdAt
+                  ? removeTandZ(saleObj.createdAt)
+                  : sql`(datetime('now'))`
               })
               .where(eq(sales.id, saleObj.billingId!))
               .run();

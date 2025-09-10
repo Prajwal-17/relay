@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSidebarStore } from "@/store/sidebarStore";
+import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router-dom";
@@ -58,6 +59,24 @@ const BillingHeader = () => {
     udpatedDate.setHours(hours);
     udpatedDate.setMinutes(minutes);
     setBillingDate(udpatedDate);
+  };
+
+  const handleDateChange = (date: Date) => {
+    const now = new Date();
+    const selectedDate = new Date(date);
+
+    setBillingDate(date);
+    const isToday =
+      selectedDate.getDate() === now.getDate() && selectedDate.getMonth() === now.getMonth();
+
+    if (isToday) {
+      selectedDate.setHours(now.getHours(), now.getMinutes(), 0, 0);
+    } else {
+      selectedDate.setHours(8, 0, 0, 0);
+    }
+
+    setBillingDate(selectedDate);
+    setOpen(false);
   };
 
   return (
@@ -120,7 +139,7 @@ const BillingHeader = () => {
                     variant="outline"
                     className="w-36 justify-start bg-transparent text-left text-lg font-normal"
                   >
-                    {billingDate.toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                    {formatDateObjToStringMedium(billingDate)}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
@@ -128,8 +147,8 @@ const BillingHeader = () => {
                     mode="single"
                     selected={billingDate}
                     onSelect={(date) => {
-                      date && setBillingDate(date);
-                      setOpen(false);
+                      if (!date) return;
+                      handleDateChange(date);
                     }}
                   />
                 </PopoverContent>
@@ -143,10 +162,7 @@ const BillingHeader = () => {
                 type="time"
                 id="time-picker"
                 step="60"
-                defaultValue={billingDate.toLocaleTimeString("en-GB", {
-                  hour: "2-digit",
-                  minute: "2-digit"
-                })}
+                value={formatDateObjToHHmmss(billingDate)}
                 onChange={(e) => handleTimeChange(e)}
                 className="bg-background appearance-none !text-lg [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />

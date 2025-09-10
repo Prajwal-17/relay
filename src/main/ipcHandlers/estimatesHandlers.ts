@@ -7,7 +7,9 @@ import type {
   EstimatePayload,
   EstimateType
 } from "../../shared/types";
-import { formatToPaisa, formatToRupees, removeTandZ } from "../../shared/utils";
+import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
+
+import { removeTandZ } from "../../shared/utils/dateUtils";
 import { db } from "../db/db";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
@@ -177,7 +179,10 @@ export function estimatesHandlers() {
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
-                updatedAt: sql`(datetime('now'))`
+                updatedAt: sql`(datetime('now'))`,
+                createdAt: estimateObj.createdAt
+                  ? removeTandZ(estimateObj.createdAt)
+                  : sql`(datetime('now'))`
               })
               .where(eq(estimates.id, estimateObj.billingId!))
               .run();
