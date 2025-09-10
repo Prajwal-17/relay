@@ -18,6 +18,9 @@ const BillPreview = () => {
     setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
   }, [setReceiptRef]);
 
+  useEffect(() => {
+    console.log(localReceiptRef)
+  }, [localReceiptRef])
   const IndianRupees = new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR"
