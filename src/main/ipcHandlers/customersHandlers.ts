@@ -7,6 +7,7 @@ import type {
   FilteredGoogleContactsType
 } from "../../shared/types";
 import { db } from "../db/db";
+import { Role } from "../db/enum";
 import { customers, estimates, sales } from "../db/schema";
 import importContactsFromGoogle from "./importContactsFromGoogle";
 
@@ -67,7 +68,7 @@ export default function customersHandlers() {
           .values({
             name: customerPayload.name,
             contact: customerPayload.contact,
-            customerType: customerPayload.customerType
+            customerType: Role.CASH
           })
           .run();
 
@@ -99,7 +100,7 @@ export default function customersHandlers() {
           .set({
             name: customerPayload.name,
             contact: customerPayload.contact,
-            customerType: customerPayload.customerType
+            customerType: Role.CASH
           })
           .where(eq(customers.id, customerPayload.id))
           .returning();
@@ -176,7 +177,7 @@ export default function customersHandlers() {
         const customerPay = customerPayload.map((c: FilteredGoogleContactsType) => ({
           name: c.name ?? "",
           contact: c.contact?.replace(/^\+91/, "") ?? "",
-          customerType: "account"
+          customerType: Role.CASH
         }));
         const newCustomer = db
           .insert(customers)

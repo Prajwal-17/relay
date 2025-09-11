@@ -11,6 +11,7 @@ import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
 
 import { removeTandZ } from "../../shared/utils/dateUtils";
 import { db } from "../db/db";
+import { Role } from "../db/enum";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
 export function estimatesHandlers() {
@@ -105,7 +106,7 @@ export function estimatesHandlers() {
             .insert(customers)
             .values({
               name: estimateObj.customerName,
-              customerType: "cash"
+              customerType: Role.CASH
             })
             .returning({ id: customers.id, name: customers.name, contact: customers.contact });
         }
