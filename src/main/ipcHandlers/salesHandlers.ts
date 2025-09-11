@@ -10,6 +10,7 @@ import type {
 import { removeTandZ } from "../../shared/utils/dateUtils";
 import { formatToPaisa, formatToRupees } from "../../shared/utils/utils";
 import { db } from "../db/db";
+import { Role } from "../db/enum";
 import { customers, estimateItems, estimates, saleItems, sales } from "../db/schema";
 
 export function salesHandlers() {
@@ -94,7 +95,7 @@ export function salesHandlers() {
             .insert(customers)
             .values({
               name: saleObj.customerName,
-              customerType: "cash"
+              customerType: Role.CASH
             })
             .returning({ id: customers.id, name: customers.name, contact: customers.contact });
         }
