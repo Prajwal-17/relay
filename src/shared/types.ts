@@ -174,6 +174,8 @@ export type DateRangeType = {
   to: Date;
 };
 
+export type FilterType = "all" | "active" | "inactive";
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;

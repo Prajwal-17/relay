@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MAX_PRESET_COUNT } from "@/constants";
-import { weights } from "@/constants/Weights";
+import { MAX_PRESET_COUNT, weights } from "@/constants";
 import { useBillingStore } from "@/store/billingStore";
 import { useEffect, useRef } from "react";
 
