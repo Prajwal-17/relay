@@ -68,9 +68,9 @@ const useProductPage = () => {
       (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
 
     if (scrollPercent >= 80) {
-      fetchProducts(searchParam, page, "append", PRODUCTS_LIMIT);
+      fetchProducts(debouncedSearchParam, page, "append", PRODUCTS_LIMIT);
     }
-  }, [loading, hasMore, searchParam, page, fetchProducts]);
+  }, [loading, hasMore, debouncedSearchParam, page, fetchProducts]);
 
   useEffect(() => {
     const container = scrollRef.current;

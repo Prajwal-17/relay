@@ -1,11 +1,27 @@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import useProductPage from "@/hooks/useProductPage";
 import type { FilterType } from "@shared/types";
 import { Search } from "lucide-react";
+import { useState } from "react";
 
-export default function ProductSearch() {
-  const { searchParam, setSearchParam, filterType, setFilterType } = useProductPage();
+type ProductProps = {
+  searchParam: string;
+  setSearchParam: (value: string) => void;
+  loading?: boolean;
+};
+
+export default function ProductSearch({ searchParam, setSearchParam }: ProductProps) {
+  // const { searchParam, setSearchParam, filterType, setFilterType } = useProductPage();
+  // const setSearchResult = useProductsStore((state) => state.setSearchResult);
+
+  const [filterType, setFilterType] = useState<FilterType>("all");
+
+  // const { scrollRef, searchParam, setSearchParam } = useInfiniteScroll({
+  //   fetchFn: fetchProducts,
+  //   stateUpdater: setSearchResult,
+  //   delay: 300,
+  //   pageSize: 20
+  // });
 
   return (
     <>

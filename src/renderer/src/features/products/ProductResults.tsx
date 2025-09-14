@@ -2,12 +2,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
-import useProductPage from "@/hooks/useProductPage";
+import { useProductsStore } from "@/store/productsStore";
 import type { ProductsType } from "@shared/types";
 import { Edit, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
-  const { searchResult, setActionType, setOpenProductDialog, setFormData } = useProductPage();
+  // const { searchResult, setActionType, setOpenProductDialog, setFormData } = useProductPage();
+
+  const searchResult = useProductsStore((state) => state.searchResult);
+  const setActionType = useProductsStore((state) => state.setActionType);
+  const setFormData = useProductsStore((state) => state.setFormData);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+
   return (
     <>
       <div className="space-y-6">
