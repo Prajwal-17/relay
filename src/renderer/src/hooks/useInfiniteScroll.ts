@@ -1,15 +1,28 @@
 import { useProductsStore } from "@/store/productsStore";
+import type { ApiResponse } from "@shared/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 import useDebounce from "./useDebounce";
 
-type ParamsType = {
-  fetchFn: (query: string, pageNo: number, pageSize: number) => Promise<any>;
-  stateUpdater: (mode: "append" | "replace", data: any) => void;
+type UseInfiniteScroll<T> = {
+  fetchFn: (query: string, pageNo: number, pageSize: number) => Promise<ApiResponse<T[]>>;
+  stateUpdater: (mode: "append" | "replace", data: T[]) => void;
   delay: number;
   pageSize: number;
 };
 
-export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: ParamsType) => {
+type UseInfiniteScrollReturn = {
+  searchParam: string;
+  setSearchParam: (param: string) => void;
+  scrollRef: React.RefObject<HTMLDivElement | null>;
+  loading: boolean;
+};
+
+export const useInfiniteScroll = <T>({
+  fetchFn,
+  stateUpdater,
+  delay,
+  pageSize
+}: UseInfiniteScroll<T>): UseInfiniteScrollReturn => {
   const searchParam = useProductsStore((state) => state.searchParam);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
 
