@@ -64,12 +64,12 @@ export const CustomerTransactions = () => {
   return (
     <>
       <Card>
-        <CardHeader className="pb-4">
+        <CardHeader>
           <CardTitle className="text-xl">Transactions</CardTitle>
         </CardHeader>
         <CardContent>
           {transactions.length > 0 ? (
-            <div className="max-h-96 overflow-y-auto rounded-lg border">
+            <div className="max-h-[460px] overflow-y-auto rounded-lg border">
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>

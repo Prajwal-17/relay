@@ -27,11 +27,9 @@ export const CustomerSidebar = () => {
 
   return (
     <>
-      <div className="border-border bg-card w-96 border-r">
+      <div className="border-border bg-card flex min-h-screen w-96 flex-col border-r">
         <div className="border-border border-b p-4">
-          <div className="mb-4">
-            <h2 className="text-2xl font-semibold">Customers</h2>
-          </div>
+          <h2 className="mb-4 text-2xl font-semibold">Customers</h2>
 
           <div className="mb-4 flex gap-2">
             <Dialog
@@ -50,12 +48,8 @@ export const CustomerSidebar = () => {
               </DialogTrigger>
               {openCustomerDialog && <CustomerDialog />}
             </Dialog>
-            <Dialog
-              open={openContactDialog}
-              onOpenChange={() => {
-                setOpenContactDialog();
-              }}
-            >
+
+            <Dialog open={openContactDialog} onOpenChange={() => setOpenContactDialog()}>
               <DialogTrigger asChild>
                 <Button
                   onClick={() => {
@@ -82,29 +76,30 @@ export const CustomerSidebar = () => {
               className="h-14 pl-10 !text-lg"
             />
           </div>
-          <div>
-            {customers.map((customer, idx) => (
-              <div
-                key={customer.id}
-                className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${
-                  selectedCustomer?.id === customer.id ? "bg-accent" : ""
-                } ${idx === customers.length - 1 ? "border-b-0" : ""}`}
-                onClick={() => setSelectedCustomer(customer)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{customer.name}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      {customer.contact || "No contact"}
-                    </p>
-                  </div>
-                  <Badge className={getCustomerTypeColor(customer.customerType)}>
-                    {customer.customerType || "N/A"}
-                  </Badge>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {customers.map((customer, idx) => (
+            <div
+              key={customer.id}
+              className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${
+                selectedCustomer?.id === customer.id ? "bg-accent" : ""
+              } ${idx === customers.length - 1 ? "border-b-0" : ""}`}
+              onClick={() => setSelectedCustomer(customer)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">{customer.name}</h3>
+                  <p className="text-muted-foreground text-sm">
+                    {customer.contact || "No contact"}
+                  </p>
                 </div>
+                <Badge className={getCustomerTypeColor(customer.customerType)}>
+                  {customer.customerType || "N/A"}
+                </Badge>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </>

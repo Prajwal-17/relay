@@ -51,7 +51,7 @@ export const CustomerDetails = () => {
 
   return (
     <>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{selectedCustomer.name}</h1>
           <p className="text-muted-foreground text-lg">Customer Details</p>
@@ -108,7 +108,7 @@ export const CustomerDetails = () => {
         </div>
       </div>
 
-      <Card className="mb-8">
+      <Card className="mb-6">
         <CardHeader className="pb-4">
           <CardTitle className="text-xl">Customer Information</CardTitle>
         </CardHeader>
