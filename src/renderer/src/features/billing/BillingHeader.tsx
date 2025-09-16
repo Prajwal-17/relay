@@ -60,6 +60,7 @@ const BillingHeader = () => {
     udpatedDate.setHours(hours);
     udpatedDate.setMinutes(minutes);
     setBillingDate(udpatedDate);
+    localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
   };
 
   const handleDateChange = (date: Date) => {
@@ -67,6 +68,7 @@ const BillingHeader = () => {
     const selectedDate = new Date(date);
 
     setBillingDate(date);
+    localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     const isToday =
       selectedDate.getDate() === now.getDate() && selectedDate.getMonth() === now.getMonth();
 
@@ -77,6 +79,7 @@ const BillingHeader = () => {
     }
 
     setBillingDate(selectedDate);
+    localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     setOpen(false);
   };
 

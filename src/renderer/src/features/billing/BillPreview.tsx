@@ -2,6 +2,7 @@ import { TRANSACTION_TYPES } from "@/constants";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
@@ -16,6 +17,9 @@ const BillPreview = () => {
   );
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
+
+  const date = localStorage.getItem("bill-preview-date");
+  const value = new Date(date!);
 
   // update global ref whenever component renders
   useEffect(() => {
@@ -45,8 +49,7 @@ const BillPreview = () => {
           <div className="mb-4 flex justify-between border-t border-b border-dashed border-black py-1 text-xs">
             <div>
               <div>
-                <span className="font-semibold">Date:</span>{" "}
-                {new Date().toLocaleDateString("en-IN", { dateStyle: "medium" })}
+                <span className="font-semibold">Date:</span> {formatDateObjToStringMedium(value)}
               </div>
               <div>
                 <span className="font-semibold">
@@ -64,8 +67,8 @@ const BillPreview = () => {
               </div>
             </div>
             <div>
-              <span className="font-semibold">Time:</span>{" "}
-              {new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+              <span className="font-semibold">Time:</span>
+              {value.toLocaleTimeString("en-IN", { timeStyle: "short" })}
             </div>
           </div>
           <div className="grid grid-cols-12 border-b border-dashed border-black pb-1 text-xs font-bold">
