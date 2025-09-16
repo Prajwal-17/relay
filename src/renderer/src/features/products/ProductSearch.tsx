@@ -11,17 +11,7 @@ type ProductProps = {
 };
 
 export default function ProductSearch({ searchParam, setSearchParam }: ProductProps) {
-  // const { searchParam, setSearchParam, filterType, setFilterType } = useProductPage();
-  // const setSearchResult = useProductsStore((state) => state.setSearchResult);
-
   const [filterType, setFilterType] = useState<FilterType>("all");
-
-  // const { scrollRef, searchParam, setSearchParam } = useInfiniteScroll({
-  //   fetchFn: fetchProducts,
-  //   stateUpdater: setSearchResult,
-  //   delay: 300,
-  //   pageSize: 20
-  // });
 
   return (
     <>

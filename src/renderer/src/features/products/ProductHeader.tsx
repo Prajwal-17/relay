@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
-import useProductPage from "@/hooks/useProductPage";
+import { useProductsStore } from "@/store/productsStore";
 import { Plus } from "lucide-react";
 
 export default function ProductHeader() {
-  const { setActionType, setOpenProductDialog } = useProductPage();
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const setActionType = useProductsStore((state) => state.setActionType);
 
   return (
     <>

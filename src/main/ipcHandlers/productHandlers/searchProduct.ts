@@ -15,7 +15,6 @@ export function searchProduct() {
       limit: number
     ): Promise<ApiResponse<ProductsType[]>> => {
       try {
-        console.log(query, page, limit);
         const cleanedQuery = query
           .replace(/\d+\s*(rs?|₹)/gi, "")
           .replace(/\d+\s*(g|kg|ml|l|pc|none)/gi, "")

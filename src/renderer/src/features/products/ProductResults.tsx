@@ -7,8 +7,6 @@ import type { ProductsType } from "@shared/types";
 import { Edit, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
-  // const { searchResult, setActionType, setOpenProductDialog, setFormData } = useProductPage();
-
   const searchResult = useProductsStore((state) => state.searchResult);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setFormData = useProductsStore((state) => state.setFormData);

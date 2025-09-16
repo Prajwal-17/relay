@@ -7,7 +7,6 @@ import { fetchProducts } from "@/lib/apiAdapters";
 import { useProductsStore } from "@/store/productsStore";
 
 export default function ProductsPage() {
-  // const { scrollRef, openProductDialog } = useProductPage();
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
 

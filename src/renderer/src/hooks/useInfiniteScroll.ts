@@ -10,13 +10,12 @@ type ParamsType = {
 };
 
 export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: ParamsType) => {
-  if (!fetchFn) {
-    console.log("fetch fn", fetchFn);
-  }
   const searchParam = useProductsStore((state) => state.searchParam);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchParam = useDebounce(searchParam, delay);
+
   const [hasMore, setHasMore] = useState(true);
   const [pageNo, setPageNo] = useState<number>(1); // page number
   const [loading, setLoading] = useState(false);
@@ -28,11 +27,11 @@ export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: Pa
         if (mode === "replace") {
           stateUpdater(mode, []);
         }
-        console.log(query, pageNo, mode, pageSize);
         const response = await fetchFn(query, fetchPage, pageSize);
-        if (response.status) {
+
+        if (response.status === "success") {
           stateUpdater(mode, response.data);
-          setPageNo(pageNo + 1);
+          setPageNo((prev) => prev + 1);
           if (response.data.length < pageSize) {
             setHasMore(false);
           }
@@ -46,7 +45,7 @@ export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: Pa
         setLoading(false);
       }
     },
-    [stateUpdater, fetchFn, pageSize, pageNo]
+    [stateUpdater, fetchFn, pageSize]
   );
 
   useEffect(() => {
@@ -63,7 +62,9 @@ export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: Pa
 
   const handleScroll = useCallback(() => {
     const container = scrollRef.current;
-    if (!container || loading || !hasMore) return;
+    if (!container || loading || !hasMore) {
+      return;
+    }
 
     // TODO: add how percentage is calculated
     const scrollPercent =
@@ -72,7 +73,9 @@ export const useInfiniteScroll = ({ fetchFn, stateUpdater, delay, pageSize }: Pa
     if (scrollPercent >= 80) {
       handleFetch(debouncedSearchParam, pageNo, "append");
     }
-  }, [loading, hasMore, pageNo, handleFetch, pageSize, debouncedSearchParam]);
+    // adding `pageNo` to deps is causing fetch two page at one time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [handleFetch, debouncedSearchParam, hasMore, loading]);
 
   useEffect(() => {
     const container = scrollRef.current;
