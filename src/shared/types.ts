@@ -174,6 +174,11 @@ export type DateRangeType = {
   to: Date;
 };
 
+export enum TransactionType {
+  SALES = "sales",
+  ESTIMATES = "estimates"
+}
+
 export type FilterType = "all" | "active" | "inactive";
 
 export interface ProductsApi {
@@ -186,7 +191,7 @@ export interface ProductsApi {
 
 export interface SalesApi {
   getNextInvoiceNo: () => Promise<ApiResponse<number>>;
-  save: (payload: SalePayload) => Promise<ApiResponse<string>>;
+  save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
   getSalesDateRange: (range: DateRangeType) => Promise<ApiResponse<SalesType[] | []>>;
@@ -216,4 +221,11 @@ export interface CustomersApi {
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
   importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
   searchCustomers: (query: string) => Promise<ApiResponse<CustomersType[]>>;
+}
+
+export interface ShareApi {
+  sendViaWhatsapp: (
+    type: "sales" | "estimates",
+    transactionId: string
+  ) => Promise<ApiResponse<string>>;
 }

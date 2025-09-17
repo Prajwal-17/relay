@@ -79,6 +79,6 @@ export function formatDateStrToISTDateStr(dateStr: string) {
  * @returns {string}
  */
 export function removeTandZ(isoString: string) {
-  if (!isoString) return;
+  if (!isoString) return "";
   return isoString.replaceAll("T", " ").replaceAll("Z", " ").slice(0, -5);
 }

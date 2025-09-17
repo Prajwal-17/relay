@@ -60,15 +60,21 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
 
   async function handleSave() {
     try {
+      let responseObj;
       if (transactionType === "sales") {
         const response = await window.salesApi.save({ ...payload, invoiceNo: Number(invoiceNo) });
+        console.log("response save", response);
         if (response.status === "success") {
-          toast.success("Sale Saved successfully");
-          // clearTransactionState();
-          return true;
+          toast.success(response.message ?? "Sale Saved Successfully");
+          return {
+            ...responseObj,
+            id: response.data.id,
+            type: response.data.type,
+            status: "success"
+          };
         } else {
           toast.error(response.error.message);
-          return false;
+          return { ...responseObj, id: "", type: "", status: "error" };
         }
       } else if (transactionType === "estimates") {
         const response = await window.estimatesApi.save({
@@ -77,22 +83,22 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
         });
         if (response.status === "success") {
           toast.success("Estimate Saved successfully");
-          // clearTransactionState();
           return true;
         } else {
           toast.error(response.error.message);
           return false;
         }
       }
-      return false;
+      return responseObj;
     } catch (error) {
       console.log(error);
       return false;
     }
   }
 
-  const handleAction = async (type: "save" | "save&print") => {
+  const handleAction = async (type: "save" | "save&print" | "sendViaWhatsapp") => {
     const isSaveSuccessfull = await handleSave();
+    console.log("isSavesuccessfull", isSaveSuccessfull);
     if (!isSaveSuccessfull) return;
 
     if (type === "save&print") {
@@ -102,10 +108,23 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
       }
       try {
         await handlePrint();
+        // return "done";
       } catch (error) {
         toast.error("Something went wrong");
         console.log(error);
+        // return "not done";
       }
+    }
+    if (type === "sendViaWhatsapp") {
+      if (!isSaveSuccessfull) {
+        toast.error("Something went wrong saving");
+      }
+      const response = await window.shareApi.sendViaWhatsapp(
+        isSaveSuccessfull.id,
+        isSaveSuccessfull.type
+      );
+
+      console.log(response);
     }
 
     clearTransactionState();

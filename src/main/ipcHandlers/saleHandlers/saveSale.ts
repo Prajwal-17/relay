@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, SalePayload } from "../../../shared/types";
+import { TransactionType, type ApiResponse, type SalePayload } from "../../../shared/types";
 import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -11,7 +11,10 @@ export function saveSale() {
   // save & update
   ipcMain.handle(
     "salesApi:save",
-    async (_event, saleObj: SalePayload): Promise<ApiResponse<string>> => {
+    async (
+      _event,
+      saleObj: SalePayload
+    ): Promise<ApiResponse<{ id: string; type: TransactionType }>> => {
       try {
         let customer;
         if (!saleObj.customerName) {
@@ -72,9 +75,16 @@ export function saveSale() {
                 })
                 .run();
             }
-            return "Sale was saved successfully";
+            return {
+              id: sale.id,
+              message: "Sale was saved successfully"
+            };
           });
-          return { status: "success", data: result };
+          return {
+            status: "success",
+            data: { id: result.id, type: TransactionType.SALES },
+            message: result.message
+          };
         }
         // --- UPDATE SALE ---
         else {
@@ -130,9 +140,17 @@ export function saveSale() {
                 })
                 .run();
             }
-            return "Sale was updated successfully";
+            return {
+              id: sale.id,
+
+              message: "Sale was saved successfully"
+            };
           });
-          return { status: "success", data: result };
+          return {
+            status: "success",
+            data: { id: result.id, type: TransactionType.SALES },
+            message: result.message
+          };
         }
       } catch (error) {
         console.error("Error in salesApi:save transaction:", error);
