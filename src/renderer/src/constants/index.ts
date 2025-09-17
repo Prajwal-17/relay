@@ -1,8 +1,3 @@
-export const TRANSACTION_TYPES = {
-  SALES: "sales",
-  ESTIMATES: "estimates"
-} as const;
-
 export const MAX_PRESET_COUNT = 40;
 
 export const PRODUCT_UNITS = ["g", "kg", "ml", "l", "pc", "none"];

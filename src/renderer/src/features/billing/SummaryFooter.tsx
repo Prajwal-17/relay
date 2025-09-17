@@ -1,8 +1,6 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import { TRANSACTION_TYPES } from "@/constants";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
+import { TransactionType } from "@shared/types";
 import { IndianRupees } from "@shared/utils/utils";
 import { FileText, Printer, Save } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -12,7 +10,7 @@ export const SummaryFooter = () => {
   const type = location.pathname.split("/")[1];
 
   const { calcTotalAmount, handleAction } = useTransactionActions(
-    type === TRANSACTION_TYPES.SALES ? TRANSACTION_TYPES.SALES : TRANSACTION_TYPES.ESTIMATES
+    type === TransactionType.SALES ? TransactionType.SALES : TransactionType.ESTIMATES
   );
 
   return (
