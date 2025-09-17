@@ -201,7 +201,7 @@ export interface SalesApi {
 
 export interface EstimatesApi {
   getNextEstimateNo: () => Promise<ApiResponse<number>>;
-  save: (payload: EstimatePayload) => Promise<ApiResponse<string>>;
+  save: (payload: EstimatePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllEstimates: () => Promise<ApiResponse<EstimateType[]>>;
   getTransactionById: (
     id: string

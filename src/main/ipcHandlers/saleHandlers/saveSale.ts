@@ -142,7 +142,6 @@ export function saveSale() {
             }
             return {
               id: sale.id,
-
               message: "Sale was saved successfully"
             };
           });

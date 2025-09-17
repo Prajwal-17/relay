@@ -5,11 +5,11 @@ import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import os from "os";
 import path from "path";
-import type { ApiResponse, TransactionType } from "../../../shared/types";
+import { TransactionType, type ApiResponse } from "../../../shared/types";
 import { formatDateStrToISTDateStr, removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToRupees, IndianRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
-import { sales } from "../../db/schema";
+import { estimates, sales } from "../../db/schema";
 
 export function sendViaWhatsapp() {
   ipcMain.handle(
@@ -18,12 +18,24 @@ export function sendViaWhatsapp() {
       try {
         const doc = new jsPDF();
 
-        const transaction = await db.query.sales.findFirst({
-          where: eq(sales.id, id),
-          with: {
-            saleItems: true
-          }
-        });
+        let transaction;
+        if (type === TransactionType.SALES) {
+          transaction = await db.query.sales.findFirst({
+            where: eq(sales.id, id),
+            with: {
+              saleItems: true
+            }
+          });
+        } else if (type === TransactionType.ESTIMATES) {
+          transaction = await db.query.estimates.findFirst({
+            where: eq(estimates.id, id),
+            with: {
+              estimateItems: true
+            }
+          });
+        } else {
+          throw new Error("Something went wrong");
+        }
 
         const outputDir = path.join(os.homedir(), "Documents", "Receipts");
 
@@ -32,10 +44,11 @@ export function sendViaWhatsapp() {
         }
 
         if (!transaction) {
-          throw new Error("Seomthing went wrong");
+          throw new Error("Transaction not found");
         }
 
-        const billingNo = transaction?.invoiceNo;
+        const billingNo =
+          type === TransactionType.SALES ? transaction?.invoiceNo : transaction?.estimateNo;
         const trimmedDate = removeTandZ(transaction.createdAt);
 
         const createdAt = new Date(trimmedDate).toLocaleString("en-IN", {
@@ -44,7 +57,7 @@ export function sendViaWhatsapp() {
 
         const dateTime = formatDateStrToISTDateStr(transaction.createdAt);
 
-        const filename = `${type}-${transaction.invoiceNo}-${createdAt}.pdf`.replaceAll(" ", "-");
+        const filename = `${type}-${billingNo}-${createdAt}.pdf`.replaceAll(" ", "-");
         const pdfPath = path.join(outputDir, filename);
 
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -82,15 +95,30 @@ export function sendViaWhatsapp() {
         doc.line(marginX, 45, pageWidth - marginX, 45);
 
         // table
-        const tableData = transaction.saleItems.map((item, idx) => {
-          return [
-            idx + 1,
-            item.name,
-            item.quantity,
-            formatToRupees(item.price),
-            formatToRupees(item.totalPrice)
-          ];
-        });
+        let tableData;
+        if (type === TransactionType.SALES) {
+          tableData = await transaction.saleItems.map((item, idx) => {
+            return [
+              idx + 1,
+              item.name,
+              item.quantity,
+              formatToRupees(item.price),
+              formatToRupees(item.totalPrice)
+            ];
+          });
+        } else if (type === TransactionType.ESTIMATES) {
+          tableData = await transaction.estimateItems.map((item, idx) => {
+            return [
+              idx + 1,
+              item.name,
+              item.quantity,
+              formatToRupees(item.price),
+              formatToRupees(item.totalPrice)
+            ];
+          });
+        } else {
+          throw new Error("Something went wrong while generating Pdf");
+        }
 
         autoTable(doc, {
           startY: 50,
@@ -106,9 +134,18 @@ export function sendViaWhatsapp() {
         // The 'finalY' property for positioning the footer
         const finalY = (doc as any).lastAutoTable.finalY;
 
-        const calcTotalAmount = transaction.saleItems.reduce((sum, currentItem) => {
-          return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
-        }, 0);
+        let calcTotalAmount;
+        if (type === TransactionType.SALES) {
+          calcTotalAmount = transaction.saleItems.reduce((sum, currentItem) => {
+            return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
+          }, 0);
+        } else if (type === TransactionType.ESTIMATES) {
+          calcTotalAmount = transaction.estimateItems.reduce((sum, currentItem) => {
+            return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
+          }, 0);
+        } else {
+          throw new Error("Something went wrong while generating Pdf");
+        }
 
         const subtotal = IndianRupees.format(calcTotalAmount);
         const total = IndianRupees.format(Math.round(calcTotalAmount));
@@ -128,12 +165,12 @@ export function sendViaWhatsapp() {
 
         doc.save(pdfPath);
 
-        return { status: "success", data: "Succesfully created Pdf" };
+        return { status: "success", data: "Succesfully generated Pdf" };
       } catch (error) {
         console.log(error);
         return {
           status: "error",
-          error: { message: (error as Error).message ?? "Failed to share receipt" }
+          error: { message: (error as Error).message ?? "Failed generate pdf" }
         };
       }
     }

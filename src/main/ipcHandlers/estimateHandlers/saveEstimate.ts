@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, EstimatePayload } from "../../../shared/types";
+import { TransactionType, type ApiResponse, type EstimatePayload } from "../../../shared/types";
 import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -10,7 +10,10 @@ import { customers, estimateItems, estimates } from "../../db/schema";
 export function saveEstimate() {
   ipcMain.handle(
     "estimatesApi:save",
-    async (_event, estimateObj: EstimatePayload): Promise<ApiResponse<string>> => {
+    async (
+      _event,
+      estimateObj: EstimatePayload
+    ): Promise<ApiResponse<{ id: string; type: TransactionType.ESTIMATES }>> => {
       try {
         let customer;
         if (!estimateObj.customerName) {
@@ -74,9 +77,16 @@ export function saveEstimate() {
                 })
                 .run();
             }
-            return "Estimate saved successfully";
+            return {
+              id: estimate.id,
+              message: "Estimate was saved successfully"
+            };
           });
-          return { status: "success", data: result };
+          return {
+            status: "success",
+            data: { id: result.id, type: TransactionType.ESTIMATES },
+            message: result.message
+          };
         }
         // --- UPDATE ESTIMATE ---
         else {
@@ -139,9 +149,16 @@ export function saveEstimate() {
                 })
                 .run();
             }
-            return "Estimate updated successfully";
+            return {
+              id: estimate.id,
+              message: "Estimate was saved successfully"
+            };
           });
-          return { status: "success", data: result };
+          return {
+            status: "success",
+            data: { id: result.id, type: TransactionType.ESTIMATES },
+            message: result.message
+          };
         }
       } catch (error) {
         console.error("Error in estimatesApi:save transaction:", error);
