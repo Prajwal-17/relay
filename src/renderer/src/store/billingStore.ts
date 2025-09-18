@@ -1,4 +1,4 @@
-import { ignoredWeight } from "@/constants/IgnoredWeights";
+import { ignoredWeight } from "@/constants";
 import type { ProductsType } from "src/shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";

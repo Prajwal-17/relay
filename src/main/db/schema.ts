@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
+import type { Role } from "./enum";
 
 export const users = sqliteTable("users", {
   id: text("id")
@@ -23,7 +24,7 @@ export const customers = sqliteTable("customers", {
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull(),
   contact: text("contact"),
-  customerType: text("customer_type").notNull(), // "cash" | "account" | "hotel"
+  customerType: text("customer_type").$type<Role>().notNull(),
   createdAt: text("created_at")
     .default(sql`(datetime('now'))`)
     .notNull(),
@@ -165,6 +166,7 @@ export const estimateItems = sqliteTable("estimate_items", {
     .notNull()
 });
 
+// drizzle relations are only for querying
 export const salesRelations = relations(sales, ({ many }) => ({
   saleItems: many(saleItems)
 }));

@@ -1,6 +1,10 @@
 import type { ProductsType } from "src/shared/types";
 import { create } from "zustand";
 
+type ProductsFormType = Omit<ProductsType, "price"> & {
+  price: string;
+};
+
 type ProductsStoreType = {
   openProductDialog: boolean;
   setOpenProductDialog: () => void;
@@ -10,8 +14,10 @@ type ProductsStoreType = {
   setSearchParam: (param: string) => void;
   searchResult: ProductsType[] | [];
   setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
-  formData: ProductsType;
-  setFormData: (data: Partial<ProductsType>) => void;
+  formData: ProductsFormType;
+  setFormData: (data: Partial<ProductsFormType>) => void;
+  errors: Record<string, string>;
+  setErrors: (errObj: Record<string, string>) => void;
 };
 
 function initialFormData() {
@@ -21,7 +27,7 @@ function initialFormData() {
     weight: null,
     unit: null,
     mrp: null,
-    price: 0,
+    price: "",
     purchasePrice: null,
     isDisabled: false
   };
@@ -72,5 +78,11 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
       return {
         formData: { ...state.formData, ...data }
       };
-    })
+    }),
+
+  errors: {},
+  setErrors: (errObj) =>
+    set(() => ({
+      errors: { ...errObj }
+    }))
 }));

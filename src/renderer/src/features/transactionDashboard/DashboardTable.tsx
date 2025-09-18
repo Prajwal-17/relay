@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { useDashboardStore } from "@/store/salesStore";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
+import { IndianRupees } from "@shared/utils/utils";
 import { ReceiptIndianRupee, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -35,11 +36,6 @@ export const DashboardTable = () => {
   const estimates = useDashboardStore((state) => state.estimates);
   const setEstimates = useDashboardStore((state) => state.setEstimates);
   const dataToRender = pathname === "/sale" ? sales : estimates;
-
-  const IndianRupees = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR"
-  });
 
   const handleDeleteSale = async (saleId: string) => {
     try {

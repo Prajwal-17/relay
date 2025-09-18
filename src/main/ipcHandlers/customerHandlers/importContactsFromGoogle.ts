@@ -2,7 +2,7 @@ import { BrowserWindow, ipcMain } from "electron";
 import { google } from "googleapis";
 import type { IncomingMessage, ServerResponse } from "http";
 import http from "node:http";
-import type { ApiResponse, FilteredGoogleContactsType } from "../../shared/types";
+import type { ApiResponse, FilteredGoogleContactsType } from "../../../shared/types";
 
 export const startAuthServer = (authWindow: BrowserWindow): Promise<string> => {
   return new Promise((resolve, reject) => {

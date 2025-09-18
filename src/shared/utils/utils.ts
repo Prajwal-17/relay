@@ -9,3 +9,8 @@ export function formatToPaisa(valueInRupees: number): number {
   const paisa = Math.round(valueInRupees * 100);
   return paisa;
 }
+
+export const IndianRupees = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR"
+});

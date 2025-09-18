@@ -2,94 +2,34 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCustomerStore } from "@/store/customersStore";
-import type { CustomersType } from "@shared/types";
+import useCustomerSidebar from "@/hooks/useCustomerSidebar";
 import { Download, Plus, Search } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { CustomerDialog } from "./CustomerDialog";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 import { GoogleContactsImportDialog } from "./GoogleContactsImportDialog";
 
 export const CustomerSidebar = () => {
-  // temp state
-  const [customers, setCustomers] = useState<CustomersType[]>([]);
-
-  const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
-  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
-  const [searchTerm, setSearchTerm] = useState("");
-  const setActionType = useCustomerStore((state) => state.setActionType);
-  const openCustomerDialog = useCustomerStore((state) => state.openCustomerDialog);
-  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
-  const openContactDialog = useCustomerStore((state) => state.openContactDialog);
-  const setOpenContactDialog = useCustomerStore((state) => state.setOpenContactDialog);
-  const setFormData = useCustomerStore((state) => state.setFormData);
-  const setLoading = useCustomerStore((state) => state.setLoading);
-  const setGoogleContacts = useCustomerStore((state) => state.setGoogleContacts);
-  const refreshState = useCustomerStore((state) => state.refreshState);
-  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
-
-  useEffect(() => {
-    async function searchCustomers() {
-      try {
-        const response = await window.customersApi.searchCustomers(searchTerm);
-        if (response.status === "success") {
-          setCustomers(response.data);
-        } else {
-          console.log("error");
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-      }
-    }
-
-    searchCustomers();
-  }, [searchTerm]);
-
-  useEffect(() => {
-    async function getAllCustomers() {
-      try {
-        const response = await window.customersApi.getAllCustomers();
-        if (response.status === "success") {
-          setCustomers(response.data);
-          setRefreshState(false);
-        } else {
-          toast.error("Something went wrong in getting customers");
-          setRefreshState(false);
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-        setRefreshState(false);
-      }
-    }
-    getAllCustomers();
-  }, [setSelectedCustomer, refreshState, setRefreshState]);
-
-  async function importContactFromGoogle() {
-    try {
-      const response = await window.customersApi.importContactsFromGoogle();
-      if (response.status === "success") {
-        setGoogleContacts(response.data);
-        setLoading();
-      } else {
-        toast.error("Something went wrong in getting customers");
-        setLoading();
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  }
+  const {
+    customers,
+    selectedCustomer,
+    openCustomerDialog,
+    searchTerm,
+    openContactDialog,
+    setFormData,
+    setActionType,
+    setOpenCustomerDialog,
+    setOpenContactDialog,
+    importContactFromGoogle,
+    setLoading,
+    setSearchTerm,
+    setSelectedCustomer
+  } = useCustomerSidebar();
 
   return (
     <>
-      <div className="border-border bg-card w-96 border-r">
+      <div className="border-border bg-card flex min-h-screen w-96 flex-col border-r">
         <div className="border-border border-b p-4">
-          <div className="mb-4">
-            <h2 className="text-2xl font-semibold">Customers</h2>
-          </div>
+          <h2 className="mb-4 text-2xl font-semibold">Customers</h2>
 
           <div className="mb-4 flex gap-2">
             <Dialog
@@ -108,12 +48,8 @@ export const CustomerSidebar = () => {
               </DialogTrigger>
               {openCustomerDialog && <CustomerDialog />}
             </Dialog>
-            <Dialog
-              open={openContactDialog}
-              onOpenChange={() => {
-                setOpenContactDialog();
-              }}
-            >
+
+            <Dialog open={openContactDialog} onOpenChange={() => setOpenContactDialog()}>
               <DialogTrigger asChild>
                 <Button
                   onClick={() => {
@@ -140,29 +76,30 @@ export const CustomerSidebar = () => {
               className="h-14 pl-10 !text-lg"
             />
           </div>
-          <div>
-            {customers.map((customer, idx) => (
-              <div
-                key={customer.id}
-                className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${
-                  selectedCustomer?.id === customer.id ? "bg-accent" : ""
-                } ${idx === customers.length - 1 ? "border-b-0" : ""}`}
-                onClick={() => setSelectedCustomer(customer)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium">{customer.name}</h3>
-                    <p className="text-muted-foreground text-sm">
-                      {customer.contact || "No contact"}
-                    </p>
-                  </div>
-                  <Badge className={getCustomerTypeColor(customer.customerType)}>
-                    {customer.customerType || "N/A"}
-                  </Badge>
+        </div>
+
+        <div className="flex-1 overflow-auto">
+          {customers.map((customer, idx) => (
+            <div
+              key={customer.id}
+              className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${
+                selectedCustomer?.id === customer.id ? "bg-accent" : ""
+              } ${idx === customers.length - 1 ? "border-b-0" : ""}`}
+              onClick={() => setSelectedCustomer(customer)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">{customer.name}</h3>
+                  <p className="text-muted-foreground text-sm">
+                    {customer.contact || "No contact"}
+                  </p>
                 </div>
+                <Badge className={getCustomerTypeColor(customer.customerType)}>
+                  {customer.customerType || "N/A"}
+                </Badge>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </>

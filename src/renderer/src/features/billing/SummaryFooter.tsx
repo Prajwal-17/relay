@@ -1,14 +1,8 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
-import { ChevronDown, FileText, MessageSquare, Printer, Save, Send } from "lucide-react";
+import { TransactionType } from "@shared/types";
+import { IndianRupees } from "@shared/utils/utils";
+import { FileText, Printer, Save } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
 export const SummaryFooter = () => {
@@ -16,13 +10,8 @@ export const SummaryFooter = () => {
   const type = location.pathname.split("/")[1];
 
   const { calcTotalAmount, handleAction } = useTransactionActions(
-    type === "sales" ? "sales" : "estimates"
+    type === TransactionType.SALES ? TransactionType.SALES : TransactionType.ESTIMATES
   );
-
-  const IndianRupees = new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR"
-  });
 
   return (
     <footer
@@ -68,29 +57,15 @@ export const SummaryFooter = () => {
             Save
           </Button>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="lg"
-                className="hover:cusor-pointer h-12 bg-transparent text-lg"
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Send
-                <ChevronDown className="ml-2 h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <MessageSquare className="mr-2 h-4 w-4" />
-                Send via Text
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <FileText className="mr-2 h-4 w-4" />
-                Send via PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            onClick={() => handleAction("sendViaWhatsapp")}
+            variant="outline"
+            size="lg"
+            className="h-12 text-lg hover:cursor-pointer"
+          >
+            <FileText className="mr-2 h-4 w-4" />
+            Send PDF
+          </Button>
         </div>
       </div>
     </footer>

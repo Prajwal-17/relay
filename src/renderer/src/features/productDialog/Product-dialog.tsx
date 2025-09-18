@@ -11,107 +11,24 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { useProductsStore } from "@/store/productsStore";
-import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { PRODUCT_UNITS } from "@/constants";
+import { useProductsDialog } from "@/hooks/useProductDialog";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-
-const units = ["g", "kg", "ml", "l", "pc", "none"];
 
 export function ProductDialog() {
-  const openProductDialog = useProductsStore((state) => state.openProductDialog);
-  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
-  const actionType = useProductsStore((state) => state.actionType);
-  const formData = useProductsStore((state) => state.formData);
-  const setFormData = useProductsStore((state) => state.setFormData);
-  const setSearchParam = useProductsStore((state) => state.setSearchParam);
-  const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
-  const setDropdownSearch = useSearchDropdownStore((state) => state.setSearchParam);
-  const setDropdownResult = useSearchDropdownStore((state) => state.setSearchResult);
-  const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
-
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
-    try {
-      if (action === "add") {
-        setFormData({});
-        const response = await window.productsApi.addNewProduct(formData);
-        if (response.status === "success") {
-          toast.success(response.data);
-          setOpenProductDialog();
-          setFormData({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      } else if (action === "edit") {
-        setFormData({});
-        const response = await window.productsApi.updateProduct(formData, formData.id);
-        if (response.status === "success") {
-          toast.success(response.data);
-          setSearchResult("replace", []);
-          setSearchParam("");
-          setTimeout(() => {
-            setSearchParam(formData.name);
-          }, 350);
-          setOpenProductDialog();
-          setFormData({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      } else if (action === "billing-page-edit") {
-        setFormData({});
-        const response = await window.productsApi.updateProduct(formData, formData.id);
-        if (response.status === "success") {
-          toast.success(response.data);
-          setDropdownResult("replace", []);
-          setDropdownSearch("");
-          setTimeout(() => {
-            setDropdownSearch(formData.name);
-          }, 220);
-          setOpenProductDialog();
-          setIsDropdownOpen();
-          setFormData({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    if (actionType === "add") {
-      setFormData({});
-    }
-  }, [actionType, setFormData]);
-
-  const handleDelete = async (productId: string) => {
-    try {
-      const response = await window.productsApi.deleteProduct(productId);
-      if (response.status === "success") {
-        toast.success(response.data);
-        setOpenProductDialog();
-        setSearchResult("replace", []);
-        setSearchParam("");
-        setFormData({});
-      } else {
-        toast.error(response.error.message);
-        setOpenProductDialog();
-        setFormData({});
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const {
+    openProductDialog,
+    setOpenProductDialog,
+    actionType,
+    showDeleteConfirm,
+    setShowDeleteConfirm,
+    formData,
+    setFormData,
+    handleSubmit,
+    handleDelete,
+    handleInputChange,
+    errors
+  } = useProductsDialog();
 
   return (
     <>
@@ -136,10 +53,11 @@ export function ProductDialog() {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ name: e.target.value })}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter product name"
                       className="px-4 py-6 !text-lg"
                     />
+                    {errors.name && <div className="text-red-500">{errors.name}</div>}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -151,10 +69,11 @@ export function ProductDialog() {
                         <Input
                           id="weight"
                           value={formData.weight ?? ""}
-                          onChange={(e) => setFormData({ weight: e.target.value })}
+                          onChange={(e) => handleInputChange("weight", e.target.value)}
                           placeholder="e.g., 500"
                           className="px-4 py-6 !text-base"
                         />
+                        {errors.weight && <div className="text-red-500">{errors.weight}</div>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="unit" className="text-base font-semibold">
@@ -163,39 +82,39 @@ export function ProductDialog() {
                         <Select
                           value={formData.unit ?? "none"}
                           onValueChange={(value) => {
-                            if (value === "none") {
-                              setFormData({ unit: null, weight: null });
-                            } else {
-                              setFormData({ unit: value });
-                            }
+                            handleInputChange("unit", value);
                           }}
                         >
                           <SelectTrigger className="h-11 text-lg">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {units.map((unit) => (
+                            {PRODUCT_UNITS.map((unit) => (
                               <SelectItem className="text-base" key={unit} value={unit}>
                                 {unit}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
+                        {errors.unit && <div className="text-red-500">{errors.unit}</div>}
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="price" className="text-base font-semibold">
+                      <Label htmlFor="purchasePrice" className="text-base font-semibold">
                         Purchase Price (Optional)
                       </Label>
                       <Input
-                        id="price"
-                        type="number"
-                        value={formData.purchasePrice ?? undefined}
-                        onChange={(e) =>
-                          setFormData({ purchasePrice: Number.parseInt(e.target.value) })
-                        }
+                        id="purchasePrice"
+                        value={formData.purchasePrice ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          handleInputChange("purchasePrice", value === "" ? null : value);
+                        }}
                         className="px-4 py-6 !text-base"
                       />
+                      {errors.purchasePrice && (
+                        <div className="text-red-500">{errors.purchasePrice}</div>
+                      )}
                     </div>
                   </div>
 
@@ -206,11 +125,14 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="price"
-                        type="number"
-                        value={formData.price || ""}
-                        onChange={(e) => setFormData({ price: Number.parseInt(e.target.value) })}
+                        value={formData.price ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          handleInputChange("price", value === "" ? null : value);
+                        }}
                         className="px-4 py-6 !text-base"
                       />
+                      {errors.price && <div className="text-red-500">{errors.price}</div>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="mrp" className="text-base font-semibold">
@@ -218,11 +140,14 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="mrp"
-                        type="number"
-                        value={formData.mrp ?? undefined}
-                        onChange={(e) => setFormData({ mrp: Number.parseInt(e.target.value) })}
+                        value={formData.mrp ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          handleInputChange("mrp", value === "" ? null : value);
+                        }}
                         className="px-4 py-6 !text-base"
                       />
+                      {errors.mrp && <div className="text-red-500">{errors.mrp}</div>}
                     </div>
                   </div>
 

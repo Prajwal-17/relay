@@ -35,6 +35,7 @@ const useTransactionState = () => {
     setLineItems([]);
     setSearchRow(null);
     setSearchParam("");
+    localStorage.setItem("bill-preview-date", new Date().toISOString());
   }
 
   return {

@@ -35,6 +35,10 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           setCustomerContact(response.data.customerContact);
           setCustomerName(response.data.customerName);
           setBillingDate(formatDateStrToISTDateObject(response.data.createdAt));
+          localStorage.setItem(
+            "bill-preview-date",
+            formatDateStrToISTDateObject(response.data.createdAt).toISOString()
+          );
           setLineItems(response.data.items);
         } else {
           toast.error(response.error.message);

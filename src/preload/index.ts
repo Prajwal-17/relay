@@ -8,7 +8,8 @@ import type {
   FilteredGoogleContactsType,
   ProductsApi,
   SalePayload,
-  SalesApi
+  SalesApi,
+  ShareApi
 } from "../shared/types";
 
 const productsApi: ProductsApi = {
@@ -63,6 +64,11 @@ const customersApi: CustomersApi = {
   searchCustomers: (query: string) => ipcRenderer.invoke("customersApi:searchCustomers", query)
 };
 
+const shareApi: ShareApi = {
+  sendViaWhatsapp: (type: "sales" | "estimates", transactionId: string) =>
+    ipcRenderer.invoke("shareApi:sendViaWhatsapp", type, transactionId)
+};
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electronAPI", {
@@ -72,6 +78,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
     contextBridge.exposeInMainWorld("customersApi", customersApi);
+    contextBridge.exposeInMainWorld("shareApi", shareApi);
   } catch (error) {
     console.error(error);
   }
@@ -86,4 +93,6 @@ if (process.contextIsolated) {
   window.estimatesApi = estimatesApi;
   // @ts-ignore (define in dts)
   window.customersApi = customersApi;
+  // @ts-ignore (define in ts)
+  window.shareApi = shareApi;
 }

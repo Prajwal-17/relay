@@ -4,7 +4,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import useTransactionState from "./useTransactionState";
-import { useEffect } from "react";
 
 export const useTransactionActions = (transactionType: "sales" | "estimates") => {
   const navigate = useNavigate();
@@ -27,10 +26,6 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
   const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
-
-  useEffect(() => {
-    console.log(receiptRef?.current)
-  }, [receiptRef])
 
   const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
     return sum + currentItem.quantity;
@@ -65,15 +60,20 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
 
   async function handleSave() {
     try {
+      let responseObj;
       if (transactionType === "sales") {
         const response = await window.salesApi.save({ ...payload, invoiceNo: Number(invoiceNo) });
         if (response.status === "success") {
-          toast.success("Sale Saved successfully");
-          // clearTransactionState();
-          return true;
+          toast.success(response.message ?? "Sale Saved Successfully");
+          return {
+            ...responseObj,
+            id: response.data.id,
+            type: response.data.type,
+            status: "success"
+          };
         } else {
           toast.error(response.error.message);
-          return false;
+          return { ...responseObj, id: "", type: "", status: "error" };
         }
       } else if (transactionType === "estimates") {
         const response = await window.estimatesApi.save({
@@ -81,22 +81,26 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
           estimateNo: Number(invoiceNo)
         });
         if (response.status === "success") {
-          toast.success("Estimate Saved successfully");
-          // clearTransactionState();
-          return true;
+          toast.success(response.message ?? "Estimate Saved successfully");
+          return {
+            ...responseObj,
+            id: response.data.id,
+            type: response.data.type,
+            status: "success"
+          };
         } else {
           toast.error(response.error.message);
-          return false;
+          return { ...responseObj, id: "", type: "", status: "error" };
         }
       }
-      return false;
+      return responseObj;
     } catch (error) {
       console.log(error);
       return false;
     }
   }
 
-  const handleAction = async (type: "save" | "save&print") => {
+  const handleAction = async (type: "save" | "save&print" | "sendViaWhatsapp") => {
     const isSaveSuccessfull = await handleSave();
     if (!isSaveSuccessfull) return;
 
@@ -112,8 +116,24 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
         console.log(error);
       }
     }
+    if (type === "sendViaWhatsapp") {
+      if (!isSaveSuccessfull) {
+        toast.error("Something went wrong saving");
+      }
 
-    clearTransactionState()
+      const response = await window.shareApi.sendViaWhatsapp(
+        isSaveSuccessfull.id,
+        isSaveSuccessfull.type
+      );
+
+      if (response.status === "success") {
+        toast.success(response.data);
+      } else {
+        toast.error(response.error.message);
+      }
+    }
+
+    clearTransactionState();
     navigate("/");
   };
 
