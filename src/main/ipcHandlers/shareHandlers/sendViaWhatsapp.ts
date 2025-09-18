@@ -60,6 +60,7 @@ export function sendViaWhatsapp() {
 
         const filename = `${type}-${billingNo}-${createdAt}.pdf`.replaceAll(" ", "-");
         const pdfPath = path.join(outputDir, filename);
+        console.log("pdfpath", pdfPath)
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const marginX = 15;
@@ -166,11 +167,11 @@ export function sendViaWhatsapp() {
 
         doc.save(pdfPath);
 
-        copyFileToClipboard(pdfPath);
+        // copyFileToClipboard(pdfPath);
         // revealFileInFolder(pdfPath);
 
         // await shell.openExternal("https://web.whatsapp.com");
-        shell.openExternal("whatsapp://send");
+        // shell.openExternal("whatsapp://send");
 
         return { status: "success", data: "Succesfully generated Pdf" };
       } catch (error) {
@@ -198,8 +199,40 @@ function copyFileToClipboard(filePath: string) {
 
     clipboard.writeBuffer("text/uri-list", Buffer.from(fileUri, "utf8"));
   } else if (process.platform === "win32") {
-    const fileList = filePath + "\0\0";
-    const buffer = Buffer.from(fileList, "utf16le");
-    clipboard.writeBuffer("FileNameW", buffer);
+    console.log("here")
+    const absoluteFilePath = path.resolve(filePath)
+    // const fileList = filePath + "\0\0";
+    // const buffer = Buffer.from(fileList, "utf16le");
+    // clipboard.writeBuffer("FileNameW", buffer);
+    // clipboard.writeText(filePath)
+    // const fileList = absoluteFilePath + "\0\0";
+    // const buffer = Buffer.from(fileList, "utf16le");
+
+    // // 'FileNameW' is the format identifier for CF_HDROP in many clipboard libraries.
+    // clipboard.writeBuffer("FileNameW", buffer);
+    // const fileList = absoluteFilePath + '\0\0'; // Must be double-null-terminated
+    // const buffer = Buffer.from(fileList, 'utf16le'); // Must be utf16le encoded
+
+    // 'FileNameW' is the identifier for the file-copy format.
+    // clipboard.writeBuffer('FileNameW', buffer);
+    // clipboard.clear();
+    // clipboard.writeBuffer('FileNameW', buffer);
+
+    // As a fallback, also write the plain text path
+    // clipboard.writeText(absoluteFilePath);
+
+    // console.log(`File at "${absoluteFilePath}" is ready to be pasted.`);
+    const fileUri = `file://${filePath}`;
+
+    // GNOME / Nautilus format
+    clipboard.writeBuffer("x-special/gnome-copied-files", Buffer.from(`copy\n${fileUri}`, "utf8"));
+
+    clipboard.write({
+      text: fileUri,
+      bookmark: fileUri
+    });
+
+    clipboard.writeBuffer("text/uri-list", Buffer.from(fileUri, "utf8"));
   }
+
 }
