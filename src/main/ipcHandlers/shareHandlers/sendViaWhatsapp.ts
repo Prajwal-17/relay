@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { clipboard, shell } from "electron/common";
 import { ipcMain } from "electron/main";
 import fs from "fs";
 import { jsPDF } from "jspdf";
@@ -165,6 +166,12 @@ export function sendViaWhatsapp() {
 
         doc.save(pdfPath);
 
+        copyFileToClipboard(pdfPath);
+        // revealFileInFolder(pdfPath);
+
+        // await shell.openExternal("https://web.whatsapp.com");
+        shell.openExternal("whatsapp://send");
+
         return { status: "success", data: "Succesfully generated Pdf" };
       } catch (error) {
         console.log(error);
@@ -175,4 +182,24 @@ export function sendViaWhatsapp() {
       }
     }
   );
+}
+
+function copyFileToClipboard(filePath: string) {
+  if (process.platform === "linux") {
+    const fileUri = `file://${filePath}`;
+
+    // GNOME / Nautilus format
+    clipboard.writeBuffer("x-special/gnome-copied-files", Buffer.from(`copy\n${fileUri}`, "utf8"));
+
+    clipboard.write({
+      text: fileUri,
+      bookmark: fileUri
+    });
+
+    clipboard.writeBuffer("text/uri-list", Buffer.from(fileUri, "utf8"));
+  } else if (process.platform === "win32") {
+    const fileList = filePath + "\0\0";
+    const buffer = Buffer.from(fileList, "utf16le");
+    clipboard.writeBuffer("FileNameW", buffer);
+  }
 }
