@@ -79,7 +79,7 @@ export const CustomerDetails = () => {
             </DialogTrigger>
           </Dialog>
           <AlertDialog>
-            <AlertDialogTrigger>
+            <AlertDialogTrigger asChild>
               <Button variant="destructive" size="default">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete

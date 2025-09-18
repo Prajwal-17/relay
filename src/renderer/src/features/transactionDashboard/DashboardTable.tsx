@@ -143,7 +143,7 @@ export const DashboardTable = () => {
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <AlertDialog>
-                            <AlertDialogTrigger>
+                            <AlertDialogTrigger asChild>
                               <Button variant="link" className="text-primary px-0 text-lg">
                                 Convert
                               </Button>
@@ -181,7 +181,7 @@ export const DashboardTable = () => {
                           </Button>
 
                           <AlertDialog>
-                            <AlertDialogTrigger>
+                            <AlertDialogTrigger asChild>
                               <Button
                                 variant="destructive"
                                 size="icon"
