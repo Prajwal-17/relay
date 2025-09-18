@@ -100,7 +100,7 @@ export default function ProductResults() {
                           setFormData({
                             ...product,
                             mrp: product.mrp,
-                            price: product.price
+                            price: product.price.toString()
                           });
                         }}
                         className="text-muted-foreground hover:text-foreground h-9 px-3 opacity-0 transition-opacity group-hover:opacity-100 hover:cursor-pointer hover:bg-slate-100"

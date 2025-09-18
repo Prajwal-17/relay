@@ -6,7 +6,7 @@ import { jsPDF } from "jspdf";
 import { autoTable } from "jspdf-autotable";
 import os from "os";
 import path from "path";
-import { TransactionType, type ApiResponse } from "../../../shared/types";
+import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "../../../shared/types";
 import { formatDateStrToISTDateStr, removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToRupees, IndianRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -20,14 +20,14 @@ export function sendViaWhatsapp() {
         const doc = new jsPDF();
 
         let transaction;
-        if (type === TransactionType.SALES) {
+        if (type === TRANSACTION_TYPE.SALES) {
           transaction = await db.query.sales.findFirst({
             where: eq(sales.id, id),
             with: {
               saleItems: true
             }
           });
-        } else if (type === TransactionType.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
           transaction = await db.query.estimates.findFirst({
             where: eq(estimates.id, id),
             with: {
@@ -49,7 +49,7 @@ export function sendViaWhatsapp() {
         }
 
         const billingNo =
-          type === TransactionType.SALES ? transaction?.invoiceNo : transaction?.estimateNo;
+          type === TRANSACTION_TYPE.SALES ? transaction?.invoiceNo : transaction?.estimateNo;
         const trimmedDate = removeTandZ(transaction.createdAt);
 
         const createdAt = new Date(trimmedDate).toLocaleString("en-IN", {
@@ -97,7 +97,7 @@ export function sendViaWhatsapp() {
 
         // table
         let tableData;
-        if (type === TransactionType.SALES) {
+        if (type === TRANSACTION_TYPE.SALES) {
           tableData = await transaction.saleItems.map((item, idx) => {
             return [
               idx + 1,
@@ -107,7 +107,7 @@ export function sendViaWhatsapp() {
               formatToRupees(item.totalPrice)
             ];
           });
-        } else if (type === TransactionType.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
           tableData = await transaction.estimateItems.map((item, idx) => {
             return [
               idx + 1,
@@ -136,11 +136,11 @@ export function sendViaWhatsapp() {
         const finalY = (doc as any).lastAutoTable.finalY;
 
         let calcTotalAmount;
-        if (type === TransactionType.SALES) {
+        if (type === TRANSACTION_TYPE.SALES) {
           calcTotalAmount = transaction.saleItems.reduce((sum, currentItem) => {
             return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
           }, 0);
-        } else if (type === TransactionType.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
           calcTotalAmount = transaction.estimateItems.reduce((sum, currentItem) => {
             return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
           }, 0);

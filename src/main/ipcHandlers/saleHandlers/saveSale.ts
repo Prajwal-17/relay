@@ -1,6 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import { TransactionType, type ApiResponse, type SalePayload } from "../../../shared/types";
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type SalePayload,
+  type TransactionType
+} from "../../../shared/types";
 import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -82,7 +87,7 @@ export function saveSale() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TransactionType.SALES },
+            data: { id: result.id, type: TRANSACTION_TYPE.SALES },
             message: result.message
           };
         }
@@ -147,7 +152,7 @@ export function saveSale() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TransactionType.SALES },
+            data: { id: result.id, type: TRANSACTION_TYPE.SALES },
             message: result.message
           };
         }

@@ -25,7 +25,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
 
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
 
-  const { scrollRef, searchParam, setSearchParam } = useInfiniteScroll({
+  useInfiniteScroll({
     fetchFn: fetchProducts,
     stateUpdater: setSearchResult,
     delay: 300,

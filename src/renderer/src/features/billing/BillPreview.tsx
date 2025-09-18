@@ -1,7 +1,7 @@
 import { useTransactionActions } from "@/hooks/useTransactionActions";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
-import { TransactionType } from "@shared/types";
+import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
@@ -13,7 +13,7 @@ const BillPreview = () => {
 
   const { lineItems, invoiceNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(
-    type === TransactionType.SALES ? TransactionType.SALES : TransactionType.ESTIMATES
+    type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
   );
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
@@ -36,7 +36,7 @@ const BillPreview = () => {
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
             <p className="text-xs">6TH MAIN, RUKMINI NAGAR NAGASANDRA POST BANGALORE 560073</p>
-            {type === TransactionType.SALES && (
+            {type === TRANSACTION_TYPE.SALES && (
               <p className="text-xs">
                 <span className="font-semibold">GSTIN:</span>29BHBPR8333N2ZM
               </p>
@@ -53,14 +53,14 @@ const BillPreview = () => {
               </div>
               <div>
                 <span className="font-semibold">
-                  {type === TransactionType.SALES ? "Invoice No:" : "Estimate No:"}
+                  {type === TRANSACTION_TYPE.SALES ? "Invoice No:" : "Estimate No:"}
                 </span>{" "}
                 {invoiceNo}
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}
                 {customerName === "DEFAULT" || customerName === ""
-                  ? type === TransactionType.SALES
+                  ? type === TRANSACTION_TYPE.SALES
                     ? "Sale"
                     : "Estimate"
                   : customerName}

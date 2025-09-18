@@ -174,10 +174,12 @@ export type DateRangeType = {
   to: Date;
 };
 
-export enum TransactionType {
-  SALES = "sales",
-  ESTIMATES = "estimates"
-}
+export const TRANSACTION_TYPE = {
+  SALES: "sales",
+  ESTIMATES: "estimates"
+} as const;
+
+export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 
 export type FilterType = "all" | "active" | "inactive";
 

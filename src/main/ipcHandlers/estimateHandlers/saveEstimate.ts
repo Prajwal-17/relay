@@ -1,6 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import { TransactionType, type ApiResponse, type EstimatePayload } from "../../../shared/types";
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type EstimatePayload,
+  type TransactionType
+} from "../../../shared/types";
 import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -13,7 +18,7 @@ export function saveEstimate() {
     async (
       _event,
       estimateObj: EstimatePayload
-    ): Promise<ApiResponse<{ id: string; type: TransactionType.ESTIMATES }>> => {
+    ): Promise<ApiResponse<{ id: string; type: TransactionType }>> => {
       try {
         let customer;
         if (!estimateObj.customerName) {
@@ -84,7 +89,7 @@ export function saveEstimate() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TransactionType.ESTIMATES },
+            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATES },
             message: result.message
           };
         }
@@ -156,7 +161,7 @@ export function saveEstimate() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TransactionType.ESTIMATES },
+            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATES },
             message: result.message
           };
         }
