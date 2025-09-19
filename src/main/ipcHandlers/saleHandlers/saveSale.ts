@@ -44,8 +44,6 @@ export function saveSale() {
               .values({
                 invoiceNo: Number(saleObj.invoiceNo),
                 customerId: customer[0].id,
-                customerName: customer[0].name,
-                customerContact: customer[0].contact,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
@@ -103,8 +101,6 @@ export function saveSale() {
             tx.update(sales)
               .set({
                 customerId: saleObj.customerId,
-                customerName: saleObj.customerName,
-                customerContact: saleObj.customerContact,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,

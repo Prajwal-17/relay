@@ -44,24 +44,33 @@ export function filterByDate() {
 
         let result: SalesType[] | [];
         if (fromDate && toDate) {
-          result = await db
-            .select()
-            .from(sales)
-            .where(and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)))
-            .orderBy(desc(sales.createdAt));
-          // .limit(10);
+          result = await db.query.sales.findMany({
+            where: and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)),
+            with: {
+              customer: true,
+              saleItems: true
+            },
+            orderBy: desc(sales.createdAt)
+            // .limit(10);
+          });
         } else if (fromDate) {
-          result = await db
-            .select()
-            .from(sales)
-            .where(gte(sales.createdAt, fromDate))
-            .orderBy(desc(sales.createdAt));
+          result = await db.query.sales.findMany({
+            where: gte(sales.createdAt, fromDate),
+            with: {
+              customer: true,
+              saleItems: true
+            },
+            orderBy: desc(sales.createdAt)
+          });
         } else if (toDate) {
-          result = await db
-            .select()
-            .from(sales)
-            .where(lt(sales.createdAt, toDate))
-            .orderBy(desc(sales.createdAt));
+          result = await db.query.sales.findMany({
+            where: lt(sales.createdAt, toDate),
+            with: {
+              customer: true,
+              saleItems: true
+            },
+            orderBy: desc(sales.createdAt)
+          });
         } else {
           return {
             status: "error",

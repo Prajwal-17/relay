@@ -43,8 +43,6 @@ export type SalesType = {
   id: string;
   invoiceNo: number;
   customerId: string | null;
-  customerName: string;
-  customerContact: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
   isPaid: boolean;
@@ -56,8 +54,6 @@ export type EstimateType = {
   id: string;
   estimateNo: number;
   customerId: string | null;
-  customerName: string;
-  customerContact: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
   isPaid: boolean;

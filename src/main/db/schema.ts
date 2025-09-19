@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { Role } from "./enum";
 
@@ -18,20 +18,24 @@ export const users = sqliteTable("users", {
     .notNull()
 });
 
-export const customers = sqliteTable("customers", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  name: text("name").notNull(),
-  contact: text("contact"),
-  customerType: text("customer_type").$type<Role>().notNull(),
-  createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
-    .notNull()
-});
+export const customers = sqliteTable(
+  "customers",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    name: text("name").notNull().unique(),
+    contact: text("contact").unique(),
+    customerType: text("customer_type").$type<Role>().notNull(),
+    createdAt: text("created_at")
+      .default(sql`(datetime('now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(datetime('now'))`)
+      .notNull()
+  },
+  (table) => [unique("customers_name_contact_unique").on(table.name, table.contact)]
+);
 
 export const products = sqliteTable("products", {
   id: text("id")
@@ -86,8 +90,6 @@ export const sales = sqliteTable("sales", {
     .$defaultFn(() => uuidv4()),
   invoiceNo: integer("invoice_no").notNull().unique(),
   customerId: text("customer_id").references(() => customers.id),
-  customerName: text("customer_name").notNull(), // "name = DEFAULT"
-  customerContact: text("customer_contact"),
   grandTotal: integer("grand_total", { mode: "number" }),
   totalQuantity: real("total_quantity"),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
@@ -129,8 +131,6 @@ export const estimates = sqliteTable("estimates", {
     .$defaultFn(() => uuidv4()),
   estimateNo: integer("estimate_no").notNull().unique(),
   customerId: text("customer_id").references(() => customers.id),
-  customerName: text("customer_name").notNull(),
-  customerContact: text("customer_contact"),
   grandTotal: integer("grand_total", { mode: "number" }),
   totalQuantity: real("total_quantity"),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
@@ -167,7 +167,11 @@ export const estimateItems = sqliteTable("estimate_items", {
 });
 
 // drizzle relations are only for querying
-export const salesRelations = relations(sales, ({ many }) => ({
+export const salesRelations = relations(sales, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [sales.customerId],
+    references: [customers.id]
+  }),
   saleItems: many(saleItems)
 }));
 
@@ -178,7 +182,11 @@ export const saleItemsRelations = relations(saleItems, ({ one }) => ({
   })
 }));
 
-export const estimatesRelations = relations(estimates, ({ many }) => ({
+export const estimatesRelations = relations(estimates, ({ one, many }) => ({
+  customer: one(customers, {
+    fields: [estimates.customerId],
+    references: [customers.id]
+  }),
   estimateItems: many(estimateItems)
 }));
 

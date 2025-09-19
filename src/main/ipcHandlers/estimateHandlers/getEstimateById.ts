@@ -3,7 +3,7 @@ import { ipcMain } from "electron/main";
 import type { ApiResponse, EstimateItemsType, EstimateType } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
-import { estimateItems, estimates } from "../../db/schema";
+import { estimates } from "../../db/schema";
 
 export function getEstimateById() {
   ipcMain.handle(
@@ -13,17 +13,23 @@ export function getEstimateById() {
       id: string
     ): Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>> => {
       try {
-        const [estimateRecord] = await db.select().from(estimates).where(eq(estimates.id, id));
-        const estimateItemsList = await db
-          .select()
-          .from(estimateItems)
-          .where(eq(estimateItems.estimateId, id));
+        const estimateObj = await db.query.estimates.findFirst({
+          where: eq(estimates.id, id),
+          with: {
+            customer: true,
+            estimateItems: true
+          }
+        });
+
+        if (!estimateObj) {
+          throw new Error(`Could not find estimate with ${id}`);
+        }
 
         return {
           status: "success",
           data: {
-            ...estimateRecord,
-            items: estimateItemsList.map((item) => {
+            ...estimateObj,
+            items: estimateObj.estimateItems.map((item) => {
               return {
                 ...item,
                 mrp: item.mrp && formatToRupees(item.mrp),
@@ -35,7 +41,10 @@ export function getEstimateById() {
         };
       } catch (error) {
         console.log(error);
-        return { status: "error", error: { message: "Failed to retrieve estimate" } };
+        return {
+          status: "error",
+          error: { message: (error as any).message ?? "Failed to retrieve estimate" }
+        };
       }
     }
   );

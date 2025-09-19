@@ -49,8 +49,6 @@ export function convertEstimateToSale() {
             .values({
               invoiceNo: nextSaleNo,
               customerId: estimateObj.customerId,
-              customerName: estimateObj.customerName,
-              customerContact: estimateObj.customerContact,
               grandTotal: estimateObj.grandTotal,
               totalQuantity: estimateObj.totalQuantity,
               isPaid: estimateObj.isPaid

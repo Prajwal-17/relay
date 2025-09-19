@@ -32,8 +32,8 @@ const useLoadTransactionDetails = (type: "sale" | "estimate", transactionId: str
           setBillingId(response.data.id);
           setCustomerId(response.data.customerId);
           setInvoiceNo(response.data.invoiceNo || response.data.estimateNo);
-          setCustomerContact(response.data.customerContact);
-          setCustomerName(response.data.customerName);
+          setCustomerContact(response.data.customer.contact);
+          setCustomerName(response.data.customer.name);
           setBillingDate(formatDateStrToISTDateObject(response.data.createdAt));
           localStorage.setItem(
             "bill-preview-date",

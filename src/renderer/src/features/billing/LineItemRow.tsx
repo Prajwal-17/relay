@@ -31,7 +31,7 @@ const LineItemRow = memo(
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
 
     return (
-      <div key={idx} className="relative">
+      <div key={item.id} className="relative">
         <div className="group grid w-full grid-cols-20 border bg-neutral-100">
           <div className="col-span-2 h-full w-full border-r bg-white">
             <div className="flex h-full w-full items-center justify-between gap-2 px-4">
@@ -142,7 +142,7 @@ const LineItemRow = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.item === nextProps.item;
+    return prevProps.item === nextProps.item && prevProps.idx === nextProps.idx;
   }
 );
 

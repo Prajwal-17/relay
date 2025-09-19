@@ -39,24 +39,33 @@ export function filterByDate() {
 
         let result: EstimateType[] | [];
         if (fromDate && toDate) {
-          result = await db
-            .select()
-            .from(estimates)
-            .where(and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)))
-            .orderBy(desc(estimates.createdAt));
-          // .limit(10);
+          result = await db.query.estimates.findMany({
+            where: and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)),
+            with: {
+              customer: true,
+              estimateItems: true
+            },
+            orderBy: desc(estimates.createdAt)
+            // .limit(10);
+          });
         } else if (fromDate) {
-          result = await db
-            .select()
-            .from(estimates)
-            .where(gte(estimates.createdAt, fromDate))
-            .orderBy(desc(estimates.createdAt));
+          result = await db.query.estimates.findMany({
+            where: gte(estimates.createdAt, fromDate),
+            with: {
+              customer: true,
+              estimateItems: true
+            },
+            orderBy: desc(estimates.createdAt)
+          });
         } else if (toDate) {
-          result = await db
-            .select()
-            .from(estimates)
-            .where(lt(estimates.createdAt, toDate))
-            .orderBy(desc(estimates.createdAt));
+          result = await db.query.estimates.findMany({
+            where: lt(estimates.createdAt, toDate),
+            with: {
+              customer: true,
+              estimateItems: true
+            },
+            orderBy: desc(estimates.createdAt)
+          });
         } else {
           return {
             status: "error",

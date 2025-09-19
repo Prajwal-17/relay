@@ -46,8 +46,6 @@ export function saveEstimate() {
               .values({
                 estimateNo: Number(estimateObj.estimateNo),
                 customerId: customer[0].id,
-                customerName: customer[0].name,
-                customerContact: customer[0].contact,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
@@ -109,8 +107,6 @@ export function saveEstimate() {
             tx.update(estimates)
               .set({
                 customerId: estimateObj.customerId,
-                customerName: estimateObj.customerName,
-                customerContact: estimateObj.customerContact,
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,

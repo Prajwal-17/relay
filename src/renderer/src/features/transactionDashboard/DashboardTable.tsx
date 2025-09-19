@@ -135,7 +135,7 @@ export const DashboardTable = () => {
                         {transaction.invoiceNo || transaction.estimateNo}
                       </TableCell>
                       <TableCell className="py-4 text-left text-lg font-medium">
-                        {transaction.customerName}
+                        {transaction.customer.name}
                       </TableCell>
                       <TableCell className="py-4 text-left text-lg font-medium">
                         {IndianRupees.format(transaction.grandTotal)}
