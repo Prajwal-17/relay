@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export const CustomerNameInput = () => {
-  const { setCustomerId, customerName, setCustomerName, setCustomerContact } =
+  const { setCustomerId, customerName, setCustomerName, setCustomerContact, setIsNewCustomer } =
     useTransactionState();
   const [customers, setCustomers] = useState<CustomersType[]>([]);
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
@@ -53,6 +53,45 @@ export const CustomerNameInput = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [openDropdown, setOpenDropdown]);
+
+  useEffect(() => {
+    let isCurrent = true;
+    async function getCustomerByName() {
+      try {
+        if (customerName === "") {
+          setIsNewCustomer(false);
+          setCustomerId(null);
+          setCustomerContact(null);
+          return;
+        }
+        const response = await window.customersApi.getCustomerByName(customerName);
+        if (isCurrent) {
+          if (response.status === "success") {
+            if (response.data === null) {
+              setIsNewCustomer(true);
+              setCustomerId(null);
+              setCustomerContact(null);
+            } else {
+              setIsNewCustomer(false);
+              setCustomerId(response.data.id);
+              setCustomerContact(response.data.contact);
+            }
+          } else {
+            console.log("error");
+            toast.error("Something went wrong while fetching customer");
+          }
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong");
+      }
+    }
+
+    getCustomerByName();
+    return () => {
+      isCurrent = false;
+    };
+  }, [customerName, setCustomerId, setCustomerContact, setIsNewCustomer]);
 
   return (
     <>

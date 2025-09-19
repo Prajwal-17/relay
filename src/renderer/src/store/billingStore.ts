@@ -27,6 +27,8 @@ type BillingStoreType = {
   setCustomerName: (newCustomerName: string) => void;
   customerContact: string | null;
   setCustomerContact: (newCustomerContact: string | null) => void;
+  isNewCustomer: boolean;
+  setIsNewCustomer: (value: boolean) => void;
   billingDate: Date;
   setBillingDate: (newDate: Date) => void;
   lineItems: LineItemsType[] | [];
@@ -73,6 +75,12 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
 
   customerContact: "",
   setCustomerContact: (newCustomerContact) => set({ customerContact: newCustomerContact }),
+
+  isNewCustomer: false,
+  setIsNewCustomer: (value) =>
+    set(() => ({
+      isNewCustomer: value
+    })),
 
   billingDate: new Date(),
   setBillingDate: (newDate) =>

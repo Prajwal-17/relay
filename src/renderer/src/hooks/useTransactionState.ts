@@ -13,6 +13,8 @@ const useTransactionState = () => {
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const customerContact = useBillingStore((state) => state.customerContact);
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+  const isNewCustomer = useBillingStore((state) => state.isNewCustomer);
+  const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
   const billingDate = useBillingStore((state) => state.billingDate);
   const setBillingDate = useBillingStore((state) => state.setBillingDate);
   const lineItems = useBillingStore((state) => state.lineItems);
@@ -49,6 +51,8 @@ const useTransactionState = () => {
     setCustomerName,
     customerContact,
     setCustomerContact,
+    isNewCustomer,
+    setIsNewCustomer,
     billingDate,
     setBillingDate,
     lineItems,

@@ -3,6 +3,7 @@ import { ipcMain } from "electron/main";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
+  type CustomersType,
   type SalePayload,
   type TransactionType
 } from "../../../shared/types";
@@ -21,19 +22,47 @@ export function saveSale() {
       saleObj: SalePayload
     ): Promise<ApiResponse<{ id: string; type: TransactionType }>> => {
       try {
-        let customer;
-        if (!saleObj.customerName) {
-          customer = await db.select().from(customers).where(eq(customers.name, "DEFAULT"));
+        let customer: CustomersType | undefined;
+        if (!saleObj.customerName || saleObj.customerName.trim() === "") {
+          const [defaultCustomer] = await db
+            .select()
+            .from(customers)
+            .where(eq(customers.name, "DEFAULT"));
+          customer = defaultCustomer;
         } else if (saleObj.customerId && saleObj.customerName) {
-          customer = await db.select().from(customers).where(eq(customers.id, saleObj.customerId));
+          const [defaultCustomer] = await db
+            .select()
+            .from(customers)
+            .where(eq(customers.id, saleObj.customerId));
+          customer = defaultCustomer;
         } else if (!saleObj.customerId && saleObj.customerName) {
-          customer = await db
-            .insert(customers)
-            .values({
-              name: saleObj.customerName,
-              customerType: Role.CASH
-            })
-            .returning({ id: customers.id, name: customers.name, contact: customers.contact });
+          const [existingCustomer] = await db
+            .select()
+            .from(customers)
+            .where(eq(customers.name, saleObj.customerName));
+
+          if (existingCustomer) {
+            console.log(existingCustomer);
+            customer = existingCustomer;
+          } else {
+            const [defaultCustomer] = await db
+              .insert(customers)
+              .values({
+                name: saleObj.customerName,
+                customerType: Role.CASH
+              })
+              .returning({
+                id: customers.id,
+                name: customers.name,
+                contact: customers.contact,
+                customerType: customers.customerType
+              });
+            customer = defaultCustomer;
+          }
+        }
+
+        if (!customer) {
+          throw new Error("Something went wrong.Could not find customer.");
         }
 
         // --- CREATE SALE ---
@@ -43,7 +72,7 @@ export function saveSale() {
               .insert(sales)
               .values({
                 invoiceNo: Number(saleObj.invoiceNo),
-                customerId: customer[0].id,
+                customerId: customer.id,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
@@ -100,7 +129,7 @@ export function saveSale() {
 
             tx.update(sales)
               .set({
-                customerId: saleObj.customerId,
+                customerId: customer.id,
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,

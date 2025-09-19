@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
+import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { Check, PanelLeftOpen, X } from "lucide-react";
@@ -18,6 +19,7 @@ const BillingHeader = () => {
     setInvoiceNo,
     customerContact,
     setCustomerContact,
+    isNewCustomer,
     billingDate,
     setBillingDate
   } = useTransactionState();
@@ -27,6 +29,7 @@ const BillingHeader = () => {
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
+  const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
   const location = useLocation();
   const page = location.pathname.split("/")[1];
@@ -173,7 +176,7 @@ const BillingHeader = () => {
             </div>
           </div>
         </div>
-        <div className="flex max-w-4xl items-center">
+        <div className="flex max-w-4xl flex-col justify-between">
           <div className="flex w-full flex-1 items-center gap-4">
             <CustomerNameInput />
             <div className="w-full">
@@ -196,6 +199,9 @@ const BillingHeader = () => {
               </div>
             </div>
           </div>
+          <span className="my-1 self-start rounded-md bg-green-500 px-2 font-medium text-white">
+            {isNewCustomer && !isDropdownOpen ? "New Customer" : null}
+          </span>
         </div>
       </div>
     </>

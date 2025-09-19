@@ -213,6 +213,7 @@ export interface CustomersApi {
   addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
+  getCustomerByName: (customerName: string) => Promise<ApiResponse<CustomersType | null>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
   getAllTransactionsById: (customerId: string) => Promise<ApiResponse<any>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
