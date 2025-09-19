@@ -53,6 +53,8 @@ const customersApi: CustomersApi = {
     ipcRenderer.invoke("customersApi:updateCustomer", payload),
   getCustomerById: (customerId: string) =>
     ipcRenderer.invoke("customersApi:getCustomerById", customerId),
+  getCustomerByName: (customerName: string) =>
+    ipcRenderer.invoke("customersApi:getCustomerByName", customerName),
   getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
   getAllTransactionsById: (customerId: string) =>
     ipcRenderer.invoke("customersApi:getAllTransactionsById", customerId),

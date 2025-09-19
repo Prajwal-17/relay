@@ -4,6 +4,7 @@ import { deleteCustomer } from "./deleteCustomer";
 import { getAllCustomers } from "./getAllCustomers";
 import { getAllTransactionsById } from "./getAllTransactionById";
 import { getCustomerById } from "./getCustomerById";
+import { getCustomerByName } from "./getCustomerByName";
 import importContactsFromGoogle from "./importContactsFromGoogle";
 import { searchCustomers } from "./searchCustomers";
 import { updateCustomer } from "./updateCustomer";
@@ -15,6 +16,7 @@ export function customerHandlers() {
   getAllCustomers();
   getAllTransactionsById();
   getCustomerById();
+  getCustomerByName();
   searchCustomers();
   updateCustomer();
   importContactsFromGoogle();

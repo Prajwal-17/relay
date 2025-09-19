@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a904cf5a-9c45-487a-8da3-31a0038eb770",
+  "id": "5062738a-7cf1-4d1b-bdf6-8207ee9d0317",
   "prevId": "6adc604f-d765-4af2-ab16-58c9d77fdfe8",
   "tables": {
     "customers": {
@@ -57,21 +57,6 @@
           "name": "customers_name_unique",
           "columns": [
             "name"
-          ],
-          "isUnique": true
-        },
-        "customers_contact_unique": {
-          "name": "customers_contact_unique",
-          "columns": [
-            "contact"
-          ],
-          "isUnique": true
-        },
-        "customers_name_contact_unique": {
-          "name": "customers_name_contact_unique",
-          "columns": [
-            "name",
-            "contact"
           ],
           "isUnique": true
         }

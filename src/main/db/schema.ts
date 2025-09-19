@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { Role } from "./enum";
 
@@ -18,24 +18,20 @@ export const users = sqliteTable("users", {
     .notNull()
 });
 
-export const customers = sqliteTable(
-  "customers",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => uuidv4()),
-    name: text("name").notNull().unique(),
-    contact: text("contact").unique(),
-    customerType: text("customer_type").$type<Role>().notNull(),
-    createdAt: text("created_at")
-      .default(sql`(datetime('now'))`)
-      .notNull(),
-    updatedAt: text("updated_at")
-      .default(sql`(datetime('now'))`)
-      .notNull()
-  },
-  (table) => [unique("customers_name_contact_unique").on(table.name, table.contact)]
-);
+export const customers = sqliteTable("customers", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
+  name: text("name").notNull().unique(),
+  contact: text("contact"),
+  customerType: text("customer_type").$type<Role>().notNull(),
+  createdAt: text("created_at")
+    .default(sql`(datetime('now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(datetime('now'))`)
+    .notNull()
+});
 
 export const products = sqliteTable("products", {
   id: text("id")
