@@ -35,6 +35,12 @@ export function updateCustomer() {
         }
       } catch (error) {
         console.log(error);
+        if (error && (error as any).code === "SQLITE_CONSTRAINT_UNIQUE") {
+          return {
+            status: "error",
+            error: { message: `Customer with name "${customerPayload.name}" already exists.` }
+          };
+        }
         return {
           status: "error",
           error: { message: "Something went wrong" }

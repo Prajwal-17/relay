@@ -59,7 +59,6 @@ export function sendViaWhatsapp() {
 
         const filename = `${type}-${billingNo}-${createdAt}.pdf`.replaceAll(" ", "-");
         const pdfPath = path.join(outputDir, filename);
-        console.log("pdfpath", pdfPath)
 
         const pageWidth = doc.internal.pageSize.getWidth();
         const marginX = 15;

@@ -42,7 +42,6 @@ export function saveSale() {
             .where(eq(customers.name, saleObj.customerName));
 
           if (existingCustomer) {
-            console.log(existingCustomer);
             customer = existingCustomer;
           } else {
             const [defaultCustomer] = await db

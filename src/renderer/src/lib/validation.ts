@@ -29,3 +29,15 @@ export const ProductSchema = z.object({
   ),
   isDisabled: z.boolean().optional()
 });
+
+export const CustomerSchema = z.object({
+  name: z.string().trim().min(3, { error: "Name must have atleast 3 characters" }),
+  contact: z
+    .string()
+    .refine((val) => !isNaN(Number(val)), {
+      message: "Contact must contain only numbers"
+    })
+    .length(10, { error: "Contact must contain 10 digits" })
+    .nullable(),
+  customerType: z.enum(["cash", "account", "hotel"])
+});

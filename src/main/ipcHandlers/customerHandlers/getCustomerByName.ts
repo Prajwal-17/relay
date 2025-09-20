@@ -10,7 +10,6 @@ export function getCustomerByName() {
     "customersApi:getCustomerByName",
     async (_event, customerName): Promise<ApiResponse<Partial<CustomersType | null>>> => {
       try {
-        console.log("customer name", customerName);
         const customer = await db
           .select({
             id: customers.id,
@@ -19,7 +18,6 @@ export function getCustomerByName() {
           })
           .from(customers)
           .where(eq(customers.name, customerName));
-        console.log("customer ", customer);
 
         if (customer.length <= 0) {
           return { status: "success", data: null };

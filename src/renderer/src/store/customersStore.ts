@@ -24,7 +24,7 @@ function initialFormData() {
   return {
     id: "",
     name: "",
-    contact: "",
+    contact: null,
     customerType: "cash"
   };
 }

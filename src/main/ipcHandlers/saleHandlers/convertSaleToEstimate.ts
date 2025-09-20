@@ -26,9 +26,6 @@ export function convertSaletoEstimate() {
             saleItems: true
           }
         });
-        // console.log("saleObj", saleObj);
-
-        // throw new Error("stop execution");
 
         if (!saleObj) {
           return {
@@ -57,8 +54,6 @@ export function convertSaletoEstimate() {
             .values({
               estimateNo: nextEstimateNo,
               customerId: saleObj.customerId,
-              // customerName: saleObj.customerName,
-              // customerContact: saleObj.customerContact,
               grandTotal: saleObj.grandTotal,
               totalQuantity: saleObj.totalQuantity,
               isPaid: saleObj.isPaid
