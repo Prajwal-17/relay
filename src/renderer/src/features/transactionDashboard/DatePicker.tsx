@@ -154,7 +154,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
                 required={true}
                 onSelect={setDate}
                 captionLayout={dropdown}
-                className="rounded-lg border shadow-sm"
+                className="rounded-lg border bg-green-500 shadow-sm"
                 numberOfMonths={2}
               />
             </PopoverContent>

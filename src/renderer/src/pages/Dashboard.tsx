@@ -4,7 +4,7 @@ import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
 import { DatePicker } from "@/features/transactionDashboard/DatePicker";
 import { useDashboardStore } from "@/store/salesStore";
 import { formatToPaisa, formatToRupees, IndianRupees } from "@shared/utils/utils";
-import { Plus } from "lucide-react";
+import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -33,9 +33,13 @@ const Dashboard = () => {
       <div className="bg-muted/70 h-full flex-1 space-y-6 overflow-y-auto px-8 py-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold">{pathname === "/sale" ? "Sales" : "Estimates"}</h1>
+            <h1 className="text-4xl font-bold">
+              {pathname === "/sale" ? "Sales Overview" : "Estimates Overview"}
+            </h1>
             <p className="text-muted-foreground text-lg">
-              {pathname === "/sale" ? "View Sales " : "View Estimates"}
+              {pathname === "/sale"
+                ? "Search, filter, and view a complete history of your sales."
+                : "Search, filter, and view a complete history of your estimates."}
             </p>
           </div>
           <Button
@@ -48,6 +52,29 @@ const Dashboard = () => {
             <Plus className="h-5 w-5" />
             {pathname === "/sale" ? "Create Sale" : "Add Estimate"}
           </Button>
+        </div>
+
+        <div className="border-border/50 bg-background mb-6 flex items-center gap-6 rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-lg">
+              <IndianRupee className="text-primary h-5 w-5" />
+            </div>
+            <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
+            <span className="text-2xl font-bold">
+              {pathname === "/sale"
+                ? `${IndianRupees.format(formatToRupees(calculateSalesTotal))}`
+                : `${IndianRupees.format(formatToRupees(calculateEstimatesTotal))}`}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
+              <ShoppingCart className="h-5 w-5 text-blue-500" />
+            </div>
+            <span className="text-muted-foreground text-lg font-medium">Total Transactions:</span>
+            <span className="text-2xl font-bold">
+              {pathname === "/sale" ? `${sales.length || 0}` : `${estimates.length || 0}`}
+            </span>
+          </div>
         </div>
 
         <Card>
