@@ -24,8 +24,10 @@ import { useDashboardStore } from "@/store/salesStore";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { ReceiptIndianRupee, Trash2 } from "lucide-react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
+import { DatePicker } from "./DatePicker";
 
 export const DashboardTable = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ export const DashboardTable = () => {
   const estimates = useDashboardStore((state) => state.estimates);
   const setEstimates = useDashboardStore((state) => state.setEstimates);
   const dataToRender = pathname === "/sale" ? sales : estimates;
+  const [selected, setSelected] = useState("");
 
   const handleDeleteSale = async (saleId: string) => {
     try {
@@ -109,6 +112,7 @@ export const DashboardTable = () => {
     <>
       <Card className="my-0 py-3">
         <CardContent className="px-3">
+          <DatePicker selected={selected} />
           {dataToRender.length > 0 ? (
             <div className="max-h-[415px] overflow-y-auto rounded-lg border">
               <Table>

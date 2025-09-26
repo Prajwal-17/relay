@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
-import { DatePicker } from "@/features/transactionDashboard/DatePicker";
 import { useDashboardStore } from "@/store/salesStore";
 import { formatToPaisa, formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const [selected, setSelected] = useState("");
   const sales = useDashboardStore((state) => state.sales);
   const estimates = useDashboardStore((state) => state.estimates);
   const navigate = useNavigate();
@@ -76,67 +72,6 @@ const Dashboard = () => {
             </span>
           </div>
         </div>
-
-        <Card>
-          <CardHeader>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-foreground text-xl font-medium">Filter by</span>
-                <span className="rounded-md bg-black/10 px-2.5 py-1 text-lg font-medium text-black">
-                  Date Range
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2" aria-label="Quick presets">
-                <Button
-                  variant={selected === "today" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setSelected("today")}
-                  className="text-lg"
-                >
-                  Today
-                </Button>
-                <Button
-                  variant={selected === "week" ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => setSelected("week")}
-                  className="text-lg"
-                >
-                  This week
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="lg"
-                  className="text-lg"
-                  onClick={() => setSelected("")}
-                >
-                  Clear
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex w-full items-stretch justify-between">
-              <Card className="py-6 pr-16 pl-4">
-                <div className="space-y-2">
-                  <div className="text-muted-foreground text-lg font-medium">
-                    {pathname === "/sale" ? "Sales Total" : "Estimates Total"}
-                  </div>
-                  <div className="text-4xl font-bold">
-                    {pathname === "/sale"
-                      ? `${IndianRupees.format(formatToRupees(calculateSalesTotal))}`
-                      : `${IndianRupees.format(formatToRupees(calculateEstimatesTotal))}`}
-                  </div>
-                  <div className="text-muted-foreground text-lg">
-                    {pathname === "/sale" ? `${sales.length || 0}` : `${estimates.length || 0}`}{" "}
-                    transactions
-                  </div>
-                </div>
-              </Card>
-              <DatePicker selected={selected} />
-            </div>
-          </CardContent>
-        </Card>
 
         <DashboardTable />
       </div>

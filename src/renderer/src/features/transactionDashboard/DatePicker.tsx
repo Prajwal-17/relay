@@ -1,9 +1,8 @@
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useDashboardStore } from "@/store/salesStore";
 import type { DateRangeType } from "@shared/types";
-import { CalendarIcon, ChevronDownIcon } from "lucide-react";
+import { CalendarIcon, ChevronDownIcon, MoveRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
@@ -34,7 +33,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     if (selected === "today") {
       const startofDay = new Date();
       startofDay.setHours(0, 0, 0, 0);
-      setDate({ from: startofDay });
+      setDate({ from: startofDay, to: startofDay });
     } else if (selected === "week") {
       const previous = today;
       previous.setDate(previous.getDate() - 7);
@@ -52,7 +51,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     } else {
       const startofDay = new Date();
       startofDay.setHours(0, 0, 0, 0);
-      setDate({ from: startofDay });
+      setDate({ from: startofDay, to: startofDay });
     }
   }, [selected]);
 
@@ -103,63 +102,56 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     }
   }, [date, open]);
 
-  const formatDate = () => {
-    if (
-      date?.from?.toLocaleString("en-IN", { dateStyle: "medium" }) ===
-      date?.to?.toLocaleString("en-IN", { dateStyle: "medium" })
-    ) {
-      return date?.from?.toLocaleString("en-IN", {
-        dateStyle: "medium"
-      });
-    }
-
-    if (date?.to === undefined) {
-      return date?.from?.toLocaleString("en-IN", {
-        dateStyle: "medium"
-      });
-    }
-
-    if (date.from && date.to) {
-      return `${date.from.toLocaleString("en-IN", {
-        dateStyle: "medium"
-      })} to ${date.to.toLocaleString("en-IN", {
-        dateStyle: "medium"
-      })}`;
-    }
-
-    return;
+  const calendarClassNames = {
+    month: "space-y-4",
+    table: "w-full border-collapse space-y-1",
+    weekdays: "flex",
+    weekday: "text-muted-foreground rounded-md w-10 font-normal text-[0.8rem] text-center",
+    week: "flex w-full mt-2",
+    day: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
+    day_button:
+      "h-10 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
+    day_today: "bg-accent text-accent-foreground font-semibold",
+    day_outside: "text-muted-foreground opacity-50",
+    day_disabled: "text-muted-foreground opacity-50",
+    day_hidden: "invisible"
   };
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
-        <div className="bg-background flex max-w-2xl min-w-0 flex-1 items-center gap-2 rounded-md border px-3 py-2">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full min-w-lg justify-between py-8 text-lg font-semibold hover:cursor-pointer hover:bg-neutral-200"
-              >
-                <CalendarIcon className="text-foreground" size={40} />
-                {formatDate()}
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <div className="my-2 flex w-full justify-between">
+              <div />
+              <button className="bg-primary/20 text-foreground flex h-10 items-center gap-2 rounded-lg px-4 text-lg font-medium">
+                <CalendarIcon className="text-foreground" size={20} />
+                {date?.from?.toLocaleDateString("en-IN", {
+                  dateStyle: "medium"
+                })}
+                <MoveRight />
+                {date?.from?.toLocaleDateString("en-IN", {
+                  dateStyle: "medium"
+                })}
                 <ChevronDownIcon />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-              <Calendar
-                mode="range"
-                defaultMonth={date?.from}
-                disabled={{ after: new Date() }}
-                selected={date}
-                required={true}
-                onSelect={setDate}
-                captionLayout={dropdown}
-                className="rounded-lg border bg-green-500 shadow-sm"
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
+              </button>
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto overflow-hidden p-0" align="end">
+            <Calendar
+              mode="range"
+              defaultMonth={date?.from}
+              disabled={{ after: new Date() }}
+              selected={date}
+              required={true}
+              onSelect={setDate}
+              captionLayout={dropdown}
+              className="rounded-md shadow-sm"
+              classNames={calendarClassNames}
+              numberOfMonths={2}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
     </>
   );
