@@ -1,10 +1,12 @@
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { calendarPresets } from "@/constants/calendarPresets";
 import { useDashboardStore } from "@/store/salesStore";
 import type { DateRangeType } from "@shared/types";
 import { CalendarIcon, ChevronDownIcon, MoveRight } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { DateRange } from "react-day-picker";
+import { type DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 
@@ -102,19 +104,32 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     }
   }, [date, open]);
 
+  // Ref -> https://daypicker.dev/api/enumerations/UI
   const calendarClassNames = {
     month: "space-y-4",
     table: "w-full border-collapse space-y-1",
+    month_caption: "flex justify-center items-center gap-2 text-lg font-semibold",
+    caption_label: "text-lg flex items-center px-1 gap-1 font-semibold",
+    dropdowns: "flex gap-2 items-center",
+    dropdown_month: "px-2 py-1 rounded-md border text-lg font-semibold",
+    dropdown_year: "px-2 py-1 rounded-md border text-lg font-semibold",
     weekdays: "flex",
-    weekday: "text-muted-foreground rounded-md w-10 font-normal text-[0.8rem] text-center",
+    weekday: "text-foreground rounded-md w-10 font-semibold text-[1rem] text-center",
     week: "flex w-full mt-2",
     day: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
     day_button:
-      "h-10 w-10 p-0 font-normal aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
+      "h-10 w-10 p-0 font-medium aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
     day_today: "bg-accent text-accent-foreground font-semibold",
     day_outside: "text-muted-foreground opacity-50",
     day_disabled: "text-muted-foreground opacity-50",
     day_hidden: "invisible"
+  };
+
+  const formatters = {
+    formatWeekdayName: (date: Date, options) => {
+      const weekDayName = new Intl.DateTimeFormat(options.locale, { weekday: "long" }).format(date);
+      return weekDayName.charAt(0);
+    }
   };
 
   return (
@@ -137,19 +152,43 @@ export const DatePicker = ({ selected }: { selected: string }) => {
               </button>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden p-0" align="end">
-            <Calendar
-              mode="range"
-              defaultMonth={date?.from}
-              disabled={{ after: new Date() }}
-              selected={date}
-              required={true}
-              onSelect={setDate}
-              captionLayout={dropdown}
-              className="rounded-md shadow-sm"
-              classNames={calendarClassNames}
-              numberOfMonths={2}
-            />
+          <PopoverContent className="w-auto space-y-6 overflow-hidden px-6 py-6" align="end">
+            <div className="space-x-3">
+              {calendarPresets.map((preset, idx) => (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  key={idx}
+                  className="font-semibold"
+                  onClick={preset.getRange}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+            <div>
+              <Calendar
+                mode="range"
+                formatters={formatters}
+                defaultMonth={date?.from}
+                disabled={{ after: new Date() }}
+                selected={date}
+                required={true}
+                onSelect={setDate}
+                captionLayout={dropdown}
+                className="p-0"
+                classNames={calendarClassNames}
+                numberOfMonths={2}
+              />
+            </div>
+            <div className="flex w-full items-center justify-end gap-3 font-medium">
+              <Button variant="outline" size="lg">
+                Cancel
+              </Button>
+              <Button variant="default" size="lg">
+                Apply
+              </Button>
+            </div>
           </PopoverContent>
         </Popover>
       </div>
