@@ -10,52 +10,57 @@ import { type DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
 
-export const DatePicker = ({ selected }: { selected: string }) => {
+export const DatePicker = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(InitialDate());
+  const [tempDate, setTempDate] = useState<DateRange | undefined>(InitialDate());
   const setSales = useDashboardStore((state) => state.setSales);
   const setEstimates = useDashboardStore((state) => state.setEstimates);
   const previousDate = useRef(date);
-  const today = new Date();
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
+
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
   function InitialDate() {
     const startofDay = new Date();
+    const endofDay = new Date();
     startofDay.setHours(0, 0, 0, 0);
+    endofDay.setHours(23, 59, 59, 999);
 
     return {
       from: startofDay,
-      to: undefined
+      to: endofDay
     };
   }
 
   useEffect(() => {
-    if (selected === "today") {
-      const startofDay = new Date();
-      startofDay.setHours(0, 0, 0, 0);
-      setDate({ from: startofDay, to: startofDay });
-    } else if (selected === "week") {
-      const previous = today;
-      previous.setDate(previous.getDate() - 7);
-      const startOfWeek = new Date(previous);
-      /**
-       * getDay -> returns if Monday=0 , Tue=1
-       * subtracting coz to get start of week
-       * getDate -> returns 7,15,22
-       */
-      startOfWeek.setDate(startOfWeek.getDate() - (startOfWeek.getDay() - 1));
-      const endOfWeek = new Date(startOfWeek);
-      endOfWeek.setDate(endOfWeek.getDate() + 6);
+    const dateRange = localStorage.getItem("daterange");
 
-      setDate({ from: startOfWeek, to: endOfWeek });
-    } else {
-      const startofDay = new Date();
-      startofDay.setHours(0, 0, 0, 0);
-      setDate({ from: startofDay, to: startofDay });
+    if (!dateRange) {
+      setDate(InitialDate());
+      setTempDate(InitialDate());
+      localStorage.setItem("daterange", JSON.stringify(InitialDate()));
+      return;
     }
-  }, [selected]);
+    const parsedDateRange = JSON.parse(dateRange!);
+    const fromDate = new Date(parsedDateRange.from);
+    const toDate = new Date(parsedDateRange.to);
+
+    setDate({
+      from: fromDate,
+      to: toDate
+    });
+
+    setTempDate({
+      from: fromDate,
+      to: toDate
+    });
+
+    const presetType = localStorage.getItem("preset-type");
+    setSelectedPreset(presetType || "");
+  }, []);
 
   useEffect(() => {
     async function fetchSales() {
@@ -102,7 +107,7 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     } else {
       fetchEstimates();
     }
-  }, [date, open]);
+  }, [date, open, pathname, setSales, setEstimates]);
 
   // Ref -> https://daypicker.dev/api/enumerations/UI
   const calendarClassNames = {
@@ -132,20 +137,52 @@ export const DatePicker = ({ selected }: { selected: string }) => {
     }
   };
 
+  const handleApplyDateRange = () => {
+    setDate(tempDate);
+    localStorage.setItem("daterange", JSON.stringify({ from: tempDate?.from, to: tempDate?.to }));
+    if (selectedPreset) {
+      localStorage.setItem("preset-type", selectedPreset);
+    } else {
+      localStorage.removeItem("preset-type");
+    }
+    setOpen(false);
+  };
+
+  const handleCancel = () => {
+    setOpen(false);
+    setTempDate(date);
+    setSelectedPreset(localStorage.getItem("preset-type") || null);
+  };
+
+  const handleOnDateSelect = (range) => {
+    setSelectedPreset("");
+
+    if (range?.to) {
+      const endofDay = new Date(range.to);
+      endofDay.setHours(23, 59, 59, 999);
+      setTempDate({
+        ...range,
+        to: endofDay
+      });
+    } else {
+      setTempDate(range);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <div className="my-2 flex w-full justify-between">
+            <div className="my-2 flex justify-between">
               <div />
-              <button className="bg-primary/20 text-foreground flex h-10 items-center gap-2 rounded-lg px-4 text-lg font-medium">
+              <button className="bg-primary/20 text-foreground flex items-center gap-2 rounded-lg px-4 py-2 text-lg font-medium">
                 <CalendarIcon className="text-foreground" size={20} />
                 {date?.from?.toLocaleDateString("en-IN", {
                   dateStyle: "medium"
                 })}
                 <MoveRight />
-                {date?.from?.toLocaleDateString("en-IN", {
+                {date?.to?.toLocaleDateString("en-IN", {
                   dateStyle: "medium"
                 })}
                 <ChevronDownIcon />
@@ -153,14 +190,18 @@ export const DatePicker = ({ selected }: { selected: string }) => {
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto space-y-6 overflow-hidden px-6 py-6" align="end">
-            <div className="space-x-3">
+            <div className="flex flex-wrap gap-2">
               {calendarPresets.map((preset, idx) => (
                 <Button
-                  variant="outline"
+                  variant={selectedPreset === preset.value ? "default" : "outline"}
                   size="sm"
                   key={idx}
-                  className="font-semibold"
-                  onClick={preset.getRange}
+                  className={`font-semibold transition-all duration-200 ${selectedPreset === preset.value ? "bg-primary text-primary-foreground shadow-md" : "hover:bg-accent hover:text-accent-foreground"}`}
+                  onClick={() => {
+                    const dateValue = preset.getRange();
+                    setTempDate(dateValue);
+                    setSelectedPreset(preset.value);
+                  }}
                 >
                   {preset.label}
                 </Button>
@@ -170,11 +211,11 @@ export const DatePicker = ({ selected }: { selected: string }) => {
               <Calendar
                 mode="range"
                 formatters={formatters}
-                defaultMonth={date?.from}
+                defaultMonth={tempDate?.from}
                 disabled={{ after: new Date() }}
-                selected={date}
+                selected={tempDate}
                 required={true}
-                onSelect={setDate}
+                onSelect={(range) => handleOnDateSelect(range)}
                 captionLayout={dropdown}
                 className="p-0"
                 classNames={calendarClassNames}
@@ -182,10 +223,10 @@ export const DatePicker = ({ selected }: { selected: string }) => {
               />
             </div>
             <div className="flex w-full items-center justify-end gap-3 font-medium">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button variant="default" size="lg">
+              <Button variant="default" onClick={handleApplyDateRange}>
                 Apply
               </Button>
             </div>

@@ -12,6 +12,14 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,8 +31,7 @@ import {
 import { useDashboardStore } from "@/store/salesStore";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
-import { ReceiptIndianRupee, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { ReceiptIndianRupee, Search, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DatePicker } from "./DatePicker";
@@ -38,7 +45,6 @@ export const DashboardTable = () => {
   const estimates = useDashboardStore((state) => state.estimates);
   const setEstimates = useDashboardStore((state) => state.setEstimates);
   const dataToRender = pathname === "/sale" ? sales : estimates;
-  const [selected, setSelected] = useState("");
 
   const handleDeleteSale = async (saleId: string) => {
     try {
@@ -110,9 +116,39 @@ export const DashboardTable = () => {
 
   return (
     <>
-      <Card className="my-0 py-3">
-        <CardContent className="px-3">
-          <DatePicker selected={selected} />
+      <Card className="my-0 py-4">
+        <CardContent>
+          <div className="flex items-center justify-between gap-3 pt-2 pb-5">
+            <div className="relative w-full max-w-lg">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+              <Input
+                placeholder="Search sales by customer, amount or invoice No"
+                className="bg-background border-border/50 focus:border-primary/50 py-5 pl-10 !text-lg font-medium"
+              />
+            </div>
+            <div className="flex h-full w-full items-center justify-end gap-3">
+              <div className="text-muted-foreground text-md font-medium">Sort by: </div>
+              <Select>
+                <SelectTrigger className="text-foreground !h-11 w-[220px] text-base font-semibold">
+                  <SelectValue placeholder="Date (Newest First)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date_newest_first">Date (Newest first)</SelectItem>
+                  <SelectItem value="date_oldest_first">Date (Oldest first)</SelectItem>
+                  <SelectItem value="high_to_low">Amount (High to Low)</SelectItem>
+                  <SelectItem value="low_to_high">Amount (Low to High)</SelectItem>
+                  <SelectItem value="status_unpaid">Status (Unpaid)</SelectItem>
+                  <SelectItem value="status_paid">Status (Paid)</SelectItem>
+                </SelectContent>
+              </Select>
+              <DatePicker />
+            </div>
+          </div>
+          <div className="pb-2 pl-1 text-blue-600">
+            {pathname === "/sale"
+              ? `Showing ${sales.length || 0} results`
+              : `Showing ${estimates.length || 0} results`}
+          </div>
           {dataToRender.length > 0 ? (
             <div className="max-h-[415px] overflow-y-auto rounded-lg border">
               <Table>
