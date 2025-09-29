@@ -159,11 +159,10 @@ export const useProductsDialog = () => {
         setFormData({});
       } else {
         toast.error(response.error.message);
-        setOpenProductDialog();
-        setFormData({});
       }
     } catch (error) {
       console.log(error);
+      toast.error("Something went wrong");
     }
   };
 

@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse } from "../../../shared/types";
 import { db } from "../../db/db";
-import { products } from "../../db/schema";
+import { estimateItems, products, saleItems } from "../../db/schema";
 
 export function deleteProduct() {
   // delete product
@@ -12,6 +12,23 @@ export function deleteProduct() {
     async (_event, productId: string): Promise<ApiResponse<string>> => {
       try {
         const deletedAt = sql`datetime('now')`;
+
+        const existingInSales = await db.query.saleItems.findFirst({
+          where: eq(saleItems.productId, productId)
+        });
+
+        const existingInEstimates = await db.query.estimateItems.findFirst({
+          where: eq(estimateItems.productId, productId)
+        });
+
+        if (existingInSales || existingInEstimates) {
+          return {
+            status: "error",
+            error: {
+              message: "Cannot delete product. It is already used in existing sales or estimates."
+            }
+          };
+        }
 
         const updatedObj = db
           .update(products)
@@ -33,7 +50,10 @@ export function deleteProduct() {
         }
       } catch (error) {
         console.log(error);
-        return { status: "error", error: { message: "Could not delete Product" } };
+        return {
+          status: "error",
+          error: { message: (error as any).message ?? "Could not delete Product" }
+        };
       }
     }
   );
