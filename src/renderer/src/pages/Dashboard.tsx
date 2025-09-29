@@ -1,28 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
-import { useDashboardStore } from "@/store/salesStore";
-import { formatToPaisa, formatToRupees, IndianRupees } from "@shared/utils/utils";
+import { useDashboard } from "@/hooks/dashboard/useDashboard";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
-  const sales = useDashboardStore((state) => state.sales);
-  const estimates = useDashboardStore((state) => state.estimates);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const pathname = location.pathname;
-
-  const calculateSalesTotal =
-    sales?.reduce((sum, curr) => {
-      if (!curr.grandTotal) return sum;
-      return sum + formatToPaisa(curr.grandTotal);
-    }, 0) || 0;
-
-  const calculateEstimatesTotal =
-    estimates?.reduce((sum, curr) => {
-      if (!curr.grandTotal) return sum;
-      return sum + formatToPaisa(curr.grandTotal);
-    }, 0) || 0;
+  const { pathname, navigate, sales, estimates, calculateSalesTotal, calculateEstimatesTotal } =
+    useDashboard();
 
   return (
     <>

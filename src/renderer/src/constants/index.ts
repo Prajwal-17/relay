@@ -1,3 +1,5 @@
+import { SortOption } from "@shared/types";
+
 export const MAX_PRESET_COUNT = 40;
 
 export const PRODUCT_UNITS = ["g", "kg", "ml", "l", "pc", "none"];
@@ -37,5 +39,24 @@ export const weights = [
   {
     label: "750g",
     weight: "0.750"
+  }
+];
+
+export const sortOptions = [
+  {
+    value: SortOption.DATE_NEWEST_FIRST,
+    label: "Date (Newest first)"
+  },
+  {
+    value: SortOption.DATE_OLDEST_FIRST,
+    label: "Date (Oldest first)"
+  },
+  {
+    value: SortOption.HIGH_TO_LOW,
+    label: "Amount (High to Low)"
+  },
+  {
+    value: SortOption.LOW_TO_HIGH,
+    label: "Amount (Low to High)"
   }
 ];

@@ -1,6 +1,12 @@
-import { and, desc, gte, lt } from "drizzle-orm";
+import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, DateRangeType, SalesType } from "../../../shared/types";
+import {
+  SortOption,
+  type ApiResponse,
+  type DateRangeType,
+  type SalesType,
+  type SortType
+} from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { sales } from "../../db/schema";
@@ -14,7 +20,11 @@ export function filterByDate() {
   // get sales by filtering date range
   ipcMain.handle(
     "salesApi:getSalesDateRange",
-    async (_event, range: DateRangeType): Promise<ApiResponse<SalesType[] | []>> => {
+    async (
+      _event,
+      range: DateRangeType,
+      sortBy: SortType
+    ): Promise<ApiResponse<SalesType[] | []>> => {
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -33,52 +43,39 @@ export function filterByDate() {
         };
       }
 
+      let orderByClause: SQL;
+
+      switch (sortBy) {
+        case SortOption.DATE_NEWEST_FIRST:
+          orderByClause = desc(sales.createdAt);
+          break;
+        case SortOption.DATE_OLDEST_FIRST:
+          orderByClause = asc(sales.createdAt);
+          break;
+        case SortOption.HIGH_TO_LOW:
+          orderByClause = desc(sales.grandTotal);
+          break;
+        case SortOption.LOW_TO_HIGH:
+          orderByClause = asc(sales.grandTotal);
+          break;
+
+        default:
+          orderByClause = desc(sales.createdAt);
+          break;
+      }
+
       try {
         const fromDate = range.from?.toISOString();
-        let toDate;
-        if (range.to !== undefined) {
-          const tempToDate = new Date(range.to);
-          tempToDate.setDate(tempToDate.getDate() + 1);
-          toDate = tempToDate.toISOString();
-        }
-
-        let result: SalesType[] | [];
-        if (fromDate && toDate) {
-          result = await db.query.sales.findMany({
-            where: and(gte(sales.createdAt, fromDate), lt(sales.createdAt, toDate)),
-            with: {
-              customer: true,
-              saleItems: true
-            },
-            orderBy: desc(sales.createdAt)
-            // .limit(10);
-          });
-        } else if (fromDate) {
-          result = await db.query.sales.findMany({
-            where: gte(sales.createdAt, fromDate),
-            with: {
-              customer: true,
-              saleItems: true
-            },
-            orderBy: desc(sales.createdAt)
-          });
-        } else if (toDate) {
-          result = await db.query.sales.findMany({
-            where: lt(sales.createdAt, toDate),
-            with: {
-              customer: true,
-              saleItems: true
-            },
-            orderBy: desc(sales.createdAt)
-          });
-        } else {
-          return {
-            status: "error",
-            error: {
-              message: "Provide Date Range"
-            }
-          };
-        }
+        const toDate = range.to?.toISOString();
+        const result = await db.query.sales.findMany({
+          where: and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)),
+          with: {
+            customer: true,
+            saleItems: true
+          },
+          orderBy: orderByClause
+          // .limit(10);
+        });
 
         return {
           status: "success",

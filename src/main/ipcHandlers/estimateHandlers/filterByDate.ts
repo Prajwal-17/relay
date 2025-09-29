@@ -1,6 +1,12 @@
-import { and, desc, gte, lt } from "drizzle-orm";
+import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, DateRangeType, EstimateType } from "../../../shared/types";
+import {
+  SortOption,
+  type ApiResponse,
+  type DateRangeType,
+  type EstimateType,
+  type SortType
+} from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates } from "../../db/schema";
@@ -9,7 +15,11 @@ export function filterByDate() {
   // get estimates by filtering date range
   ipcMain.handle(
     "estimatesApi:getEstimatesDateRange",
-    async (_event, range: DateRangeType): Promise<ApiResponse<EstimateType[] | []>> => {
+    async (
+      _event,
+      range: DateRangeType,
+      sortBy: SortType
+    ): Promise<ApiResponse<EstimateType[] | []>> => {
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -28,52 +38,39 @@ export function filterByDate() {
         };
       }
 
+      let orderByClause: SQL;
+
+      switch (sortBy) {
+        case SortOption.DATE_NEWEST_FIRST:
+          orderByClause = desc(estimates.createdAt);
+          break;
+        case SortOption.DATE_OLDEST_FIRST:
+          orderByClause = asc(estimates.createdAt);
+          break;
+        case SortOption.HIGH_TO_LOW:
+          orderByClause = desc(estimates.grandTotal);
+          break;
+        case SortOption.LOW_TO_HIGH:
+          orderByClause = asc(estimates.grandTotal);
+          break;
+
+        default:
+          orderByClause = desc(estimates.createdAt);
+          break;
+      }
+
       try {
         const fromDate = range.from?.toISOString();
-        let toDate;
-        if (range.to !== undefined) {
-          const tempToDate = new Date(range.to);
-          tempToDate.setDate(tempToDate.getDate() + 1);
-          toDate = tempToDate.toISOString();
-        }
-
-        let result: EstimateType[] | [];
-        if (fromDate && toDate) {
-          result = await db.query.estimates.findMany({
-            where: and(gte(estimates.createdAt, fromDate), lt(estimates.createdAt, toDate)),
-            with: {
-              customer: true,
-              estimateItems: true
-            },
-            orderBy: desc(estimates.createdAt)
-            // .limit(10);
-          });
-        } else if (fromDate) {
-          result = await db.query.estimates.findMany({
-            where: gte(estimates.createdAt, fromDate),
-            with: {
-              customer: true,
-              estimateItems: true
-            },
-            orderBy: desc(estimates.createdAt)
-          });
-        } else if (toDate) {
-          result = await db.query.estimates.findMany({
-            where: lt(estimates.createdAt, toDate),
-            with: {
-              customer: true,
-              estimateItems: true
-            },
-            orderBy: desc(estimates.createdAt)
-          });
-        } else {
-          return {
-            status: "error",
-            error: {
-              message: "Provide Date Range"
-            }
-          };
-        }
+        const toDate = range.to?.toISOString();
+        const result = await db.query.estimates.findMany({
+          where: and(gte(estimates.createdAt, fromDate), lte(estimates.createdAt, toDate)),
+          with: {
+            customer: true,
+            estimateItems: true
+          },
+          orderBy: orderByClause
+          // .limit(10);
+        });
 
         return {
           status: "success",

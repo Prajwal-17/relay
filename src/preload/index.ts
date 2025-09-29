@@ -9,7 +9,8 @@ import type {
   ProductsApi,
   SalePayload,
   SalesApi,
-  ShareApi
+  ShareApi,
+  SortType
 } from "../shared/types";
 
 const productsApi: ProductsApi = {
@@ -26,8 +27,8 @@ const salesApi: SalesApi = {
   save: (payload: SalePayload) => ipcRenderer.invoke("salesApi:save", payload),
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
   getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id),
-  getSalesDateRange: (range: DateRangeType) =>
-    ipcRenderer.invoke("salesApi:getSalesDateRange", range),
+  getSalesDateRange: (range: DateRangeType, sortBy: SortType) =>
+    ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy),
   deleteSale: (saleId: string) => ipcRenderer.invoke("salesApi:deleteSale", saleId),
   convertSaletoEstimate: (saleId: string) =>
     ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId)
@@ -38,8 +39,8 @@ const estimatesApi: EstimatesApi = {
   save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
   getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
   getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id),
-  getEstimatesDateRange: (range: DateRangeType) =>
-    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range),
+  getEstimatesDateRange: (range: DateRangeType, sortBy: SortType) =>
+    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range, sortBy),
   deleteEstimate: (estimateId: string) =>
     ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId),
   convertEstimateToSale: (estimateId: string) =>

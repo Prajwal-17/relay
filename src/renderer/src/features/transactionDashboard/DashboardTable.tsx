@@ -28,91 +28,28 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { useDashboardStore } from "@/store/salesStore";
+import { sortOptions } from "@/constants";
+import { useDashboard } from "@/hooks/dashboard/useDashboard";
+import type { SortType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { ReceiptIndianRupee, Search, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
-import { DatePicker } from "./DatePicker";
+import { DateRangePicker } from "./DateRangePicker";
 
 export const DashboardTable = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const pathname = location.pathname;
-  const sales = useDashboardStore((state) => state.sales);
-  const setSales = useDashboardStore((state) => state.setSales);
-  const estimates = useDashboardStore((state) => state.estimates);
-  const setEstimates = useDashboardStore((state) => state.setEstimates);
-  const dataToRender = pathname === "/sale" ? sales : estimates;
-
-  const handleDeleteSale = async (saleId: string) => {
-    try {
-      const response = await window.salesApi.deleteSale(saleId);
-      if (response.status === "success") {
-        toast.success("Successfully deleted sale");
-        if (sales.length > 0) {
-          setSales(sales.filter((sale) => sale.id !== saleId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
-
-  const handleDeleteEstimate = async (estimateId: string) => {
-    try {
-      const response = await window.estimatesApi.deleteEstimate(estimateId);
-      if (response.status === "success") {
-        toast.success("Successfully deleted estimate");
-        if (estimates.length > 0) {
-          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
-
-  const handleSaleConvert = async (saleId: string) => {
-    try {
-      const response = await window.salesApi.convertSaletoEstimate(saleId);
-      if (response.status === "success") {
-        toast.success(response.data);
-        if (sales.length > 0) {
-          setSales(sales.filter((sale) => sale.id !== saleId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
-
-  const handleEstimateConvert = async (estimateId: string) => {
-    try {
-      const response = await window.estimatesApi.convertEstimateToSale(estimateId);
-      if (response.status === "success") {
-        toast.success(response.data);
-        if (estimates.length > 0) {
-          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
+  const {
+    navigate,
+    pathname,
+    sales,
+    estimates,
+    sortBy,
+    setSortBy,
+    dataToRender,
+    handleDeleteSale,
+    handleDeleteEstimate,
+    handleSaleConvert,
+    handleEstimateConvert
+  } = useDashboard();
 
   return (
     <>
@@ -128,20 +65,23 @@ export const DashboardTable = () => {
             </div>
             <div className="flex h-full w-full items-center justify-end gap-3">
               <div className="text-muted-foreground text-md font-medium">Sort by: </div>
-              <Select>
+              <Select
+                value={sortBy}
+                defaultValue={sortBy}
+                onValueChange={(value: SortType) => setSortBy(value)}
+              >
                 <SelectTrigger className="text-foreground !h-11 w-[220px] text-base font-semibold">
                   <SelectValue placeholder="Date (Newest First)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="date_newest_first">Date (Newest first)</SelectItem>
-                  <SelectItem value="date_oldest_first">Date (Oldest first)</SelectItem>
-                  <SelectItem value="high_to_low">Amount (High to Low)</SelectItem>
-                  <SelectItem value="low_to_high">Amount (Low to High)</SelectItem>
-                  <SelectItem value="status_unpaid">Status (Unpaid)</SelectItem>
-                  <SelectItem value="status_paid">Status (Paid)</SelectItem>
+                  {sortOptions.map((s, idx) => (
+                    <SelectItem key={idx} value={s.value}>
+                      {s.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-              <DatePicker />
+              <DateRangePicker />
             </div>
           </div>
           <div className="pb-2 pl-1 text-blue-600">
@@ -150,7 +90,7 @@ export const DashboardTable = () => {
               : `Showing ${estimates.length || 0} results`}
           </div>
           {dataToRender.length > 0 ? (
-            <div className="max-h-[415px] overflow-y-auto rounded-lg border">
+            <div className="max-h-[57vh] overflow-y-auto rounded-lg border">
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>

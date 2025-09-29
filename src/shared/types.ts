@@ -175,6 +175,17 @@ export const TRANSACTION_TYPE = {
   ESTIMATES: "estimates"
 } as const;
 
+export const SortOption = {
+  DATE_NEWEST_FIRST: "date_newest_first",
+  DATE_OLDEST_FIRST: "date_oldest_first",
+  HIGH_TO_LOW: "high_to_low",
+  LOW_TO_HIGH: "low_to_high"
+  // STATUS_UNPAID: "status_unpaid",
+  // STATUS_PAID: "status_paid"
+} as const;
+
+export type SortType = (typeof SortOption)[keyof typeof SortOption];
+
 export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 
 export type FilterType = "all" | "active" | "inactive";
@@ -192,7 +203,10 @@ export interface SalesApi {
   save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
-  getSalesDateRange: (range: DateRangeType) => Promise<ApiResponse<SalesType[] | []>>;
+  getSalesDateRange: (
+    range: DateRangeType,
+    sortBy: SortType
+  ) => Promise<ApiResponse<SalesType[] | []>>;
   deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
   convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
 }
@@ -204,7 +218,10 @@ export interface EstimatesApi {
   getTransactionById: (
     id: string
   ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
-  getEstimatesDateRange: (range: DateRangeType) => Promise<ApiResponse<EstimateType[] | []>>;
+  getEstimatesDateRange: (
+    range: DateRangeType,
+    sortBy: SortType
+  ) => Promise<ApiResponse<EstimateType[] | []>>;
   deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
   convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
 }
