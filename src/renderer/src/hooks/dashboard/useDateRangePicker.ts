@@ -1,63 +1,44 @@
 import type { Calendar } from "@/components/ui/calendar";
 import { useDashboardStore } from "@/store/dashboardStore";
 import type { DateRangeType } from "@shared/types";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import toast from "react-hot-toast";
 import { useLocation } from "react-router-dom";
+
+const getInitialDate = (): DateRange => {
+  const storedDate = localStorage.getItem("daterange");
+  if (storedDate) {
+    const parsed = JSON.parse(storedDate);
+    return { from: new Date(parsed.from), to: new Date(parsed.to) };
+  }
+
+  // Default to today
+  const from = new Date();
+  const to = new Date();
+  from.setHours(0, 0, 0, 0);
+  to.setHours(23, 59, 59, 999);
+  return { from, to };
+};
 
 export const useDateRangePicker = () => {
   const location = useLocation();
   const pathname = location.pathname;
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<DateRange | undefined>(InitialDate());
+  const [date, setDate] = useState<DateRange | undefined>(getInitialDate);
   const sortBy = useDashboardStore((state) => state.sortBy);
-  const [tempDate, setTempDate] = useState<DateRange | undefined>(InitialDate());
+  const [tempDate, setTempDate] = useState<DateRange | undefined>(getInitialDate);
   const setSales = useDashboardStore((state) => state.setSales);
   const setEstimates = useDashboardStore((state) => state.setEstimates);
-  const previousDate = useRef(date);
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
-  function InitialDate() {
-    const startofDay = new Date();
-    const endofDay = new Date();
-    startofDay.setHours(0, 0, 0, 0);
-    endofDay.setHours(23, 59, 59, 999);
-
-    return {
-      from: startofDay,
-      to: endofDay
-    };
-  }
-
   useEffect(() => {
-    const dateRange = localStorage.getItem("daterange");
-
-    if (!dateRange) {
-      setDate(InitialDate());
-      setTempDate(InitialDate());
-      localStorage.setItem("daterange", JSON.stringify(InitialDate()));
-      return;
+    if (date) {
+      localStorage.setItem("daterange", JSON.stringify(date));
     }
-    const parsedDateRange = JSON.parse(dateRange!);
-    const fromDate = new Date(parsedDateRange.from);
-    const toDate = new Date(parsedDateRange.to);
-
-    setDate({
-      from: fromDate,
-      to: toDate
-    });
-
-    setTempDate({
-      from: fromDate,
-      to: toDate
-    });
-
-    const presetType = localStorage.getItem("preset-type");
-    setSelectedPreset(presetType || "");
-  }, []);
+  }, [date]);
 
   useEffect(() => {
     async function fetchSales() {
@@ -90,24 +71,12 @@ export const useDateRangePicker = () => {
         console.log(error);
       }
     }
-    if (
-      !open &&
-      (date?.from !== previousDate.current?.from || date?.from !== previousDate.current?.to)
-    ) {
-      if (pathname === "/sale") {
-        fetchSales();
-      } else {
-        fetchEstimates();
-      }
-
-      previousDate.current = date;
-    }
     if (pathname === "/sale") {
       fetchSales();
     } else {
       fetchEstimates();
     }
-  }, [date, sortBy, open, pathname, setSales, setEstimates]);
+  }, [date, sortBy, pathname, setSales, setEstimates]);
 
   // Ref -> https://daypicker.dev/api/enumerations/UI
   const calendarClassNames = {
