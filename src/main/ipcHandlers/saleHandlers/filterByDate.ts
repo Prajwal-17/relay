@@ -1,9 +1,10 @@
-import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gt, gte, lte, or, SQL } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   SortOption,
-  type ApiResponse,
   type DateRangeType,
+  type NextCursor,
+  type PaginatedApiResponse,
   type SalesType,
   type SortType
 } from "../../../shared/types";
@@ -23,8 +24,10 @@ export function filterByDate() {
     async (
       _event,
       range: DateRangeType,
-      sortBy: SortType
-    ): Promise<ApiResponse<SalesType[] | []>> => {
+      sortBy: SortType,
+      cursor: NextCursor
+    ): Promise<PaginatedApiResponse<SalesType[] | []>> => {
+      console.log("cursor", cursor);
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -67,18 +70,40 @@ export function filterByDate() {
       try {
         const fromDate = range.from?.toISOString();
         const toDate = range.to?.toISOString();
+
+        const cursorWhereClause = cursor
+          ? or(
+              gt(sales.createdAt, cursor.createdAt),
+              and(eq(sales.createdAt, cursor.createdAt), gt(sales.id, cursor.id))
+            )
+          : undefined;
+
         const result = await db.query.sales.findMany({
-          where: and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)),
+          where: and(
+            gte(sales.createdAt, fromDate),
+            lte(sales.createdAt, toDate),
+            cursorWhereClause
+          ),
           with: {
             customer: true,
             saleItems: true
           },
-          orderBy: orderByClause
-          // .limit(10);
+          orderBy: orderByClause,
+          limit: 20
         });
+
+        let nextCursor: NextCursor = null;
+        if (result.length === 20) {
+          const lastResult = result[result.length - 1];
+          nextCursor = {
+            id: lastResult.id,
+            createdAt: lastResult.createdAt
+          };
+        }
 
         return {
           status: "success",
+          nextCursor: nextCursor,
           data:
             result.length > 0
               ? result.map((sale: SalesType) => ({
@@ -91,7 +116,7 @@ export function filterByDate() {
         console.log(error);
         return {
           status: "error",
-          error: { message: "An error occurred while filtering sales." }
+          error: { message: (error as Error).message ?? "An error occurred while filtering sales." }
         };
       }
     }

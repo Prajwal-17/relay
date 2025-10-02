@@ -12,7 +12,7 @@ fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 console.log("dbpath", dbPath);
 
 const sqlite = new Database(dbPath);
-export const db = drizzle(sqlite, { schema, logger: true });
+export const db = drizzle(sqlite, { schema, logger: false });
 
 // migrations are applied at startup only if there is a change
 const migrationsFolder = app.isPackaged

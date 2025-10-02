@@ -30,11 +30,32 @@ import {
 } from "@/components/ui/table";
 import { sortOptions } from "@/constants";
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
-import type { SortType } from "@shared/types";
+import { useDateRangePicker } from "@/hooks/dashboard/useDateRangePicker";
+import type {
+  DateRangeType,
+  NextCursor,
+  PaginatedApiResponse,
+  SalesType,
+  SortType
+} from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { ReceiptIndianRupee, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef } from "react";
 import { DateRangePicker } from "./DateRangePicker";
+
+const fetchSales = async (dateRange: DateRangeType, sortBy: SortType, cursor: NextCursor) => {
+  try {
+    const response = await window.salesApi.getSalesDateRange(dateRange, sortBy, cursor);
+    if (response.status === "success") {
+      return response;
+    }
+    throw new Error(response.error.message);
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
 
 export const DashboardTable = () => {
   const {
@@ -50,6 +71,80 @@ export const DashboardTable = () => {
     handleSaleConvert,
     handleEstimateConvert
   } = useDashboard();
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { date } = useDateRangePicker();
+
+  const {
+    data: transactionData,
+    error,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    status
+  } = useInfiniteQuery({
+    queryKey: ["sales", date],
+    queryFn: ({ pageParam }) => fetchSales(date as DateRangeType, sortBy, pageParam),
+    initialPageParam: null,
+    getNextPageParam: (lastPage: PaginatedApiResponse<SalesType[] | []>) => {
+      return lastPage.status === "success" ? (lastPage.nextCursor ?? null) : null;
+    },
+    select: (rawData) => {
+      return rawData.pages.flatMap((page) => page.data);
+    }
+  });
+
+  const handleScroll = useCallback(() => {
+    const container = scrollRef.current;
+    if (!container || isLoading) {
+      return;
+    }
+
+    // TODO: add how percentage is calculated
+    const scrollPercent =
+      (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
+
+    if (scrollPercent >= 80) {
+      console.log("here");
+      fetchNextPage();
+
+      // handleFetch(debouncedSearchParam, pageNo, "append");
+    }
+    // adding `pageNo` to deps is causing fetch two page at one time
+  }, [fetchNextPage, isLoading]);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (container) {
+      container.addEventListener("scroll", handleScroll);
+    }
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", handleScroll);
+      }
+    };
+  }, [handleScroll]);
+
+  // const { inView, ref } = useInView({
+  //   threshold: 0.9,
+  //   skip: isLoading || !hasNextPage,
+  //   delay: 500
+  // });
+
+  // useEffect(() => {
+  //   console.log("here");
+  //   if (isError) return;
+  //   if (isLoading) return;
+  //   if (transactionData?.length === 0) return;
+  //   if (inView) {
+  //     fetchNextPage();
+  //   }
+  // }, [inView, isError, isLoading]);
+
+  // useEffect(() => {
+  //   console.log(transactionData, error, fetchNextPage, status);
+  // }, []);
 
   return (
     <>
@@ -89,8 +184,8 @@ export const DashboardTable = () => {
               ? `Showing ${sales.length || 0} results`
               : `Showing ${estimates.length || 0} results`}
           </div>
-          {dataToRender.length > 0 ? (
-            <div className="max-h-[57vh] overflow-y-auto rounded-lg border">
+          {transactionData && transactionData.length > 0 ? (
+            <div ref={scrollRef} className="max-h-[57vh] overflow-y-auto rounded-lg border">
               <Table>
                 <TableHeader className="bg-background sticky top-0 z-10">
                   <TableRow>
@@ -104,7 +199,7 @@ export const DashboardTable = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {dataToRender.map((transaction) => (
+                  {transactionData.map((transaction: any) => (
                     <TableRow key={transaction.id} className="h-14">
                       <TableCell className="py-4">
                         <Badge variant="outline" className="px-3 py-1 text-lg capitalize">
