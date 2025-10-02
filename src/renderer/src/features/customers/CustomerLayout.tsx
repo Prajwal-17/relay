@@ -1,11 +1,11 @@
-import { useCustomerStore } from "@/store/customersStore";
+import useCustomers from "@/hooks/useCustomers";
 import { Users } from "lucide-react";
 import { CustomerDetails } from "./CustomerDetails";
 import { CustomerSidebar } from "./CustomerSidebar";
 import { CustomerTransactions } from "./CustomerTransactions";
 
 export const CustomerLayout = () => {
-  const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
+  const { selectedCustomer } = useCustomers();
 
   return (
     <>

@@ -11,6 +11,10 @@ export function updateCustomer() {
     "customersApi:updateCustomer",
     async (_event, customerPayload: CustomersType): Promise<ApiResponse<CustomersType>> => {
       try {
+        if (!customerPayload.id) {
+          throw new Error("Customer Id does not exist");
+        }
+
         const result = await db
           .update(customers)
           .set({
@@ -43,7 +47,7 @@ export function updateCustomer() {
         }
         return {
           status: "error",
-          error: { message: "Something went wrong" }
+          error: { message: (error as Error).message ?? "Something went wrong" }
         };
       }
     }

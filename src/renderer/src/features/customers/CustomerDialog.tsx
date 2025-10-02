@@ -8,23 +8,72 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import useCustomers from "@/hooks/useCustomers";
 import { CustomerSchema } from "@/lib/validation";
-import { useCustomerStore } from "@/store/customersStore";
 import { Label } from "@radix-ui/react-label";
-import { useState } from "react";
+import type { CustomersType } from "@shared/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import z from "zod";
 
+const saveCustomer = async ({ action, data }) => {
+  try {
+    if (action === "add") {
+      const response = await window.customersApi.addNewCustomer(data);
+      if (response.status === "success") {
+        return response;
+      }
+      return response;
+    } else if (action === "edit") {
+      const response = await window.customersApi.updateCustomer(data);
+      if (response.status === "success") {
+        return response;
+      }
+      return response;
+    }
+    throw new Error("Something went wrong");
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
 export const CustomerDialog = () => {
-  const formData = useCustomerStore((state) => state.formData);
-  const actionType = useCustomerStore((state) => state.actionType);
-  const setFormData = useCustomerStore((state) => state.setFormData);
-  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
-  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
-  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const queryClient = useQueryClient();
+  const {
+    formData,
+    actionType,
+    setFormData,
+    setSelectedCustomer,
+    setOpenCustomerDialog,
+    errors,
+    setErrors
+  } = useCustomers();
+
+  const mutation = useMutation({
+    mutationFn: saveCustomer,
+    onSuccess: (response) => {
+      if (response.status === "success") {
+        setOpenCustomerDialog();
+        setFormData({});
+        console.log(response);
+        setSelectedCustomer(response.data === "string" ? null : (response.data as CustomersType));
+        queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
+        toast.success(
+          typeof response.data === "string"
+            ? response.data
+            : (response.message ?? "Customer updated Successfully")
+        );
+      } else if (response.status === "error") {
+        toast.error(response.error.message);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
 
   const handleSubmit = async (action: "add" | "edit") => {
+    setErrors({});
     const result = CustomerSchema.safeParse(formData);
 
     if (!result.success) {
@@ -35,36 +84,9 @@ export const CustomerDialog = () => {
         errorRecord[field] = formatted.fieldErrors[field]?.[0];
       }
       setErrors(errorRecord);
-    } else {
-      try {
-        if (action === "add") {
-          const response = await window.customersApi.addNewCustomer(formData);
-          if (response.status === "success") {
-            toast.success(response.data);
-            setOpenCustomerDialog();
-            setFormData({});
-            setRefreshState(true);
-          } else {
-            toast.error(response.error.message);
-          }
-        } else if (action === "edit") {
-          const response = await window.customersApi.updateCustomer(formData);
-          if (response.status === "success") {
-            toast.success(response?.message || "Customer updated successfully");
-            setOpenCustomerDialog();
-            setSelectedCustomer(response.data);
-            setFormData({});
-            setRefreshState(true);
-          } else {
-            toast.error(response.error.message);
-          }
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-        setRefreshState(true);
-      }
     }
+    console.log("data", result.data);
+    mutation.mutate({ action: action, data: result.data });
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -90,7 +112,7 @@ export const CustomerDialog = () => {
   return (
     <DialogContent className="w-full !max-w-3xl">
       <DialogHeader>
-        <DialogTitle>{actionType === "add" ? "Add New Product" : "Edit Product"}</DialogTitle>
+        <DialogTitle>{actionType === "add" ? "Add New Customer" : "Edit Customer"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4">
         <div>

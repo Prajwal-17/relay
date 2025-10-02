@@ -12,8 +12,10 @@ import {
 import { useCustomerStore } from "@/store/customersStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
-import { ShoppingCart } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { LoaderCircle, ShoppingCart } from "lucide-react";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 
@@ -27,39 +29,56 @@ type TransactionType = {
   createdAt: string;
 };
 
+const getAllTransactionsById = async (customerId: string) => {
+  try {
+    const response = await window.customersApi.getAllTransactionsById(customerId);
+    if (response.status === "success") {
+      return response.data;
+    }
+    throw new Error(response.error.message);
+  } catch (error) {
+    throw new Error((error as Error).message ?? "Something went wrong");
+  }
+};
+
 export const CustomerTransactions = () => {
-  const [transactions, setTransactions] = useState<TransactionType[]>([]);
   const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!selectedCustomer?.id) return;
-
-    async function getAllTransactionsById(customerId: string) {
-      try {
-        const response = await window.customersApi.getAllTransactionsById(customerId);
-        if (response.status === "success") {
-          setTransactions(
-            response.data.map((t) => ({
-              id: t.id,
-              type: t.invoiceNo ? "invoice" : "estimate",
-              number: t.invoiceNo ? t.invoiceNo : t.estimateNo,
-              totalQuantity: t.totalQuantity,
-              grandTotal: formatToRupees(t.grandTotal),
-              status: "paid",
-              createdAt: formatDateStr(t.createdAt)
-            }))
-          );
-        } else {
-          setTransactions([]);
-        }
-      } catch (error) {
-        console.log(error);
+  const {
+    data: transactions,
+    status,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ["transactions", selectedCustomer?.id],
+    queryFn: () => {
+      if (!selectedCustomer?.id) {
+        throw new Error("Customer Id does not exist");
       }
+      return getAllTransactionsById(selectedCustomer.id);
+    },
+    select: (rawTransactions: TransactionType[] | []) => {
+      if (!rawTransactions) {
+        return [];
+      }
+      return rawTransactions.map((t) => ({
+        id: t.id,
+        type: t.invoiceNo ? "invoice" : "estimate",
+        number: t.invoiceNo ? t.invoiceNo : t.estimateNo,
+        totalQuantity: t.totalQuantity,
+        grandTotal: formatToRupees(t.grandTotal),
+        status: "paid",
+        createdAt: formatDateStr(t.createdAt)
+      }));
     }
+  });
 
-    getAllTransactionsById(selectedCustomer.id);
-  }, [selectedCustomer]);
+  useEffect(() => {
+    if (isError) {
+      toast.error(error.message);
+    }
+  }, [isError, error]);
 
   return (
     <>
@@ -68,67 +87,76 @@ export const CustomerTransactions = () => {
           <CardTitle className="text-xl">Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          {transactions.length > 0 ? (
-            <div className="max-h-[460px] overflow-y-auto rounded-lg border">
-              <Table>
-                <TableHeader className="bg-background sticky top-0 z-10">
-                  <TableRow>
-                    <TableHead className="text-base font-semibold">Type</TableHead>
-                    <TableHead className="text-base font-semibold">Number</TableHead>
-                    <TableHead className="text-base font-semibold">Date</TableHead>
-                    <TableHead className="text-right text-base font-semibold">Total</TableHead>
-                    <TableHead className="text-base font-semibold">Status</TableHead>
-                    <TableHead className="text-base font-semibold">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {transactions.map((transaction) => (
-                    <TableRow key={transaction.id} className="h-14">
-                      <TableCell className="py-4">
-                        <Badge variant="outline" className="px-3 py-1 text-sm capitalize">
-                          {transaction.type}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="py-4 text-base font-medium">
-                        {transaction.type === "invoice"
-                          ? `INV-${transaction.number}`
-                          : `EST-${transaction.number}`}
-                      </TableCell>
-                      <TableCell className="py-4 text-base">{transaction.createdAt}</TableCell>
-                      <TableCell className="py-4 text-right text-base font-medium">
-                        ₹ {transaction.grandTotal}
-                      </TableCell>
-                      <TableCell className="py-4">
-                        <Badge
-                          className={`px-3 py-1 text-sm ${getCustomerTypeColor(transaction.status)}`}
-                        >
-                          {transaction.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          onClick={() => {
-                            transaction.type === "invoice"
-                              ? navigate(`/sales/edit/${transaction.id}`)
-                              : navigate(`/estimates/edit/${transaction.id}`);
-                          }}
-                          className="hover:cursor-pointer"
-                          variant="outline"
-                          size="sm"
-                        >
-                          View
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+          {status === "pending" ? (
+            <div className="my-8 flex justify-center gap-3">
+              <div className="text-muted-foreground text-xl font-semibold">Loading</div>
+              <LoaderCircle className="animate-spin text-blue-500" size={26} />
             </div>
           ) : (
-            <div className="text-muted-foreground py-12 text-center">
-              <ShoppingCart className="mx-auto mb-6 h-16 w-16 opacity-50" />
-              <p className="text-lg">No transactions found for this customer</p>
-            </div>
+            <>
+              {transactions && transactions.length ? (
+                <div className="max-h-[460px] overflow-y-auto rounded-lg border">
+                  <Table>
+                    <TableHeader className="bg-background sticky top-0 z-10">
+                      <TableRow>
+                        <TableHead className="text-base font-semibold">Type</TableHead>
+                        <TableHead className="text-base font-semibold">Number</TableHead>
+                        <TableHead className="text-base font-semibold">Date</TableHead>
+                        <TableHead className="text-right text-base font-semibold">Total</TableHead>
+                        <TableHead className="text-base font-semibold">Status</TableHead>
+                        <TableHead className="text-base font-semibold">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.map((transaction) => (
+                        <TableRow key={transaction.id} className="h-14">
+                          <TableCell className="py-4">
+                            <Badge variant="outline" className="px-3 py-1 text-sm capitalize">
+                              {transaction.type}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="py-4 text-base font-medium">
+                            {transaction.type === "invoice"
+                              ? `INV-${transaction.number}`
+                              : `EST-${transaction.number}`}
+                          </TableCell>
+                          <TableCell className="py-4 text-base">{transaction.createdAt}</TableCell>
+                          <TableCell className="py-4 text-right text-base font-medium">
+                            ₹ {transaction.grandTotal}
+                          </TableCell>
+                          <TableCell className="py-4">
+                            <Badge
+                              className={`px-3 py-1 text-sm ${getCustomerTypeColor(transaction.status)}`}
+                            >
+                              {transaction.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              onClick={() => {
+                                transaction.type === "invoice"
+                                  ? navigate(`/sales/edit/${transaction.id}`)
+                                  : navigate(`/estimates/edit/${transaction.id}`);
+                              }}
+                              className="hover:cursor-pointer"
+                              variant="outline"
+                              size="sm"
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="text-muted-foreground py-12 text-center">
+                  <ShoppingCart className="mx-auto mb-6 h-16 w-16 opacity-50" />
+                  <p className="text-lg">No transactions found for this customer</p>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
