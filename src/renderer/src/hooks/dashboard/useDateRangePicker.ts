@@ -1,10 +1,6 @@
 import type { Calendar } from "@/components/ui/calendar";
-import { useDashboardStore } from "@/store/dashboardStore";
-import type { DateRangeType } from "@shared/types";
 import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import toast from "react-hot-toast";
-import { useLocation } from "react-router-dom";
 
 const getInitialDate = (): DateRange => {
   const storedDate = localStorage.getItem("daterange");
@@ -22,14 +18,9 @@ const getInitialDate = (): DateRange => {
 };
 
 export const useDateRangePicker = () => {
-  const location = useLocation();
-  const pathname = location.pathname;
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<DateRange | undefined>(getInitialDate);
-  const sortBy = useDashboardStore((state) => state.sortBy);
   const [tempDate, setTempDate] = useState<DateRange | undefined>(getInitialDate);
-  const setSales = useDashboardStore((state) => state.setSales);
-  const setEstimates = useDashboardStore((state) => state.setEstimates);
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
@@ -39,44 +30,6 @@ export const useDateRangePicker = () => {
       localStorage.setItem("daterange", JSON.stringify(date));
     }
   }, [date]);
-
-  useEffect(() => {
-    async function fetchSales() {
-      if (!date) return;
-      try {
-        const response = await window.salesApi.getSalesDateRange(date as DateRangeType, sortBy);
-        if (response.status === "success") {
-          setSales(response.data);
-        } else {
-          toast.error("Could not retrieve sales");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-
-    async function fetchEstimates() {
-      if (!date) return;
-      try {
-        const response = await window.estimatesApi.getEstimatesDateRange(
-          date as DateRangeType,
-          sortBy
-        );
-        if (response.status === "success") {
-          setEstimates(response.data);
-        } else {
-          toast.error("Could not retrieve estimates");
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    if (pathname === "/sale") {
-      fetchSales();
-    } else {
-      fetchEstimates();
-    }
-  }, [date, sortBy, pathname, setSales, setEstimates]);
 
   // Ref -> https://daypicker.dev/api/enumerations/UI
   const calendarClassNames = {

@@ -6,7 +6,7 @@ import type {
   EstimatePayload,
   EstimatesApi,
   FilteredGoogleContactsType,
-  NextCursor,
+  PageNo,
   ProductsApi,
   SalePayload,
   SalesApi,
@@ -28,8 +28,8 @@ const salesApi: SalesApi = {
   save: (payload: SalePayload) => ipcRenderer.invoke("salesApi:save", payload),
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
   getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id),
-  getSalesDateRange: (range: DateRangeType, sortBy: SortType, cursor: NextCursor) =>
-    ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy, cursor),
+  getSalesDateRange: (range: DateRangeType, sortBy: SortType, pageNo: PageNo) =>
+    ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy, pageNo),
   deleteSale: (saleId: string) => ipcRenderer.invoke("salesApi:deleteSale", saleId),
   convertSaletoEstimate: (saleId: string) =>
     ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId)

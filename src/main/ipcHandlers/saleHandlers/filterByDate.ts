@@ -1,9 +1,9 @@
-import { and, asc, desc, eq, gt, gte, lte, or, SQL } from "drizzle-orm";
+import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   SortOption,
   type DateRangeType,
-  type NextCursor,
+  type PageNo,
   type PaginatedApiResponse,
   type SalesType,
   type SortType
@@ -25,9 +25,16 @@ export function filterByDate() {
       _event,
       range: DateRangeType,
       sortBy: SortType,
-      cursor: NextCursor
+      pageNo: PageNo
     ): Promise<PaginatedApiResponse<SalesType[] | []>> => {
-      console.log("cursor", cursor);
+      if (pageNo === null || pageNo === undefined) {
+        return {
+          status: "success",
+          nextPageNo: null,
+          data: []
+        };
+      }
+
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -71,39 +78,24 @@ export function filterByDate() {
         const fromDate = range.from?.toISOString();
         const toDate = range.to?.toISOString();
 
-        const cursorWhereClause = cursor
-          ? or(
-              gt(sales.createdAt, cursor.createdAt),
-              and(eq(sales.createdAt, cursor.createdAt), gt(sales.id, cursor.id))
-            )
-          : undefined;
+        const offset = (pageNo - 1) * 20;
 
         const result = await db.query.sales.findMany({
-          where: and(
-            gte(sales.createdAt, fromDate),
-            lte(sales.createdAt, toDate),
-            cursorWhereClause
-          ),
+          where: and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)),
           with: {
             customer: true,
             saleItems: true
           },
           orderBy: orderByClause,
-          limit: 20
+          limit: 20,
+          offset: offset
         });
 
-        let nextCursor: NextCursor = null;
-        if (result.length === 20) {
-          const lastResult = result[result.length - 1];
-          nextCursor = {
-            id: lastResult.id,
-            createdAt: lastResult.createdAt
-          };
-        }
+        const nextpageNo = result.length === 20 ? pageNo + 1 : null;
 
         return {
           status: "success",
-          nextCursor: nextCursor,
+          nextPageNo: nextpageNo,
           data:
             result.length > 0
               ? result.map((sale: SalesType) => ({

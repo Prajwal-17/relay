@@ -89,10 +89,7 @@ export type EstimateItemsType = {
   totalPrice: number;
 };
 
-export type NextCursor = {
-  id: string;
-  createdAt: string;
-} | null;
+export type PageNo = number | null;
 
 export type ApiResponse<T> =
   | {
@@ -112,7 +109,7 @@ export type PaginatedApiResponse<T> =
   | {
       status: "success";
       data: T;
-      nextCursor: NextCursor;
+      nextPageNo: PageNo;
       message?: string;
     }
   | {
@@ -226,7 +223,7 @@ export interface SalesApi {
   getSalesDateRange: (
     range: DateRangeType,
     sortBy: SortType,
-    cursor: NextCursor
+    pageNo: PageNo
   ) => Promise<PaginatedApiResponse<SalesType[] | []>>;
   deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
   convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
