@@ -53,6 +53,10 @@ export const useProductSearchV2 = () => {
     return data?.pages.flatMap((page) => (page.status === "success" ? page.data : [])) ?? [];
   }, [data]);
 
+  /**
+   * use `useWindowVirtualizer` hook to virtualize the whole window & remove fixed height and react ref
+   * estimateSize is the size of the virtual element
+   */
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? searchResults.length + 1 : searchResults.length,
     getScrollElement: () => parentRef.current,

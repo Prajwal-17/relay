@@ -29,8 +29,20 @@ export default function ProductResults() {
               <p className="text-muted-foreground">Try adjusting your search</p>
             </div>
           ) : (
+            /**
+             * Virtualizer works using 3 divs
+             *  - Top div with fixed height overflow Provides scrolling viewport
+             *  - 2nd div with height-`rowVirtualizer.getTotalSize()`px
+             *      creates full scrollable div without rendering all rows
+             *  - 3rd div is for rendering virtual items -> this should be absolute and have transformY with value
+             *      virtualItem.start for vertical virtualization
+             *      each visible items is placed from the virtualItems.start
+             */
             <div ref={parentRef} className="relative h-[590px] overflow-auto pb-4">
-              <div className="relative w-full" style={{ height: rowVirtualizer.getTotalSize() }}>
+              <div
+                className="relative w-full"
+                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+              >
                 {rowVirtualizer.getVirtualItems().map((virtualRow) => {
                   const product = searchResults[virtualRow.index];
                   if (!product) return null;
