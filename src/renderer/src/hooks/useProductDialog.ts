@@ -1,9 +1,20 @@
 import { ProductSchema } from "@/lib/validation";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import type { ApiResponse } from "@shared/types";
+import { useMutation } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import z from "zod";
+
+const handleDelete = async (productId: string) => {
+  try {
+    const response = await window.productsApi.deleteProduct(productId);
+    return response;
+  } catch (error) {
+    throw new Error((error as Error).message ?? "Something went wrong");
+  }
+};
 
 export const useProductsDialog = () => {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
@@ -13,9 +24,6 @@ export const useProductsDialog = () => {
   const setFormData = useProductsStore((state) => state.setFormData);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);
   const setSearchResult = useSearchDropdownStore((state) => state.setSearchResult);
-  const setDropdownSearch = useSearchDropdownStore((state) => state.setSearchParam);
-  const setDropdownResult = useSearchDropdownStore((state) => state.setSearchResult);
-  const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
   const errors = useProductsStore((state) => state.errors);
   const setErrors = useProductsStore((state) => state.setErrors);
 
@@ -41,11 +49,6 @@ export const useProductsDialog = () => {
     }
   };
 
-  /**
-   * always use conditional
-   * mrp: formData.mrp ? Number(formData.mrp) : null
-   * coz Number(null) = 0
-   */
   const formattedFormData = {
     ...formData,
     mrp: formData.mrp ? Number(formData.mrp) : null,
@@ -65,71 +68,7 @@ export const useProductsDialog = () => {
       }
       setErrors(errorRecord);
     } else {
-      await handleAction(action);
-    }
-  };
-
-  const handleAction = async (action: "add" | "edit" | "billing-page-edit") => {
-    try {
-      if (action === "add") {
-        setFormData({});
-        const response = await window.productsApi.addNewProduct(formattedFormData);
-        if (response.status === "success") {
-          toast.success(response.data);
-          setOpenProductDialog();
-          setFormData({});
-          setErrors({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      } else if (action === "edit") {
-        setFormData({});
-        const response = await window.productsApi.updateProduct(
-          formattedFormData,
-          formattedFormData.id
-        );
-        if (response.status === "success") {
-          toast.success(response.data);
-          setSearchResult("replace", []);
-          setSearchParam("");
-          setTimeout(() => {
-            setSearchParam(formattedFormData.name);
-          }, 350);
-          setOpenProductDialog();
-          setFormData({});
-          setErrors({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      } else if (action === "billing-page-edit") {
-        setFormData({});
-        const response = await window.productsApi.updateProduct(
-          formattedFormData,
-          formattedFormData.id
-        );
-        if (response.status === "success") {
-          toast.success(response.data);
-          setDropdownResult("replace", []);
-          setDropdownSearch("");
-          setTimeout(() => {
-            setDropdownSearch(formattedFormData.name);
-          }, 220);
-          setOpenProductDialog();
-          setIsDropdownOpen();
-          setFormData({});
-          setErrors({});
-        } else {
-          toast.error(response.error.message);
-          setOpenProductDialog();
-          setFormData({});
-        }
-      }
-    } catch (error) {
-      console.log(error);
+      // await handleAction(action);
     }
   };
 
@@ -148,27 +87,30 @@ export const useProductsDialog = () => {
     }
   }, [actionType, setFormData, setErrors]);
 
-  const handleDelete = async (productId: string) => {
-    try {
-      const response = await window.productsApi.deleteProduct(productId);
+  const deleteProductMutation = useMutation<ApiResponse<string>, Error, string>({
+    mutationFn: (productId: string) => handleDelete(productId),
+    onSuccess: (response) => {
       if (response.status === "success") {
-        toast.success(response.data);
         setOpenProductDialog();
+        // TODO: fix acc to useQuery
         setSearchResult("replace", []);
         setSearchParam("");
         setFormData({});
-      } else {
+        //
+        toast.success(response.data);
+      } else if (response.status === "error") {
         toast.error(response.error.message);
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-  };
+  });
 
   return {
     openProductDialog,
     setOpenProductDialog,
+    deleteProductMutation,
     actionType,
     showDeleteConfirm,
     setShowDeleteConfirm,

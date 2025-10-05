@@ -209,7 +209,11 @@ export type FilterType = "all" | "active" | "inactive";
 
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
-  search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
+  search: (
+    query: string,
+    pageNo: PageNo,
+    limit: number
+  ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
   addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
   updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
   deleteProduct: (productId: string) => Promise<ApiResponse<string>>;

@@ -23,9 +23,9 @@ export function ProductDialog() {
     showDeleteConfirm,
     setShowDeleteConfirm,
     formData,
+    deleteProductMutation,
     setFormData,
     handleSubmit,
-    handleDelete,
     handleInputChange,
     errors
   } = useProductsDialog();
@@ -243,7 +243,9 @@ export function ProductDialog() {
                                 type="button"
                                 variant="destructive"
                                 size="default"
-                                onClick={() => handleDelete(formData.id)}
+                                onClick={() => {
+                                  deleteProductMutation.mutate(formData.id);
+                                }}
                                 className="h-12 flex-1 text-lg"
                               >
                                 Delete

@@ -1,7 +1,7 @@
 import type { ProductsType } from "src/shared/types";
 import { create } from "zustand";
 
-type ProductsFormType = Omit<ProductsType, "price"> & {
+export type ProductsFormType = Omit<ProductsType, "price"> & {
   price: string;
 };
 

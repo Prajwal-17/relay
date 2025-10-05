@@ -84,7 +84,6 @@ export const CustomerDetails = () => {
                 variant="outline"
                 size="default"
                 onClick={() => {
-                  // console.log("selected customer", selectedCustomer);
                   setFormData(selectedCustomer);
                   setActionType("edit");
                 }}

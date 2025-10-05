@@ -77,8 +77,9 @@ export const useInfiniteScroll = () => {
     overscan: 5
   });
 
+  const virtualItems = rowVirtualizer.getVirtualItems();
+
   useEffect(() => {
-    const virtualItems = rowVirtualizer.getVirtualItems();
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
@@ -91,14 +92,7 @@ export const useInfiniteScroll = () => {
     ) {
       fetchNextPage();
     }
-    // eslint-disable-next-line
-  }, [
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
-    transactionData.length,
-    rowVirtualizer.getVirtualItems()
-  ]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, transactionData.length, virtualItems]);
 
   return {
     parentRef,

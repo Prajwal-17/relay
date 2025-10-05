@@ -55,7 +55,6 @@ export const CustomerDialog = () => {
       if (response.status === "success") {
         setOpenCustomerDialog();
         setFormData({});
-        console.log(response);
         setSelectedCustomer(response.data === "string" ? null : (response.data as CustomersType));
         queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
         toast.success(
@@ -85,7 +84,6 @@ export const CustomerDialog = () => {
       }
       setErrors(errorRecord);
     }
-    console.log("data", result.data);
     mutation.mutate({ action: action, data: result.data });
   };
 
