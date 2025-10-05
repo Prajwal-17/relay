@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
+import useProductSearch from "@/hooks/products/useProductSearch";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import useProductSearch from "@/hooks/useProductSearch";
 import { fetchProducts } from "@/lib/apiAdapters";
 import { useProductsStore } from "@/store/productsStore";
 import { Edit, Package } from "lucide-react";
@@ -20,7 +20,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
     addEmptyLineItem,
     setActionType,
     setOpenProductDialog,
-    setFormData
+    setFormDataState
   } = useProductSearch();
 
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
@@ -104,7 +104,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                           e.stopPropagation();
                           setActionType("billing-page-edit");
                           setOpenProductDialog();
-                          setFormData({
+                          setFormDataState({
                             ...item,
                             mrp: item.mrp,
                             price: item.price

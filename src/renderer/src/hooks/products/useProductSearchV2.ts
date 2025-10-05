@@ -16,7 +16,7 @@ export const fetchProducts = async (query, pageNo, pageSize) => {
   }
 };
 
-export const useNewProductSearch = () => {
+export const useProductSearchV2 = () => {
   const parentRef = useRef<HTMLDivElement>(null);
   const searchParam = useProductsStore((state) => state.searchParam);
   const setSearchParam = useProductsStore((state) => state.setSearchParam);

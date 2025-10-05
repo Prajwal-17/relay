@@ -1,4 +1,4 @@
-import { ProductDialog } from "@/features/productDialog/Product-dialog";
+import { ProductDialog } from "@/features/productDialog/ProductDialog";
 import ProductHeader from "@/features/products/ProductHeader";
 import ProductResults from "@/features/products/ProductResults";
 import ProductSearch from "@/features/products/ProductSearch";

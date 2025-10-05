@@ -2,7 +2,7 @@ import BillingHeader from "@/features/billing/BillingHeader";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
-import { ProductDialog } from "@/features/productDialog/Product-dialog";
+import { ProductDialog } from "@/features/productDialog/ProductDialog";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useProductsStore } from "@/store/productsStore";

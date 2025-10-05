@@ -12,7 +12,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS } from "@/constants";
-import { useProductsDialog } from "@/hooks/useProductDialog";
+import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
 
 export function ProductDialog() {
@@ -22,23 +22,34 @@ export function ProductDialog() {
     actionType,
     showDeleteConfirm,
     setShowDeleteConfirm,
-    formData,
+    formDataState,
     deleteProductMutation,
-    setFormData,
+    setFormDataState,
     handleSubmit,
     handleInputChange,
-    errors
-  } = useProductsDialog();
+    errors,
+    productMutation
+  } = useProductDialog();
 
   return (
     <>
       <Dialog open={openProductDialog} onOpenChange={setOpenProductDialog}>
-        <DialogContent className="flex h-full max-h-[85vh] w-full min-w-[900px] flex-col p-0">
+        <DialogContent
+          onInteractOutside={(e) => {
+            if (productMutation.isPending) e.preventDefault();
+          }}
+          onKeyDownCapture={(e) => {
+            if (productMutation.isPending) e.preventDefault();
+          }}
+          className="flex h-full max-h-[85vh] w-full min-w-[900px] flex-col p-0"
+        >
           <div className="flex h-full flex-col">
             <div className="p-6 pb-0">
               <DialogHeader>
                 <DialogTitle className="text-2xl">
-                  {formData.name ? "Edit Product" : "Add New Product"}
+                  {actionType === "edit" || actionType === "billing-page-edit"
+                    ? "Edit Product"
+                    : "Add New Product"}
                 </DialogTitle>
               </DialogHeader>
             </div>
@@ -52,7 +63,7 @@ export function ProductDialog() {
                     </Label>
                     <Input
                       id="name"
-                      value={formData.name}
+                      value={formDataState.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter product name"
                       className="px-4 py-6 !text-lg"
@@ -68,7 +79,7 @@ export function ProductDialog() {
                         </Label>
                         <Input
                           id="weight"
-                          value={formData.weight ?? ""}
+                          value={formDataState.weight ?? ""}
                           onChange={(e) => handleInputChange("weight", e.target.value)}
                           placeholder="e.g., 500"
                           className="px-4 py-6 !text-base"
@@ -80,7 +91,7 @@ export function ProductDialog() {
                           Unit
                         </Label>
                         <Select
-                          value={formData.unit ?? "none"}
+                          value={formDataState.unit ?? "none"}
                           onValueChange={(value) => {
                             handleInputChange("unit", value);
                           }}
@@ -105,7 +116,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="purchasePrice"
-                        value={formData.purchasePrice ?? ""}
+                        value={formDataState.purchasePrice ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
                           handleInputChange("purchasePrice", value === "" ? null : value);
@@ -125,7 +136,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="price"
-                        value={formData.price ?? ""}
+                        value={formDataState.price ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
                           handleInputChange("price", value === "" ? null : value);
@@ -140,7 +151,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="mrp"
-                        value={formData.mrp ?? ""}
+                        value={formDataState.mrp ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
                           handleInputChange("mrp", value === "" ? null : value);
@@ -162,15 +173,15 @@ export function ProductDialog() {
                             Product Status
                           </Label>
                           <p className="text-base text-slate-600">
-                            {formData.isDisabled
+                            {formDataState.isDisabled
                               ? "Product is currently inactive and hidden."
                               : "Product is currently active and visible."}
                           </p>
                         </div>
                         <Switch
                           id="status"
-                          checked={!formData.isDisabled}
-                          onCheckedChange={(checked) => setFormData({ isDisabled: !checked })}
+                          checked={!formDataState.isDisabled}
+                          onCheckedChange={(checked) => setFormDataState({ isDisabled: !checked })}
                           className="scale-125"
                         />
                       </div>
@@ -210,7 +221,7 @@ export function ProductDialog() {
                             type="button"
                             variant="outline"
                             onClick={() => setShowDeleteConfirm(true)}
-                            className="h-12 w-full justify-center gap-2 border-red-200 text-base text-red-600 hover:border-red-300 hover:bg-red-50"
+                            className="h-12 w-full justify-center gap-2 border-red-200 text-base text-red-600 hover:border-red-300 hover:bg-red-50 disabled:opacity-60"
                           >
                             <Trash2 className="h-5 w-5" />
                             Delete Product
@@ -234,8 +245,9 @@ export function ProductDialog() {
                                 type="button"
                                 variant="outline"
                                 size="default"
+                                disabled={deleteProductMutation.isPending}
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="h-12 flex-1 text-lg"
+                                className="h-12 flex-1 text-lg disabled:opacity-60"
                               >
                                 Cancel
                               </Button>
@@ -243,12 +255,15 @@ export function ProductDialog() {
                                 type="button"
                                 variant="destructive"
                                 size="default"
+                                disabled={deleteProductMutation.isPending}
                                 onClick={() => {
-                                  deleteProductMutation.mutate(formData.id);
+                                  deleteProductMutation.mutate(formDataState.id);
                                 }}
-                                className="h-12 flex-1 text-lg"
+                                className="h-12 flex-1 text-lg disabled:opacity-60"
                               >
-                                Delete
+                                {deleteProductMutation.isPending
+                                  ? "Deleting Product..."
+                                  : "Delete Product"}
                               </Button>
                             </div>
                           </div>
@@ -266,15 +281,25 @@ export function ProductDialog() {
                   type="button"
                   variant="outline"
                   onClick={() => setOpenProductDialog()}
-                  className="h-12 px-8 text-base"
+                  disabled={productMutation.isPending}
+                  className="h-12 px-8 text-base disabled:opacity-60"
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => handleSubmit(actionType)}
-                  className="h-12 bg-blue-600 px-8 text-base hover:bg-blue-700"
+                  onClick={() => {
+                    handleSubmit(actionType);
+                  }}
+                  disabled={productMutation.isPending}
+                  className="h-12 bg-blue-600 px-8 text-base hover:bg-blue-700 disabled:opacity-60"
                 >
-                  {actionType === "add" ? "Add Product" : "Update Product"}
+                  {productMutation.isPending
+                    ? actionType === "add"
+                      ? "Adding Product..."
+                      : "Updating Product..."
+                    : actionType === "add"
+                      ? "Add Product"
+                      : "Update Product"}
                 </Button>
               </div>
             </div>

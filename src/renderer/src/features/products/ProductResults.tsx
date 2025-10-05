@@ -2,16 +2,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
-import { useNewProductSearch } from "@/hooks/products/useNewProductSearch";
+import { useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
 import { useProductsStore } from "@/store/productsStore";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
   const setActionType = useProductsStore((state) => state.setActionType);
-  const setFormData = useProductsStore((state) => state.setFormData);
+  const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
 
-  const { searchResults, parentRef, rowVirtualizer, status } = useNewProductSearch();
+  const { searchResults, parentRef, rowVirtualizer, status } = useProductSearchV2();
 
   return (
     <Card className="border-border border bg-white shadow-sm">
@@ -110,7 +110,7 @@ export default function ProductResults() {
                             onClick={() => {
                               setActionType("edit");
                               setOpenProductDialog();
-                              setFormData({
+                              setFormDataState({
                                 ...product,
                                 mrp: product.mrp,
                                 price: product.price.toString()

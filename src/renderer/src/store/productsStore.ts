@@ -14,8 +14,8 @@ type ProductsStoreType = {
   setSearchParam: (param: string) => void;
   searchResult: ProductsType[] | [];
   setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
-  formData: ProductsFormType;
-  setFormData: (data: Partial<ProductsFormType>) => void;
+  formDataState: ProductsFormType;
+  setFormDataState: (data: Partial<ProductsFormType>) => void;
   errors: Record<string, string>;
   setErrors: (errObj: Record<string, string>) => void;
 };
@@ -66,17 +66,17 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
       }
     }),
 
-  formData: initialFormData(),
-  setFormData: (data) =>
+  formDataState: initialFormData(),
+  setFormDataState: (data) =>
     set((state) => {
       if (Object.keys(data).length === 0) {
         return {
-          formData: initialFormData()
+          formDataState: initialFormData()
         };
       }
 
       return {
-        formData: { ...state.formData, ...data }
+        formDataState: { ...state.formDataState, ...data }
       };
     }),
 

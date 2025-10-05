@@ -214,7 +214,7 @@ export interface ProductsApi {
     pageNo: PageNo,
     limit: number
   ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
-  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
+  addNewProduct: (payload: Omit<ProductsType, "id">) => Promise<ApiResponse<string>>;
   updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
   deleteProduct: (productId: string) => Promise<ApiResponse<string>>;
 }

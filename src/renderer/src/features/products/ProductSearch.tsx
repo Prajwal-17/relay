@@ -1,20 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useNewProductSearch } from "@/hooks/products/useNewProductSearch";
+import { useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
 import type { FilterType } from "@shared/types";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
-type ProductProps = {
-  searchParam: string;
-  setSearchParam: (value: string) => void;
-  loading?: boolean;
-};
-
 export default function ProductSearch() {
   const [filterType, setFilterType] = useState<FilterType>("all");
-
-  const { searchParam, setSearchParam } = useNewProductSearch();
+  const { searchParam, setSearchParam } = useProductSearchV2();
 
   return (
     <>
