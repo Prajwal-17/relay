@@ -5,7 +5,7 @@ import {
   type DateRangeType,
   type PageNo,
   type PaginatedApiResponse,
-  type SalesType,
+  type SaleSummaryType,
   type SortType
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
@@ -26,7 +26,7 @@ export function filterByDate() {
       range: DateRangeType,
       sortBy: SortType,
       pageNo: PageNo
-    ): Promise<PaginatedApiResponse<SalesType[] | []>> => {
+    ): Promise<PaginatedApiResponse<SaleSummaryType[] | []>> => {
       if (pageNo === null || pageNo === undefined) {
         return {
           status: "success",
@@ -98,9 +98,10 @@ export function filterByDate() {
           nextPageNo: nextpageNo,
           data:
             result.length > 0
-              ? result.map((sale: SalesType) => ({
-                  ...sale,
-                  grandTotal: sale.grandTotal && formatToRupees(sale.grandTotal)
+              ? result.map((r) => ({
+                  ...r,
+                  customerName: r.customer.name,
+                  grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
                 }))
               : []
         };

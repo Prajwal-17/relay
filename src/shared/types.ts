@@ -180,6 +180,14 @@ export type FilteredGoogleContactsType = {
   contact: string | null;
 };
 
+export type SaleSummaryType = SalesType & {
+  customerName: string;
+};
+
+export type EstimateSummaryType = SalesType & {
+  customerName: string;
+};
+
 export type AllTransactionsType = (SalesType | EstimateType)[];
 
 export type DateRangeType = {
@@ -228,7 +236,7 @@ export interface SalesApi {
     range: DateRangeType,
     sortBy: SortType,
     pageNo: PageNo
-  ) => Promise<PaginatedApiResponse<SalesType[] | []>>;
+  ) => Promise<PaginatedApiResponse<SaleSummaryType[] | []>>;
   deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
   convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
 }
@@ -243,7 +251,7 @@ export interface EstimatesApi {
   getEstimatesDateRange: (
     range: DateRangeType,
     sortBy: SortType
-  ) => Promise<ApiResponse<EstimateType[] | []>>;
+  ) => Promise<ApiResponse<EstimateSummaryType[] | []>>;
   deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
   convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
 }

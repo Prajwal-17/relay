@@ -1,4 +1,5 @@
 import type { Calendar } from "@/components/ui/calendar";
+import { useDashboardStore } from "@/store/dashboardStore";
 import { useEffect, useState } from "react";
 import type { DateRange } from "react-day-picker";
 
@@ -19,7 +20,8 @@ const getInitialDate = (): DateRange => {
 
 export const useDateRangePicker = () => {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<DateRange | undefined>(getInitialDate);
+  const date = useDashboardStore((state) => state.date);
+  const setDate = useDashboardStore((state) => state.setDate);
   const [tempDate, setTempDate] = useState<DateRange | undefined>(getInitialDate);
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 

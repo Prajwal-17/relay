@@ -52,7 +52,7 @@ export const useInfiniteScroll = () => {
     isError,
     status
   } = useInfiniteQuery({
-    queryKey: ["sales", date?.from?.toISOString() ?? null, date?.to?.toISOString() ?? null, sortBy],
+    queryKey: ["sales", date, sortBy],
     queryFn: ({ pageParam = 1 }) => fetchSales(date as DateRangeType, sortBy, pageParam),
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
@@ -73,7 +73,7 @@ export const useInfiniteScroll = () => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? transactionData.length + 1 : transactionData.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 1000,
+    estimateSize: () => 50,
     overscan: 5
   });
 
@@ -97,6 +97,7 @@ export const useInfiniteScroll = () => {
   return {
     parentRef,
     rowVirtualizer,
+    isFetchingNextPage,
     isLoading,
     status,
     transactionData,
