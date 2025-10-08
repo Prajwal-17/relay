@@ -6,7 +6,7 @@ import NewSale from "./pages/NewSale";
 
 const App = () => {
   return (
-    <>
+    <div className="bg-sidebar">
       <Routes>
         <Route element={<SidebarLayout />}>
           {navLinks.map((item, idx) => (
@@ -18,7 +18,7 @@ const App = () => {
           <Route path="/estimates/edit/:id" element={<NewEstimate />} />
         </Route>
       </Routes>
-    </>
+    </div>
   );
 };
 
