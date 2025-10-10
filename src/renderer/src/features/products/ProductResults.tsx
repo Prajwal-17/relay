@@ -14,7 +14,7 @@ export default function ProductResults() {
   const { searchResults, parentRef, rowVirtualizer, status } = useProductSearchV2();
 
   return (
-    <Card className="border-border border bg-white shadow-sm">
+    <Card className="border-border bg-background border py-2 shadow-sm">
       {status === "pending" ? (
         <div className="my-8 flex justify-center gap-3">
           <div className="text-muted-foreground text-xl font-semibold">Loading</div>
@@ -38,7 +38,7 @@ export default function ProductResults() {
              *      virtualItem.start for vertical virtualization
              *      each visible items is placed from the virtualItems.start
              */
-            <div ref={parentRef} className="relative h-[590px] overflow-auto pb-4">
+            <div ref={parentRef} className="relative h-[620px] overflow-auto scroll-smooth pb-0">
               <div
                 className="relative w-full"
                 style={{ height: `${rowVirtualizer.getTotalSize()}px` }}

@@ -19,7 +19,7 @@ export default function ProductHeader() {
             setOpenProductDialog();
           }}
           size="lg"
-          className="bg-primary hover:bg-primary/90 h-12 gap-2 px-6 py-3 text-base font-medium text-white shadow-lg transition-all duration-200 hover:shadow-xl"
+          className="bg-primary hover:bg-primary/80 text-primary-foreground h-12 gap-2 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:cursor-pointer hover:shadow-xl"
         >
           <Plus className="h-5 w-5" />
           Add Product

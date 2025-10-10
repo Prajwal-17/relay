@@ -152,6 +152,21 @@
 
 
 @layer base {
+  /* Default Scroll Styles */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #9ca3af;
+    border-radius: 9999px;
+  }
+
   * {
     @apply border-border outline-ring/50 font-geist;
     /*https://github.com/tailwindlabs/tailwindcss/discussions/7429#discussioncomment-4779939*/

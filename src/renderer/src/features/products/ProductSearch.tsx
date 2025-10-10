@@ -13,7 +13,7 @@ export default function ProductSearch() {
     <>
       <div className="sticky top-0 z-10 transition-all duration-300 ease-in-out">
         <div>
-          <div className="border-border flex flex-col items-start justify-between gap-6 rounded-xl border bg-white p-6 shadow-sm sm:flex-row sm:items-center">
+          <div className="border-border bg-background flex flex-col items-start justify-between gap-6 rounded-xl border p-6 shadow-sm sm:flex-row sm:items-center">
             <div className="relative max-w-2xl flex-1">
               <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform text-slate-400" />
               <Input

@@ -8,7 +8,7 @@ export default function ProductsPage() {
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
 
   return (
-    <div className="bg-muted/70 h-full flex-1 space-y-6 px-6 py-6">
+    <div className="bg-background h-full flex-1 space-y-4 px-6 py-4">
       <ProductHeader />
       <ProductSearch />
       <ProductResults />
