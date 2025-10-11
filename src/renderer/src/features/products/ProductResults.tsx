@@ -56,8 +56,8 @@ export default function ProductResults() {
                       }}
                       data-index={virtualRow.index}
                     >
-                      <div className="group flex items-center justify-between gap-4 p-6 transition-colors hover:bg-slate-50">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-blue-200/50 bg-gradient-to-br from-blue-50 to-blue-100">
+                      <div className="group hover:bg-accent/70 flex items-center justify-between gap-4 p-6 transition-colors">
+                        <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100">
                           <Package className="h-5 w-5 text-blue-600" />
                         </div>
                         <div className="flex flex-1 items-center gap-6">
