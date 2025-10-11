@@ -33,7 +33,7 @@
   --font-serif: Merriweather, serif;
   --font-roboto: "Roboto", sans-serif;
 
-  --background: oklch(0.9842 0.0034 247.8575);
+  --background: oklch(0.9942 0.0034 247.8575);
   --foreground: oklch(0.2795 0.0368 260.0310);
 
   --card: oklch(1.0000 0 0);

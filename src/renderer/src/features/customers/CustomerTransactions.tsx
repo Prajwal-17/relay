@@ -82,7 +82,7 @@ export const CustomerTransactions = () => {
 
   return (
     <>
-      <Card>
+      <Card className="">
         <CardHeader>
           <CardTitle className="text-xl">Transactions</CardTitle>
         </CardHeader>

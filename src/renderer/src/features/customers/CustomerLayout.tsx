@@ -9,9 +9,9 @@ export const CustomerLayout = () => {
 
   return (
     <>
-      <div className="flex flex-1">
+      <div className="bg-background flex flex-1">
         <CustomerSidebar />
-        <div className="flex-1 p-6">
+        <div className="bg-background flex-1 p-6">
           {selectedCustomer ? (
             <>
               <CustomerDetails />

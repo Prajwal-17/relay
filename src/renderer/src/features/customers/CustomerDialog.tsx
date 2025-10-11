@@ -11,7 +11,6 @@ import {
 import useCustomers from "@/hooks/useCustomers";
 import { CustomerSchema } from "@/lib/validation";
 import { Label } from "@radix-ui/react-label";
-import type { CustomersType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import z from "zod";
@@ -55,7 +54,7 @@ export const CustomerDialog = () => {
       if (response.status === "success") {
         setOpenCustomerDialog();
         setFormData({});
-        setSelectedCustomer(response.data === "string" ? null : (response.data as CustomersType));
+        setSelectedCustomer(response.data);
         queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
         toast.success(
           typeof response.data === "string"
@@ -125,7 +124,7 @@ export const CustomerDialog = () => {
             required
             className="h-12 !text-lg"
           />
-          {errors.name && <div className="text-red-500">{errors.name}</div>}
+          {errors.name && <div className="text-destructive">{errors.name}</div>}
         </div>
         <div>
           <Label htmlFor="contact" className="mb-2 block">
@@ -138,7 +137,7 @@ export const CustomerDialog = () => {
             placeholder="Enter contact information"
             className="h-12 !text-lg"
           />
-          {errors.contact && <div className="text-red-500">{errors.contact}</div>}
+          {errors.contact && <div className="text-destructive">{errors.contact}</div>}
         </div>
         <div>
           <Label htmlFor="customerType" className="mb-2 block">
@@ -157,14 +156,28 @@ export const CustomerDialog = () => {
               <SelectItem value="hotel">Hotel</SelectItem>
             </SelectContent>
           </Select>
-          {errors.customerType && <div className="text-red-500">{errors.customerType}</div>}
+          {errors.customerType && <div className="text-destructive">{errors.customerType}</div>}
         </div>
         <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setOpenCustomerDialog()}>
+          <Button
+            variant="outline"
+            onClick={() => setOpenCustomerDialog()}
+            className="cursor-pointer"
+          >
             Cancel
           </Button>
-          <Button onClick={() => handleSubmit(actionType)}>
-            {actionType === "add" ? "Add Customer" : "Update Customer"}
+          <Button
+            disabled={mutation.isPending}
+            className="hover:bg-primary/80 cursor-pointer"
+            onClick={() => handleSubmit(actionType)}
+          >
+            {actionType === "add"
+              ? mutation.isPending
+                ? "Adding Customer..."
+                : "Add Customer"
+              : mutation.isPending
+                ? "Updating Customer..."
+                : "Update Customer"}
           </Button>
         </div>
       </div>

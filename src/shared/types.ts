@@ -257,7 +257,7 @@ export interface EstimatesApi {
 }
 
 export interface CustomersApi {
-  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getCustomerByName: (customerName: string) => Promise<ApiResponse<CustomersType | null>>;

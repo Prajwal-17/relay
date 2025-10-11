@@ -8,19 +8,23 @@ export function addCustomer() {
   // create new customer
   ipcMain.handle(
     "customersApi:addNewCustomer",
-    async (_event, customerPayload: CustomersType): Promise<ApiResponse<string>> => {
+    async (_event, customerPayload: CustomersType): Promise<ApiResponse<CustomersType>> => {
       try {
-        const newCustomer = db
+        const newCustomer = await db
           .insert(customers)
           .values({
             name: customerPayload.name,
             contact: customerPayload.contact,
             customerType: Role.CASH
           })
-          .run();
+          .returning();
 
-        if (newCustomer.changes > 0) {
-          return { status: "success", data: "Successfully created new customer" };
+        if (newCustomer) {
+          return {
+            status: "success",
+            data: newCustomer[0],
+            message: "Successfully created new customer"
+          };
         } else {
           return {
             status: "error",

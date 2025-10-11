@@ -23,7 +23,7 @@ export const CustomerSidebar = () => {
 
   return (
     <>
-      <div className="border-border bg-card flex min-h-screen w-96 flex-col border-r">
+      <div className="border-border bg-background flex h-full w-96 flex-col border-r">
         <div className="border-border border-b p-4">
           <h2 className="mb-4 text-2xl font-semibold">Customers</h2>
 
@@ -37,8 +37,8 @@ export const CustomerSidebar = () => {
               }}
             >
               <DialogTrigger asChild>
-                <Button className="h-12 flex-1 text-base font-semibold">
-                  <Plus className="mr-2 h-5 w-5" />
+                <Button className="hover:bg-primary/80 h-12 flex-1 text-base font-semibold hover:cursor-pointer">
+                  <Plus className="mr-1 h-5 w-5" />
                   Add Customer
                 </Button>
               </DialogTrigger>
@@ -87,7 +87,7 @@ export const CustomerSidebar = () => {
                 {customers.map((customer, idx) => (
                   <div
                     key={customer.id}
-                    className={`border-border hover:bg-accent cursor-pointer border-b p-4 transition-colors ${selectedCustomer?.id === customer.id ? "bg-accent" : ""} ${idx === customers.length - 1 ? "border-b-0" : ""}`}
+                    className={`border-border hover:bg-accent/70 cursor-pointer border-b p-4 ${selectedCustomer?.id === customer.id ? "bg-accent" : "bg-background"} ${idx === customers.length - 1 ? "border-b-0" : ""}`}
                     onClick={() => setSelectedCustomer(customer)}
                   >
                     <div className="flex items-center justify-between">
