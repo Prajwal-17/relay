@@ -38,7 +38,7 @@ export default function ProductResults() {
              *      virtualItem.start for vertical virtualization
              *      each visible items is placed from the virtualItems.start
              */
-            <div ref={parentRef} className="relative h-[620px] overflow-auto scroll-smooth pb-0">
+            <div ref={parentRef} className="relative h-[620px] overflow-auto scroll-smooth">
               <div
                 className="relative w-full"
                 style={{ height: `${rowVirtualizer.getTotalSize()}px` }}

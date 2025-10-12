@@ -100,7 +100,7 @@ export const Sidebar = () => {
                   <Button
                     variant="default"
                     size="lg"
-                    className="group bg-primary border-border text-primary-foreground hover:bg-primary/80 w-full py-5 text-lg font-semibold shadow-sm transition-all hover:cursor-pointer hover:shadow-md"
+                    className="group bg-primary border-border text-primary-foreground hover:bg-primary/80 w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
                   >
                     <ShoppingCart className="size-5 transition-transform duration-300 group-hover:rotate-12" />
                     <span>New Sale</span>
@@ -110,7 +110,7 @@ export const Sidebar = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="group border-border hover:bg-accent hover:text-accent-foreground w-full py-5 text-lg font-semibold shadow-sm transition-all hover:cursor-pointer hover:shadow-md"
+                    className="group border-border hover:bg-accent hover:text-accent-foreground w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
                   >
                     <FileText className="size-5 transition-transform duration-300 group-hover:rotate-[-12deg]" />
                     <span>New Estimate</span>

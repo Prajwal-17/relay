@@ -78,7 +78,7 @@ export const CustomerSidebar = () => {
         {customerStatus === "pending" ? (
           <div className="mt-8 flex justify-center gap-3">
             <div className="text-muted-foreground text-xl font-semibold">Loading</div>
-            <LoaderCircle className="animate-spin text-blue-500" size={26} />
+            <LoaderCircle className="text-primary animate-spin" size={26} />
           </div>
         ) : (
           <div className="flex-1 overflow-auto">
