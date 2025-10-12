@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { DashboardTable } from "@/features/transactionDashboard/DashboardTable";
+import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
@@ -10,8 +10,8 @@ const Dashboard = () => {
 
   return (
     <>
-      <div className="bg-background h-full flex-1 space-y-4 overflow-y-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-background flex h-full flex-1 flex-col overflow-hidden px-6 py-4">
+        <div className="mb-3 flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold">
               {pathname === "/sale" ? "Sales Overview" : "Estimates Overview"}
@@ -27,14 +27,14 @@ const Dashboard = () => {
             onClick={() => {
               pathname === "/sale" ? navigate("/sales/new") : navigate("/estimates/new");
             }}
-            className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg transition-all duration-200 hover:shadow-xl"
+            className="h-12 gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
           >
             <Plus className="h-5 w-5" />
             {pathname === "/sale" ? "New Sale" : "New Estimate"}
           </Button>
         </div>
 
-        <div className="border-border bg-card mb-6 flex items-center gap-6 rounded-lg border p-3">
+        <div className="bg-card mb-3 flex items-center gap-6 rounded-lg border p-3">
           <div className="flex items-center gap-2">
             <div className="bg-success/20 flex h-10 w-10 items-center justify-center rounded-lg">
               <IndianRupee className="text-success h-5 w-5" />
@@ -57,7 +57,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <DashboardTable />
+        <DashboardCard />
       </div>
     </>
   );

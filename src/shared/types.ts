@@ -184,7 +184,7 @@ export type SaleSummaryType = SalesType & {
   customerName: string;
 };
 
-export type EstimateSummaryType = SalesType & {
+export type EstimateSummaryType = EstimateType & {
   customerName: string;
 };
 

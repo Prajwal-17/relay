@@ -71,7 +71,11 @@ export function formatDateStrToISTDateStr(dateStr: string) {
     timeZone: "Asia/Kolkata"
   });
 
-  return `${fullDate} ${timePart}`;
+  // return `${fullDate} ${timePart}`;
+  return {
+    fullDate,
+    timePart
+  };
 }
 
 /**

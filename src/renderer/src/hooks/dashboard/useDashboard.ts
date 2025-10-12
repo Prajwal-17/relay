@@ -1,7 +1,7 @@
 import { useDashboardStore } from "@/store/dashboardStore";
 import { SortOption, type SortType } from "@shared/types";
 import { formatToPaisa } from "@shared/utils/utils";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -28,39 +28,45 @@ export const useDashboard = () => {
     setSortBy(sortByValue as SortType);
   }, [setSortBy]);
 
-  const handleDeleteSale = async (saleId: string) => {
-    try {
-      const response = await window.salesApi.deleteSale(saleId);
-      if (response.status === "success") {
-        toast.success("Successfully deleted sale");
-        if (sales.length > 0) {
-          setSales(sales.filter((sale) => sale.id !== saleId));
+  const handleDeleteSale = useCallback(
+    async (saleId: string) => {
+      try {
+        const response = await window.salesApi.deleteSale(saleId);
+        if (response.status === "success") {
+          toast.success("Successfully deleted sale");
+          if (sales.length > 0) {
+            setSales(sales.filter((sale) => sale.id !== saleId));
+          }
+        } else {
+          toast.error(response.error.message);
         }
-      } else {
-        toast.error(response.error.message);
+      } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong");
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
+    },
+    [sales, setSales]
+  );
 
-  const handleDeleteEstimate = async (estimateId: string) => {
-    try {
-      const response = await window.estimatesApi.deleteEstimate(estimateId);
-      if (response.status === "success") {
-        toast.success("Successfully deleted estimate");
-        if (estimates.length > 0) {
-          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
+  const handleDeleteEstimate = useCallback(
+    async (estimateId: string) => {
+      try {
+        const response = await window.estimatesApi.deleteEstimate(estimateId);
+        if (response.status === "success") {
+          toast.success("Successfully deleted estimate");
+          if (estimates.length > 0) {
+            setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
+          }
+        } else {
+          toast.error(response.error.message);
         }
-      } else {
-        toast.error(response.error.message);
+      } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong");
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
+    },
+    [estimates, setEstimates]
+  );
 
   const handleSaleConvert = async (saleId: string) => {
     try {
