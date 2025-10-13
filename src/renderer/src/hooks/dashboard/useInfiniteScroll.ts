@@ -137,8 +137,8 @@ export const useInfiniteScroll = (pathname: string) => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? transactionData.length + 1 : transactionData.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 60,
-    overscan: 5
+    estimateSize: () => 60
+    // overscan: 5
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
