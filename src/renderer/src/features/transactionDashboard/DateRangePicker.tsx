@@ -29,7 +29,7 @@ export const DateRangePicker = () => {
           <PopoverTrigger asChild>
             <div className="my-2 flex justify-between">
               <div />
-              <button className="bg-primary/20 text-foreground flex items-center gap-2 rounded-lg px-4 py-2 text-lg font-medium">
+              <button className="bg-secondary text-foreground flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-lg font-medium">
                 <CalendarIcon className="text-foreground" size={20} />
                 {date?.from?.toLocaleDateString("en-IN", {
                   dateStyle: "medium"
@@ -49,7 +49,7 @@ export const DateRangePicker = () => {
                   variant={selectedPreset === preset.value ? "default" : "outline"}
                   size="sm"
                   key={idx}
-                  className={`font-semibold transition-all duration-200 ${selectedPreset === preset.value ? "bg-primary text-primary-foreground shadow-md" : "hover:bg-accent hover:text-accent-foreground"}`}
+                  className={`cursor-pointer font-semibold transition-all duration-200 ${selectedPreset === preset.value ? "bg-primary text-primary-foreground shadow-md" : "hover:bg-accent hover:text-accent-foreground"}`}
                   onClick={() => {
                     const dateValue = preset.getRange();
                     setTempDate(dateValue);
@@ -76,10 +76,14 @@ export const DateRangePicker = () => {
               />
             </div>
             <div className="flex w-full items-center justify-end gap-3 font-medium">
-              <Button variant="outline" onClick={handleCancel}>
+              <Button variant="outline" onClick={handleCancel} className="cursor-pointer">
                 Cancel
               </Button>
-              <Button variant="default" onClick={handleApplyDateRange}>
+              <Button
+                variant="default"
+                onClick={handleApplyDateRange}
+                className="hover:bg-primary/80 cursor-pointer"
+              >
                 Apply
               </Button>
             </div>

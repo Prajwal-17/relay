@@ -1,10 +1,20 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { SaleSummaryType } from "@shared/types";
+import type { UnifiedTransaction } from "@/hooks/dashboard/useInfiniteScroll";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { Edit, LoaderCircle, MoreVertical, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
+
+const avatarColorPairs = [
+  { bg: "bg-indigo-200", text: "text-indigo-600" },
+  { bg: "bg-purple-200", text: "text-purple-600" },
+  { bg: "bg-rose-200", text: "text-rose-600" },
+  { bg: "bg-teal-200", text: "text-teal-600" },
+  { bg: "bg-sky-200", text: "text-sky-600" },
+  { bg: "bg-emerald-200", text: "text-emerald-600" },
+  { bg: "bg-fuchsia-200", text: "text-fuchsia-600" }
+];
 
 const DashboardTableRow = memo(
   ({
@@ -15,7 +25,7 @@ const DashboardTableRow = memo(
     handleDeleteEstimate,
     hasNextPage
   }: {
-    transaction: SaleSummaryType;
+    transaction: UnifiedTransaction;
     isLoaderRow: boolean;
     pathname: string;
     handleDeleteSale: (saleId: string) => void;
@@ -32,6 +42,7 @@ const DashboardTableRow = memo(
       },
       [pathname, handleDeleteSale, handleDeleteEstimate]
     );
+    const color = avatarColorPairs[Math.floor(Math.random() * avatarColorPairs.length)];
 
     return (
       <>
@@ -59,14 +70,17 @@ const DashboardTableRow = memo(
                     : "-"}
                 </span>
               </div>
-              <div className="col-span-3 flex items-center gap-2 truncate font-medium">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-200">
+              <div className="col-span-3 flex items-center gap-2 font-medium">
+                <div
+                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${color.bg} ${color.text}`}
+                >
                   {transaction.customerName.charAt(0)}
                 </div>
-                <span>{transaction.customerName}</span>
+                <span className="truncate">{transaction.customerName}</span>
               </div>
+
               <div className="text-muted-foreground col-span-2 flex items-center font-medium">
-                # {transaction.invoiceNo}
+                # {transaction.transactionNo}
               </div>
               <div className="col-span-2 flex items-center font-semibold">
                 {transaction.grandTotal ? IndianRupees.format(transaction.grandTotal) : "-"}

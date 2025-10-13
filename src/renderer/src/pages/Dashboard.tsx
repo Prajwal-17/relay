@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
-import { formatToRupees, IndianRupees } from "@shared/utils/utils";
+import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import { IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
 
 const Dashboard = () => {
-  const { pathname, navigate, sales, estimates, calculateSalesTotal, calculateEstimatesTotal } =
-    useDashboard();
+  const { pathname, navigate } = useDashboard();
+  const { totalRevenue, totalTransactions } = useInfiniteScroll(pathname);
 
   return (
     <>
@@ -27,7 +28,7 @@ const Dashboard = () => {
             onClick={() => {
               pathname === "/sale" ? navigate("/sales/new") : navigate("/estimates/new");
             }}
-            className="h-12 gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
+            className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
           >
             <Plus className="h-5 w-5" />
             {pathname === "/sale" ? "New Sale" : "New Estimate"}
@@ -41,9 +42,7 @@ const Dashboard = () => {
             </div>
             <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
             <span className="text-2xl font-bold">
-              {pathname === "/sale"
-                ? `${IndianRupees.format(formatToRupees(calculateSalesTotal))}`
-                : `${IndianRupees.format(formatToRupees(calculateEstimatesTotal))}`}
+              {totalRevenue && IndianRupees.format(totalRevenue)}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -51,9 +50,7 @@ const Dashboard = () => {
               <ShoppingCart className="text-secondary-foreground h-5 w-5" />
             </div>
             <span className="text-muted-foreground text-lg font-medium">Total Transactions:</span>
-            <span className="text-2xl font-bold">
-              {pathname === "/sale" ? `${sales.length || 0}` : `${estimates.length || 0}`}
-            </span>
+            <span className="text-2xl font-bold">{totalTransactions}</span>
           </div>
         </div>
 

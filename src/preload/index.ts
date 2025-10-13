@@ -40,8 +40,8 @@ const estimatesApi: EstimatesApi = {
   save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
   getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
   getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id),
-  getEstimatesDateRange: (range: DateRangeType, sortBy: SortType) =>
-    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range, sortBy),
+  getEstimatesDateRange: (range: DateRangeType, sortBy: SortType, pageNo: PageNo) =>
+    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range, sortBy, pageNo),
   deleteEstimate: (estimateId: string) =>
     ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId),
   convertEstimateToSale: (estimateId: string) =>

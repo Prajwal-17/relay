@@ -1,4 +1,4 @@
-import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
+import { and, asc, count, desc, gte, lte, SQL, sum } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   SortOption,
@@ -26,12 +26,16 @@ export function filterByDate() {
       range: DateRangeType,
       sortBy: SortType,
       pageNo: PageNo
-    ): Promise<PaginatedApiResponse<SaleSummaryType[] | []>> => {
+    ): Promise<PaginatedApiResponse<SaleSummaryType>> => {
       if (pageNo === null || pageNo === undefined) {
         return {
           status: "success",
           nextPageNo: null,
-          data: []
+          data: {
+            totalRevenue: 0,
+            totalTransactions: 0,
+            sales: []
+          }
         };
       }
 
@@ -75,10 +79,19 @@ export function filterByDate() {
       }
 
       try {
-        const fromDate = range.from?.toISOString();
-        const toDate = range.to?.toISOString();
+        const fromDate = range.from.toISOString();
+        const toDate = range.to.toISOString();
 
         const offset = (pageNo - 1) * 20;
+
+        const summaryResult = await db
+          .select({
+            totalRevenue: sum(sales.grandTotal).mapWith(Number),
+            totalTransactions: count(sales.id).mapWith(Number)
+          })
+          .from(sales)
+          .where(and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)))
+          .orderBy(orderByClause);
 
         const result = await db.query.sales.findMany({
           where: and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)),
@@ -96,14 +109,18 @@ export function filterByDate() {
         return {
           status: "success",
           nextPageNo: nextpageNo,
-          data:
-            result.length > 0
-              ? result.map((r) => ({
-                  ...r,
-                  customerName: r.customer.name,
-                  grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
-                }))
-              : []
+          data: {
+            totalRevenue: formatToRupees(summaryResult[0].totalRevenue),
+            totalTransactions: summaryResult[0].totalTransactions,
+            sales:
+              result.length > 0
+                ? result.map((r) => ({
+                    ...r,
+                    customerName: r.customer.name,
+                    grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
+                  }))
+                : []
+          }
         };
       } catch (error) {
         console.log(error);
