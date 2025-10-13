@@ -1,12 +1,8 @@
-import { SortOption, type EstimateType, type SalesType, type SortType } from "@shared/types";
+import { SortOption, type SortType } from "@shared/types";
 import type { DateRange } from "react-day-picker";
 import { create } from "zustand";
 
 type DashboardStoreType = {
-  sales: SalesType[] | [];
-  setSales: (newSales: SalesType[] | []) => void;
-  estimates: EstimateType[] | [];
-  setEstimates: (newEstimates: EstimateType[] | []) => void;
   date: DateRange | undefined;
   setDate: (value: DateRange | undefined) => void;
   sortBy: SortType;
@@ -29,18 +25,6 @@ const getInitialDate = (): DateRange => {
 };
 
 export const useDashboardStore = create<DashboardStoreType>((set) => ({
-  sales: [],
-  setSales: (newSales) =>
-    set(() => ({
-      sales: newSales
-    })),
-
-  estimates: [],
-  setEstimates: (newEstimates) =>
-    set(() => ({
-      estimates: newEstimates
-    })),
-
   date: getInitialDate(),
   setDate: (value) =>
     set(() => ({

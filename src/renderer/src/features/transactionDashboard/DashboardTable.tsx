@@ -4,7 +4,7 @@ import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import DashboardTableRow from "./DashboardTableRow";
 
 export const DashboardTable = () => {
-  const { pathname, handleDeleteSale, handleDeleteEstimate } = useDashboard();
+  const { pathname, deleteMutation, convertMutation } = useDashboard();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
     useInfiniteScroll(pathname);
 
@@ -23,7 +23,7 @@ export const DashboardTable = () => {
             <LoaderCircle className="text-primary animate-spin" size={24} />
           </div>
         ) : (
-          <div className="border-border/60 rounded-lg border">
+          <div className="border-border/60 rounded-lg border shadow-md">
             <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 px-4 py-2 text-base font-semibold">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer Name</div>
@@ -59,11 +59,11 @@ export const DashboardTable = () => {
                           ref={rowVirtualizer.measureElement}
                         >
                           <DashboardTableRow
+                            pathname={pathname}
                             transaction={transaction}
                             isLoaderRow={isLoaderRow}
-                            pathname={pathname}
-                            handleDeleteSale={handleDeleteSale}
-                            handleDeleteEstimate={handleDeleteEstimate}
+                            deleteMutation={deleteMutation}
+                            convertMutation={convertMutation}
                             hasNextPage={hasNextPage}
                           />
                         </div>

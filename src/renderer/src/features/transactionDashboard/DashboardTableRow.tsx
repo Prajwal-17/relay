@@ -1,10 +1,40 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
 import type { UnifiedTransaction } from "@/hooks/dashboard/useInfiniteScroll";
+import type { ApiResponse } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
-import { Edit, LoaderCircle, MoreVertical, Trash2 } from "lucide-react";
-import { memo, useCallback } from "react";
+import type { UseMutationResult } from "@tanstack/react-query";
+import {
+  Download,
+  Edit,
+  Eye,
+  LoaderCircle,
+  MoreVertical,
+  Printer,
+  RefreshCcw,
+  Trash2
+} from "lucide-react";
+import { memo } from "react";
 
 const avatarColorPairs = [
   { bg: "bg-indigo-200", text: "text-indigo-600" },
@@ -18,30 +48,20 @@ const avatarColorPairs = [
 
 const DashboardTableRow = memo(
   ({
+    pathname,
     transaction,
     isLoaderRow,
-    pathname,
-    handleDeleteSale,
-    handleDeleteEstimate,
-    hasNextPage
+    hasNextPage,
+    deleteMutation,
+    convertMutation
   }: {
+    pathname: string;
     transaction: UnifiedTransaction;
     isLoaderRow: boolean;
-    pathname: string;
-    handleDeleteSale: (saleId: string) => void;
-    handleDeleteEstimate: (estimateId: string) => void;
     hasNextPage: boolean;
+    deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+    convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
   }) => {
-    const handleDelete = useCallback(
-      (id: string) => {
-        if (pathname === "/sale") {
-          handleDeleteSale(id);
-        } else {
-          handleDeleteEstimate(id);
-        }
-      },
-      [pathname, handleDeleteSale, handleDeleteEstimate]
-    );
     const color = avatarColorPairs[Math.floor(Math.random() * avatarColorPairs.length)];
 
     return (
@@ -57,7 +77,7 @@ const DashboardTableRow = memo(
               ) : null}
             </div>
           ) : (
-            <div className="hover:bg-muted/60 border-border/50 grid grid-cols-12 gap-4 border-b px-6 py-2 text-lg">
+            <div className="hover:bg-muted/40 bg-card border-border/50 grid grid-cols-12 gap-4 border-b px-6 py-2 text-lg">
               <div className="col-span-2 flex flex-col items-start justify-start font-medium">
                 <span className="text-xl font-semibold">
                   {transaction.createdAt
@@ -97,20 +117,108 @@ const DashboardTableRow = memo(
                 )}
               </div>
               <div className="col-span-1 flex items-center justify-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <Edit size={16} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => handleDelete(transaction.id)}
-                >
-                  <Trash2 size={16} />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreVertical size={16} />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
+                    <Edit size={20} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-base">Edit</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <AlertDialog>
+                  <Tooltip>
+                    <AlertDialogTrigger asChild>
+                      <TooltipTrigger className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2">
+                        <Trash2 size={20} />
+                      </TooltipTrigger>
+                    </AlertDialogTrigger>
+                    <TooltipContent>
+                      <p className="text-base">Delete</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="text-lg">
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription className="text-base">
+                        This will permanently delete the transaction.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+                        onClick={() =>
+                          deleteMutation.mutate({ type: pathname.slice(1), id: transaction.id })
+                        }
+                      >
+                        {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
+                    <MoreVertical />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-40" align="end">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="cursor-pointer"
+                        >
+                          <RefreshCcw className="mr-1 h-4 w-4 cursor-pointer" />
+                          <span className="text-lg">Convert</span>
+                        </DropdownMenuItem>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-lg">
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-base">
+                            This will permanently convert the transaction.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                            onClick={() =>
+                              convertMutation.mutate({
+                                type: pathname.slice(1),
+                                id: transaction.id
+                              })
+                            }
+                            disabled={convertMutation.isPending}
+                          >
+                            {convertMutation.isPending ? "Converting..." : "Convert"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem disabled>
+                      <Eye className="mr-1 h-4 w-4" />
+                      <span className="text-lg">View</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      <Printer className="mr-1 h-4 w-4" />
+                      <span className="text-lg">Print</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      <Download className="mr-1 h-4 w-4" />
+                      <span className="text-lg">Download</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
           )}

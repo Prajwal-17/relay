@@ -53,7 +53,7 @@ export function formatDateStrToISTDateObject(dateStr: string) {
  * Format date string to readable date time format.
  * "2025-09-13 02:30:00" -> "13 Sept 2025 02:30 Am"
  * @param {string} dateStr
- * @returns {string}
+ * @returns {fullDate,timePart}
  */
 export function formatDateStrToISTDateStr(dateStr: string) {
   const utcTimestamp = dateStr.replace(" ", "T") + "Z";
