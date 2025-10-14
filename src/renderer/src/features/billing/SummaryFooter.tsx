@@ -18,7 +18,7 @@ export const SummaryFooter = () => {
       className="bg-background absolute right-0 bottom-0 left-0 border-t shadow-lg"
       role="contentinfo"
     >
-      <div className="flex items-center justify-end gap-6 px-3 py-3">
+      <div className="flex items-center justify-end gap-6 px-3 py-2">
         <div className="flex items-center gap-8 text-right">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground text-lg">Subtotal:</span>
@@ -28,7 +28,7 @@ export const SummaryFooter = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-xl font-medium">Total:</span>
-            <span className="text-primary text-3xl font-bold">
+            <span className="text-foreground text-3xl font-bold">
               {IndianRupees.format(Math.round(calcTotalAmount))}
             </span>
           </div>
@@ -64,7 +64,7 @@ export const SummaryFooter = () => {
             className="h-12 text-lg hover:cursor-pointer"
           >
             <FileText className="mr-2 h-4 w-4" />
-            Send PDF
+            Save PDF
           </Button>
         </div>
       </div>

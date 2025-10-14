@@ -235,7 +235,9 @@ export interface SalesApi {
   getNextInvoiceNo: () => Promise<ApiResponse<number>>;
   save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
-  getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
+  getTransactionById: (
+    id: string
+  ) => Promise<ApiResponse<SalesType & { customer: CustomersType; items: SaleItemsType[] }>>;
   getSalesDateRange: (
     range: DateRangeType,
     sortBy: SortType,
@@ -251,7 +253,7 @@ export interface EstimatesApi {
   getAllEstimates: () => Promise<ApiResponse<EstimateType[]>>;
   getTransactionById: (
     id: string
-  ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
+  ) => Promise<ApiResponse<EstimateType & { customer: CustomersType; items: EstimateItemsType[] }>>;
   getEstimatesDateRange: (
     range: DateRangeType,
     sortBy: SortType,

@@ -1,21 +1,19 @@
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
+import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
-import { ProductDialog } from "@/features/productDialog/ProductDialog";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import useTransactionState from "@/hooks/useTransactionState";
-import { useProductsStore } from "@/store/productsStore";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const NewEstimate = () => {
   const location = useLocation();
   const estimateId = location.pathname.split("/")[3];
-  const openProductDialog = useProductsStore((state) => state.openProductDialog);
 
   const { clearTransactionState } = useTransactionState();
-  useLoadTransactionDetails("estimate", estimateId);
+  const { status, isFetched } = useLoadTransactionDetails("estimate", estimateId);
 
   useEffect(() => {
     /**
@@ -27,6 +25,10 @@ const NewEstimate = () => {
     };
   }, [location.pathname]);
 
+  if (status === "pending" || !isFetched) {
+    return <div className="text-3xl">loading....</div>;
+  }
+
   return (
     <div className="flex h-full overflow-hidden">
       <div className="relative flex h-full flex-1 flex-col">
@@ -37,7 +39,7 @@ const NewEstimate = () => {
         <SummaryFooter />
       </div>
       <BillPreview />
-      {openProductDialog && <ProductDialog />}
+      <ProductDialogWrapper />
     </div>
   );
 };

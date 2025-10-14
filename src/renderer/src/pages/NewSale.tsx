@@ -1,21 +1,19 @@
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
+import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
-import { ProductDialog } from "@/features/productDialog/ProductDialog";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import useTransactionState from "@/hooks/useTransactionState";
-import { useProductsStore } from "@/store/productsStore";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const NewSale = () => {
   const location = useLocation();
   const saleId = location.pathname.split("/")[3];
-  const openProductDialog = useProductsStore((state) => state.openProductDialog);
 
   const { clearTransactionState } = useTransactionState();
-  useLoadTransactionDetails("sale", saleId);
+  const { status, isFetched } = useLoadTransactionDetails("sale", saleId);
 
   useEffect(() => {
     /**
@@ -27,9 +25,13 @@ const NewSale = () => {
     };
   }, [location.pathname]);
 
+  if (status === "pending" || !isFetched) {
+    return <div className="text-3xl">loading....</div>;
+  }
+
   return (
-    <div className="flex h-full overflow-hidden">
-      <div className="relative flex h-full flex-1 flex-col">
+    <div className="bg-background-secondary flex h-full gap-2 overflow-hidden">
+      <div className="bg-background relative flex h-full flex-1 flex-col">
         <div className="overflow-y-auto">
           <BillingHeader />
           <LineItemsTable />
@@ -37,7 +39,7 @@ const NewSale = () => {
         <SummaryFooter />
       </div>
       <BillPreview />
-      {openProductDialog && <ProductDialog />}
+      <ProductDialogWrapper />
     </div>
   );
 };

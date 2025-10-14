@@ -70,7 +70,7 @@ const LineItemRow = memo(
                     updateLineItems(item.id, "quantity", newQuantity);
                   }
                 }}
-                className="hover:bg-primary/80 bg-primary flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none text-white transition-all active:scale-95"
+                className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
               >
                 <Plus size={22} />
               </button>
@@ -89,7 +89,7 @@ const LineItemRow = memo(
               />
               <button
                 disabled={item.quantity <= 0}
-                className="hover:bg-primary/80 bg-primary flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none text-white transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   if (item.quantity > 1) {
                     const newQuantity = item.quantity - 1;

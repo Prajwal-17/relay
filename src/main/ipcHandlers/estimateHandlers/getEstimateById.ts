@@ -1,6 +1,11 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, EstimateItemsType, EstimateType } from "../../../shared/types";
+import type {
+  ApiResponse,
+  CustomersType,
+  EstimateItemsType,
+  EstimateType
+} from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates } from "../../db/schema";
@@ -11,7 +16,9 @@ export function getEstimateById() {
     async (
       _event,
       id: string
-    ): Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>> => {
+    ): Promise<
+      ApiResponse<EstimateType & { customer: CustomersType; items: EstimateItemsType[] }>
+    > => {
       try {
         const estimateObj = await db.query.estimates.findFirst({
           where: eq(estimates.id, id),
@@ -28,7 +35,13 @@ export function getEstimateById() {
         return {
           status: "success",
           data: {
-            ...estimateObj,
+            id: estimateObj.id,
+            estimateNo: estimateObj.estimateNo,
+            customerId: estimateObj.customerId,
+            customer: estimateObj.customer,
+            grandTotal: estimateObj.grandTotal && formatToRupees(estimateObj.grandTotal),
+            totalQuantity: estimateObj.totalQuantity,
+            isPaid: estimateObj.isPaid,
             items: estimateObj.estimateItems.map((item) => {
               return {
                 ...item,
@@ -36,7 +49,9 @@ export function getEstimateById() {
                 price: formatToRupees(item.price),
                 totalPrice: formatToRupees(item.totalPrice)
               };
-            })
+            }),
+            updatedAt: estimateObj.updatedAt,
+            createdAt: estimateObj.createdAt
           }
         };
       } catch (error) {

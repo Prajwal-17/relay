@@ -62,16 +62,17 @@ export const Sidebar = () => {
           onMouseEnter={() => setIsSidebarOpen(true)}
         />
       )}
+
       <AnimatePresence mode="wait">
         {isSidebarOpen && (
           <motion.div
-            initial={{ opacity: 0, x: -75 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -35 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            initial={{ x: -250, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -250, opacity: 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
             ref={sidebarRef}
-            className={`bg-sidebar text-sidebar-foreground h-full w-full max-w-xs px-4 py-4 ${isBillingPage ? "absolute z-20" : "relative"}`}
             onMouseLeave={handleMouseLeave}
+            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-20 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between">
@@ -89,7 +90,7 @@ export const Sidebar = () => {
                       setIsSidebarOpen(false);
                       setIsSidebarPinned(false);
                     }}
-                    className="hover:bg-accent rounded-lg p-2 transition-colors"
+                    className="hover:bg-secondary text-primary-foreground cursor-pointer rounded-lg p-2"
                   >
                     <X className="h-5 w-5" />
                   </button>

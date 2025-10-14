@@ -41,7 +41,7 @@ const LineItemsTable = () => {
               <div className="col-span-1" />
               <div className="col-span-2 pt-2">
                 <Button
-                  className="h-12 w-32 text-lg font-medium hover:cursor-pointer"
+                  className="hover:bg-primary/80 h-10 w-30 cursor-pointer text-lg font-medium"
                   onClick={addEmptyLineItem}
                 >
                   Add Row

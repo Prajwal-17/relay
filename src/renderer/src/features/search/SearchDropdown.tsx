@@ -37,7 +37,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
       {isDropdownOpen && searchRow === idx + 1 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full right-0 left-35 z-20 mx-1 w-full max-w-3xl transition-all"
+          className="absolute top-full right-0 left-35 z-10 mx-1 w-full max-w-3xl transition-all"
         >
           <Card className="h-full max-h-full overflow-hidden border-2 border-blue-500 bg-white shadow-xl">
             <div className="max-h-96 overflow-y-auto scroll-smooth py-0">

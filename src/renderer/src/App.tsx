@@ -6,7 +6,7 @@ import NewSale from "./pages/NewSale";
 
 const App = () => {
   return (
-    <div className="bg-sidebar">
+    <div className="bg-background-secondary">
       <Routes>
         <Route element={<SidebarLayout />}>
           {navLinks.map((item, idx) => (

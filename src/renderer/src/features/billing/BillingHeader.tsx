@@ -88,7 +88,7 @@ const BillingHeader = () => {
 
   return (
     <>
-      <div className="border-border mx-5 my-6 flex flex-col justify-center gap-5 rounded-xl border px-6 py-6 shadow-xl">
+      <div className="border-border mx-5 my-2 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-xl">
         <div className="flex items-start justify-between gap-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
@@ -97,7 +97,7 @@ const BillingHeader = () => {
                   setIsSidebarOpen(true);
                   setIsSidebarPinned(true);
                 }}
-                className="border-border text-foreground hover:b rounded-lg border px-2 py-2 shadow-lg hover:cursor-pointer hover:bg-neutral-200/80"
+                className="border-border text-foreground hover:b hover:bg-accent cursor-pointer rounded-lg border px-2 py-2 shadow-lg"
               >
                 <PanelLeftOpen size={23} />
               </button>
@@ -105,7 +105,7 @@ const BillingHeader = () => {
             </div>
             <div className="flex items-center justify-center gap-2 py-2">
               <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>
-              <span className="text-bold text-primary text-3xl font-semibold">#</span>
+              <span className="text-bold text-foreground text-3xl font-semibold">#</span>
               {editInvoice ? (
                 <>
                   <Input
@@ -132,7 +132,7 @@ const BillingHeader = () => {
                   />
                 </>
               ) : (
-                <span className="text-primary text-3xl font-extrabold">{invoiceNo}</span>
+                <span className="text-foreground text-3xl font-extrabold">{invoiceNo}</span>
               )}
               {/*<SquarePen size={20} onClick={() => setEditInvoice(true)} />*/}
             </div>
@@ -162,7 +162,7 @@ const BillingHeader = () => {
               </Popover>
             </div>
             <div>
-              <Label htmlFor="time-picker" className="px-1 text-lg">
+              <Label htmlFor="time-picker" className="text-muted-foreground px-1 text-lg">
                 Time
               </Label>
               <Input

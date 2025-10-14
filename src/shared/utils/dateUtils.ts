@@ -42,6 +42,9 @@ export function formatDateObjToHHmmss(dateObj: Date) {
  */
 export function formatDateStrToISTDateObject(dateStr: string) {
   // '2025-08-31 06:38:13' -> '2025-08-31T06:38:13Z'
+  if (!dateStr) {
+    return null;
+  }
   const utcTimestamp = dateStr.replace(" ", "T") + "Z";
 
   const date = new Date(utcTimestamp);
