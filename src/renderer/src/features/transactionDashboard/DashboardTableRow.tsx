@@ -35,6 +35,7 @@ import {
   Trash2
 } from "lucide-react";
 import { memo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 const DashboardTableRow = ({
   pathname,
@@ -51,13 +52,20 @@ const DashboardTableRow = ({
   deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
   convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
 }) => {
+  const navigate = useNavigate();
+  const handleView = useCallback(() => {
+    pathname === "/sale"
+      ? navigate(`/sales/edit/${transaction.id}`)
+      : navigate(`/estimates/edit/${transaction.id}`);
+  }, [navigate, transaction.id, pathname]);
+
   const onDelete = useCallback(() => {
     deleteMutation.mutate({ type: pathname.slice(1), id: transaction.id });
-  }, [deleteMutation, pathname, transaction?.id]);
+  }, [deleteMutation, pathname, transaction.id]);
 
   const onConvert = useCallback(() => {
     convertMutation.mutate({ type: pathname.slice(1), id: transaction.id });
-  }, [convertMutation, pathname, transaction?.id]);
+  }, [convertMutation, pathname, transaction.id]);
 
   return (
     <div>
@@ -108,7 +116,10 @@ const DashboardTableRow = ({
           </div>
           <div className="col-span-1 flex items-center justify-center gap-1">
             <Tooltip>
-              <TooltipTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
+              <TooltipTrigger
+                onClick={handleView}
+                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
+              >
                 <Edit size={20} />
               </TooltipTrigger>
               <TooltipContent>

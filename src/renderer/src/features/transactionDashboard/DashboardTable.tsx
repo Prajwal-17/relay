@@ -52,6 +52,7 @@ export const DashboardTable = () => {
                       const isLoaderRow = virtualRow.index > transactionData.length - 1;
                       const transaction = transactionData[virtualRow.index];
 
+                      if (!transaction) return null;
                       return (
                         <div
                           key={virtualRow.key}
