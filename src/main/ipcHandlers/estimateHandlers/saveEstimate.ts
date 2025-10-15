@@ -11,7 +11,7 @@ import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { Role } from "../../db/enum";
-import { customers, estimateItems, estimates } from "../../db/schema";
+import { customers, estimateItems, estimates, products } from "../../db/schema";
 
 export function saveEstimate() {
   ipcMain.handle(
@@ -104,6 +104,15 @@ export function saveEstimate() {
                   totalPrice: item.totalPrice
                 })
                 .run();
+
+              if (products.id) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
             }
             return {
               id: estimate.id,
@@ -143,8 +152,32 @@ export function saveEstimate() {
               .where(eq(estimates.id, estimateObj.billingId!))
               .run();
 
+            // get existing estimateItems of a estimate
+            const allEstimateItems = tx
+              .select()
+              .from(estimateItems)
+              .where(eq(estimateItems.estimateId, estimateObj.billingId!))
+              .all();
+
+            if (!allEstimateItems) {
+              throw new Error("Estimate Items does not exist");
+            }
+
+            // revert quantity values
+            for (const item of allEstimateItems) {
+              if (item.productId) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} - ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
+            }
+
             /**
              * @returns deletedItems = { changes: 5, lastInsertRowid: 0 }
+             * delete the current estimateItems and then insert the new estimateItems
              */
             const deletedItems = tx
               .delete(estimateItems)
@@ -159,6 +192,7 @@ export function saveEstimate() {
               if (!item.name) {
                 throw new Error("Item name field cannot be empty");
               }
+              // insert new estimateItems
               tx.insert(estimateItems)
                 .values({
                   estimateId: estimate.id,
@@ -174,6 +208,16 @@ export function saveEstimate() {
                   updatedAt: sql`(datetime('now'))`
                 })
                 .run();
+
+              // update totalQuantitySold
+              if (item.productId) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
             }
             return {
               id: estimate.id,

@@ -11,7 +11,7 @@ import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { Role } from "../../db/enum";
-import { customers, saleItems, sales } from "../../db/schema";
+import { customers, products, saleItems, sales } from "../../db/schema";
 
 export function saveSale() {
   // save & update
@@ -105,6 +105,15 @@ export function saveSale() {
                   totalPrice: item.totalPrice
                 })
                 .run();
+
+              if (products.id) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
             }
             return {
               id: sale.id,
@@ -140,8 +149,32 @@ export function saveSale() {
               .where(eq(sales.id, saleObj.billingId!))
               .run();
 
+            // get existing saleItems of a sale
+            const allSaleItems = tx
+              .select()
+              .from(saleItems)
+              .where(eq(saleItems.saleId, saleObj.billingId!))
+              .all();
+
+            if (!allSaleItems) {
+              throw new Error("Sale Items does not exist");
+            }
+
+            // revert quantity values
+            for (const item of allSaleItems) {
+              if (item.productId) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} - ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
+            }
+
             /**
              * @returns deletedItems = { changes: number, lastInsertRowid: number }
+             * delete the current saleItems and then insert the new saleItems
              */
             const deletedItems = tx.delete(saleItems).where(eq(saleItems.saleId, sale.id)).run();
 
@@ -153,6 +186,7 @@ export function saveSale() {
               if (!item.name) {
                 throw new Error("Item name field cannot be empty");
               }
+              // insert new saleItems
               tx.insert(saleItems)
                 .values({
                   saleId: sale.id,
@@ -168,6 +202,16 @@ export function saveSale() {
                   updatedAt: sql`(datetime('now'))`
                 })
                 .run();
+
+              // update totalQuantitySold
+              if (item.productId) {
+                tx.update(products)
+                  .set({
+                    totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+                  })
+                  .where(eq(products.id, item.productId))
+                  .run();
+              }
             }
             return {
               id: sale.id,
