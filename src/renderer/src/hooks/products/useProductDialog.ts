@@ -119,7 +119,7 @@ export const useProductDialog = () => {
         setOpenProductDialog();
         toast.success(response.data);
       } else if (response.status === "error") {
-        toast.success(response.error.message);
+        toast.error(response.error.message);
       }
     },
     onError: (error) => {

@@ -282,7 +282,7 @@ export function ProductDialog() {
                   variant="outline"
                   onClick={() => setOpenProductDialog()}
                   disabled={productMutation.isPending}
-                  className="h-12 px-8 text-base disabled:opacity-60"
+                  className="h-12 cursor-pointer px-8 text-base disabled:opacity-60"
                 >
                   Cancel
                 </Button>
@@ -291,7 +291,7 @@ export function ProductDialog() {
                     handleSubmit(actionType);
                   }}
                   disabled={productMutation.isPending}
-                  className="bg-primary hover:bg-primary/80 h-12 px-8 text-base disabled:opacity-60"
+                  className="bg-primary hover:bg-primary/80 h-12 cursor-pointer px-8 text-base disabled:opacity-60"
                 >
                   {productMutation.isPending
                     ? actionType === "add"
