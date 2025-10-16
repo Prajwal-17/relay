@@ -1,7 +1,15 @@
-import type { CustomersApi, EstimatesApi, ProductsApi, SalesApi, ShareApi } from "src/shared/types";
+import type {
+  CustomersApi,
+  DashboardApi,
+  EstimatesApi,
+  ProductsApi,
+  SalesApi,
+  ShareApi
+} from "src/shared/types";
 
 declare global {
   interface Window {
+    dashboardApi: DashboardApi;
     productsApi: ProductsApi;
     salesApi: SalesApi;
     estimatesApi: EstimatesApi;

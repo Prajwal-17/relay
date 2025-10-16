@@ -229,6 +229,10 @@ export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION
 
 export type DashboardType = (typeof DASHBOARD_TYPE)[keyof typeof DASHBOARD_TYPE];
 
+export interface DashboardApi {
+  getMetricsSummary: () => Promise<ApiResponse<string>>;
+}
+
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (

@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from "electron";
 import type {
   CustomersApi,
   CustomersType,
+  DashboardApi,
   DateRangeType,
   EstimatePayload,
   EstimatesApi,
@@ -13,6 +14,10 @@ import type {
   ShareApi,
   SortType
 } from "../shared/types";
+
+const dashboardApi: DashboardApi = {
+  getMetricsSummary: () => ipcRenderer.invoke("dashboardApi:getMetricsSummary")
+};
 
 const productsApi: ProductsApi = {
   getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
@@ -79,6 +84,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("electronAPI", {
       printReceipt: (html: string) => ipcRenderer.send("print-receipt", html)
     });
+    contextBridge.exposeInMainWorld("dashboardApi", dashboardApi);
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
@@ -90,6 +96,8 @@ if (process.contextIsolated) {
 } else {
   // @ts-ignore (define in dts)
   window.electron = electronAPI;
+  // @ts-ignore (define in dts)
+  window.dashboardApi = dashboardApi;
   // @ts-ignore (define in dts)
   window.productsApi = productsApi;
   // @ts-ignore (define in dts)
