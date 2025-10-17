@@ -1,4 +1,4 @@
-const Home = () => {
+const HomePage = () => {
   return (
     <>
       <div className="bg-background flex h-full items-center justify-center text-3xl font-bold">
@@ -8,4 +8,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default HomePage;
