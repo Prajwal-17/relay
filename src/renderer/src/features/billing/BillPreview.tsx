@@ -10,7 +10,7 @@ import { Navigate, useParams } from "react-router-dom";
 const BillPreview = () => {
   const { type } = useParams();
 
-  const { lineItems, invoiceNo, customerName } = useTransactionState();
+  const { lineItems, transactionNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(
     type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
   );
@@ -58,7 +58,7 @@ const BillPreview = () => {
                 <span className="font-semibold">
                   {type === TRANSACTION_TYPE.SALES ? "Invoice No:" : "Estimate No:"}
                 </span>{" "}
-                {invoiceNo}
+                {transactionNo}
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}

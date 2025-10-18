@@ -39,7 +39,7 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
 
 const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const {
-    setInvoiceNo,
+    setTransactionNo,
     setLineItems,
     setCustomerName,
     setCustomerContact,
@@ -69,7 +69,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
         const d = res.data;
         setBillingId(d.id);
         setCustomerId(d.customerId);
-        setInvoiceNo(d.invoiceNo);
+        setTransactionNo(d.invoiceNo);
         setCustomerContact(d.customer.contact);
         setCustomerName(d.customer.name);
         const dateObj = formatDateStrToISTDateObject(d.createdAt ?? "");
@@ -100,8 +100,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
         const d = res.data;
         setBillingId(d.id);
         setCustomerId(d.customerId);
-        // FIX: rename to setTransactionNo
-        setInvoiceNo(d.estimateNo);
+        setTransactionNo(d.estimateNo);
         setCustomerContact(d.customer.contact);
         setCustomerName(d.customer.name);
         const dateObj = formatDateStrToISTDateObject(d.createdAt ?? "");
@@ -133,7 +132,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     setCustomerContact,
     setCustomerId,
     setCustomerName,
-    setInvoiceNo,
+    setTransactionNo,
     setLineItems
   ]);
 

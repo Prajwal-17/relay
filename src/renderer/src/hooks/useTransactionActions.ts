@@ -9,7 +9,7 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
   const navigate = useNavigate();
   const {
     lineItems,
-    invoiceNo,
+    transactionNo,
     customerId,
     customerName,
     customerContact,
@@ -62,7 +62,10 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
     try {
       let responseObj;
       if (transactionType === "sales") {
-        const response = await window.salesApi.save({ ...payload, invoiceNo: Number(invoiceNo) });
+        const response = await window.salesApi.save({
+          ...payload,
+          invoiceNo: Number(transactionNo)
+        });
         if (response.status === "success") {
           toast.success(response.message ?? "Sale Saved Successfully");
           return {
@@ -78,7 +81,7 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
       } else if (transactionType === "estimates") {
         const response = await window.estimatesApi.save({
           ...payload,
-          estimateNo: Number(invoiceNo)
+          estimateNo: Number(transactionNo)
         });
         if (response.status === "success") {
           toast.success(response.message ?? "Estimate Saved successfully");
