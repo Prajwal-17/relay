@@ -7,10 +7,11 @@ import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
+import type { TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
@@ -31,9 +32,7 @@ const BillingHeader = () => {
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
-  const location = useLocation();
-  const page = location.pathname.split("/")[1];
-  const { id } = useParams();
+  const { type, id } = useParams<{ type: TransactionType; id?: string }>();
 
   useEffect(() => {
     async function getLatestInvoiceNumber() {
@@ -42,7 +41,7 @@ const BillingHeader = () => {
       try {
         setInvoiceNo(null);
         let response;
-        page === "sales"
+        type === "sales"
           ? (response = await window.salesApi.getNextInvoiceNo())
           : (response = await window.estimatesApi.getNextEstimateNo());
         if (response.status === "success") {
@@ -55,7 +54,7 @@ const BillingHeader = () => {
       }
     }
     getLatestInvoiceNumber();
-  }, [setInvoiceNo, id, page, location]);
+  }, [setInvoiceNo, id, type]);
 
   const handleTimeChange = (e) => {
     const [hours, minutes] = e.target.value.split(":");
@@ -86,6 +85,10 @@ const BillingHeader = () => {
     setOpen(false);
   };
 
+  if (!type) {
+    return <Navigate to="/not-found" />;
+  }
+
   return (
     <>
       <div className="border-border mx-5 my-2 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-xl">
@@ -101,7 +104,7 @@ const BillingHeader = () => {
               >
                 <PanelLeftOpen size={23} />
               </button>
-              <h1 className="text-3xl font-bold">{page.charAt(0).toUpperCase() + page.slice(1)}</h1>
+              <h1 className="text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)}</h1>
             </div>
             <div className="flex items-center justify-center gap-2 py-2">
               <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>

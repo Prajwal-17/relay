@@ -8,7 +8,7 @@ const DashboardPage = () => {
   const validTypes: DashboardType[] = [DASHBOARD_TYPE.SALES, DASHBOARD_TYPE.ESTIMATES];
 
   if (!type || !validTypes.includes(type as DashboardType)) {
-    return <Navigate to="/not-found" replace />;
+    return <Navigate to="/not-found" />;
   }
 
   return <Dashboard type={type as DashboardType} />;

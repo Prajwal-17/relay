@@ -1,10 +1,11 @@
-import type {
-  DateRangeType,
-  EstimateSummaryType,
-  PageNo,
-  PaginatedApiResponse,
-  SaleSummaryType,
-  SortType
+import {
+  DASHBOARD_TYPE,
+  type DateRangeType,
+  type EstimateSummaryType,
+  type PageNo,
+  type PaginatedApiResponse,
+  type SaleSummaryType,
+  type SortType
 } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -49,7 +50,7 @@ const fetchEstimates = async (dateRange: DateRangeType, sortBy: SortType, pageNo
   }
 };
 
-export const useInfiniteScroll = (pathname: string) => {
+export const useInfiniteScroll = (type: string) => {
   const { date } = useDateRangePicker();
   const { sortBy } = useDashboard();
 
@@ -65,11 +66,11 @@ export const useInfiniteScroll = (pathname: string) => {
     isError,
     status
   } = useInfiniteQuery({
-    queryKey: [`${pathname}`, date, sortBy],
+    queryKey: [`${type}`, date, sortBy],
     queryFn: ({ pageParam = 1 }) => {
-      if (pathname === "/sale") {
+      if (type === DASHBOARD_TYPE.SALES) {
         return fetchSales(date as DateRangeType, sortBy, pageParam);
-      } else if (pathname === "/estimate") {
+      } else if (type === DASHBOARD_TYPE.ESTIMATES) {
         return fetchEstimates(date as DateRangeType, sortBy, pageParam);
       } else {
         throw new Error("Something went wrong");
@@ -79,7 +80,8 @@ export const useInfiniteScroll = (pathname: string) => {
     placeholderData: (previousData) => previousData,
     getNextPageParam: (lastPage: PaginatedApiResponse<SaleSummaryType | EstimateSummaryType>) => {
       return lastPage.status === "success" ? (lastPage.nextPageNo ?? null) : null;
-    }
+    },
+    enabled: !!type
   });
 
   useEffect(() => {
@@ -95,7 +97,7 @@ export const useInfiniteScroll = (pathname: string) => {
           return [];
         }
 
-        if (pathname === "/sale") {
+        if (type === DASHBOARD_TYPE.SALES) {
           const saleData = (page.data as SaleSummaryType).sales;
           return saleData
             ? saleData.map((sale) => ({
@@ -112,7 +114,7 @@ export const useInfiniteScroll = (pathname: string) => {
             : [];
         }
 
-        if (pathname === "/estimate") {
+        if (type === DASHBOARD_TYPE.ESTIMATES) {
           const estimateData = (page.data as EstimateSummaryType).estimates;
           return estimateData
             ? estimateData.map((estimate) => ({
@@ -132,7 +134,7 @@ export const useInfiniteScroll = (pathname: string) => {
         return [];
       }) ?? []
     );
-  }, [data, pathname]);
+  }, [data, type]);
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? transactionData.length + 1 : transactionData.length,

@@ -11,10 +11,10 @@ export const Sidebar = () => {
   const pathname = location.pathname;
   const { id } = useParams();
   const billingPages = [
-    "/sales/new",
-    "/estimates/new",
-    `/sales/edit/${id}`,
-    `/estimates/edit/${id}`
+    "/billing/sales/create/new",
+    "/billing/estimates/create/new",
+    `/billing/sales/edit/${id}`,
+    `/billing/estimates/edit/${id}`
   ];
   const isBillingPage = billingPages.includes(pathname);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -97,7 +97,7 @@ export const Sidebar = () => {
                 )}
               </div>
               <div className="mt-6 flex w-full flex-col gap-3">
-                <Link to="/sales/new" className="w-full">
+                <Link to="/billing/sales/create/new" className="w-full">
                   <Button
                     variant="default"
                     size="lg"
@@ -107,7 +107,7 @@ export const Sidebar = () => {
                     <span>New Sale</span>
                   </Button>
                 </Link>
-                <Link to="/estimates/new" className="w-full">
+                <Link to="/billing/estimates/create/new" className="w-full">
                   <Button
                     variant="outline"
                     size="lg"

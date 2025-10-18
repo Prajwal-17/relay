@@ -1,9 +1,11 @@
-import type {
-  CustomersType,
-  EstimateItemsType,
-  EstimateType,
-  SaleItemsType,
-  SalesType
+import {
+  TRANSACTION_TYPE,
+  type CustomersType,
+  type EstimateItemsType,
+  type EstimateType,
+  type SaleItemsType,
+  type SalesType,
+  type TransactionType
 } from "@shared/types";
 import { formatDateStrToISTDateObject } from "@shared/utils/dateUtils";
 import { useQuery } from "@tanstack/react-query";
@@ -11,18 +13,18 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import useTransactionState from "./useTransactionState";
 
-const fetchTransactionById = async (pathname: "sale" | "estimate", transactionId: string) => {
+const fetchTransactionById = async (pathname: TransactionType, transactionId: string) => {
   try {
     if (!transactionId) {
       throw new Error("Transaction Id does not exist");
     }
     let response;
-    if (pathname === "sale") {
+    if (pathname === TRANSACTION_TYPE.SALES) {
       response = await window.salesApi.getTransactionById(transactionId);
       if (response.status === "success") {
         return response;
       }
-    } else if (pathname === "estimate") {
+    } else if (pathname === TRANSACTION_TYPE.ESTIMATES) {
       response = await window.estimatesApi.getTransactionById(transactionId);
       if (response.status === "success") {
         return response;
@@ -35,7 +37,7 @@ const fetchTransactionById = async (pathname: "sale" | "estimate", transactionId
   }
 };
 
-const useLoadTransactionDetails = (pathname: "sale" | "estimate", transactionId: string | null) => {
+const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const {
     setInvoiceNo,
     setLineItems,
@@ -47,83 +49,101 @@ const useLoadTransactionDetails = (pathname: "sale" | "estimate", transactionId:
     clearTransactionState
   } = useTransactionState();
 
-  const {
-    data: transactionData,
-    isLoading,
-    status,
-    isFetched,
-    isError,
-    error
-  } = useQuery({
-    queryKey: [`${pathname}`, transactionId],
-    queryFn: () => {
-      if (!transactionId) {
-        throw new Error("Transaction Id does not exist");
-      }
+  const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
+    queryKey: [type, id],
+    queryFn: async () => {
+      if (!id) throw new Error("Transaction Id does not exist");
       clearTransactionState();
-      return fetchTransactionById(pathname, transactionId);
+      return fetchTransactionById(type, id);
     },
-    select: (
-      data:
-        | (SalesType & { customer: CustomersType; items: SaleItemsType[] })
-        | (EstimateType & { customer: CustomersType; items: EstimateItemsType[] })
-    ) => {
-      return {
-        ...data,
-        items: Array.from(
-          data?.items.map((i) => ({
-            ...i,
-            productId: i.productId ?? ""
-          }))
-        )
-      };
-    },
-    enabled: !!transactionId && ["sale", "estimate"].includes(pathname)
+    enabled: !!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
   });
 
   useEffect(() => {
-    if (!isFetched || isLoading || isError || !transactionData) {
-      return;
+    if (isSuccess && data) {
+      if (type === TRANSACTION_TYPE.SALES) {
+        const res = data as {
+          status: string;
+          data: SalesType & { customer: CustomersType; items: SaleItemsType[] };
+        };
+        const d = res.data;
+        setBillingId(d.id);
+        setCustomerId(d.customerId);
+        setInvoiceNo(d.invoiceNo);
+        setCustomerContact(d.customer.contact);
+        setCustomerName(d.customer.name);
+        const dateObj = formatDateStrToISTDateObject(d.createdAt ?? "");
+        if (dateObj) {
+          setBillingDate(dateObj);
+          localStorage.setItem("bill-preview-date", dateObj.toISOString());
+        }
+        const items = d.items.map((item) => ({
+          id: item.id,
+          productId: item.productId ?? "",
+          name: item.name,
+          weight: item.weight ?? null,
+          unit: item.unit ?? null,
+          quantity: item.quantity,
+          mrp: item.mrp,
+          price: item.price,
+          purchasePrice: item.purchasePrice,
+          totalPrice: item.totalPrice
+        }));
+        setLineItems([...items]);
+      }
+
+      if (type === TRANSACTION_TYPE.ESTIMATES) {
+        const res = data as {
+          status: string;
+          data: EstimateType & { customer: CustomersType; items: EstimateItemsType[] };
+        };
+        const d = res.data;
+        setBillingId(d.id);
+        setCustomerId(d.customerId);
+        // FIX: rename to setTransactionNo
+        setInvoiceNo(d.estimateNo);
+        setCustomerContact(d.customer.contact);
+        setCustomerName(d.customer.name);
+        const dateObj = formatDateStrToISTDateObject(d.createdAt ?? "");
+        if (dateObj) {
+          setBillingDate(dateObj);
+          localStorage.setItem("bill-preview-date", dateObj.toISOString());
+        }
+        const items = d.items.map((item) => ({
+          id: item.id,
+          productId: item.productId ?? "",
+          name: item.name,
+          weight: item.weight ?? null,
+          unit: item.unit ?? null,
+          quantity: item.quantity,
+          mrp: item.mrp,
+          price: item.price,
+          purchasePrice: item.purchasePrice,
+          totalPrice: item.totalPrice
+        }));
+        setLineItems([...items]);
+      }
     }
-
-    const t = transactionData;
-
-    setBillingId(t.id);
-    setCustomerId(t.customerId);
-    setInvoiceNo(
-      (transactionData as SalesType).invoiceNo || (transactionData as EstimateType).estimateNo
-    );
-    setCustomerContact(t.customer?.contact);
-    setCustomerName(t.customer?.name);
-
-    const dateObj = formatDateStrToISTDateObject(t.createdAt ?? "");
-    if (dateObj) {
-      setBillingDate(dateObj);
-      localStorage.setItem("bill-preview-date", dateObj.toISOString());
-    }
-
-    setLineItems(t.items);
   }, [
-    transactionData,
-    isFetched,
-    isLoading,
-    isError,
-    setBillingId,
-    setCustomerId,
-    setInvoiceNo,
-    setCustomerContact,
-    setCustomerName,
+    isSuccess,
+    data,
+    type,
     setBillingDate,
+    setBillingId,
+    setCustomerContact,
+    setCustomerId,
+    setCustomerName,
+    setInvoiceNo,
     setLineItems
   ]);
 
   useEffect(() => {
-    if (isError) {
+    if (isError && error) {
       toast.error(error.message);
     }
   }, [isError, error]);
 
-  return { status, isLoading, isFetched, transactionData };
+  return { status, isLoading, isFetched };
 };
 
 export default useLoadTransactionDetails;

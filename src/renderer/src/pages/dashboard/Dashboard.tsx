@@ -1,16 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
-import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
-import { DASHBOARD_TYPE } from "@shared/types";
+import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Dashboard = ({ type }: { type: string }) => {
-  const { navigate } = useDashboard();
-
+const Dashboard = ({ type }: { type: DashboardType }) => {
+  const navigate = useNavigate();
   const { totalRevenue, totalTransactions } = useInfiniteScroll(type);
-
   const isSales = type === DASHBOARD_TYPE.SALES;
 
   return (
@@ -30,7 +28,9 @@ const Dashboard = ({ type }: { type: string }) => {
           <Button
             size="lg"
             onClick={() => {
-              isSales ? navigate("/sales/new") : navigate("/estimates/new");
+              isSales
+                ? navigate("/billing/sales/create/new")
+                : navigate("/billing/estimates/create/new");
             }}
             className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
           >

@@ -1,12 +1,13 @@
 import { createHashRouter } from "react-router-dom";
 import RootLayout from "./components/layouts/RootLayout";
+import BillingPage from "./pages/billing/BillingPage";
 import CustomersPage from "./pages/customers/CustomersPage";
+import DashboardPage from "./pages/dashboard/DashboardPage";
 import HomePage from "./pages/home/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductsPage from "./pages/products/ProductsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
 import SettingsPage from "./pages/settings/SettingsPage";
-import DashboardPage from "./pages/dashboard/DashboardPage";
 
 export const router = createHashRouter([
   {
@@ -36,6 +37,27 @@ export const router = createHashRouter([
       {
         path: "settings",
         element: <SettingsPage />
+      },
+      {
+        path: "billing/*",
+        children: [
+          {
+            path: ":type/create/new",
+            element: <BillingPage />
+          },
+          {
+            path: ":type/create/new",
+            element: <BillingPage />
+          },
+          {
+            path: ":type/edit/:id",
+            element: <BillingPage />
+          },
+          {
+            path: ":type/edit/:id",
+            element: <BillingPage />
+          }
+        ]
       }
     ]
   },
