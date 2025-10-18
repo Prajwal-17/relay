@@ -1,12 +1,15 @@
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import type { DashboardType } from "@shared/types";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
+import { useParams } from "react-router-dom";
 import DashboardTableRow from "./DashboardTableRow";
 
 export const DashboardTable = () => {
-  const { pathname, deleteMutation, convertMutation } = useDashboard();
+  const { deleteMutation, convertMutation } = useDashboard();
+  const { type } = useParams();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
-    useInfiniteScroll(pathname);
+    useInfiniteScroll(type as DashboardType);
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
@@ -60,7 +63,7 @@ export const DashboardTable = () => {
                           ref={rowVirtualizer.measureElement}
                         >
                           <DashboardTableRow
-                            pathname={pathname}
+                            pathname={type as DashboardType}
                             transaction={transaction}
                             isLoaderRow={isLoaderRow}
                             deleteMutation={deleteMutation}

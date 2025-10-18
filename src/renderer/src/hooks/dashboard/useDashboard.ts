@@ -3,7 +3,7 @@ import { SortOption, type ApiResponse, type SortType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDateRangePicker } from "./useDateRangePicker";
 
 export type MutationVariables = {
@@ -43,9 +43,7 @@ const handleConvert = async ({ type, id }: MutationVariables) => {
   }
 };
 export const useDashboard = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const pathname = location.pathname;
+  const { type } = useParams();
   const { date } = useDateRangePicker();
   const sortBy = useDashboardStore((state) => state.sortBy);
   const setSortBy = useDashboardStore((state) => state.setSortBy);
@@ -66,7 +64,7 @@ export const useDashboard = () => {
     mutationFn: ({ type, id }) => handleDelete({ type, id }),
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [pathname, date, sortBy], exact: false });
+        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
         toast.success(response.data);
       }
     },
@@ -79,7 +77,7 @@ export const useDashboard = () => {
     mutationFn: ({ type, id }) => handleConvert({ type, id }),
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [pathname, date, sortBy], exact: false });
+        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
         toast.success(response.data);
       }
     },
@@ -89,8 +87,6 @@ export const useDashboard = () => {
   });
 
   return {
-    navigate,
-    pathname,
     sortBy,
     setSortBy,
     deleteMutation,

@@ -7,16 +7,17 @@ import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
+import type { TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
   const {
-    invoiceNo,
-    setInvoiceNo,
+    transactionNo,
+    setTransactionNo,
     customerContact,
     setCustomerContact,
     isNewCustomer,
@@ -25,37 +26,35 @@ const BillingHeader = () => {
   } = useTransactionState();
 
   const [open, setOpen] = useState(false);
-  const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
+  const [tempTransactionNo, setTempTransactionNo] = useState<number | null>(transactionNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
-  const location = useLocation();
-  const page = location.pathname.split("/")[1];
-  const { id } = useParams();
+  const { type, id } = useParams<{ type: TransactionType; id?: string }>();
 
   useEffect(() => {
     async function getLatestInvoiceNumber() {
       if (id) return;
 
       try {
-        setInvoiceNo(null);
+        setTransactionNo(null);
         let response;
-        page === "sales"
+        type === "sales"
           ? (response = await window.salesApi.getNextInvoiceNo())
           : (response = await window.estimatesApi.getNextEstimateNo());
         if (response.status === "success") {
-          setInvoiceNo(response.data);
+          setTransactionNo(response.data);
         } else {
-          setInvoiceNo(null);
+          setTransactionNo(null);
         }
       } catch (error) {
         console.log(error);
       }
     }
     getLatestInvoiceNumber();
-  }, [setInvoiceNo, id, page, location]);
+  }, [setTransactionNo, id, type]);
 
   const handleTimeChange = (e) => {
     const [hours, minutes] = e.target.value.split(":");
@@ -86,6 +85,10 @@ const BillingHeader = () => {
     setOpen(false);
   };
 
+  if (!type) {
+    return <Navigate to="/not-found" />;
+  }
+
   return (
     <>
       <div className="border-border mx-5 my-2 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-xl">
@@ -101,7 +104,7 @@ const BillingHeader = () => {
               >
                 <PanelLeftOpen size={23} />
               </button>
-              <h1 className="text-3xl font-bold">{page.charAt(0).toUpperCase() + page.slice(1)}</h1>
+              <h1 className="text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)}</h1>
             </div>
             <div className="flex items-center justify-center gap-2 py-2">
               <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>
@@ -111,13 +114,13 @@ const BillingHeader = () => {
                   <Input
                     type="number"
                     className="text-primary w-24 px-1 py-1 text-center !text-xl font-extrabold"
-                    value={Number(tempInvoice)}
-                    onChange={(e) => setTempInvoice(Number(e.target.value))}
+                    value={Number(tempTransactionNo)}
+                    onChange={(e) => setTempTransactionNo(Number(e.target.value))}
                   />
                   <Check
                     onClick={() => {
                       setEditInvoice(false);
-                      setInvoiceNo(tempInvoice);
+                      setTransactionNo(tempTransactionNo);
                     }}
                     className="cursor-pointer rounded-md p-1 text-green-600 hover:bg-neutral-200"
                     size={30}
@@ -125,14 +128,14 @@ const BillingHeader = () => {
                   <X
                     className="cursor-pointer rounded-md p-1 text-red-500 hover:bg-neutral-200"
                     onClick={() => {
-                      setTempInvoice(invoiceNo);
+                      setTempTransactionNo(transactionNo);
                       setEditInvoice(false);
                     }}
                     size={30}
                   />
                 </>
               ) : (
-                <span className="text-foreground text-3xl font-extrabold">{invoiceNo}</span>
+                <span className="text-foreground text-3xl font-extrabold">{transactionNo}</span>
               )}
               {/*<SquarePen size={20} onClick={() => setEditInvoice(true)} />*/}
             </div>

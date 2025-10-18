@@ -5,13 +5,12 @@ import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 const BillPreview = () => {
-  const location = useLocation();
-  const type = location.pathname.split("/")[1];
+  const { type } = useParams();
 
-  const { lineItems, invoiceNo, customerName } = useTransactionState();
+  const { lineItems, transactionNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(
     type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
   );
@@ -25,6 +24,10 @@ const BillPreview = () => {
   useEffect(() => {
     setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
   }, [setReceiptRef]);
+
+  if (!type) {
+    return <Navigate to="/not-found" />;
+  }
 
   return (
     <>
@@ -55,7 +58,7 @@ const BillPreview = () => {
                 <span className="font-semibold">
                   {type === TRANSACTION_TYPE.SALES ? "Invoice No:" : "Estimate No:"}
                 </span>{" "}
-                {invoiceNo}
+                {transactionNo}
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}

@@ -3,15 +3,18 @@ import { useTransactionActions } from "@/hooks/useTransactionActions";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { IndianRupees } from "@shared/utils/utils";
 import { FileText, Printer, Save } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 
 export const SummaryFooter = () => {
-  const location = useLocation();
-  const type = location.pathname.split("/")[1];
+  const { type } = useParams();
 
   const { calcTotalAmount, handleAction } = useTransactionActions(
     type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
   );
+
+  if (!type) {
+    return <Navigate to="/not-found" />;
+  }
 
   return (
     <footer

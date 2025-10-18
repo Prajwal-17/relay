@@ -5,8 +5,8 @@ const useTransactionState = () => {
   // billing store
   const billingId = useBillingStore((state) => state.billingId);
   const setBillingId = useBillingStore((state) => state.setBillingId);
-  const invoiceNo = useBillingStore((state) => state.invoiceNo);
-  const setInvoiceNo = useBillingStore((state) => state.setInvoiceNo);
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
   const customerId = useBillingStore((state) => state.customerId);
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
   const customerName = useBillingStore((state) => state.customerName);
@@ -29,7 +29,7 @@ const useTransactionState = () => {
 
   function clearTransactionState() {
     setBillingId(null);
-    setInvoiceNo(null);
+    setTransactionNo(null);
     setCustomerId(null);
     setCustomerName("");
     setCustomerContact(null);
@@ -43,8 +43,8 @@ const useTransactionState = () => {
   return {
     billingId,
     setBillingId,
-    invoiceNo,
-    setInvoiceNo,
+    transactionNo,
+    setTransactionNo,
     customerId,
     setCustomerId,
     customerName,

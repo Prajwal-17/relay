@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
-import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const Dashboard = () => {
-  const { pathname, navigate } = useDashboard();
-  const { totalRevenue, totalTransactions } = useInfiniteScroll(pathname);
+const Dashboard = ({ type }: { type: DashboardType }) => {
+  const navigate = useNavigate();
+  const { totalRevenue, totalTransactions } = useInfiniteScroll(type);
+  const isSales = type === DASHBOARD_TYPE.SALES;
 
   return (
     <>
@@ -15,10 +17,10 @@ const Dashboard = () => {
         <div className="mb-3 flex items-center justify-between">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold">
-              {pathname === "/sale" ? "Sales Overview" : "Estimates Overview"}
+              {isSales ? "Sales Overview" : "Estimates Overview"}
             </h1>
             <p className="text-muted-foreground text-lg">
-              {pathname === "/sale"
+              {isSales
                 ? "Search, filter, and view a complete history of sales."
                 : "Search, filter, and view a complete history of estimates."}
             </p>
@@ -26,12 +28,14 @@ const Dashboard = () => {
           <Button
             size="lg"
             onClick={() => {
-              pathname === "/sale" ? navigate("/sales/new") : navigate("/estimates/new");
+              isSales
+                ? navigate("/billing/sales/create/new")
+                : navigate("/billing/estimates/create/new");
             }}
             className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
           >
             <Plus className="h-5 w-5" />
-            {pathname === "/sale" ? "New Sale" : "New Estimate"}
+            {isSales ? "New Sale" : "New Estimate"}
           </Button>
         </div>
 

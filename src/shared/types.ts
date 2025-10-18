@@ -204,6 +204,8 @@ export const TRANSACTION_TYPE = {
   ESTIMATES: "estimates"
 } as const;
 
+export const DASHBOARD_TYPE = TRANSACTION_TYPE;
+
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
   DATE_OLDEST_FIRST: "date_oldest_first",
@@ -216,6 +218,8 @@ export const SortOption = {
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
+
+export type DashboardType = (typeof DASHBOARD_TYPE)[keyof typeof DASHBOARD_TYPE];
 
 export type FilterType = "all" | "active" | "inactive";
 
