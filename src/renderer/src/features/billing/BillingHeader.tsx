@@ -7,12 +7,34 @@ import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
-import type { TransactionType } from "@shared/types";
+import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { useQuery } from "@tanstack/react-query";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
+
+const getLatestTransactionNo = async (type: TransactionType) => {
+  try {
+    let response;
+    if (type === TRANSACTION_TYPE.SALES) {
+      response = await window.salesApi.getNextInvoiceNo();
+    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+      response = await window.estimatesApi.getNextEstimateNo();
+    } else {
+      throw new Error("Transaction Type is undefined");
+    }
+    if (response.status === "success") {
+      return response;
+    }
+    throw new Error(response.error.message);
+  } catch (error) {
+    console.log(error);
+    throw new Error((error as Error).message);
+  }
+};
 
 const BillingHeader = () => {
   const {
@@ -35,26 +57,30 @@ const BillingHeader = () => {
   const { type, id } = useParams<{ type: TransactionType; id?: string }>();
 
   useEffect(() => {
-    async function getLatestInvoiceNumber() {
-      if (id) return;
-
-      try {
-        setTransactionNo(null);
-        let response;
-        type === "sales"
-          ? (response = await window.salesApi.getNextInvoiceNo())
-          : (response = await window.estimatesApi.getNextEstimateNo());
-        if (response.status === "success") {
-          setTransactionNo(response.data);
-        } else {
-          setTransactionNo(null);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+    if (!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)) {
+      setTransactionNo(null);
     }
-    getLatestInvoiceNumber();
-  }, [setTransactionNo, id, type]);
+  }, [type, id, setTransactionNo]);
+
+  const { data, isFetched, isError, error } = useQuery({
+    queryKey: [type, "getTransactionNo"],
+    // null assertion - type cannot be null here
+    queryFn: () => getLatestTransactionNo(type!),
+    enabled: !id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
+  });
+
+  useEffect(() => {
+    if (!isFetched && !data) {
+      return;
+    }
+    setTransactionNo(data.data);
+  }, [data, setTransactionNo, isFetched]);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error.message);
+    }
+  }, [isError, error]);
 
   const handleTimeChange = (e) => {
     const [hours, minutes] = e.target.value.split(":");
