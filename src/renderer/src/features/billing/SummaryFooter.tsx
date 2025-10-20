@@ -8,7 +8,7 @@ import { Navigate, useParams } from "react-router-dom";
 export const SummaryFooter = () => {
   const { type } = useParams();
 
-  const { calcTotalAmount, handleAction } = useTransactionActions(
+  const { calcTotalAmount, handleActionMutation } = useTransactionActions(
     type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
   );
 
@@ -44,14 +44,14 @@ export const SummaryFooter = () => {
             variant="default"
             size="lg"
             className="bg-primary hover:bg-primary/90 h-12 cursor-pointer text-lg"
-            onClick={() => handleAction("save&print")}
+            onClick={() => handleActionMutation.mutate("save&print")}
           >
             <Printer className="mr-2 h-8 w-8" size={20} />
             Save & Print
           </Button>
 
           <Button
-            onClick={() => handleAction("save")}
+            onClick={() => handleActionMutation.mutate("save")}
             variant="outline"
             size="lg"
             className="h-12 text-lg hover:cursor-pointer"
@@ -61,7 +61,7 @@ export const SummaryFooter = () => {
           </Button>
 
           <Button
-            onClick={() => handleAction("sendViaWhatsapp")}
+            onClick={() => handleActionMutation.mutate("sendViaWhatsapp")}
             variant="outline"
             size="lg"
             className="h-12 text-lg hover:cursor-pointer"

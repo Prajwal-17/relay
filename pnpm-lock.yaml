@@ -52,7 +52,7 @@ importers:
         version: 1.2.8(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       '@tailwindcss/vite':
         specifier: ^4.1.11
-        version: 4.1.14(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
+        version: 4.1.14(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.90.5(react@19.2.0)
@@ -170,7 +170,7 @@ importers:
         version: 19.2.2(@types/react@19.2.2)
       '@vitejs/plugin-react':
         specifier: ^4.7.0
-        version: 4.7.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
+        version: 4.7.0(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -188,7 +188,7 @@ importers:
         version: 6.6.2
       electron-vite:
         specifier: ^4.0.0
-        version: 4.0.1(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
+        version: 4.0.1(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))
       eslint:
         specifier: ^9.31.0
         version: 9.38.0(jiti@2.6.1)
@@ -224,7 +224,7 @@ importers:
         version: 5.9.3
       vite:
         specifier: ^7.0.5
-        version: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
+        version: 7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
 
 packages:
 
@@ -1855,8 +1855,8 @@ packages:
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
-  baseline-browser-mapping@2.8.17:
-    resolution: {integrity: sha512-j5zJcx6golJYTG6c05LUZ3Z8Gi+M62zRT/ycz4Xq4iCOdpcxwg7ngEYD4KA0eWZC7U17qh/Smq8bYbACJ0ipBA==}
+  baseline-browser-mapping@2.8.18:
+    resolution: {integrity: sha512-UYmTpOBwgPScZpS4A+YbapwWuBwasxvO/2IOHArSsAhL/+ZdmATBXTex3t+l2hXwLVYK382ibr/nKoY9GKe86w==}
     hasBin: true
 
   better-sqlite3@12.4.1:
@@ -1869,8 +1869,8 @@ packages:
   bindings@1.5.0:
     resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
 
-  bippy@0.3.30:
-    resolution: {integrity: sha512-ISshZFPRskweCPe3fq/8lV3UyEJnFjRrJZavp5i4CK/3wMUa9OLsRebTx1rtexmJ3OtRT28bUNzxNdwEVKFA2g==}
+  bippy@0.3.31:
+    resolution: {integrity: sha512-cCYVokhbNiU3jneh73xBfxm192ZUmJp+sx4A0n7rFxmwwBiUYNavaHorW3A2w0174IPaGBjJJtQNiOBOetoY7A==}
     peerDependencies:
       react: '>=17.0.1'
 
@@ -4428,8 +4428,8 @@ packages:
     resolution: {integrity: sha512-veufcmxri4e3XSrT0xwfUR7kguIkaxBeosDg00yDWhk49wdwkSUrvvsm7nc75e1PUyvIeZj6nS8VQRYz2/S4Xg==}
     engines: {node: '>=0.6.0'}
 
-  vite@7.1.10:
-    resolution: {integrity: sha512-CmuvUBzVJ/e3HGxhg6cYk88NGgTnBoOo7ogtfJJ0fefUWAxN/WDSUa50o+oVBxuIhO8FoEZW0j2eW7sfjs5EtA==}
+  vite@7.1.11:
+    resolution: {integrity: sha512-uzcxnSDVjAopEUjljkWh8EIrg6tlzrjFUfMcR1EVsRDGwf/ccef0qQPRyOrROwhrTDaApueq+ja+KLPlzR/zdg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
     peerDependencies:
@@ -5757,12 +5757,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.1.14
       '@tailwindcss/oxide-win32-x64-msvc': 4.1.14
 
-  '@tailwindcss/vite@4.1.14(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))':
+  '@tailwindcss/vite@4.1.14(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))':
     dependencies:
       '@tailwindcss/node': 4.1.14
       '@tailwindcss/oxide': 4.1.14
       tailwindcss: 4.1.14
-      vite: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
+      vite: 7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
 
   '@tanstack/eslint-plugin-query@5.91.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
@@ -5992,7 +5992,7 @@ snapshots:
       '@typescript-eslint/types': 8.46.1
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-react@4.7.0(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))':
+  '@vitejs/plugin-react@4.7.0(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -6000,7 +6000,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.27
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
+      vite: 7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -6229,7 +6229,7 @@ snapshots:
 
   base64-js@1.5.1: {}
 
-  baseline-browser-mapping@2.8.17: {}
+  baseline-browser-mapping@2.8.18: {}
 
   better-sqlite3@12.4.1:
     dependencies:
@@ -6242,7 +6242,7 @@ snapshots:
     dependencies:
       file-uri-to-path: 1.0.0
 
-  bippy@0.3.30(@types/react@19.2.2)(react@19.2.0):
+  bippy@0.3.31(@types/react@19.2.2)(react@19.2.0):
     dependencies:
       '@types/react-reconciler': 0.28.9(@types/react@19.2.2)
       react: 19.2.0
@@ -6279,7 +6279,7 @@ snapshots:
 
   browserslist@4.26.3:
     dependencies:
-      baseline-browser-mapping: 2.8.17
+      baseline-browser-mapping: 2.8.18
       caniuse-lite: 1.0.30001751
       electron-to-chromium: 1.5.237
       node-releases: 2.0.25
@@ -6743,7 +6743,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron-vite@4.0.1(vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)):
+  electron-vite@4.0.1(vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)):
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-arrow-functions': 7.27.1(@babel/core@7.28.4)
@@ -6751,7 +6751,7 @@ snapshots:
       esbuild: 0.25.11
       magic-string: 0.30.19
       picocolors: 1.1.1
-      vite: 7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
+      vite: 7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6)
     transitivePeerDependencies:
       - supports-color
 
@@ -8426,7 +8426,7 @@ snapshots:
       '@preact/signals': 1.3.2(preact@10.27.2)
       '@rollup/pluginutils': 5.3.0(rollup@4.52.5)
       '@types/node': 20.19.22
-      bippy: 0.3.30(@types/react@19.2.2)(react@19.2.0)
+      bippy: 0.3.31(@types/react@19.2.2)(react@19.2.0)
       esbuild: 0.25.11
       estree-walker: 3.0.3
       kleur: 4.1.5
@@ -9087,7 +9087,7 @@ snapshots:
       extsprintf: 1.4.1
     optional: true
 
-  vite@7.1.10(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6):
+  vite@7.1.11(@types/node@22.18.11)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.6):
     dependencies:
       esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)

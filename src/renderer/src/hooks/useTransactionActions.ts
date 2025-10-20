@@ -1,11 +1,46 @@
 import type { LineItemsType } from "@/store/billingStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "@shared/types";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import useTransactionState from "./useTransactionState";
 
-export const useTransactionActions = (transactionType: "sales" | "estimates") => {
+const handleSave = async (
+  transactionType: TransactionType,
+  transactionNo: number,
+  payload: any
+) => {
+  try {
+    if (transactionType === TRANSACTION_TYPE.SALES) {
+      const response = await window.salesApi.save({
+        ...payload,
+        invoiceNo: Number(transactionNo)
+      });
+      if (response.status === "success") {
+        return response;
+      } else {
+        throw new Error(response.error.message);
+      }
+    } else if (transactionType === TRANSACTION_TYPE.ESTIMATES) {
+      const response = await window.estimatesApi.save({
+        ...payload,
+        estimateNo: Number(transactionNo)
+      });
+      if (response.status === "success") {
+        return response;
+      } else {
+        throw new Error(response.error.message);
+      }
+    }
+    throw new Error("Something went wrong");
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
+export const useTransactionActions = (transactionType: TransactionType) => {
   const navigate = useNavigate();
   const {
     lineItems,
@@ -58,91 +93,48 @@ export const useTransactionActions = (transactionType: "sales" | "estimates") =>
     ]
   };
 
-  async function handleSave() {
-    try {
-      let responseObj;
-      if (transactionType === "sales") {
-        const response = await window.salesApi.save({
-          ...payload,
-          invoiceNo: Number(transactionNo)
-        });
-        if (response.status === "success") {
-          toast.success(response.message ?? "Sale Saved Successfully");
-          return {
-            ...responseObj,
-            id: response.data.id,
-            type: response.data.type,
-            status: "success"
-          };
+  const handleActionMutation = useMutation<
+    ApiResponse<{ id: string; type: TransactionType }>,
+    Error,
+    "save" | "save&print" | "sendViaWhatsapp"
+  >({
+    mutationFn: async (type: "save" | "save&print" | "sendViaWhatsapp") => {
+      if (!transactionNo) {
+        throw new Error("Missing transaction number");
+      }
+      const saveResponse = await handleSave(transactionType, transactionNo, payload);
+
+      if (type === "save&print") {
+        if (!receiptRef?.current) {
+          toast.error("There is nothing to print");
         } else {
-          toast.error(response.error.message);
-          return { ...responseObj, id: "", type: "", status: "error" };
-        }
-      } else if (transactionType === "estimates") {
-        const response = await window.estimatesApi.save({
-          ...payload,
-          estimateNo: Number(transactionNo)
-        });
-        if (response.status === "success") {
-          toast.success(response.message ?? "Estimate Saved successfully");
-          return {
-            ...responseObj,
-            id: response.data.id,
-            type: response.data.type,
-            status: "success"
-          };
-        } else {
-          toast.error(response.error.message);
-          return { ...responseObj, id: "", type: "", status: "error" };
+          try {
+            await handlePrint();
+          } catch (error) {
+            toast.error("Something went wrong while printing");
+            console.error(error);
+          }
         }
       }
-      return responseObj;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
-
-  const handleAction = async (type: "save" | "save&print" | "sendViaWhatsapp") => {
-    const isSaveSuccessfull = await handleSave();
-    if (!isSaveSuccessfull) return;
-
-    if (type === "save&print") {
-      if (!receiptRef || !receiptRef.current) {
-        toast.error("There is nothing to print");
-        return;
-      }
-      try {
-        await handlePrint();
-      } catch (error) {
-        toast.error("Something went wrong");
-        console.log(error);
-      }
-    }
-    if (type === "sendViaWhatsapp") {
-      if (!isSaveSuccessfull) {
-        toast.error("Something went wrong saving");
-      }
-
-      const response = await window.shareApi.sendViaWhatsapp(
-        isSaveSuccessfull.id,
-        isSaveSuccessfull.type
-      );
-
+      return saveResponse;
+    },
+    onSuccess: (response) => {
       if (response.status === "success") {
-        toast.success(response.data);
-      } else {
+        toast.success(response.message ?? "Save Successfull");
+        clearTransactionState();
+        navigate("/");
+      } else if (response.status === "error") {
         toast.error(response.error.message);
       }
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-
-    clearTransactionState();
-    navigate("/");
-  };
+  });
 
   return {
     receiptRef,
-    handleAction,
+    handleActionMutation,
     calcTotalAmount
   };
 };
