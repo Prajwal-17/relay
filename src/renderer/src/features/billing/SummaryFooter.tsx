@@ -45,9 +45,10 @@ export const SummaryFooter = () => {
             size="lg"
             className="bg-primary hover:bg-primary/90 h-12 cursor-pointer text-lg"
             onClick={() => handleActionMutation.mutate("save&print")}
+            disabled={handleActionMutation.isPending}
           >
             <Printer className="mr-2 h-8 w-8" size={20} />
-            Save & Print
+            {handleActionMutation.isPending ? "Saving ..." : "Save & Print"}
           </Button>
 
           <Button
@@ -55,9 +56,10 @@ export const SummaryFooter = () => {
             variant="outline"
             size="lg"
             className="h-12 text-lg hover:cursor-pointer"
+            disabled={handleActionMutation.isPending}
           >
             <Save className="mr-2 h-4 w-4" />
-            Save
+            {handleActionMutation.isPending ? "Saving ..." : "Save"}
           </Button>
 
           <Button
@@ -65,9 +67,10 @@ export const SummaryFooter = () => {
             variant="outline"
             size="lg"
             className="h-12 text-lg hover:cursor-pointer"
+            disabled={handleActionMutation.isPending}
           >
             <FileText className="mr-2 h-4 w-4" />
-            Save PDF
+            {handleActionMutation.isPending ? "Saving PDF..." : "Save PDF"}
           </Button>
         </div>
       </div>
