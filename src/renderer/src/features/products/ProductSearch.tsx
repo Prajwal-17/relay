@@ -1,12 +1,13 @@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
-import type { FilterType } from "@shared/types";
+import { useProductsStore } from "@/store/productsStore";
+import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
 import { Search } from "lucide-react";
-import { useState } from "react";
 
 export default function ProductSearch() {
-  const [filterType, setFilterType] = useState<FilterType>("all");
+  const filterType = useProductsStore((state) => state.filterType);
+  const setFilterType = useProductsStore((state) => state.setFilterType);
   const { searchParam, setSearchParam } = useProductSearchV2();
 
   return (
@@ -27,23 +28,23 @@ export default function ProductSearch() {
             <div className="flex items-center gap-4">
               <Tabs
                 value={filterType}
-                onValueChange={(value) => setFilterType(value as FilterType)}
+                onValueChange={(value) => setFilterType(value as ProductFilterType)}
               >
                 <TabsList className="grid w-full grid-cols-3 rounded-lg bg-slate-100 p-1">
                   <TabsTrigger
-                    value="all"
+                    value={PRODUCT_FILTER.ALL}
                     className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     All
                   </TabsTrigger>
                   <TabsTrigger
-                    value="active"
+                    value={PRODUCT_FILTER.ACTIVE}
                     className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     Active
                   </TabsTrigger>
                   <TabsTrigger
-                    value="inactive"
+                    value={PRODUCT_FILTER.INACTIVE}
                     className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     Inactive

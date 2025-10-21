@@ -206,6 +206,12 @@ export const TRANSACTION_TYPE = {
 
 export const DASHBOARD_TYPE = TRANSACTION_TYPE;
 
+export const PRODUCT_FILTER = {
+  ALL: "all",
+  ACTIVE: "active",
+  INACTIVE: "inactive"
+} as const;
+
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
   DATE_OLDEST_FIRST: "date_oldest_first",
@@ -215,20 +221,21 @@ export const SortOption = {
   // STATUS_PAID: "status_paid"
 } as const;
 
+export type ProductFilterType = (typeof PRODUCT_FILTER)[keyof typeof PRODUCT_FILTER];
+
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 
 export type DashboardType = (typeof DASHBOARD_TYPE)[keyof typeof DASHBOARD_TYPE];
 
-export type FilterType = "all" | "active" | "inactive";
-
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
   search: (
     query: string,
     pageNo: PageNo,
-    limit: number
+    limit: number,
+    filterType?: ProductFilterType
   ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
   addNewProduct: (payload: Omit<ProductsType, "id">) => Promise<ApiResponse<string>>;
   updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
