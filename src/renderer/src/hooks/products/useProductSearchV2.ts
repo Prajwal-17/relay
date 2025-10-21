@@ -60,7 +60,6 @@ export const useProductSearchV2 = () => {
   }, [isError, error]);
 
   const searchResults = useMemo(() => {
-    console.log("data in memo", data);
     return data?.pages.flatMap((page) => (page.status === "success" ? page.data : [])) ?? [];
   }, [data]);
 

@@ -33,19 +33,19 @@ export default function ProductSearch() {
                 <TabsList className="grid w-full grid-cols-3 rounded-lg bg-slate-100 p-1">
                   <TabsTrigger
                     value={PRODUCT_FILTER.ALL}
-                    className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     All
                   </TabsTrigger>
                   <TabsTrigger
                     value={PRODUCT_FILTER.ACTIVE}
-                    className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     Active
                   </TabsTrigger>
                   <TabsTrigger
                     value={PRODUCT_FILTER.INACTIVE}
-                    className="data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                    className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
                   >
                     Inactive
                   </TabsTrigger>

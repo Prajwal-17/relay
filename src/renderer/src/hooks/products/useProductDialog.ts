@@ -36,6 +36,7 @@ const updateProduct = async (formattedFormData: ProductsType) => {
 };
 
 export const useProductDialog = () => {
+  const filterType = useProductsStore((state) => state.filterType);
   const openProductDialog = useProductsStore((state) => state.openProductDialog);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const actionType = useProductsStore((state) => state.actionType);
@@ -113,7 +114,7 @@ export const useProductDialog = () => {
     },
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: ["productSearch", searchParam] });
+        queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
         setErrors({});
         setFormDataState({});
         setOpenProductDialog();
@@ -161,7 +162,7 @@ export const useProductDialog = () => {
     mutationFn: (productId: string) => handleDelete(productId),
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: ["productSearch", searchParam] });
+        queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
         setErrors({});
         setFormDataState({});
         setOpenProductDialog();
