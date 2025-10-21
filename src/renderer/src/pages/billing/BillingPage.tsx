@@ -14,8 +14,8 @@ const BillingPage = () => {
 
   return (
     <>
-      <div className="bg-background-secondary flex h-full gap-2 overflow-hidden">
-        <div className="bg-background relative flex h-full flex-1 flex-col">
+      <div className="flex h-full gap-2 overflow-hidden">
+        <div className="bg-background-secondary relative flex h-full flex-1 flex-col">
           <div className="overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
