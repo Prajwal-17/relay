@@ -87,6 +87,7 @@ export const CustomerDetails = () => {
                   setFormData(selectedCustomer);
                   setActionType("edit");
                 }}
+                className="cursor-pointer"
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
@@ -95,24 +96,25 @@ export const CustomerDetails = () => {
           </Dialog>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" size="default">
+              <Button variant="destructive" size="default" className="cursor-pointer">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="">
               <AlertDialogHeader>
-                <AlertDialogTitle className="text-red-900">
+                <AlertDialogTitle className="text-foreground">
                   Are you absolutely sure?
                 </AlertDialogTitle>
-                <AlertDialogDescription className="text-red-700">
+                <AlertDialogDescription className="text-destructive">
                   This action cannot be undone. This will permanently delete customer.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                 <AlertDialogAction
-                  className="bg-destructive hover:bg-destructive/80"
+                  disabled={mutation.isPending}
+                  className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer font-semibold"
                   onClick={() => {
                     if (!selectedCustomer) {
                       toast.error("Customer not selected");
@@ -120,7 +122,7 @@ export const CustomerDetails = () => {
                     mutation.mutate(selectedCustomer.id);
                   }}
                 >
-                  Confirm Delete
+                  {mutation.isPending ? "Deleting ..." : "Confirm Delete"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

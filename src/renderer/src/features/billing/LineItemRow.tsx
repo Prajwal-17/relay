@@ -129,7 +129,7 @@ const LineItemRow = memo(
               <input
                 disabled
                 type="number"
-                value={item.totalPrice === 0 ? "" : item.totalPrice}
+                value={item.totalPrice === 0 ? "" : item.totalPrice.toFixed(2)}
                 className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
                 placeholder="0"
               />

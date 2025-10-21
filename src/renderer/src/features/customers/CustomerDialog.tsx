@@ -107,7 +107,12 @@ export const CustomerDialog = () => {
   };
 
   return (
-    <DialogContent className="w-full !max-w-3xl">
+    <DialogContent
+      onOpenAutoFocus={(e) => {
+        e.preventDefault();
+      }}
+      className="w-full !max-w-3xl"
+    >
       <DialogHeader>
         <DialogTitle>{actionType === "add" ? "Add New Customer" : "Edit Customer"}</DialogTitle>
       </DialogHeader>
