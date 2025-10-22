@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
+import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
 import { useProductsStore } from "@/store/productsStore";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
 import { Search } from "lucide-react";
@@ -8,7 +8,9 @@ import { Search } from "lucide-react";
 export default function ProductSearch() {
   const filterType = useProductsStore((state) => state.filterType);
   const setFilterType = useProductsStore((state) => state.setFilterType);
-  const { searchParam, setSearchParam } = useProductSearchV2();
+  const { productsSearchParam, setProductsSearchParam } = useProductSearchV2(
+    PRODUCTSEARCH_TYPE.PRODUCTPAGE
+  );
 
   return (
     <>
@@ -16,12 +18,12 @@ export default function ProductSearch() {
         <div>
           <div className="border-border bg-background flex flex-col items-start justify-between gap-6 rounded-xl border p-6 shadow-sm sm:flex-row sm:items-center">
             <div className="relative max-w-2xl flex-1">
-              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform text-slate-400" />
+              <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform" />
               <Input
                 placeholder="Search products by name"
-                value={searchParam}
-                onChange={(e) => setSearchParam(e.target.value)}
-                className="bg-muted/30 border-border h-16 rounded-lg pl-12 !text-xl font-medium shadow-sm focus:border-blue-500 focus:ring-blue-500/20"
+                value={productsSearchParam}
+                onChange={(e) => setProductsSearchParam(e.target.value)}
+                className="bg-muted/30 h-16 rounded-lg pl-12 !text-xl font-medium shadow-sm"
               />
             </div>
 

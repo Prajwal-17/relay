@@ -31,6 +31,7 @@ function initialFormData() {
     mrp: null,
     price: "",
     purchasePrice: null,
+    totalQuantitySold: 0,
     isDisabled: false
   };
 }

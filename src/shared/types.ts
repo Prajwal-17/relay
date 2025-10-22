@@ -21,7 +21,7 @@ export type ProductsType = {
   mrp: number | null;
   price: number;
   purchasePrice: number | null;
-  totalQuantitySold?: number | null;
+  totalQuantitySold: number | null;
   isDisabled?: boolean;
 };
 

@@ -69,7 +69,9 @@ export function searchProduct() {
               unit: products.unit,
               mrp: products.mrp,
               price: products.price,
-              purchasePrice: products.purchasePrice
+              purchasePrice: products.purchasePrice,
+              totalQuantitySold: products.totalQuantitySold,
+              isDisabled: products.isDisabled
             })
             .from(products)
             .where(whereClause)
@@ -98,7 +100,9 @@ export function searchProduct() {
               unit: products.unit,
               mrp: products.mrp,
               price: products.price,
-              purchasePrice: products.purchasePrice
+              purchasePrice: products.purchasePrice,
+              totalQuantitySold: products.totalQuantitySold,
+              isDisabled: products.isDisabled
             })
             .from(products)
             .where(and(whereClause, ...searchConditions))
