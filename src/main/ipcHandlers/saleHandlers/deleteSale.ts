@@ -20,7 +20,7 @@ export function deleteSale() {
       const result = await db.delete(sales).where(eq(sales.id, saleId));
 
       if (result.changes > 0) {
-        return { status: "success", data: "Sale delted successfull" };
+        return { status: "success", data: "Sale deleted successfull" };
       }
 
       return {

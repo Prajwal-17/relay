@@ -2,8 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
+import useProductSearch from "@/hooks/products/useProductSearch";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import useProductSearch from "@/hooks/useProductSearch";
 import { fetchProducts } from "@/lib/apiAdapters";
 import { useProductsStore } from "@/store/productsStore";
 import { Edit, Package } from "lucide-react";
@@ -20,7 +20,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
     addEmptyLineItem,
     setActionType,
     setOpenProductDialog,
-    setFormData
+    setFormDataState
   } = useProductSearch();
 
   const setSearchResult = useProductsStore((state) => state.setSearchResult);
@@ -37,7 +37,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
       {isDropdownOpen && searchRow === idx + 1 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full right-0 left-35 z-20 mx-1 w-full max-w-3xl transition-all"
+          className="absolute top-full right-0 left-35 z-10 mx-1 w-full max-w-3xl transition-all"
         >
           <Card className="h-full max-h-full overflow-hidden border-2 border-blue-500 bg-white shadow-xl">
             <div className="max-h-96 overflow-y-auto scroll-smooth py-0">
@@ -104,7 +104,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                           e.stopPropagation();
                           setActionType("billing-page-edit");
                           setOpenProductDialog();
-                          setFormData({
+                          setFormDataState({
                             ...item,
                             mrp: item.mrp,
                             price: item.price

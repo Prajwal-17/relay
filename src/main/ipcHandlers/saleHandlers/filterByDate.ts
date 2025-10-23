@@ -1,10 +1,11 @@
-import { and, asc, desc, gte, lte, SQL } from "drizzle-orm";
+import { and, asc, count, desc, gte, lte, SQL, sum } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   SortOption,
-  type ApiResponse,
   type DateRangeType,
-  type SalesType,
+  type PageNo,
+  type PaginatedApiResponse,
+  type SaleSummaryType,
   type SortType
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
@@ -23,8 +24,21 @@ export function filterByDate() {
     async (
       _event,
       range: DateRangeType,
-      sortBy: SortType
-    ): Promise<ApiResponse<SalesType[] | []>> => {
+      sortBy: SortType,
+      pageNo: PageNo
+    ): Promise<PaginatedApiResponse<SaleSummaryType>> => {
+      if (pageNo === null || pageNo === undefined) {
+        return {
+          status: "success",
+          nextPageNo: null,
+          data: {
+            totalRevenue: 0,
+            totalTransactions: 0,
+            sales: []
+          }
+        };
+      }
+
       if (!range.from && !range.to) {
         return {
           status: "error",
@@ -65,33 +79,54 @@ export function filterByDate() {
       }
 
       try {
-        const fromDate = range.from?.toISOString();
-        const toDate = range.to?.toISOString();
+        const fromDate = range.from.toISOString();
+        const toDate = range.to.toISOString();
+
+        const offset = (pageNo - 1) * 20;
+
+        const summaryResult = await db
+          .select({
+            totalRevenue: sum(sales.grandTotal).mapWith(Number),
+            totalTransactions: count(sales.id).mapWith(Number)
+          })
+          .from(sales)
+          .where(and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)))
+          .orderBy(orderByClause);
+
         const result = await db.query.sales.findMany({
           where: and(gte(sales.createdAt, fromDate), lte(sales.createdAt, toDate)),
           with: {
             customer: true,
             saleItems: true
           },
-          orderBy: orderByClause
-          // .limit(10);
+          orderBy: orderByClause,
+          limit: 20,
+          offset: offset
         });
+
+        const nextpageNo = result.length === 20 ? pageNo + 1 : null;
 
         return {
           status: "success",
-          data:
-            result.length > 0
-              ? result.map((sale: SalesType) => ({
-                  ...sale,
-                  grandTotal: sale.grandTotal && formatToRupees(sale.grandTotal)
-                }))
-              : []
+          nextPageNo: nextpageNo,
+          data: {
+            totalRevenue: formatToRupees(summaryResult[0].totalRevenue),
+            totalTransactions: summaryResult[0].totalTransactions,
+            sales:
+              result.length > 0
+                ? result.map((r) => ({
+                    ...r,
+                    customerName: r.customer.name,
+                    grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
+                  }))
+                : []
+          }
         };
       } catch (error) {
         console.log(error);
         return {
           status: "error",
-          error: { message: "An error occurred while filtering sales." }
+          error: { message: (error as Error).message ?? "An error occurred while filtering sales." }
         };
       }
     }

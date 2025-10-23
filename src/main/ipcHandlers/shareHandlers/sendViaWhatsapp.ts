@@ -55,7 +55,7 @@ export function sendViaWhatsapp() {
           dateStyle: "medium"
         });
 
-        const dateTime = formatDateStrToISTDateStr(transaction.createdAt);
+        const { fullDate, timePart } = formatDateStrToISTDateStr(transaction.createdAt);
 
         const filename = `${type}-${billingNo}-${createdAt}.pdf`.replaceAll(" ", "-");
         const pdfPath = path.join(outputDir, filename);
@@ -86,7 +86,7 @@ export function sendViaWhatsapp() {
           28,
           { align: "right" }
         );
-        doc.text(dateTime, pageWidth - marginX, 33, {
+        doc.text(`${fullDate} ${timePart}`, pageWidth - marginX, 33, {
           align: "right"
         });
 

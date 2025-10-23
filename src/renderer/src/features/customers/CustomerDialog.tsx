@@ -8,23 +8,70 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import useCustomers from "@/hooks/useCustomers";
 import { CustomerSchema } from "@/lib/validation";
-import { useCustomerStore } from "@/store/customersStore";
 import { Label } from "@radix-ui/react-label";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import z from "zod";
 
+const saveCustomer = async ({ action, data }) => {
+  try {
+    if (action === "add") {
+      const response = await window.customersApi.addNewCustomer(data);
+      if (response.status === "success") {
+        return response;
+      }
+      return response;
+    } else if (action === "edit") {
+      const response = await window.customersApi.updateCustomer(data);
+      if (response.status === "success") {
+        return response;
+      }
+      return response;
+    }
+    throw new Error("Something went wrong");
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
 export const CustomerDialog = () => {
-  const formData = useCustomerStore((state) => state.formData);
-  const actionType = useCustomerStore((state) => state.actionType);
-  const setFormData = useCustomerStore((state) => state.setFormData);
-  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
-  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
-  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const queryClient = useQueryClient();
+  const {
+    formData,
+    actionType,
+    setFormData,
+    setSelectedCustomer,
+    setOpenCustomerDialog,
+    errors,
+    setErrors
+  } = useCustomers();
+
+  const mutation = useMutation({
+    mutationFn: saveCustomer,
+    onSuccess: (response) => {
+      if (response.status === "success") {
+        setOpenCustomerDialog();
+        setFormData({});
+        setSelectedCustomer(response.data);
+        queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
+        toast.success(
+          typeof response.data === "string"
+            ? response.data
+            : (response.message ?? "Customer updated Successfully")
+        );
+      } else if (response.status === "error") {
+        toast.error(response.error.message);
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
 
   const handleSubmit = async (action: "add" | "edit") => {
+    setErrors({});
     const result = CustomerSchema.safeParse(formData);
 
     if (!result.success) {
@@ -35,36 +82,8 @@ export const CustomerDialog = () => {
         errorRecord[field] = formatted.fieldErrors[field]?.[0];
       }
       setErrors(errorRecord);
-    } else {
-      try {
-        if (action === "add") {
-          const response = await window.customersApi.addNewCustomer(formData);
-          if (response.status === "success") {
-            toast.success(response.data);
-            setOpenCustomerDialog();
-            setFormData({});
-            setRefreshState(true);
-          } else {
-            toast.error(response.error.message);
-          }
-        } else if (action === "edit") {
-          const response = await window.customersApi.updateCustomer(formData);
-          if (response.status === "success") {
-            toast.success(response?.message || "Customer updated successfully");
-            setOpenCustomerDialog();
-            setSelectedCustomer(response.data);
-            setFormData({});
-            setRefreshState(true);
-          } else {
-            toast.error(response.error.message);
-          }
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-        setRefreshState(true);
-      }
     }
+    mutation.mutate({ action: action, data: result.data });
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -90,7 +109,7 @@ export const CustomerDialog = () => {
   return (
     <DialogContent className="w-full !max-w-3xl">
       <DialogHeader>
-        <DialogTitle>{actionType === "add" ? "Add New Product" : "Edit Product"}</DialogTitle>
+        <DialogTitle>{actionType === "add" ? "Add New Customer" : "Edit Customer"}</DialogTitle>
       </DialogHeader>
       <div className="space-y-4">
         <div>
@@ -105,7 +124,7 @@ export const CustomerDialog = () => {
             required
             className="h-12 !text-lg"
           />
-          {errors.name && <div className="text-red-500">{errors.name}</div>}
+          {errors.name && <div className="text-destructive">{errors.name}</div>}
         </div>
         <div>
           <Label htmlFor="contact" className="mb-2 block">
@@ -118,7 +137,7 @@ export const CustomerDialog = () => {
             placeholder="Enter contact information"
             className="h-12 !text-lg"
           />
-          {errors.contact && <div className="text-red-500">{errors.contact}</div>}
+          {errors.contact && <div className="text-destructive">{errors.contact}</div>}
         </div>
         <div>
           <Label htmlFor="customerType" className="mb-2 block">
@@ -137,14 +156,28 @@ export const CustomerDialog = () => {
               <SelectItem value="hotel">Hotel</SelectItem>
             </SelectContent>
           </Select>
-          {errors.customerType && <div className="text-red-500">{errors.customerType}</div>}
+          {errors.customerType && <div className="text-destructive">{errors.customerType}</div>}
         </div>
         <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline" onClick={() => setOpenCustomerDialog()}>
+          <Button
+            variant="outline"
+            onClick={() => setOpenCustomerDialog()}
+            className="cursor-pointer"
+          >
             Cancel
           </Button>
-          <Button onClick={() => handleSubmit(actionType)}>
-            {actionType === "add" ? "Add Customer" : "Update Customer"}
+          <Button
+            disabled={mutation.isPending}
+            className="hover:bg-primary/80 cursor-pointer"
+            onClick={() => handleSubmit(actionType)}
+          >
+            {actionType === "add"
+              ? mutation.isPending
+                ? "Adding Customer..."
+                : "Add Customer"
+              : mutation.isPending
+                ? "Updating Customer..."
+                : "Update Customer"}
           </Button>
         </div>
       </div>

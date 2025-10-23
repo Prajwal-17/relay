@@ -6,6 +6,7 @@ import type {
   EstimatePayload,
   EstimatesApi,
   FilteredGoogleContactsType,
+  PageNo,
   ProductsApi,
   SalePayload,
   SalesApi,
@@ -15,7 +16,7 @@ import type {
 
 const productsApi: ProductsApi = {
   getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
-  search: (query, page, limit) => ipcRenderer.invoke("productsApi:search", query, page, limit),
+  search: (query, pageNo, limit) => ipcRenderer.invoke("productsApi:search", query, pageNo, limit),
   addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload),
   updateProduct: (payload, productId) =>
     ipcRenderer.invoke("productsApi:updateProduct", payload, productId),
@@ -27,8 +28,8 @@ const salesApi: SalesApi = {
   save: (payload: SalePayload) => ipcRenderer.invoke("salesApi:save", payload),
   getAllSales: () => ipcRenderer.invoke("salesApi:getAllSales"),
   getTransactionById: (id: string) => ipcRenderer.invoke("salesApi:getTransactionById", id),
-  getSalesDateRange: (range: DateRangeType, sortBy: SortType) =>
-    ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy),
+  getSalesDateRange: (range: DateRangeType, sortBy: SortType, pageNo: PageNo) =>
+    ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy, pageNo),
   deleteSale: (saleId: string) => ipcRenderer.invoke("salesApi:deleteSale", saleId),
   convertSaletoEstimate: (saleId: string) =>
     ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId)
@@ -39,8 +40,8 @@ const estimatesApi: EstimatesApi = {
   save: (payload: EstimatePayload) => ipcRenderer.invoke("estimatesApi:save", payload),
   getAllEstimates: () => ipcRenderer.invoke("estimatesApi:getAllEstimates"),
   getTransactionById: (id: string) => ipcRenderer.invoke("estimatesApi:getTransactionById", id),
-  getEstimatesDateRange: (range: DateRangeType, sortBy: SortType) =>
-    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range, sortBy),
+  getEstimatesDateRange: (range: DateRangeType, sortBy: SortType, pageNo: PageNo) =>
+    ipcRenderer.invoke("estimatesApi:getEstimatesDateRange", range, sortBy, pageNo),
   deleteEstimate: (estimateId: string) =>
     ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId),
   convertEstimateToSale: (estimateId: string) =>

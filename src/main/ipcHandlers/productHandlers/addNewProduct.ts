@@ -8,7 +8,7 @@ export function addNewProduct() {
   // add New product
   ipcMain.handle(
     "productsApi:addNewProduct",
-    async (_event, payload: ProductsType): Promise<ApiResponse<string>> => {
+    async (_event, payload: Omit<ProductsType, "id">): Promise<ApiResponse<string>> => {
       try {
         const result = db
           .insert(products)

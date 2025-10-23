@@ -1,9 +1,9 @@
-import Customers from "@/pages/Customers";
-import Dashboard from "@/pages/Dashboard";
-import Home from "@/pages/Home";
-import ProductsPage from "@/pages/ProductsPage";
-import Reports from "@/pages/Reports";
-import SettingsPage from "@/pages/SettingsPage";
+import Customers from "@/pages/customers/CustomersPage";
+import Dashboard from "@/pages/dashboard/DashboardPage";
+import Home from "@/pages/home/HomePage";
+import ProductsPage from "@/pages/products/ProductsPage";
+import Reports from "@/pages/reports/ReportsPage";
+import SettingsPage from "@/pages/settings/SettingsPage";
 import {
   ChartColumn,
   House,
@@ -25,42 +25,42 @@ export const navLinks: NavlinkType[] = [
     href: "/",
     title: "Home",
     element: <Home />,
-    icon: <House size={28} />
+    icon: <House size={24} />
   },
   {
     href: "/products",
-    title: "Items",
+    title: "Products",
     element: <ProductsPage />,
-    icon: <Package size={28} />
+    icon: <Package size={24} />
   },
   {
     href: "/customers",
     title: "Customers",
     element: <Customers />,
-    icon: <Users size={28} />
+    icon: <Users size={24} />
   },
   {
-    href: "/sale",
+    href: "/dashboard/sales",
     title: "Sales",
     element: <Dashboard />,
-    icon: <ShoppingCart size={28} />
+    icon: <ShoppingCart size={24} />
   },
   {
-    href: "/estimate",
+    href: "/dashboard/estimates",
     title: "Estimates",
     element: <Dashboard />,
-    icon: <ReceiptText size={28} />
+    icon: <ReceiptText size={24} />
   },
   {
     href: "/reports",
     title: "Reports",
     element: <Reports />,
-    icon: <ChartColumn size={28} />
+    icon: <ChartColumn size={24} />
   },
   {
     href: "/settings",
     title: "Settings",
     element: <SettingsPage />,
-    icon: <Settings size={28} />
+    icon: <Settings size={24} />
   }
 ];

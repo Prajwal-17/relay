@@ -19,8 +19,8 @@ export type LineItemsType = {
 type BillingStoreType = {
   billingId: string | null;
   setBillingId: (newId: string | null) => void;
-  invoiceNo: number | null;
-  setInvoiceNo: (newInvoiceNo: number | null) => void;
+  transactionNo: number | null;
+  setTransactionNo: (newTransactionNo: number | null) => void;
   customerId: string | null;
   setCustomerId: (id: string | null) => void;
   customerName: string;
@@ -61,8 +61,8 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
       billingId: newId
     })),
 
-  invoiceNo: null,
-  setInvoiceNo: (newInvoiceNo) => set(() => ({ invoiceNo: newInvoiceNo })),
+  transactionNo: null,
+  setTransactionNo: (newTransactionNo) => set(() => ({ transactionNo: newTransactionNo })),
 
   customerId: null,
   setCustomerId: (id) =>

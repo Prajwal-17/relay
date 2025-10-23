@@ -1,11 +1,11 @@
-const Home = () => {
+const ReportsPage = () => {
   return (
     <>
       <div className="flex min-h-screen items-center justify-center text-3xl font-bold">
-        Home Page
+        Reports Page
       </div>
     </>
   );
 };
 
-export default Home;
+export default ReportsPage;

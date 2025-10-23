@@ -31,6 +31,7 @@ export const ProductSchema = z.object({
 });
 
 export const CustomerSchema = z.object({
+  id: z.string().optional(),
   name: z.string().trim().min(3, { error: "Name must have atleast 3 characters" }),
   contact: z
     .string()

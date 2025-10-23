@@ -3,7 +3,7 @@ import { useBillingStore } from "@/store/billingStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useCallback, useEffect, useRef, useState } from "react";
-import useDebounce from "./useDebounce";
+import useDebounce from "../useDebounce";
 
 const useProductSearch = () => {
   const searchParam = useSearchDropdownStore((state) => state.searchParam);
@@ -16,7 +16,7 @@ const useProductSearch = () => {
   const searchRow = useSearchDropdownStore((state) => state.searchRow);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
-  const setFormData = useProductsStore((state) => state.setFormData);
+  const setFormDataState = useProductsStore((state) => state.setFormDataState);
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const debouncedSearchParam = useDebounce(searchParam, SEARCH_DROPDOWN_DELAY);
@@ -120,7 +120,7 @@ const useProductSearch = () => {
     addEmptyLineItem,
     setActionType,
     setOpenProductDialog,
-    setFormData
+    setFormDataState
   };
 };
 

@@ -1,21 +1,53 @@
 import { useDashboardStore } from "@/store/dashboardStore";
-import { SortOption, type SortType } from "@shared/types";
-import { formatToPaisa } from "@shared/utils/utils";
+import { SortOption, type ApiResponse, type SortType } from "@shared/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useDateRangePicker } from "./useDateRangePicker";
 
+export type MutationVariables = {
+  type: string;
+  id: string;
+};
+
+const handleDelete = async ({ type, id }: MutationVariables) => {
+  try {
+    if (type === "sale") {
+      const response = await window.salesApi.deleteSale(id);
+      return response;
+    } else if (type === "estimate") {
+      const response = await window.estimatesApi.deleteEstimate(id);
+      return response;
+    } else {
+      throw new Error("Something went wrong");
+    }
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
+const handleConvert = async ({ type, id }: MutationVariables) => {
+  try {
+    if (type === "sale") {
+      const response = await window.salesApi.convertSaletoEstimate(id);
+      return response;
+    } else if (type === "estimate") {
+      const response = await window.estimatesApi.convertEstimateToSale(id);
+      return response;
+    } else {
+      throw new Error("Something went wrong");
+    }
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
 export const useDashboard = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const pathname = location.pathname;
-  const sales = useDashboardStore((state) => state.sales);
-  const setSales = useDashboardStore((state) => state.setSales);
-  const estimates = useDashboardStore((state) => state.estimates);
-  const setEstimates = useDashboardStore((state) => state.setEstimates);
+  const { type } = useParams();
+  const { date } = useDateRangePicker();
   const sortBy = useDashboardStore((state) => state.sortBy);
   const setSortBy = useDashboardStore((state) => state.setSortBy);
-  const dataToRender = pathname === "/sale" ? sales : estimates;
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     let sortByValue = localStorage.getItem("sort-by");
@@ -28,99 +60,36 @@ export const useDashboard = () => {
     setSortBy(sortByValue as SortType);
   }, [setSortBy]);
 
-  const handleDeleteSale = async (saleId: string) => {
-    try {
-      const response = await window.salesApi.deleteSale(saleId);
+  const deleteMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
+    mutationFn: ({ type, id }) => handleDelete({ type, id }),
+    onSuccess: (response) => {
       if (response.status === "success") {
-        toast.success("Successfully deleted sale");
-        if (sales.length > 0) {
-          setSales(sales.filter((sale) => sale.id !== saleId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
-
-  const handleDeleteEstimate = async (estimateId: string) => {
-    try {
-      const response = await window.estimatesApi.deleteEstimate(estimateId);
-      if (response.status === "success") {
-        toast.success("Successfully deleted estimate");
-        if (estimates.length > 0) {
-          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
-        }
-      } else {
-        toast.error(response.error.message);
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
-    }
-  };
-
-  const handleSaleConvert = async (saleId: string) => {
-    try {
-      const response = await window.salesApi.convertSaletoEstimate(saleId);
-      if (response.status === "success") {
+        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
         toast.success(response.data);
-        if (sales.length > 0) {
-          setSales(sales.filter((sale) => sale.id !== saleId));
-        }
-      } else {
-        toast.error(response.error.message);
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-  };
+  });
 
-  const handleEstimateConvert = async (estimateId: string) => {
-    try {
-      const response = await window.estimatesApi.convertEstimateToSale(estimateId);
+  const convertMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
+    mutationFn: ({ type, id }) => handleConvert({ type, id }),
+    onSuccess: (response) => {
       if (response.status === "success") {
+        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
         toast.success(response.data);
-        if (estimates.length > 0) {
-          setEstimates(estimates.filter((estimate) => estimate.id !== estimateId));
-        }
-      } else {
-        toast.error(response.error.message);
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-  };
-
-  const calculateSalesTotal =
-    sales?.reduce((sum, curr) => {
-      if (!curr.grandTotal) return sum;
-      return sum + formatToPaisa(curr.grandTotal);
-    }, 0) || 0;
-
-  const calculateEstimatesTotal =
-    estimates?.reduce((sum, curr) => {
-      if (!curr.grandTotal) return sum;
-      return sum + formatToPaisa(curr.grandTotal);
-    }, 0) || 0;
+  });
 
   return {
-    navigate,
-    pathname,
-    sales,
-    estimates,
     sortBy,
     setSortBy,
-    dataToRender,
-    handleDeleteSale,
-    handleDeleteEstimate,
-    handleSaleConvert,
-    handleEstimateConvert,
-    calculateSalesTotal,
-    calculateEstimatesTotal
+    deleteMutation,
+    convertMutation
   };
 };

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, SaleItemsType, SalesType } from "../../../shared/types";
+import type { ApiResponse, CustomersType, SaleItemsType, SalesType } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { sales } from "../../db/schema";
@@ -9,7 +9,10 @@ export function getSaleById() {
   //get sale by id
   ipcMain.handle(
     "salesApi:getTransactionById",
-    async (_event, id: string): Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>> => {
+    async (
+      _event,
+      id: string
+    ): Promise<ApiResponse<SalesType & { customer: CustomersType; items: SaleItemsType[] }>> => {
       try {
         const saleObj = await db.query.sales.findFirst({
           where: eq(sales.id, id),
@@ -26,7 +29,13 @@ export function getSaleById() {
         return {
           status: "success",
           data: {
-            ...saleObj,
+            id: saleObj.id,
+            invoiceNo: saleObj.invoiceNo,
+            customerId: saleObj.customerId,
+            customer: saleObj.customer,
+            grandTotal: saleObj.grandTotal && formatToRupees(saleObj.grandTotal),
+            totalQuantity: saleObj.totalQuantity,
+            isPaid: saleObj.isPaid,
             items: saleObj.saleItems.map((item) => {
               return {
                 ...item,
@@ -34,7 +43,9 @@ export function getSaleById() {
                 price: formatToRupees(item.price),
                 totalPrice: formatToRupees(item.totalPrice)
               };
-            })
+            }),
+            updatedAt: saleObj.updatedAt,
+            createdAt: saleObj.createdAt
           }
         };
       } catch (error) {

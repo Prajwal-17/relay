@@ -79,7 +79,11 @@ export const useInfiniteScroll = <T>({
       return;
     }
 
-    // TODO: add how percentage is calculated
+    /**
+     * scrollTop - how much height is scrolled
+     * scrollHeight - total scrollable height
+     * clientHeight - visible height(viewport)
+     */
     const scrollPercent =
       (container.scrollTop / (container.scrollHeight - container.clientHeight)) * 100;
 

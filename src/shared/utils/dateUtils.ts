@@ -42,6 +42,9 @@ export function formatDateObjToHHmmss(dateObj: Date) {
  */
 export function formatDateStrToISTDateObject(dateStr: string) {
   // '2025-08-31 06:38:13' -> '2025-08-31T06:38:13Z'
+  if (!dateStr) {
+    return null;
+  }
   const utcTimestamp = dateStr.replace(" ", "T") + "Z";
 
   const date = new Date(utcTimestamp);
@@ -53,7 +56,7 @@ export function formatDateStrToISTDateObject(dateStr: string) {
  * Format date string to readable date time format.
  * "2025-09-13 02:30:00" -> "13 Sept 2025 02:30 Am"
  * @param {string} dateStr
- * @returns {string}
+ * @returns {fullDate,timePart}
  */
 export function formatDateStrToISTDateStr(dateStr: string) {
   const utcTimestamp = dateStr.replace(" ", "T") + "Z";
@@ -71,7 +74,11 @@ export function formatDateStrToISTDateStr(dateStr: string) {
     timeZone: "Asia/Kolkata"
   });
 
-  return `${fullDate} ${timePart}`;
+  // return `${fullDate} ${timePart}`;
+  return {
+    fullDate,
+    timePart
+  };
 }
 
 /**

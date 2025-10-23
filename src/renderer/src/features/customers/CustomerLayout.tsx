@@ -1,17 +1,17 @@
-import { useCustomerStore } from "@/store/customersStore";
+import useCustomers from "@/hooks/useCustomers";
 import { Users } from "lucide-react";
 import { CustomerDetails } from "./CustomerDetails";
 import { CustomerSidebar } from "./CustomerSidebar";
 import { CustomerTransactions } from "./CustomerTransactions";
 
 export const CustomerLayout = () => {
-  const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
+  const { selectedCustomer } = useCustomers();
 
   return (
     <>
-      <div className="flex flex-1">
+      <div className="bg-background flex flex-1">
         <CustomerSidebar />
-        <div className="flex-1 p-6">
+        <div className="bg-background flex-1 p-6">
           {selectedCustomer ? (
             <>
               <CustomerDetails />

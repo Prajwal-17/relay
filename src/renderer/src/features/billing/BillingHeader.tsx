@@ -7,16 +7,39 @@ import { DEFAULT_HOUR } from "@/constants";
 import useTransactionState from "@/hooks/useTransactionState";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
+import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { useQuery } from "@tanstack/react-query";
 import { Check, PanelLeftOpen, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
+
+const getLatestTransactionNo = async (type: TransactionType) => {
+  try {
+    let response;
+    if (type === TRANSACTION_TYPE.SALES) {
+      response = await window.salesApi.getNextInvoiceNo();
+    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+      response = await window.estimatesApi.getNextEstimateNo();
+    } else {
+      throw new Error("Transaction Type is undefined");
+    }
+    if (response.status === "success") {
+      return response;
+    }
+    throw new Error(response.error.message);
+  } catch (error) {
+    console.log(error);
+    throw new Error((error as Error).message);
+  }
+};
 
 const BillingHeader = () => {
   const {
-    invoiceNo,
-    setInvoiceNo,
+    transactionNo,
+    setTransactionNo,
     customerContact,
     setCustomerContact,
     isNewCustomer,
@@ -25,37 +48,39 @@ const BillingHeader = () => {
   } = useTransactionState();
 
   const [open, setOpen] = useState(false);
-  const [tempInvoice, setTempInvoice] = useState<number | null>(invoiceNo);
+  const [tempTransactionNo, setTempTransactionNo] = useState<number | null>(transactionNo);
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
-  const location = useLocation();
-  const page = location.pathname.split("/")[1];
-  const { id } = useParams();
+  const { type, id } = useParams<{ type: TransactionType; id?: string }>();
 
   useEffect(() => {
-    async function getLatestInvoiceNumber() {
-      if (id) return;
-
-      try {
-        setInvoiceNo(null);
-        let response;
-        page === "sales"
-          ? (response = await window.salesApi.getNextInvoiceNo())
-          : (response = await window.estimatesApi.getNextEstimateNo());
-        if (response.status === "success") {
-          setInvoiceNo(response.data);
-        } else {
-          setInvoiceNo(null);
-        }
-      } catch (error) {
-        console.log(error);
-      }
+    if (!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)) {
+      setTransactionNo(null);
     }
-    getLatestInvoiceNumber();
-  }, [setInvoiceNo, id, page, location]);
+  }, [type, id, setTransactionNo]);
+
+  const { data, isFetched, isError, error } = useQuery({
+    queryKey: [type, "getTransactionNo"],
+    // null assertion - type cannot be null here
+    queryFn: () => getLatestTransactionNo(type!),
+    enabled: !id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
+  });
+
+  useEffect(() => {
+    if (!isFetched && !data) {
+      return;
+    }
+    setTransactionNo(data.data);
+  }, [data, setTransactionNo, isFetched]);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error.message);
+    }
+  }, [isError, error]);
 
   const handleTimeChange = (e) => {
     const [hours, minutes] = e.target.value.split(":");
@@ -86,9 +111,13 @@ const BillingHeader = () => {
     setOpen(false);
   };
 
+  if (!type) {
+    return <Navigate to="/not-found" />;
+  }
+
   return (
     <>
-      <div className="border-border mx-5 my-6 flex flex-col justify-center gap-5 rounded-xl border px-6 py-6 shadow-xl">
+      <div className="border-border mx-5 my-2 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-xl">
         <div className="flex items-start justify-between gap-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
@@ -97,27 +126,27 @@ const BillingHeader = () => {
                   setIsSidebarOpen(true);
                   setIsSidebarPinned(true);
                 }}
-                className="border-border text-foreground hover:b rounded-lg border px-2 py-2 shadow-lg hover:cursor-pointer hover:bg-neutral-200/80"
+                className="border-border text-foreground hover:b hover:bg-accent cursor-pointer rounded-lg border px-2 py-2 shadow-lg"
               >
                 <PanelLeftOpen size={23} />
               </button>
-              <h1 className="text-3xl font-bold">{page.charAt(0).toUpperCase() + page.slice(1)}</h1>
+              <h1 className="text-3xl font-bold">{type.charAt(0).toUpperCase() + type.slice(1)}</h1>
             </div>
             <div className="flex items-center justify-center gap-2 py-2">
               <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>
-              <span className="text-bold text-primary text-3xl font-semibold">#</span>
+              <span className="text-bold text-foreground text-3xl font-semibold">#</span>
               {editInvoice ? (
                 <>
                   <Input
                     type="number"
                     className="text-primary w-24 px-1 py-1 text-center !text-xl font-extrabold"
-                    value={Number(tempInvoice)}
-                    onChange={(e) => setTempInvoice(Number(e.target.value))}
+                    value={Number(tempTransactionNo)}
+                    onChange={(e) => setTempTransactionNo(Number(e.target.value))}
                   />
                   <Check
                     onClick={() => {
                       setEditInvoice(false);
-                      setInvoiceNo(tempInvoice);
+                      setTransactionNo(tempTransactionNo);
                     }}
                     className="cursor-pointer rounded-md p-1 text-green-600 hover:bg-neutral-200"
                     size={30}
@@ -125,14 +154,14 @@ const BillingHeader = () => {
                   <X
                     className="cursor-pointer rounded-md p-1 text-red-500 hover:bg-neutral-200"
                     onClick={() => {
-                      setTempInvoice(invoiceNo);
+                      setTempTransactionNo(transactionNo);
                       setEditInvoice(false);
                     }}
                     size={30}
                   />
                 </>
               ) : (
-                <span className="text-primary text-3xl font-extrabold">{invoiceNo}</span>
+                <span className="text-foreground text-3xl font-extrabold">{transactionNo}</span>
               )}
               {/*<SquarePen size={20} onClick={() => setEditInvoice(true)} />*/}
             </div>
@@ -162,7 +191,7 @@ const BillingHeader = () => {
               </Popover>
             </div>
             <div>
-              <Label htmlFor="time-picker" className="px-1 text-lg">
+              <Label htmlFor="time-picker" className="text-muted-foreground px-1 text-lg">
                 Time
               </Label>
               <Input

@@ -89,10 +89,27 @@ export type EstimateItemsType = {
   totalPrice: number;
 };
 
+export type PageNo = number | null;
+
 export type ApiResponse<T> =
   | {
       status: "success";
       data: T;
+      message?: string;
+    }
+  | {
+      status: "error";
+      error: {
+        message: string;
+        details?: any;
+      };
+    };
+
+export type PaginatedApiResponse<T> =
+  | {
+      status: "success";
+      data: T;
+      nextPageNo: PageNo;
       message?: string;
     }
   | {
@@ -163,6 +180,18 @@ export type FilteredGoogleContactsType = {
   contact: string | null;
 };
 
+export type SaleSummaryType = {
+  totalRevenue: number;
+  totalTransactions: number;
+  sales: (SalesType & { customerName: string })[];
+};
+
+export type EstimateSummaryType = {
+  totalRevenue: number;
+  totalTransactions: number;
+  estimates: (EstimateType & { customerName: string })[];
+};
+
 export type AllTransactionsType = (SalesType | EstimateType)[];
 
 export type DateRangeType = {
@@ -174,6 +203,8 @@ export const TRANSACTION_TYPE = {
   SALES: "sales",
   ESTIMATES: "estimates"
 } as const;
+
+export const DASHBOARD_TYPE = TRANSACTION_TYPE;
 
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
@@ -188,12 +219,18 @@ export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 
+export type DashboardType = (typeof DASHBOARD_TYPE)[keyof typeof DASHBOARD_TYPE];
+
 export type FilterType = "all" | "active" | "inactive";
 
 export interface ProductsApi {
   getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
-  search: (query: string, page: number, limit: number) => Promise<ApiResponse<ProductsType[]>>;
-  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
+  search: (
+    query: string,
+    pageNo: PageNo,
+    limit: number
+  ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
+  addNewProduct: (payload: Omit<ProductsType, "id">) => Promise<ApiResponse<string>>;
   updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
   deleteProduct: (productId: string) => Promise<ApiResponse<string>>;
 }
@@ -202,11 +239,14 @@ export interface SalesApi {
   getNextInvoiceNo: () => Promise<ApiResponse<number>>;
   save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
-  getTransactionById: (id: string) => Promise<ApiResponse<SalesType & { items: SaleItemsType[] }>>;
+  getTransactionById: (
+    id: string
+  ) => Promise<ApiResponse<SalesType & { customer: CustomersType; items: SaleItemsType[] }>>;
   getSalesDateRange: (
     range: DateRangeType,
-    sortBy: SortType
-  ) => Promise<ApiResponse<SalesType[] | []>>;
+    sortBy: SortType,
+    pageNo: PageNo
+  ) => Promise<PaginatedApiResponse<SaleSummaryType>>;
   deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
   convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
 }
@@ -217,17 +257,18 @@ export interface EstimatesApi {
   getAllEstimates: () => Promise<ApiResponse<EstimateType[]>>;
   getTransactionById: (
     id: string
-  ) => Promise<ApiResponse<EstimateType & { items: EstimateItemsType[] }>>;
+  ) => Promise<ApiResponse<EstimateType & { customer: CustomersType; items: EstimateItemsType[] }>>;
   getEstimatesDateRange: (
     range: DateRangeType,
-    sortBy: SortType
-  ) => Promise<ApiResponse<EstimateType[] | []>>;
+    sortBy: SortType,
+    pageNo: PageNo
+  ) => Promise<PaginatedApiResponse<EstimateSummaryType>>;
   deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
   convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface CustomersApi {
-  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<string>>;
+  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   updateCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getCustomerByName: (customerName: string) => Promise<ApiResponse<CustomersType | null>>;

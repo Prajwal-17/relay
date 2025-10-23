@@ -12,40 +12,55 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCustomerStore } from "@/store/customersStore";
+import useCustomers from "@/hooks/useCustomers";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Label } from "@radix-ui/react-label";
+import type { ApiResponse } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 
-export const CustomerDetails = () => {
-  const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
-  const setFormData = useCustomerStore((state) => state.setFormData);
-  const setActionType = useCustomerStore((state) => state.setActionType);
-  const openCustomerDialog = useCustomerStore((state) => state.openCustomerDialog);
-  const setOpenCustomerDialog = useCustomerStore((state) => state.setOpenCustomerDialog);
-  const setRefreshState = useCustomerStore((state) => state.setRefreshState);
-  const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
+const handleDelete = async (customerId: string) => {
+  try {
+    const response = await window.customersApi.deleteCustomer(customerId);
+    return response;
+  } catch (error) {
+    throw new Error((error as Error).message ?? "Something went wrong");
+  }
+};
 
-  const handleDelete = async (customerId: string) => {
-    try {
-      const response = await window.customersApi.deleteCustomer(customerId);
+export const CustomerDetails = () => {
+  const queryClient = useQueryClient();
+
+  const {
+    selectedCustomer,
+    setSelectedCustomer,
+    openCustomerDialog,
+    setOpenCustomerDialog,
+    setActionType,
+    setFormData,
+    customerSearch,
+    setCustomerSearch
+  } = useCustomers();
+
+  const mutation = useMutation<ApiResponse<string>, Error, string>({
+    mutationFn: (customerId: string) => handleDelete(customerId),
+    onSuccess: (response) => {
       if (response.status === "success") {
-        toast.success(response.data);
-        setFormData({});
         setSelectedCustomer(null);
-        setRefreshState(true);
-      } else {
+        setCustomerSearch("");
+        queryClient.invalidateQueries({ queryKey: ["customers", customerSearch] });
+        toast.success(response.data);
+      } else if (response.status === "error") {
         toast.error(response.error.message);
-        setFormData({});
       }
-    } catch (error) {
-      console.log(error);
-      toast.error("Something went wrong");
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
-  };
+  });
 
   if (!selectedCustomer) return;
 
@@ -98,7 +113,12 @@ export const CustomerDetails = () => {
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <AlertDialogAction
                   className="bg-destructive hover:bg-destructive/80"
-                  onClick={() => handleDelete(selectedCustomer.id)}
+                  onClick={() => {
+                    if (!selectedCustomer) {
+                      toast.error("Customer not selected");
+                    }
+                    mutation.mutate(selectedCustomer.id);
+                  }}
                 >
                   Confirm Delete
                 </AlertDialogAction>
