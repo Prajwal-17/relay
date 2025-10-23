@@ -7,7 +7,6 @@ import {
   type SalePayload,
   type TransactionType
 } from "../../../shared/types";
-import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { Role } from "../../db/enum";
@@ -76,8 +75,8 @@ export function saveSale() {
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
                 createdAt: saleObj.createdAt
-                  ? removeTandZ(saleObj.createdAt)
-                  : sql`(datetime('now'))`
+                  ? saleObj.createdAt
+                  : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
               })
               .returning({ id: sales.id })
               .get();
@@ -141,10 +140,10 @@ export function saveSale() {
                 grandTotal: formatToPaisa(saleObj.grandTotal),
                 totalQuantity: saleObj.totalQuantity,
                 isPaid: saleObj.isPaid,
-                updatedAt: sql`(datetime('now'))`,
+                updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`,
                 createdAt: saleObj.createdAt
-                  ? removeTandZ(saleObj.createdAt)
-                  : sql`(datetime('now'))`
+                  ? saleObj.createdAt
+                  : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
               })
               .where(eq(sales.id, saleObj.billingId!))
               .run();
@@ -199,7 +198,7 @@ export function saveSale() {
                   unit: item.unit,
                   quantity: item.quantity,
                   totalPrice: formatToPaisa(item.totalPrice),
-                  updatedAt: sql`(datetime('now'))`
+                  updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
                 })
                 .run();
 

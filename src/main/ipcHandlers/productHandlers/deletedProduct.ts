@@ -11,8 +11,7 @@ export function deleteProduct() {
     "productsApi:deleteProduct",
     async (_event, productId: string): Promise<ApiResponse<string>> => {
       try {
-        const deletedAt = sql`datetime('now')`;
-
+        const deletedAt = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
         const existingInSales = await db.query.saleItems.findFirst({
           where: eq(saleItems.productId, productId)
         });
@@ -35,7 +34,7 @@ export function deleteProduct() {
           .set({
             isDeleted: true,
             deletedAt,
-            updatedAt: sql`(datetime('now'))`
+            updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
           })
           .where(eq(products.id, productId))
           .run();
