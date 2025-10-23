@@ -6,7 +6,7 @@ import { autoTable } from "jspdf-autotable";
 import os from "os";
 import path from "path";
 import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "../../../shared/types";
-import { formatDateStrToISTDateStr, removeTandZ } from "../../../shared/utils/dateUtils";
+import { formatDateStrToISTDateStr } from "../../../shared/utils/dateUtils";
 import { formatToRupees, IndianRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates, sales } from "../../db/schema";
@@ -49,7 +49,7 @@ export function sendViaWhatsapp() {
 
         const billingNo =
           type === TRANSACTION_TYPE.SALES ? transaction?.invoiceNo : transaction?.estimateNo;
-        const trimmedDate = removeTandZ(transaction.createdAt);
+        const trimmedDate = transaction.createdAt;
 
         const createdAt = new Date(trimmedDate).toLocaleString("en-IN", {
           dateStyle: "medium"

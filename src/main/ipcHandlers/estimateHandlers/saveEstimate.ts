@@ -7,7 +7,6 @@ import {
   type EstimatePayload,
   type TransactionType
 } from "../../../shared/types";
-import { removeTandZ } from "../../../shared/utils/dateUtils";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { Role } from "../../db/enum";
@@ -75,8 +74,8 @@ export function saveEstimate() {
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
                 createdAt: estimateObj.createdAt
-                  ? removeTandZ(estimateObj.createdAt)
-                  : sql`(datetime('now'))`
+                  ? estimateObj.createdAt
+                  : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
               })
               .returning({ id: estimates.id })
               .get();
@@ -144,10 +143,10 @@ export function saveEstimate() {
                 grandTotal: formatToPaisa(estimateObj.grandTotal),
                 totalQuantity: estimateObj.totalQuantity,
                 isPaid: estimateObj.isPaid,
-                updatedAt: sql`(datetime('now'))`,
+                updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`,
                 createdAt: estimateObj.createdAt
-                  ? removeTandZ(estimateObj.createdAt)
-                  : sql`(datetime('now'))`
+                  ? estimateObj.createdAt
+                  : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
               })
               .where(eq(estimates.id, estimateObj.billingId!))
               .run();
@@ -205,7 +204,7 @@ export function saveEstimate() {
                   unit: item.unit,
                   quantity: item.quantity,
                   totalPrice: formatToPaisa(item.totalPrice),
-                  updatedAt: sql`(datetime('now'))`
+                  updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
                 })
                 .run();
 

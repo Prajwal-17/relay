@@ -59,8 +59,7 @@ export function formatDateStrToISTDateObject(dateStr: string) {
  * @returns {fullDate,timePart}
  */
 export function formatDateStrToISTDateStr(dateStr: string) {
-  const utcTimestamp = dateStr.replace(" ", "T") + "Z";
-  const date = new Date(utcTimestamp);
+  const date = new Date(dateStr);
 
   const fullDate = date.toLocaleDateString("en-IN", {
     dateStyle: "medium",
@@ -79,13 +78,4 @@ export function formatDateStrToISTDateStr(dateStr: string) {
     fullDate,
     timePart
   };
-}
-
-/**
- * @param {string} isoString
- * @returns {string}
- */
-export function removeTandZ(isoString: string) {
-  if (!isoString) return "";
-  return isoString.replaceAll("T", " ").replaceAll("Z", " ").slice(0, -5);
 }
