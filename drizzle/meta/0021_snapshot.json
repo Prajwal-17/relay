@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "32bf5bce-201f-4956-9e17-65cbb5fbddd5",
+  "id": "a3833b0a-c94c-48d3-acad-923235a2b604",
   "prevId": "25628c9d-dafa-41fe-81a0-0e3079c767f5",
   "tables": {
     "customers": {
@@ -279,7 +279,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -730,7 +730,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },

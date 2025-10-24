@@ -88,9 +88,7 @@ export const sales = sqliteTable("sales", {
     .$defaultFn(() => uuidv4()),
   invoiceNo: integer("invoice_no").notNull().unique(),
   customerId: text("customer_id")
-    .references(() => customers.id, {
-      onDelete: "cascade"
-    })
+    .references(() => customers.id)
     .notNull(),
   grandTotal: integer("grand_total", { mode: "number" }),
   totalQuantity: real("total_quantity"),
@@ -133,9 +131,7 @@ export const estimates = sqliteTable("estimates", {
     .$defaultFn(() => uuidv4()),
   estimateNo: integer("estimate_no").notNull().unique(),
   customerId: text("customer_id")
-    .references(() => customers.id, {
-      onDelete: "cascade"
-    })
+    .references(() => customers.id)
     .notNull(),
   grandTotal: integer("grand_total", { mode: "number" }),
   totalQuantity: real("total_quantity"),
