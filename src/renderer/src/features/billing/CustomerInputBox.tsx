@@ -96,7 +96,7 @@ export const CustomerNameInput = () => {
   return (
     <>
       <div ref={inputRef} className="relative w-full">
-        <label htmlFor="customer-name" className="text-lg font-medium text-gray-700">
+        <label htmlFor="customer-name" className="text-foreground text-lg font-medium">
           Customer Name
         </label>
         <Input
@@ -108,10 +108,10 @@ export const CustomerNameInput = () => {
           onChange={(e) => setCustomerName(e.target.value)}
         />
         {openDropdown && (
-          <div className="bg-muted border-border absolute top-full z-20 mt-2 h-full min-h-72 w-full space-y-1 overflow-y-auto rounded-xl border px-4 py-1">
+          <div className="bg-muted border-border absolute top-full z-20 mt-2 h-full min-h-72 w-full space-y-1 overflow-y-auto rounded-xl border px-2 py-1 shadow-xl">
             {customers.map((c, idx) => (
               <div
-                className="rounded-lg px-3 py-2 text-lg font-medium hover:cursor-pointer hover:bg-neutral-200"
+                className="hover:bg-secondary rounded-lg px-3 py-2 text-lg font-medium hover:cursor-pointer"
                 key={idx}
                 onClick={() => {
                   setCustomerId(c.id);

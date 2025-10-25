@@ -33,7 +33,7 @@ type BillingStoreType = {
   setBillingDate: (newDate: Date) => void;
   lineItems: LineItemsType[] | [];
   setLineItems: (itemsArray: LineItemsType[]) => void;
-  addEmptyLineItem: () => void;
+  addEmptyLineItem: (type?: "button") => void;
   addLineItem: (index: number, newItem: ProductsType) => void;
   updateLineItems: (id: string, field: string, value: string | number) => void;
   deleteLineItem: (id: string) => void;
@@ -115,10 +115,16 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
     }),
 
   // add empty row
-  addEmptyLineItem: () =>
-    set((state) => ({
-      lineItems: [...state.lineItems, initialLineItem()]
-    })),
+  addEmptyLineItem: (type) =>
+    set((state) => {
+      const length = state.lineItems.length;
+      if (type !== "button" && state.lineItems[length - 1].name === "") {
+        return state;
+      }
+      return {
+        lineItems: [...state.lineItems, initialLineItem()]
+      };
+    }),
 
   // add new item on selection
   addLineItem: (index, newItem) =>

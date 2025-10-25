@@ -1,4 +1,4 @@
-import type { ProductsType } from "src/shared/types";
+import { PRODUCT_FILTER, type ProductFilterType, type ProductsType } from "@shared/types";
 import { create } from "zustand";
 
 export type ProductsFormType = Omit<ProductsType, "price"> & {
@@ -6,6 +6,8 @@ export type ProductsFormType = Omit<ProductsType, "price"> & {
 };
 
 type ProductsStoreType = {
+  filterType: ProductFilterType;
+  setFilterType: (newType: ProductFilterType) => void;
   openProductDialog: boolean;
   setOpenProductDialog: () => void;
   actionType: "add" | "edit" | "billing-page-edit";
@@ -29,11 +31,18 @@ function initialFormData() {
     mrp: null,
     price: "",
     purchasePrice: null,
+    totalQuantitySold: 0,
     isDisabled: false
   };
 }
 
 export const useProductsStore = create<ProductsStoreType>((set) => ({
+  filterType: PRODUCT_FILTER.ACTIVE,
+  setFilterType: (newType) =>
+    set(() => ({
+      filterType: newType
+    })),
+
   openProductDialog: false,
   setOpenProductDialog: () =>
     set((state) => ({

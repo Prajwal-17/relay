@@ -32,16 +32,16 @@ const LineItemRow = memo(
 
     return (
       <div key={item.id} className="relative">
-        <div className="group grid w-full grid-cols-20 border bg-neutral-100">
-          <div className="col-span-2 h-full w-full border-r bg-white">
+        <div className="group bg-background-secondary/60 grid w-full grid-cols-20 border">
+          <div className="bg-background col-span-2 h-full w-full border-r">
             <div className="flex h-full w-full items-center justify-between gap-2 px-4">
               <GripVertical
-                className="invisible px-1 py-1 group-hover:visible hover:cursor-grab hover:bg-neutral-100"
+                className="hover:bg-accent invisible px-1 py-1 group-hover:visible hover:cursor-grab"
                 size={33}
               />
               <span className="text-xl">{idx + 1}</span>
               <Trash2
-                className="text-destructive invisible rounded-md px-1 py-1 group-hover:visible hover:scale-103 hover:cursor-pointer hover:bg-neutral-100 active:scale-98"
+                className="text-destructive hover:bg-accent invisible rounded-md px-1 py-1 group-hover:visible hover:scale-103 hover:cursor-pointer active:scale-98"
                 size={33}
                 onClick={() => deleteLineItem(item.id)}
               />
@@ -50,7 +50,7 @@ const LineItemRow = memo(
           <div className="col-span-9 border-r px-1 py-1">
             <input
               value={item.name}
-              className="focus:border-ring focus:ring-ring w-full rounded-lg border bg-white px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={() => {
                 setSearchRow(idx + 1);
                 setIsDropdownOpen();
@@ -62,7 +62,7 @@ const LineItemRow = memo(
             />
           </div>
           <div className="col-span-3 h-full w-full border-r px-1 py-1">
-            <div className="border-border relative flex h-full w-full items-center rounded-lg border bg-white font-bold shadow-xs">
+            <div className="border-border bg-background relative flex h-full w-full items-center rounded-lg border font-bold shadow-xs">
               <button
                 onClick={() => {
                   if (item.quantity >= 0) {
@@ -81,7 +81,7 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity === 0 ? "" : item.quantity}
-                className="focus:border-ring focus:ring-ring w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold placeholder-gray-400 transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+                className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
                   updateLineItems(item.id, "quantity", e.target.value);
                 }}
@@ -116,7 +116,7 @@ const LineItemRow = memo(
                 type="number"
                 value={item.price === 0 ? "" : item.price}
                 onChange={(e) => updateLineItems(item.id, "price", e.target.value)}
-                className="focus:border-ring focus:ring-ring h-full w-full appearance-none rounded-lg border bg-white py-2 pr-7 pl-10 text-right text-base font-semibold text-black placeholder-gray-400 focus:ring-2 focus:outline-none"
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none"
                 placeholder="0"
               />
             </div>
@@ -129,8 +129,8 @@ const LineItemRow = memo(
               <input
                 disabled
                 type="number"
-                value={item.totalPrice === 0 ? "" : item.totalPrice}
-                className="focus:border-ring focus:ring-ring h-full w-full appearance-none rounded-lg border bg-white py-2 pr-7 pl-10 text-right text-base font-semibold text-black placeholder-gray-400 focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
+                value={item.totalPrice === 0 ? "" : item.totalPrice.toFixed(2)}
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
                 placeholder="0"
               />
             </div>

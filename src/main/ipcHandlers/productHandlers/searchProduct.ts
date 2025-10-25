@@ -1,6 +1,12 @@
-import { and, like, ne, sql } from "drizzle-orm";
+import { and, eq, like, ne, SQL, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { PageNo, PaginatedApiResponse, ProductsType } from "../../../shared/types";
+import {
+  PRODUCT_FILTER,
+  type PageNo,
+  type PaginatedApiResponse,
+  type ProductFilterType,
+  type ProductsType
+} from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { products } from "../../db/schema";
@@ -12,7 +18,8 @@ export function searchProduct() {
       _event,
       query: string,
       pageNo: PageNo,
-      limit: number
+      limit: number,
+      filterType?: ProductFilterType
     ): Promise<PaginatedApiResponse<ProductsType[] | []>> => {
       try {
         if (pageNo === null || pageNo === undefined) {
@@ -21,6 +28,20 @@ export function searchProduct() {
             nextPageNo: null,
             data: []
           };
+        }
+
+        let whereClause: SQL;
+
+        switch (filterType) {
+          case PRODUCT_FILTER.ALL:
+            whereClause = ne(products.isDeleted, true);
+            break;
+          case PRODUCT_FILTER.INACTIVE:
+            whereClause = and(ne(products.isDeleted, true), eq(products.isDisabled, true))!;
+            break;
+          case PRODUCT_FILTER.ACTIVE:
+          default:
+            whereClause = and(ne(products.isDeleted, true), ne(products.isDisabled, true))!;
         }
 
         const cleanedQuery = query
@@ -48,10 +69,12 @@ export function searchProduct() {
               unit: products.unit,
               mrp: products.mrp,
               price: products.price,
-              purchasePrice: products.purchasePrice
+              purchasePrice: products.purchasePrice,
+              totalQuantitySold: products.totalQuantitySold,
+              isDisabled: products.isDisabled
             })
             .from(products)
-            .where(and(ne(products.isDeleted, true)))
+            .where(whereClause)
             .orderBy(products.name)
             .limit(limit)
             .offset(offset);
@@ -77,10 +100,12 @@ export function searchProduct() {
               unit: products.unit,
               mrp: products.mrp,
               price: products.price,
-              purchasePrice: products.purchasePrice
+              purchasePrice: products.purchasePrice,
+              totalQuantitySold: products.totalQuantitySold,
+              isDisabled: products.isDisabled
             })
             .from(products)
-            .where(and(ne(products.isDeleted, true), ...searchConditions))
+            .where(and(whereClause, ...searchConditions))
             .orderBy(priorityOrder, products.name)
             .limit(limit)
             .offset(offset);

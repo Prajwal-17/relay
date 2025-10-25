@@ -117,7 +117,7 @@ const BillingHeader = () => {
 
   return (
     <>
-      <div className="border-border mx-5 my-2 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-xl">
+      <div className="border-border bg-background mx-5 mb-3 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-md">
         <div className="flex items-start justify-between gap-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
@@ -126,7 +126,7 @@ const BillingHeader = () => {
                   setIsSidebarOpen(true);
                   setIsSidebarPinned(true);
                 }}
-                className="border-border text-foreground hover:b hover:bg-accent cursor-pointer rounded-lg border px-2 py-2 shadow-lg"
+                className="border-border text-foreground hover:bg-accent cursor-pointer rounded-lg border px-2 py-2 shadow-lg"
               >
                 <PanelLeftOpen size={23} />
               </button>
@@ -209,13 +209,13 @@ const BillingHeader = () => {
           <div className="flex w-full flex-1 items-center gap-4">
             <CustomerNameInput />
             <div className="w-full">
-              <label htmlFor="customer-contact" className="text-lg font-medium text-gray-700">
+              <label htmlFor="customer-contact" className="text-foreground text-lg font-medium">
                 Customer Phone Number
               </label>
 
               <div className="relative mt-1">
-                <div className="border-r-border pointer-events-none absolute inset-y-0 left-0 flex items-center rounded-l-md border border-gray-300 bg-gray-50 px-3">
-                  <span className="text-lg text-gray-500">+91</span>
+                <div className="border-r-border border-border bg-secondary/80 pointer-events-none absolute inset-y-0 left-0 flex items-center rounded-l-md border px-3">
+                  <span className="text-muted-foreground text-lg">+91</span>
                 </div>
 
                 <Input
@@ -228,7 +228,7 @@ const BillingHeader = () => {
               </div>
             </div>
           </div>
-          <span className="my-1 self-start rounded-md bg-green-500 px-2 font-medium text-white">
+          <span className="bg-success text-success-foreground my-1 self-start rounded-md px-2 font-medium">
             {isNewCustomer && !isDropdownOpen ? "New Customer" : null}
           </span>
         </div>
