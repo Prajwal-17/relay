@@ -11,10 +11,10 @@ export const users = sqliteTable("users", {
   role: text("role").notNull(),
   password: text("password").notNull(),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -26,10 +26,10 @@ export const customers = sqliteTable("customers", {
   contact: text("contact"),
   customerType: text("customer_type").$type<Role>().notNull(),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -49,10 +49,10 @@ export const products = sqliteTable("products", {
   isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
   deletedAt: text("deleted_at"),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -64,7 +64,9 @@ export const productHistory = sqliteTable("product_history", {
   weight: text("weight"),
   unit: text("unit"),
   productId: text("product_id")
-    .references(() => products.id)
+    .references(() => products.id, {
+      onDelete: "cascade"
+    })
     .notNull(),
   oldPrice: integer("old_price"),
   newPrice: integer("new_price"),
@@ -73,10 +75,10 @@ export const productHistory = sqliteTable("product_history", {
   oldPurchasePrice: integer("old_purchase_price"),
   newPurchasePrice: integer("new_purchase_price"),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -92,10 +94,10 @@ export const sales = sqliteTable("sales", {
   totalQuantity: real("total_quantity"),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -116,10 +118,10 @@ export const saleItems = sqliteTable("sale_items", {
   quantity: integer("quantity").notNull(),
   totalPrice: integer("total_price").notNull(),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -135,10 +137,10 @@ export const estimates = sqliteTable("estimates", {
   totalQuantity: real("total_quantity"),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 
@@ -159,10 +161,10 @@ export const estimateItems = sqliteTable("estimate_items", {
   quantity: integer("quantity").notNull(),
   totalPrice: integer("total_price").notNull(),
   createdAt: text("created_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
   updatedAt: text("updated_at")
-    .default(sql`(datetime('now'))`)
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull()
 });
 

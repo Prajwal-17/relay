@@ -16,7 +16,7 @@ export function updateProduct() {
         let disabledAt: SQL | null = null;
 
         if (product?.isDisabled !== payload.isDisabled) {
-          disabledAt = payload.isDisabled ? sql`(datetime('now'))` : null;
+          disabledAt = payload.isDisabled ? sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))` : null;
         }
 
         // eslint-disable-next-line
@@ -43,7 +43,7 @@ export function updateProduct() {
                 ? formatToPaisa(updatePayload.purchasePrice)
                 : null,
               disabledAt,
-              updatedAt: sql`(datetime('now'))`
+              updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
             })
             .where(eq(products.id, productId))
             .returning({
