@@ -25,6 +25,7 @@ export async function main() {
       customerType: Math.random() < 0.5 ? "cash" : "credit"
     }));
 
+    // @ts-ignore - temp fix
     const productsData: ProductsType[] = Array.from({ length: 10 }).map(() => ({
       id: uuidv4(),
       name: faker.commerce.product(),
