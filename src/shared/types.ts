@@ -229,8 +229,37 @@ export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION
 
 export type DashboardType = (typeof DASHBOARD_TYPE)[keyof typeof DASHBOARD_TYPE];
 
+export const TREND_OPTION = {
+  INCREASE: "increase",
+  DECREASE: "decrease",
+  NO_CHANGE: "no change"
+} as const;
+
+export type TrendType = (typeof TREND_OPTION)[keyof typeof TREND_OPTION];
+
+export type MetricsSummary = {
+  counts: {
+    customers: number;
+    products: number;
+    sales: number;
+    estimates: number;
+  };
+  sales: {
+    today: number;
+    yesterday: number;
+    changePercent: number;
+    trend: TrendType;
+  };
+  estimates: {
+    today: number;
+    yesterday: number;
+    changePercent: number;
+    trend: TrendType;
+  };
+};
+
 export interface DashboardApi {
-  getMetricsSummary: () => Promise<ApiResponse<string>>;
+  getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
 }
 
 export interface ProductsApi {

@@ -1,23 +1,40 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useDashboardStore } from "@/store/dashboardStore";
+import { TREND_OPTION, type TrendType } from "@shared/types";
 import { ArrowUpRight, TrendingDown, TrendingUp } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface MetricCardProps {
   label: string;
   value: string;
   changePercent: number;
   href: string;
+  trend: TrendType;
 }
 
-export function MetricCard({ label, value, changePercent, href }: MetricCardProps) {
+export function MetricCard({ label, value, changePercent, href, trend }: MetricCardProps) {
+  const navigate = useNavigate();
+  const setDate = useDashboardStore((state) => state.setDate);
   const isPositive = typeof changePercent === "number" ? changePercent >= 0 : undefined;
 
   const formattedChange =
     typeof changePercent === "number"
       ? `${changePercent > 0 ? "+" : changePercent < 0 ? "-" : ""}${Math.abs(changePercent)}%`
       : undefined;
+
+  const handleLink = async () => {
+    const fromDate = new Date();
+    const toDate = new Date();
+    fromDate.setDate(fromDate.getDate() - 1);
+    fromDate.setHours(0, 0, 0, 0);
+    toDate.setHours(23, 59, 59, 999);
+    const parsedDate = JSON.stringify({ from: fromDate, to: toDate });
+    localStorage.setItem("daterange", JSON.stringify(parsedDate));
+    setDate({ from: fromDate, to: toDate });
+    navigate(href);
+  };
 
   return (
     <Card className="bg-background border py-4 shadow-sm hover:shadow-xl">
@@ -28,12 +45,12 @@ export function MetricCard({ label, value, changePercent, href }: MetricCardProp
           </div>
 
           {href ? (
-            <Link
-              to="/settings"
+            <div
+              onClick={handleLink}
               className="bg-secondary/60 text-foreground/70 border-border hover:bg-secondary/80 hover:text-foreground inline-flex items-center justify-center rounded-full border p-1 transition-transform hover:scale-105"
             >
               <ArrowUpRight size={25} />
-            </Link>
+            </div>
           ) : null}
         </div>
 
@@ -43,7 +60,7 @@ export function MetricCard({ label, value, changePercent, href }: MetricCardProp
           </div>
         </div>
 
-        {formattedChange && (
+        {trend !== TREND_OPTION.NO_CHANGE && (
           <div className="mt-2 flex items-center gap-2">
             {formattedChange ? (
               <Badge
@@ -58,9 +75,9 @@ export function MetricCard({ label, value, changePercent, href }: MetricCardProp
                 )}
               >
                 {isPositive ? (
-                  <TrendingUp className="!size-4" />
+                  <TrendingUp className="size-4!" />
                 ) : (
-                  <TrendingDown className="!size-4" />
+                  <TrendingDown className="size-4!" />
                 )}
                 {formattedChange}
               </Badge>
