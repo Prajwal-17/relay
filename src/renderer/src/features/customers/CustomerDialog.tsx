@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import useCustomers from "@/hooks/useCustomers";
+import useCustomers from "@/hooks/customers/useCustomers";
 import { CustomerSchema } from "@/lib/validation";
 import { Label } from "@radix-ui/react-label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

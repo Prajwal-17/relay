@@ -12,7 +12,8 @@ import type {
   SalePayload,
   SalesApi,
   ShareApi,
-  SortType
+  SortType,
+  TransactionType
 } from "../shared/types";
 
 const dashboardApi: DashboardApi = {
@@ -64,8 +65,8 @@ const customersApi: CustomersApi = {
   getCustomerByName: (customerName: string) =>
     ipcRenderer.invoke("customersApi:getCustomerByName", customerName),
   getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
-  getAllTransactionsById: (customerId: string) =>
-    ipcRenderer.invoke("customersApi:getAllTransactionsById", customerId),
+  getAllTransactionsById: (customerId: string, type: TransactionType, pageNo: PageNo) =>
+    ipcRenderer.invoke("customersApi:getAllTransactionsById", customerId, type, pageNo),
   deleteCustomer: (customerId: string) =>
     ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
   importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle"),

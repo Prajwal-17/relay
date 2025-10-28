@@ -313,7 +313,11 @@ export interface CustomersApi {
   getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
   getCustomerByName: (customerName: string) => Promise<ApiResponse<CustomersType | null>>;
   getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
-  getAllTransactionsById: (customerId: string) => Promise<ApiResponse<any>>;
+  getAllTransactionsById: (
+    customerId: string,
+    type: TransactionType,
+    pageNo: PageNo
+  ) => Promise<PaginatedApiResponse<SalesType[] | EstimateType[] | []>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
   importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;

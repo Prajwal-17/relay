@@ -1,8 +1,8 @@
-import useCustomers from "@/hooks/useCustomers";
+import useCustomers from "@/hooks/customers/useCustomers";
 import { Users } from "lucide-react";
 import { CustomerDetails } from "./CustomerDetails";
 import { CustomerSidebar } from "./CustomerSidebar";
-import { CustomerTransactions } from "./CustomerTransactions";
+import { CustomerTable } from "./CustomerTable";
 
 export const CustomerLayout = () => {
   const { selectedCustomer } = useCustomers();
@@ -15,7 +15,7 @@ export const CustomerLayout = () => {
           {selectedCustomer ? (
             <>
               <CustomerDetails />
-              <CustomerTransactions />
+              <CustomerTable customerId={selectedCustomer.id} />
             </>
           ) : (
             <div className="text-muted-foreground flex h-full items-center justify-center">

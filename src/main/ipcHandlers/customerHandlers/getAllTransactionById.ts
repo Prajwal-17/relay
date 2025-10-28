@@ -1,6 +1,12 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { AllTransactionsType, ApiResponse } from "../../../shared/types";
+import {
+  TRANSACTION_TYPE,
+  type EstimateType,
+  type PaginatedApiResponse,
+  type SalesType
+} from "../../../shared/types";
+import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates, sales } from "../../db/schema";
 
@@ -8,15 +14,75 @@ export function getAllTransactionsById() {
   // get transaction wrt to customer id
   ipcMain.handle(
     "customersApi:getAllTransactionsById",
-    async (_event, customerId): Promise<ApiResponse<AllTransactionsType>> => {
+    async (
+      _event,
+      customerId,
+      type,
+      pageNo
+    ): Promise<PaginatedApiResponse<SalesType[] | EstimateType[] | []>> => {
       try {
-        const allSales = await db.select().from(sales).where(eq(sales.customerId, customerId));
-        const allEstimates = await db
-          .select()
-          .from(estimates)
-          .where(eq(estimates.customerId, customerId));
+        if (pageNo === null || pageNo === undefined) {
+          return {
+            status: "success",
+            nextPageNo: null,
+            data: []
+          };
+        }
+        if (type === TRANSACTION_TYPE.SALES) {
+          const offset = (pageNo - 1) * 20;
+          const result = await db.query.sales.findMany({
+            where: eq(sales.customerId, customerId),
+            orderBy: desc(sales.createdAt),
+            limit: 20,
+            offset: offset
+          });
 
-        return { status: "success", data: [...allSales, ...allEstimates] };
+          const nextPageNo = result.length === 20 ? pageNo + 1 : null;
+
+          return {
+            status: "success",
+            nextPageNo: nextPageNo,
+            data:
+              result.length > 0
+                ? result.map((s) => ({
+                    ...s,
+                    invoiceNo: s.invoiceNo,
+                    grandTotal: s.grandTotal && formatToRupees(s.grandTotal)
+                  }))
+                : []
+          };
+        }
+
+        if (type === TRANSACTION_TYPE.ESTIMATES) {
+          const offset = (pageNo - 1) * 20;
+          const result = await db.query.estimates.findMany({
+            where: eq(estimates.customerId, customerId),
+            orderBy: desc(estimates.createdAt),
+            limit: 20,
+            offset: offset
+          });
+
+          const nextPageNo = result.length === 20 ? pageNo + 1 : null;
+
+          return {
+            status: "success",
+            nextPageNo: nextPageNo,
+            data:
+              result.length > 0
+                ? result.map((e) => ({
+                    ...e,
+                    estimateNo: e.estimateNo,
+                    grandTotal: e.grandTotal && formatToRupees(e.grandTotal)
+                  }))
+                : []
+          };
+        }
+
+        return {
+          status: "success",
+          nextPageNo: null,
+          data: []
+        };
       } catch (error) {
         console.log(error);
         return {

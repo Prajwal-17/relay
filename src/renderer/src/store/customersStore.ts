@@ -1,7 +1,9 @@
-import type { CustomersType } from "@shared/types";
+import { TRANSACTION_TYPE, type CustomersType, type TransactionType } from "@shared/types";
 import { create } from "zustand";
 
 type CustomersStoreType = {
+  filterType: TransactionType;
+  setFilterType: (newType: TransactionType) => void;
   openCustomerDialog: boolean;
   setOpenCustomerDialog: () => void;
   actionType: "add" | "edit";
@@ -24,6 +26,12 @@ function initialFormData() {
 }
 
 export const useCustomerStore = create<CustomersStoreType>((set) => ({
+  filterType: TRANSACTION_TYPE.SALES,
+  setFilterType: (newType) =>
+    set(() => ({
+      filterType: newType
+    })),
+
   openCustomerDialog: false,
   setOpenCustomerDialog: () =>
     set((state) => ({
