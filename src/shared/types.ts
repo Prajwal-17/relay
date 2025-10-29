@@ -258,6 +258,20 @@ export type MetricsSummary = {
   };
 };
 
+export const TIME_PERIOD = {
+  THIS_YEAR: "this_year",
+  THIS_WEEK: "this_week",
+  LAST_7_DAYS: "last_7_days"
+};
+
+export type TimePeriodType = (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD];
+
+export interface ChartDataPointType {
+  month: string;
+  sales: number;
+  estimates: number;
+}
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
 }
