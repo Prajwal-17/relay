@@ -1,9 +1,10 @@
 import { MetricsComponent } from "@/features/dashboard/MetricsComponent";
+import { RecentActivitiesTable } from "@/features/dashboard/RecentTransactionsTable";
 import { SalesEstimateChart } from "@/features/dashboard/SalesEstimatesChart";
 
 const HomePage = () => {
   return (
-    <div className="bg-background flex h-full flex-col gap-4 overflow-auto p-6">
+    <div className="bg-background flex h-full flex-col gap-4 overflow-auto px-6 py-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
       </div>
@@ -16,6 +17,7 @@ const HomePage = () => {
 
         <div className="flex flex-col gap-4 lg:col-span-2">{/* Top Products */}</div>
       </div>
+      <RecentActivitiesTable />
     </div>
   );
 };

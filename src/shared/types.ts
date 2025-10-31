@@ -275,6 +275,13 @@ export type ChartDataType = {
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
   getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
+  getRecentTransactions: (
+    type: TransactionType
+  ) => Promise<
+    ApiResponse<
+      (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+    >
+  >;
 }
 
 export interface ProductsApi {

@@ -42,7 +42,7 @@ export function SalesEstimateChart() {
   const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.LAST_7_DAYS);
 
   const { data, status, isError, error } = useQuery({
-    queryKey: ["chartmetrics", timePeriod],
+    queryKey: [timePeriod],
     queryFn: () => fetchChartMetrics(timePeriod),
     select: (response) => {
       return response.status === "success" ? response.data : null;

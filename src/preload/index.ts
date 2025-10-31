@@ -17,7 +17,8 @@ import type {
 
 const dashboardApi: DashboardApi = {
   getMetricsSummary: () => ipcRenderer.invoke("dashboardApi:getMetricsSummary"),
-  getChartMetrics: (timePeriod) => ipcRenderer.invoke("dashboardApi:getChartMetrics", timePeriod)
+  getChartMetrics: (timePeriod) => ipcRenderer.invoke("dashboardApi:getChartMetrics", timePeriod),
+  getRecentTransactions: (type) => ipcRenderer.invoke("dashboardApi:getRecentTransactions", type)
 };
 
 const productsApi: ProductsApi = {
