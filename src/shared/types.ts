@@ -266,14 +266,15 @@ export const TIME_PERIOD = {
 
 export type TimePeriodType = (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD];
 
-export interface ChartDataPointType {
-  month: string;
+export type ChartDataType = {
+  label: string;
   sales: number;
   estimates: number;
-}
+};
 
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
+  getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
 }
 
 export interface ProductsApi {

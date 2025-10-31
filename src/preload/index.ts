@@ -16,7 +16,8 @@ import type {
 } from "../shared/types";
 
 const dashboardApi: DashboardApi = {
-  getMetricsSummary: () => ipcRenderer.invoke("dashboardApi:getMetricsSummary")
+  getMetricsSummary: () => ipcRenderer.invoke("dashboardApi:getMetricsSummary"),
+  getChartMetrics: (timePeriod) => ipcRenderer.invoke("dashboardApi:getChartMetrics", timePeriod)
 };
 
 const productsApi: ProductsApi = {

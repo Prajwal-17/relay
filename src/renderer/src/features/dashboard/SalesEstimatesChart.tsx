@@ -9,15 +9,11 @@ import {
 } from "@/components/ui/select";
 import { timePeriodOptions } from "@/constants";
 import { TIME_PERIOD, type TimePeriodType } from "@shared/types";
+import { useQuery } from "@tanstack/react-query";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
-export interface ChartDataPoint {
-  month: string;
-  sales: number;
-  estimates: number;
-}
 
 const chartConfig = {
   sales: {
@@ -30,18 +26,34 @@ const chartConfig = {
   }
 };
 
-interface SalesEstimateChartProps {
-  data: ChartDataPoint[];
-  salesPercentageChange: number;
-  estimatesPercentageChange: number;
-}
+const fetchChartMetrics = async (timePeriod: TimePeriodType) => {
+  try {
+    const response = await window.dashboardApi.getChartMetrics(timePeriod);
+    return response;
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
 
-export function SalesEstimateChart({
-  data,
-  salesPercentageChange,
-  estimatesPercentageChange
-}: SalesEstimateChartProps) {
-  const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.THIS_YEAR);
+const salesPercentageChange = 8.4;
+const estimatesPercentageChange = 8.4;
+
+export function SalesEstimateChart() {
+  const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.LAST_7_DAYS);
+
+  const { data, status, isError, error } = useQuery({
+    queryKey: ["chartmetrics", timePeriod],
+    queryFn: () => fetchChartMetrics(timePeriod),
+    select: (response) => {
+      return response.status === "success" ? response.data : null;
+    }
+  });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error.message);
+    }
+  }, [error, isError]);
 
   const formatPercentage = (value: number): string => {
     const prefix = value > 0 ? "+" : "";
@@ -99,21 +111,29 @@ export function SalesEstimateChart({
       </CardHeader>
 
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px] w-full">
-          <BarChart data={data} margin={{ top: 20, right: 10, bottom: 20, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
-            />
-            <ChartTooltip content={<ChartTooltipContent className="justify-between text-base" />} />
-            <Bar dataKey="sales" fill="#1b82f6" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="estimates" fill="#10b981" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ChartContainer>
+        {status === "success" && data && (
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+            <BarChart
+              data={data}
+              margin={{ top: 20, right: 10, bottom: 20, left: 0 }}
+              maxBarSize={40}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+              />
+              <ChartTooltip
+                content={<ChartTooltipContent className="justify-between text-base" />}
+              />
+              <Bar dataKey="sales" fill="#1b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="estimates" fill="#10b981" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        )}
       </CardContent>
     </Card>
   );
