@@ -60,11 +60,11 @@ const DashboardTableRow = ({
   }, [navigate, transaction.id, pathname]);
 
   const onDelete = useCallback(() => {
-    deleteMutation.mutate({ type: pathname.slice(1), id: transaction.id });
+    deleteMutation.mutate({ type: pathname, id: transaction.id });
   }, [deleteMutation, pathname, transaction.id]);
 
   const onConvert = useCallback(() => {
-    convertMutation.mutate({ type: pathname.slice(1), id: transaction.id });
+    convertMutation.mutate({ type: pathname, id: transaction.id });
   }, [convertMutation, pathname, transaction.id]);
 
   return (

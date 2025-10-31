@@ -1,5 +1,5 @@
 import { useDashboardStore } from "@/store/dashboardStore";
-import { SortOption, type ApiResponse, type SortType } from "@shared/types";
+import { SortOption, TRANSACTION_TYPE, type ApiResponse, type SortType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -13,10 +13,10 @@ export type MutationVariables = {
 
 const handleDelete = async ({ type, id }: MutationVariables) => {
   try {
-    if (type === "sale") {
+    if (type === TRANSACTION_TYPE.SALES) {
       const response = await window.salesApi.deleteSale(id);
       return response;
-    } else if (type === "estimate") {
+    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
       const response = await window.estimatesApi.deleteEstimate(id);
       return response;
     } else {
