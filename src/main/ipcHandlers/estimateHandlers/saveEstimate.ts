@@ -100,7 +100,7 @@ export function saveEstimate() {
                   weight: item.weight,
                   unit: item.unit,
                   quantity: item.quantity,
-                  totalPrice: item.totalPrice
+                  totalPrice: formatToPaisa(item.totalPrice)
                 })
                 .run();
 
