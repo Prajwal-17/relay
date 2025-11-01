@@ -272,6 +272,13 @@ export type ChartDataType = {
   estimates: number;
 };
 
+export type TopProductDataPoint = {
+  id: string;
+  name: string;
+  totalQuantitySold: number;
+  sharePercent: number;
+};
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
   getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
@@ -282,6 +289,7 @@ export interface DashboardApi {
       (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
     >
   >;
+  getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
 }
 
 export interface ProductsApi {

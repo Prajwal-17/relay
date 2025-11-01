@@ -1,6 +1,7 @@
 import { MetricsComponent } from "@/features/dashboard/MetricsComponent";
 import { RecentActivitiesTable } from "@/features/dashboard/RecentTransactionsTable";
 import { SalesEstimateChart } from "@/features/dashboard/SalesEstimatesChart";
+import { TopProductsChart } from "@/features/dashboard/TopProductsChart";
 
 const HomePage = () => {
   return (
@@ -15,7 +16,9 @@ const HomePage = () => {
           <SalesEstimateChart />
         </div>
 
-        <div className="flex flex-col gap-4 lg:col-span-2">{/* Top Products */}</div>
+        <div className="flex flex-col gap-4 lg:col-span-2">
+          <TopProductsChart />
+        </div>
       </div>
       <RecentActivitiesTable />
     </div>
