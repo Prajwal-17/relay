@@ -12,7 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import useCustomers from "@/hooks/useCustomers";
+import useCustomers from "@/hooks/customers/useCustomers";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Label } from "@radix-ui/react-label";
 import type { ApiResponse } from "@shared/types";

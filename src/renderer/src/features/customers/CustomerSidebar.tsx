@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import useCustomers from "@/hooks/useCustomers";
+import useCustomers from "@/hooks/customers/useCustomers";
 import { Download, LoaderCircle, Plus, Search } from "lucide-react";
 import { CustomerDialog } from "./CustomerDialog";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
