@@ -1,5 +1,5 @@
-import { sendViaWhatsapp } from "./sendViaWhatsapp";
+import { saveAsPDF } from "./saveAsPDF";
 
 export function shareHandlers() {
-  sendViaWhatsapp();
+  saveAsPDF();
 }

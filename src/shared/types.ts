@@ -355,8 +355,5 @@ export interface CustomersApi {
 }
 
 export interface ShareApi {
-  sendViaWhatsapp: (
-    type: "sales" | "estimates",
-    transactionId: string
-  ) => Promise<ApiResponse<string>>;
+  saveAsPDF: (transactionId: string, type: "sales" | "estimates") => Promise<ApiResponse<string>>;
 }

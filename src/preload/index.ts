@@ -79,8 +79,8 @@ const customersApi: CustomersApi = {
 };
 
 const shareApi: ShareApi = {
-  sendViaWhatsapp: (type: "sales" | "estimates", transactionId: string) =>
-    ipcRenderer.invoke("shareApi:sendViaWhatsapp", type, transactionId)
+  saveAsPDF: (transactionId: string, type: "sales" | "estimates") =>
+    ipcRenderer.invoke("shareApi:saveAsPDF", transactionId, type)
 };
 
 if (process.contextIsolated) {

@@ -63,7 +63,7 @@ export const SummaryFooter = () => {
           </Button>
 
           <Button
-            onClick={() => handleActionMutation.mutate("sendViaWhatsapp")}
+            onClick={() => handleActionMutation.mutate("saveAsPDF")}
             variant="outline"
             size="lg"
             className="h-12 text-lg hover:cursor-pointer"

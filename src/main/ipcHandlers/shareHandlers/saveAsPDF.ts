@@ -11,9 +11,9 @@ import { formatToRupees, IndianRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates, sales } from "../../db/schema";
 
-export function sendViaWhatsapp() {
+export function saveAsPDF() {
   ipcMain.handle(
-    "shareApi:sendViaWhatsapp",
+    "shareApi:saveAsPDF",
     async (_event, id: string, type: TransactionType): Promise<ApiResponse<string>> => {
       try {
         const doc = new jsPDF();
