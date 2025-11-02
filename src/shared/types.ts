@@ -258,8 +258,38 @@ export type MetricsSummary = {
   };
 };
 
+export const TIME_PERIOD = {
+  THIS_YEAR: "this_year",
+  THIS_WEEK: "this_week",
+  LAST_7_DAYS: "last_7_days"
+};
+
+export type TimePeriodType = (typeof TIME_PERIOD)[keyof typeof TIME_PERIOD];
+
+export type ChartDataType = {
+  label: string;
+  sales: number;
+  estimates: number;
+};
+
+export type TopProductDataPoint = {
+  id: string;
+  name: string;
+  totalQuantitySold: number;
+  sharePercent: number;
+};
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
+  getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
+  getRecentTransactions: (
+    type: TransactionType
+  ) => Promise<
+    ApiResponse<
+      (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+    >
+  >;
+  getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
 }
 
 export interface ProductsApi {

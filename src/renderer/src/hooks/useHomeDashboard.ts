@@ -1,15 +1,7 @@
-import { useDashboardStore } from "@/store/dashboardStore";
-import { SortOption, TRANSACTION_TYPE, type ApiResponse, type SortType } from "@shared/types";
+import { TRANSACTION_TYPE, type ApiResponse } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
-import { useDateRangePicker } from "./useDateRangePicker";
-
-export type MutationVariables = {
-  type: string;
-  id: string;
-};
+import type { MutationVariables } from "./dashboard/useDashboard";
 
 const handleDelete = async ({ type, id }: MutationVariables) => {
   try {
@@ -42,29 +34,14 @@ const handleConvert = async ({ type, id }: MutationVariables) => {
     throw new Error((error as Error).message);
   }
 };
-export const useDashboard = () => {
-  const { type } = useParams();
-  const { date } = useDateRangePicker();
-  const sortBy = useDashboardStore((state) => state.sortBy);
-  const setSortBy = useDashboardStore((state) => state.setSortBy);
+export const useHomeDashboard = ({ type }: { type: string }) => {
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    let sortByValue = localStorage.getItem("sort-by");
-
-    if (!sortByValue) {
-      sortByValue = SortOption.DATE_NEWEST_FIRST;
-      localStorage.setItem("sort-by", sortByValue);
-    }
-
-    setSortBy(sortByValue as SortType);
-  }, [setSortBy]);
 
   const deleteMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
     mutationFn: ({ type, id }) => handleDelete({ type, id }),
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+        queryClient.invalidateQueries({ queryKey: [type], exact: false });
         toast.success(response.data);
       }
     },
@@ -77,7 +54,7 @@ export const useDashboard = () => {
     mutationFn: ({ type, id }) => handleConvert({ type, id }),
     onSuccess: (response) => {
       if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+        queryClient.invalidateQueries({ queryKey: [type], exact: false });
         toast.success(response.data);
       }
     },
@@ -87,8 +64,6 @@ export const useDashboard = () => {
   });
 
   return {
-    sortBy,
-    setSortBy,
     deleteMutation,
     convertMutation
   };
