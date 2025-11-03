@@ -44,15 +44,13 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     setCustomerContact,
     setBillingId,
     setCustomerId,
-    setBillingDate,
-    clearTransactionState
+    setBillingDate
   } = useTransactionState();
 
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
     queryKey: [type, id],
     queryFn: async () => {
       if (!id) throw new Error("Transaction Id does not exist");
-      clearTransactionState();
       return fetchTransactionById(type, id);
     },
     enabled: !!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)

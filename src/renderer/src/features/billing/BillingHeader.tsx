@@ -56,12 +56,6 @@ const BillingHeader = () => {
 
   const { type, id } = useParams<{ type: TransactionType; id?: string }>();
 
-  useEffect(() => {
-    if (!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)) {
-      setTransactionNo(null);
-    }
-  }, [type, id, setTransactionNo]);
-
   const { data, isFetched, isError, error } = useQuery({
     queryKey: [type, "getTransactionNo"],
     // null assertion - type cannot be null here

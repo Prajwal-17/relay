@@ -27,19 +27,6 @@ const useTransactionState = () => {
   const setSearchRow = useSearchDropdownStore((state) => state.setSearchRow);
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
 
-  function clearTransactionState() {
-    setBillingId(null);
-    setTransactionNo(null);
-    setCustomerId(null);
-    setCustomerName("");
-    setCustomerContact(null);
-    setBillingDate(new Date());
-    setLineItems([]);
-    setSearchRow(null);
-    setSearchParam("");
-    localStorage.setItem("bill-preview-date", new Date().toISOString());
-  }
-
   return {
     billingId,
     setBillingId,
@@ -62,8 +49,7 @@ const useTransactionState = () => {
     deleteLineItem,
     setSearchRow,
     setSearchParam,
-    setIsDropdownOpen,
-    clearTransactionState
+    setIsDropdownOpen
   };
 };
 

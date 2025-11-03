@@ -49,8 +49,7 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     customerName,
     customerContact,
     billingId,
-    billingDate,
-    clearTransactionState
+    billingDate
   } = useTransactionState();
 
   const receiptRef = useReceiptRefStore((state) => state.receiptRef);
@@ -134,7 +133,6 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     onSuccess: (response) => {
       if (response.status === "success") {
         toast.success(response.message ?? "Save Successfull");
-        clearTransactionState();
         navigate("/");
       } else if (response.status === "error") {
         toast.error(response.error.message);

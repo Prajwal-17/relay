@@ -37,6 +37,7 @@ type BillingStoreType = {
   addLineItem: (index: number, newItem: ProductsType) => void;
   updateLineItems: (id: string, field: string, value: string | number) => void;
   deleteLineItem: (id: string) => void;
+  reset: () => void;
 };
 
 function initialLineItem() {
@@ -53,6 +54,17 @@ function initialLineItem() {
     totalPrice: 0
   };
 }
+
+const initialBillingState = {
+  billingId: null,
+  transactionNo: null,
+  customerId: null,
+  customerName: "",
+  customerContact: null,
+  isNewCustomer: false,
+  billingDate: new Date(),
+  lineItems: [initialLineItem()]
+};
 
 export const useBillingStore = create<BillingStoreType>((set) => ({
   billingId: null, // sales.id || estimates.id
@@ -226,5 +238,9 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
       return {
         lineItems: updatedLineItems
       };
-    })
+    }),
+
+  reset: () => {
+    set(initialBillingState);
+  }
 }));

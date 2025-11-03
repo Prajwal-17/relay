@@ -10,6 +10,14 @@ type SearchDropdownStoreType = {
   setSearchRow: (rowIndex: number | null) => void;
   isDropdownOpen: boolean;
   setIsDropdownOpen: () => void;
+  reset: () => void;
+};
+
+const initialSearchDropdownState = {
+  searchParam: "",
+  searchResults: [],
+  searchRow: null,
+  isDropDownOpen: false
 };
 
 export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => ({
@@ -43,5 +51,9 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => (
   setIsDropdownOpen: () =>
     set((state) => ({
       isDropdownOpen: !state.isDropdownOpen
-    }))
+    })),
+
+  reset: () => {
+    set(initialSearchDropdownState);
+  }
 }));
