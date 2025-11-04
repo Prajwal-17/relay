@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
 const BillPreview = () => {
-  const { type } = useParams();
+  const { type } = useParams()
 
   const { lineItems, transactionNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(
@@ -24,17 +24,15 @@ const BillPreview = () => {
   useEffect(() => {
     setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
   }, [setReceiptRef]);
-
   if (!type) {
     return <Navigate to="/not-found" />;
   }
-
   return (
     <>
-      <div className="border-border flex w-1/4 flex-col items-center mt-0 justify-between overflow-y-auto border bg-neutral-100">
+      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">
         <div
           ref={localReceiptRef}
-          className="receipt no-break font-roboto border-border mt-0 mb-24 border bg-white px-1 pt-1 text-black"
+          className="receipt no-break font-roboto mt-0 mb-24 border border-green-500 bg-white px-1 pt-1 text-black"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -110,7 +108,6 @@ const BillPreview = () => {
             </span>
             <div className="pb-4 text-center">Thank You</div>
           </div>
-          <div className="h-[80px]" />
           {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
         </div>
