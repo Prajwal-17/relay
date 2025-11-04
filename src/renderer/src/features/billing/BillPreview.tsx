@@ -31,7 +31,7 @@ const BillPreview = () => {
 
   return (
     <>
-      <div className="border-border flex w-1/4 flex-col items-center justify-between overflow-y-auto border bg-neutral-100">
+      <div className="border-border flex w-1/4 flex-col items-center mt-0 justify-between overflow-y-auto border bg-neutral-100">
         <div
           ref={localReceiptRef}
           className="receipt no-break font-roboto border-border mt-0 mb-24 border bg-white px-1 pt-1 text-black"
@@ -110,6 +110,7 @@ const BillPreview = () => {
             </span>
             <div className="pb-4 text-center">Thank You</div>
           </div>
+          <div className="h-[80px]" />
           {/* <div className="break-after-page"></div> */}
           {/* <div className="py-2 text-center">{`*** You Saved ₹ ${calaculateAmtSaved()} ***`}</div> */}
         </div>
