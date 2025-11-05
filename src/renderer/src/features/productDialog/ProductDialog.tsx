@@ -36,7 +36,9 @@ export function ProductDialog() {
       <Dialog open={openProductDialog} onOpenChange={setOpenProductDialog}>
         <DialogContent
           onOpenAutoFocus={(e) => {
-            e.preventDefault();
+            if (actionType === "billing-page-edit" || actionType === "edit") {
+              e.preventDefault();
+            }
           }}
           onInteractOutside={(e) => {
             if (productMutation.isPending) e.preventDefault();
