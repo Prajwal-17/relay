@@ -3,9 +3,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
 import { useProductsStore } from "@/store/productsStore";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
+import { useRef } from "react";
 
 export default function ProductSearch() {
+  const inputRef = useRef<HTMLInputElement>(null);
   const filterType = useProductsStore((state) => state.filterType);
   const setFilterType = useProductsStore((state) => state.setFilterType);
   const { productsSearchParam, setProductsSearchParam } = useProductSearchV2(
@@ -20,11 +22,23 @@ export default function ProductSearch() {
             <div className="relative max-w-2xl flex-1">
               <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 transform" />
               <Input
+                ref={inputRef}
                 placeholder="Search products by name"
                 value={productsSearchParam}
                 onChange={(e) => setProductsSearchParam(e.target.value)}
                 className="bg-muted/30 h-16 rounded-lg pl-12 !text-xl font-medium shadow-sm"
               />
+              {productsSearchParam && (
+                <X
+                  onClick={() => {
+                    setProductsSearchParam("");
+                    if (inputRef.current) {
+                      inputRef.current.focus();
+                    }
+                  }}
+                  className="hover:bg-accent absolute top-1/2 right-4 -translate-y-1/2 transform cursor-pointer rounded-sm"
+                />
+              )}
             </div>
 
             <div className="flex items-center gap-4">

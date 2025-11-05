@@ -69,7 +69,7 @@ export function ProductDialog() {
                       value={formDataState.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter product name"
-                      className="px-4 py-6 !text-lg"
+                      className="px-4 py-6 !text-xl font-semibold"
                     />
                     {errors.name && <div className="text-red-500">{errors.name}</div>}
                   </div>
@@ -85,7 +85,7 @@ export function ProductDialog() {
                           value={formDataState.weight ?? ""}
                           onChange={(e) => handleInputChange("weight", e.target.value)}
                           placeholder="e.g., 500"
-                          className="px-4 py-6 !text-base"
+                          className="px-4 py-6 !text-lg font-medium"
                         />
                         {errors.weight && <div className="text-red-500">{errors.weight}</div>}
                       </div>
@@ -104,7 +104,7 @@ export function ProductDialog() {
                           </SelectTrigger>
                           <SelectContent>
                             {PRODUCT_UNITS.map((unit) => (
-                              <SelectItem className="text-base" key={unit} value={unit}>
+                              <SelectItem className="text-base font-medium" key={unit} value={unit}>
                                 {unit}
                               </SelectItem>
                             ))}
@@ -124,7 +124,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("purchasePrice", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-base"
+                        className="px-4 py-6 !text-lg font-medium"
                       />
                       {errors.purchasePrice && (
                         <div className="text-red-500">{errors.purchasePrice}</div>
@@ -144,7 +144,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("price", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-base"
+                        className="px-4 py-6 !text-lg font-medium"
                       />
                       {errors.price && <div className="text-red-500">{errors.price}</div>}
                     </div>
@@ -159,7 +159,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("mrp", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-base"
+                        className="px-4 py-6 !text-lg font-medium"
                       />
                       {errors.mrp && <div className="text-red-500">{errors.mrp}</div>}
                     </div>
