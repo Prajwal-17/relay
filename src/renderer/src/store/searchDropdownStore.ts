@@ -13,13 +13,6 @@ type SearchDropdownStoreType = {
   reset: () => void;
 };
 
-const initialSearchDropdownState = {
-  searchParam: "",
-  searchResults: [],
-  searchRow: null,
-  isDropDownOpen: false
-};
-
 export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => ({
   searchParam: "",
   setSearchParam: (query) =>
@@ -53,7 +46,11 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => (
       isDropdownOpen: !state.isDropdownOpen
     })),
 
-  reset: () => {
-    set(initialSearchDropdownState);
-  }
+  reset: () =>
+    set(() => ({
+      searchParam: "",
+      searchResults: [],
+      searchRow: null,
+      isDropDownOpen: false
+    }))
 }));

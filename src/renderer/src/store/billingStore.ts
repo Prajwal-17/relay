@@ -55,17 +55,6 @@ function initialLineItem() {
   };
 }
 
-const initialBillingState = {
-  billingId: null,
-  transactionNo: null,
-  customerId: null,
-  customerName: "",
-  customerContact: null,
-  isNewCustomer: false,
-  billingDate: new Date(),
-  lineItems: [initialLineItem()]
-};
-
 export const useBillingStore = create<BillingStoreType>((set) => ({
   billingId: null, // sales.id || estimates.id
   setBillingId: (newId) =>
@@ -240,7 +229,15 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
       };
     }),
 
-  reset: () => {
-    set(initialBillingState);
-  }
+  reset: () =>
+    set(() => ({
+      billingId: null,
+      transactionNo: null,
+      customerId: null,
+      customerName: "",
+      customerContact: null,
+      isNewCustomer: false,
+      billingDate: new Date(),
+      lineItems: [initialLineItem()]
+    }))
 }));
