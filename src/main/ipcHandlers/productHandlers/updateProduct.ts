@@ -33,6 +33,13 @@ export function updateProduct() {
             throw new Error("Product does not exist");
           }
 
+          const hasChanged =
+            originalProduct.price != payload.price ||
+            originalProduct.mrp != payload.mrp ||
+            originalProduct.purchasePrice != payload.purchasePrice;
+
+          if (!hasChanged) return;
+
           const updatedProduct = tx
             .update(products)
             .set({
@@ -46,15 +53,7 @@ export function updateProduct() {
               updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
             })
             .where(eq(products.id, productId))
-            .returning({
-              id: products.id,
-              name: products.name,
-              weight: products.weight,
-              unit: products.unit,
-              price: products.price,
-              mrp: products.mrp,
-              purchasePrice: products.purchasePrice
-            })
+            .returning()
             .get();
 
           if (!updatedProduct) {
@@ -62,7 +61,8 @@ export function updateProduct() {
           }
 
           // version history
-          tx.insert(productHistory)
+          const historyEntry = tx
+            .insert(productHistory)
             .values({
               name: updatedProduct.name,
               weight: updatedProduct.weight,
@@ -75,19 +75,16 @@ export function updateProduct() {
               oldPurchasePrice: originalProduct.purchasePrice,
               newPurchasePrice: updatedProduct.purchasePrice ? updatedProduct.purchasePrice : null
             })
-            .run();
+            .returning()
+            .get();
 
-          return updatedProduct;
+          return { updatedProduct, historyEntry };
         });
 
-        if (result.id) {
-          return { status: "success", data: "Successfully updated product" };
-        } else {
-          return {
-            status: "error",
-            error: { message: "No product was updated. Database changes were 0." }
-          };
-        }
+        return {
+          status: "success",
+          data: `Successfully updated product: ${result?.updatedProduct.name}`
+        };
       } catch (error) {
         console.log(error);
         return { status: "error", error: { message: "Could not update Product" } };
