@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
 const BillPreview = () => {
-  const { type } = useParams()
+  const { type } = useParams();
 
   const { lineItems, transactionNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(

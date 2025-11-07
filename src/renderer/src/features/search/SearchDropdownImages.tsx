@@ -6,13 +6,14 @@ const SearchDropdownImages = (idx: string) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
-    console.log(searchParams, setSearchParams, setSearchRow, setIsDropdownOpen)
-  }, [])
+    console.log(searchParams, setSearchParams, setSearchRow, setIsDropdownOpen);
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <>
       <div>Search Dropdown with Images</div>
-      {/* @ts-ignore */}
+      {/* @ts-ignore - temp fix */}
       {isDropdownOpen && searchRow === idx && (
         <div className="absolute inset-x-0 z-10 ml-24 h-[500px] rounded-xl bg-[#d0d5db]">
           <div className="flex h-full w-full flex-wrap overflow-auto px-5 py-4">
