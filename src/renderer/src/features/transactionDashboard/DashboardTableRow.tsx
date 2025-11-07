@@ -64,6 +64,7 @@ const DashboardTableRow = ({
   }, [deleteMutation, pathname, transaction.id]);
 
   const onConvert = useCallback(() => {
+    console.log("type", pathname, transaction.id)
     convertMutation.mutate({ type: pathname, id: transaction.id });
   }, [convertMutation, pathname, transaction.id]);
 

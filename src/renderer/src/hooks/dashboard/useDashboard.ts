@@ -29,10 +29,10 @@ const handleDelete = async ({ type, id }: MutationVariables) => {
 
 const handleConvert = async ({ type, id }: MutationVariables) => {
   try {
-    if (type === "sale") {
+    if (type === TRANSACTION_TYPE.SALES) {
       const response = await window.salesApi.convertSaletoEstimate(id);
       return response;
-    } else if (type === "estimate") {
+    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
       const response = await window.estimatesApi.convertEstimateToSale(id);
       return response;
     } else {
