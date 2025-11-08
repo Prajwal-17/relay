@@ -76,7 +76,7 @@ export default function ProductResults() {
                                   ) && (
                                     <Badge
                                       variant="outline"
-                                      className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
+                                      className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
                                     >
                                       {product.weight}
                                       {product.unit}
@@ -85,7 +85,7 @@ export default function ProductResults() {
                                 {product.mrp && (
                                   <Badge
                                     variant="outline"
-                                    className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-medium text-slate-600"
+                                    className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                   >
                                     MRP ₹{product.mrp}
                                   </Badge>
