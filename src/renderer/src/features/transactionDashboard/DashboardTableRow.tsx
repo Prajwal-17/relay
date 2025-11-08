@@ -190,7 +190,13 @@ const DashboardTableRow = ({
                         onClick={onConvert}
                         disabled={convertMutation.isPending}
                       >
-                        {convertMutation.isPending ? "Converting..." : "Convert"}
+                        {convertMutation.isPending
+                          ? "Converting..."
+                          : pathname === "sales"
+                            ? "Convert to Estimate"
+                            : pathname === "estimates"
+                              ? "Convert to Sale"
+                              : ""}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>

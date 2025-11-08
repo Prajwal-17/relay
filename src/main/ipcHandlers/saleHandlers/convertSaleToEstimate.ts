@@ -56,7 +56,7 @@ export function convertSaletoEstimate() {
               customerId: saleObj.customerId,
               grandTotal: saleObj.grandTotal,
               totalQuantity: saleObj.totalQuantity,
-              isPaid: saleObj.isPaid
+              isPaid: !saleObj.isPaid
             })
             .returning({ id: estimates.id })
             .get();

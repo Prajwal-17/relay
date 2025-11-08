@@ -72,7 +72,7 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     customerContact,
     grandTotal: calcTotalAmount,
     totalQuantity: calcTotalQuantity,
-    isPaid: true,
+    isPaid: transactionType === TRANSACTION_TYPE.SALES ? true : false,
     createdAt: billingDate.toISOString(),
     items: [
       ...lineItems

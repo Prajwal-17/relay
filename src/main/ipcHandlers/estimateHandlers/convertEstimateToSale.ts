@@ -51,7 +51,7 @@ export function convertEstimateToSale() {
               customerId: estimateObj.customerId,
               grandTotal: estimateObj.grandTotal,
               totalQuantity: estimateObj.totalQuantity,
-              isPaid: estimateObj.isPaid
+              isPaid: !estimateObj.isPaid
             })
             .returning({ id: estimates.id })
             .get();
