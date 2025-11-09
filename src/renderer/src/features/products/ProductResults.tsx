@@ -93,7 +93,7 @@ export default function ProductResults() {
                               </div>
                               <div className="flex items-center gap-3">
                                 <p className="text-muted-foreground mt-1 text-base font-medium">
-                                  {product.totalQuantitySold ?? "null"} sold
+                                  {product.totalQuantitySold?.toFixed(2) ?? "null"} sold
                                 </p>
                                 {product.purchasePrice && (
                                   <>

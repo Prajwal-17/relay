@@ -4,7 +4,7 @@ import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProd
 import { useProductsStore } from "@/store/productsStore";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
 import { Search, X } from "lucide-react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export default function ProductSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -13,6 +13,12 @@ export default function ProductSearch() {
   const { productsSearchParam, setProductsSearchParam } = useProductSearchV2(
     PRODUCTSEARCH_TYPE.PRODUCTPAGE
   );
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   return (
     <>
