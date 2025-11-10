@@ -1,7 +1,14 @@
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { useViewModal } from "@/hooks/dashboard/useViewModal";
 import { useViewModalStore } from "@/store/viewModalStore";
 import {
+  BATCH_CHECK_ACTION,
   DASHBOARD_TYPE,
   type DashboardType,
   type EstimateItemsType,
@@ -9,11 +16,11 @@ import {
 } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
-import { CheckCheck, X } from "lucide-react";
+import { CheckCheck, ChevronDown, X } from "lucide-react";
 import { ItemRow } from "./ItemRow";
 
 export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => {
-  const { data, calcTotalAmount, updateQtyMutation } = useViewModal({
+  const { data, calcTotalAmount, updateQtyMutation, batchUpdateQtyMutation } = useViewModal({
     type,
     id
   });
@@ -147,14 +154,45 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                   >
                     Close
                   </Button>
-                  <Button
-                    size="lg"
-                    className="bg-success text-success-foreground hover:bg-success/80 cursor-pointer text-lg"
-                    // onClick={handleCheckAll}
-                  >
-                    <CheckCheck className="size-6" />
-                    Check All
-                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="lg" className="cursor-pointer text-lg">
+                        Actions
+                        <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() =>
+                          batchUpdateQtyMutation.mutate({
+                            type,
+                            id: data.id,
+                            action: BATCH_CHECK_ACTION.MARK_ALL
+                          })
+                        }
+                        className="text-success/70 focus:text-success/90 cursor-pointer text-base font-medium"
+                      >
+                        <CheckCheck className="mr-2 h-4 w-4" />
+                        Check All
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() =>
+                          batchUpdateQtyMutation.mutate({
+                            type,
+                            id: data.id,
+                            action: BATCH_CHECK_ACTION.UNMARK_ALL
+                          })
+                        }
+                        className="text-destructive/70 focus:text-destructive/90 cursor-pointer text-base font-medium"
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Uncheck All
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { filterByDate } from "./filterByDate";
 import { getAllEstimates } from "./getAllEstimates";
 import { getEstimateById } from "./getEstimateById";
 import { getNextEstimateNo } from "./getNextEstimateNo";
+import { markAllEstimateItemsChecked } from "./markAllEstimateItemsChecked";
 import { registerEstimateItemQty } from "./registerEstimateItemsQty";
 import { saveEstimate } from "./saveEstimate";
 
@@ -16,4 +17,5 @@ export function estimateHandlers() {
   deleteEstimate();
   convertEstimateToSale();
   registerEstimateItemQty();
+  markAllEstimateItemsChecked();
 }

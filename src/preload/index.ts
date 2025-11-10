@@ -44,7 +44,9 @@ const salesApi: SalesApi = {
   convertSaletoEstimate: (saleId: string) =>
     ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId),
   registerSaleItemQty: (saleItemId, action) =>
-    ipcRenderer.invoke("salesApi:updateCheckedQuantity", saleItemId, action)
+    ipcRenderer.invoke("salesApi:updateCheckedQuantity", saleItemId, action),
+  markAllSaleItemsChecked: (saleId, action) =>
+    ipcRenderer.invoke("salesApi:markAllSaleItemsChecked", saleId, action)
 };
 
 const estimatesApi: EstimatesApi = {
@@ -59,7 +61,9 @@ const estimatesApi: EstimatesApi = {
   convertEstimateToSale: (estimateId: string) =>
     ipcRenderer.invoke("estimatesApi:convertEstimateToSale", estimateId),
   registerEstimateItemQty: (estimateItemId, action) =>
-    ipcRenderer.invoke("estimatesApi:updateCheckedQuantity", estimateItemId, action)
+    ipcRenderer.invoke("estimatesApi:updateCheckedQuantity", estimateItemId, action),
+  markAllEstimateItemsChecked: (estimateId, action) =>
+    ipcRenderer.invoke("estimatesApi:markAllEstimateItemsChecked", estimateId, action)
 };
 
 const customersApi: CustomersApi = {

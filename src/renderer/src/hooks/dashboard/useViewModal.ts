@@ -1,6 +1,7 @@
 import {
   DASHBOARD_TYPE,
   type ApiResponse,
+  type BatchCheckAction,
   type CustomersType,
   type DashboardType,
   type EstimateItemsType,
@@ -20,6 +21,12 @@ export type MutationVariables = {
   type: DashboardType;
   id: string;
   action: UpdateQtyAction;
+};
+
+type BatchUpdateMutationVariables = {
+  type: DashboardType;
+  id: string;
+  action: BatchCheckAction;
 };
 
 export type UnifiedTransaction = {
@@ -60,7 +67,22 @@ const handleUpdateQty = async ({ type, id, action }) => {
       const response = await window.estimatesApi.registerEstimateItemQty(id, action);
       return response;
     }
-    throw new Error("Invalid dashboard type");
+    throw new Error("Invalid dashboard transaction type");
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
+const handleBatchUpdateQty = async ({ type, id, action }) => {
+  try {
+    if (type === DASHBOARD_TYPE.SALES) {
+      const response = await window.salesApi.markAllSaleItemsChecked(id, action);
+      return response;
+    } else if (type === DASHBOARD_TYPE.ESTIMATES) {
+      const response = await window.estimatesApi.markAllEstimateItemsChecked(id, action);
+      return response;
+    }
+    throw new Error("Invalid dashboard transaction type");
   } catch (error) {
     throw new Error((error as Error).message);
   }
@@ -85,6 +107,23 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
       if (response.status === "success") {
         queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
       }
+    }
+  });
+
+  const batchUpdateQtyMutation = useMutation<
+    ApiResponse<{ isAllChecked: boolean }>,
+    Error,
+    BatchUpdateMutationVariables
+  >({
+    mutationFn: ({ type, id, action }) => handleBatchUpdateQty({ type, id, action }),
+    onSuccess: (response) => {
+      if (response.status === "success") {
+        queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
+        toast.success(response.message ?? "Successfully updated items.");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message);
     }
   });
 
@@ -138,5 +177,5 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
       return sum + Number(currentItem.totalPrice || 0);
     }, 0) ?? 0;
 
-  return { data: transactionData, calcTotalAmount, updateQtyMutation };
+  return { data: transactionData, calcTotalAmount, updateQtyMutation, batchUpdateQtyMutation };
 };

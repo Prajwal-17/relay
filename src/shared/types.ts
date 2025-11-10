@@ -289,6 +289,13 @@ export const UPDATE_QTY_ACTION = {
 
 export type UpdateQtyAction = (typeof UPDATE_QTY_ACTION)[keyof typeof UPDATE_QTY_ACTION];
 
+export const BATCH_CHECK_ACTION = {
+  MARK_ALL: "mark_all",
+  UNMARK_ALL: "unmark_all"
+} as const;
+
+export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
   getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
@@ -333,6 +340,10 @@ export interface SalesApi {
     saleItemId: string,
     action: UpdateQtyAction
   ) => Promise<ApiResponse<string>>;
+  markAllSaleItemsChecked: (
+    saleid: string,
+    action: BatchCheckAction
+  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
 }
 
 export interface EstimatesApi {
@@ -353,6 +364,10 @@ export interface EstimatesApi {
     estimateItemId: string,
     action: UpdateQtyAction
   ) => Promise<ApiResponse<string>>;
+  markAllEstimateItemsChecked: (
+    estimateId: string,
+    action: BatchCheckAction
+  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
 }
 
 export interface CustomersApi {
