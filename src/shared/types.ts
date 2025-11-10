@@ -73,6 +73,7 @@ export type SaleItemsType = {
   unit: string | null;
   quantity: number;
   totalPrice: number;
+  checkedQty: number;
 };
 
 export type EstimateItemsType = {
@@ -87,6 +88,7 @@ export type EstimateItemsType = {
   unit: string | null;
   quantity: number;
   totalPrice: number;
+  checkedQty: number;
 };
 
 export type PageNo = number | null;
@@ -279,6 +281,21 @@ export type TopProductDataPoint = {
   sharePercent: number;
 };
 
+export const UPDATE_QTY_ACTION = {
+  SET: "set",
+  INCREMENT: "inc",
+  DECREMENT: "dec"
+} as const;
+
+export type UpdateQtyAction = (typeof UPDATE_QTY_ACTION)[keyof typeof UPDATE_QTY_ACTION];
+
+export const BATCH_CHECK_ACTION = {
+  MARK_ALL: "mark_all",
+  UNMARK_ALL: "unmark_all"
+} as const;
+
+export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
   getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
@@ -319,6 +336,14 @@ export interface SalesApi {
   ) => Promise<PaginatedApiResponse<SaleSummaryType>>;
   deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
   convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
+  registerSaleItemQty: (
+    saleItemId: string,
+    action: UpdateQtyAction
+  ) => Promise<ApiResponse<string>>;
+  markAllSaleItemsChecked: (
+    saleid: string,
+    action: BatchCheckAction
+  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
 }
 
 export interface EstimatesApi {
@@ -335,6 +360,14 @@ export interface EstimatesApi {
   ) => Promise<PaginatedApiResponse<EstimateSummaryType>>;
   deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
   convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
+  registerEstimateItemQty: (
+    estimateItemId: string,
+    action: UpdateQtyAction
+  ) => Promise<ApiResponse<string>>;
+  markAllEstimateItemsChecked: (
+    estimateId: string,
+    action: BatchCheckAction
+  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
 }
 
 export interface CustomersApi {

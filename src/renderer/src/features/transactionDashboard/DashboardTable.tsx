@@ -1,5 +1,6 @@
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import { useViewModalStore } from "@/store/viewModalStore";
 import type { DashboardType } from "@shared/types";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import { useParams } from "react-router-dom";
@@ -10,6 +11,8 @@ export const DashboardTable = () => {
   const { type } = useParams();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
     useInfiniteScroll(type as DashboardType);
+  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
+  const setTransactionId = useViewModalStore((state) => state.setTransactionId);
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
@@ -32,8 +35,8 @@ export const DashboardTable = () => {
               <div className="col-span-3 flex items-center">Customer Name</div>
               <div className="col-span-2 flex items-center">Invoice No</div>
               <div className="col-span-2 flex items-center">Amount</div>
-              <div className="col-span-2 flex items-center">Status</div>
-              <div className="col-span-1 flex items-center">Actions</div>
+              <div className="col-span-1 flex items-center justify-start">Status</div>
+              <div className="col-span-2 flex items-center justify-center">Actions</div>
             </div>
 
             {transactionData.length > 0 ? (
@@ -69,6 +72,8 @@ export const DashboardTable = () => {
                             deleteMutation={deleteMutation}
                             convertMutation={convertMutation}
                             hasNextPage={hasNextPage}
+                            setIsViewModalOpen={setIsViewModalOpen}
+                            setTransactionId={setTransactionId}
                           />
                         </div>
                       );

@@ -42,7 +42,11 @@ const salesApi: SalesApi = {
     ipcRenderer.invoke("salesApi:getSalesDateRange", range, sortBy, pageNo),
   deleteSale: (saleId: string) => ipcRenderer.invoke("salesApi:deleteSale", saleId),
   convertSaletoEstimate: (saleId: string) =>
-    ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId)
+    ipcRenderer.invoke("salesApi:convertSaletoEstimate", saleId),
+  registerSaleItemQty: (saleItemId, action) =>
+    ipcRenderer.invoke("salesApi:updateCheckedQuantity", saleItemId, action),
+  markAllSaleItemsChecked: (saleId, action) =>
+    ipcRenderer.invoke("salesApi:markAllSaleItemsChecked", saleId, action)
 };
 
 const estimatesApi: EstimatesApi = {
@@ -55,7 +59,11 @@ const estimatesApi: EstimatesApi = {
   deleteEstimate: (estimateId: string) =>
     ipcRenderer.invoke("estimatesApi:deleteEstimate", estimateId),
   convertEstimateToSale: (estimateId: string) =>
-    ipcRenderer.invoke("estimatesApi:convertEstimateToSale", estimateId)
+    ipcRenderer.invoke("estimatesApi:convertEstimateToSale", estimateId),
+  registerEstimateItemQty: (estimateItemId, action) =>
+    ipcRenderer.invoke("estimatesApi:updateCheckedQuantity", estimateItemId, action),
+  markAllEstimateItemsChecked: (estimateId, action) =>
+    ipcRenderer.invoke("estimatesApi:markAllEstimateItemsChecked", estimateId, action)
 };
 
 const customersApi: CustomersApi = {

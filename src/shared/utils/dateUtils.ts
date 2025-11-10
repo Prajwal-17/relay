@@ -54,7 +54,7 @@ export function formatDateStrToISTDateObject(dateStr: string) {
 
 /**
  * Format date string to readable date time format.
- * "2025-09-13 02:30:00" -> "13 Sept 2025 02:30 Am"
+ * "2025-09-13T02:30:00Z" -> "13 Sept 2025 02:30 Am"
  * @param {string} dateStr
  * @returns {fullDate,timePart}
  */
@@ -78,4 +78,22 @@ export function formatDateStrToISTDateStr(dateStr: string) {
     fullDate,
     timePart
   };
+}
+
+export function formatDateStrToISTDateTimeStr(dateStr: string) {
+  const date = new Date(dateStr);
+
+  const fullDate = date.toLocaleDateString("en-IN", {
+    dateStyle: "medium",
+    timeZone: "Asia/Kolkata"
+  });
+
+  const timePart = date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata"
+  });
+
+  return `${fullDate} ${timePart}`;
 }

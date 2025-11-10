@@ -155,6 +155,13 @@
       "when": 1761328399722,
       "tag": "0021_curved_masked_marvel",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1762695054602,
+      "tag": "0022_stormy_wind_dancer",
+      "breakpoints": true
     }
   ]
 }

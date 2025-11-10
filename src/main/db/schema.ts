@@ -117,6 +117,7 @@ export const saleItems = sqliteTable("sale_items", {
   unit: text("unit"),
   quantity: integer("quantity").notNull(),
   totalPrice: integer("total_price").notNull(),
+  checkedQty: integer("checked_qty").default(0),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
@@ -160,6 +161,7 @@ export const estimateItems = sqliteTable("estimate_items", {
   unit: text("unit"),
   quantity: integer("quantity").notNull(),
   totalPrice: integer("total_price").notNull(),
+  checkedQty: integer("checked_qty").default(0),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
