@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { ViewModal } from "@/features/dashboard/ViewModal";
 import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import { useViewModalStore } from "@/store/viewModalStore";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
@@ -10,6 +12,9 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
   const navigate = useNavigate();
   const { totalRevenue, totalTransactions } = useInfiniteScroll(type);
   const isSales = type === DASHBOARD_TYPE.SALES;
+
+  const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
+  const transactionId = useViewModalStore((state) => state.transactionId);
 
   return (
     <>
@@ -59,6 +64,7 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
         </div>
 
         <DashboardCard />
+        {isViewModalOpen && <ViewModal type={type} id={transactionId} />}
       </div>
     </>
   );

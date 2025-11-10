@@ -43,7 +43,9 @@ const DashboardTableRow = ({
   isLoaderRow,
   hasNextPage,
   deleteMutation,
-  convertMutation
+  convertMutation,
+  setIsViewModalOpen,
+  setTransactionId
 }: {
   pathname: string;
   transaction: UnifiedTransaction;
@@ -51,9 +53,16 @@ const DashboardTableRow = ({
   hasNextPage: boolean;
   deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
   convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+  setIsViewModalOpen: (value: boolean) => void;
+  setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
   const handleView = useCallback(() => {
+    setIsViewModalOpen(true);
+    setTransactionId(transaction.id);
+  }, [setIsViewModalOpen, setTransactionId, transaction]);
+
+  const handleEdit = useCallback(() => {
     pathname === "sales"
       ? navigate(`/billing/sales/edit/${transaction.id}`)
       : navigate(`/billing/estimates/edit/${transaction.id}`);
@@ -64,7 +73,6 @@ const DashboardTableRow = ({
   }, [deleteMutation, pathname, transaction.id]);
 
   const onConvert = useCallback(() => {
-    console.log("type", pathname, transaction.id)
     convertMutation.mutate({ type: pathname, id: transaction.id });
   }, [convertMutation, pathname, transaction.id]);
 
@@ -94,7 +102,7 @@ const DashboardTableRow = ({
             </span>
           </div>
           <div className="col-span-3 flex items-center gap-2 font-medium">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-200 text-purple-600">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-200 text-purple-600">
               {transaction.customerName.charAt(0)}
             </div>
             <span className="truncate">{transaction.customerName}</span>
@@ -106,7 +114,7 @@ const DashboardTableRow = ({
           <div className="col-span-2 flex items-center font-semibold">
             {transaction.grandTotal ? IndianRupees.format(transaction.grandTotal) : "-"}
           </div>
-          <div className="col-span-2 flex items-center">
+          <div className="col-span-1 flex items-center justify-start">
             {transaction.isPaid ? (
               <Badge className="bg-success/10 text-success border-success/20 text-sm">Paid</Badge>
             ) : (
@@ -115,10 +123,22 @@ const DashboardTableRow = ({
               </Badge>
             )}
           </div>
-          <div className="col-span-1 flex items-center justify-center gap-1">
+          <div className="col-span-2 flex items-center justify-center gap-1">
             <Tooltip>
               <TooltipTrigger
                 onClick={handleView}
+                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
+              >
+                <Eye size={20} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-base">View</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger
+                onClick={handleEdit}
                 className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
               >
                 <Edit size={20} />
@@ -204,10 +224,6 @@ const DashboardTableRow = ({
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem disabled>
-                  <Eye className="mr-1 h-4 w-4" />
-                  <span className="text-lg">View</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem disabled>
                   <Printer className="mr-1 h-4 w-4" />
                   <span className="text-lg">Print</span>

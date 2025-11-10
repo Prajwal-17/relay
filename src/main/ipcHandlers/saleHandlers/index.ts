@@ -4,6 +4,7 @@ import { filterByDate } from "./filterByDate";
 import { getAllSales } from "./getAllSales";
 import { getNextInvoiceNo } from "./getNextInvoiceNo";
 import { getSaleById } from "./getSaleById";
+import { registerSaleItemQty } from "./registerSaleItemQty";
 import { saveSale } from "./saveSale";
 
 export function saleHandlers() {
@@ -14,4 +15,5 @@ export function saleHandlers() {
   filterByDate();
   deleteSale();
   convertSaletoEstimate();
+  registerSaleItemQty();
 }
