@@ -41,7 +41,8 @@ export function getSaleById() {
                 ...item,
                 mrp: item.mrp && formatToRupees(item.mrp),
                 price: formatToRupees(item.price),
-                totalPrice: formatToRupees(item.totalPrice)
+                totalPrice: formatToRupees(item.totalPrice),
+                checkedQty: item.checkedQty ?? 0
               };
             }),
             updatedAt: saleObj.updatedAt,
