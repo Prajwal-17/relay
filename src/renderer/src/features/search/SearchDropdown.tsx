@@ -28,7 +28,7 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
         {isDropdownOpen && searchRow === idx + 1 && (
           <div
             ref={parentRef}
-            className="bg-background border-border absolute top-full left-[10%] z-50 max-h-96 w-[60%] overflow-y-auto rounded-lg border py-1 shadow-xl"
+            className="bg-background border-border absolute top-full left-[10%] z-30 max-h-96 w-[60%] overflow-y-auto rounded-lg border py-1 shadow-xl"
           >
             {searchResults.length === 0 ? (
               <div className="text-muted-foreground p-16 text-center">

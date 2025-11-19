@@ -72,7 +72,7 @@ export const Sidebar = () => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             ref={sidebarRef}
             onMouseLeave={handleMouseLeave}
-            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-20 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
+            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-50 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between">
