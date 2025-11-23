@@ -1,5 +1,5 @@
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductsType } from "../../../shared/types";
+import type { ApiResponse, ProductPayload } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { productHistory, products } from "../../db/schema";
@@ -8,7 +8,7 @@ export function addNewProduct() {
   // add New product
   ipcMain.handle(
     "productsApi:addNewProduct",
-    async (_event, payload: Omit<ProductsType, "id">): Promise<ApiResponse<string>> => {
+    async (_event, payload: ProductPayload): Promise<ApiResponse<string>> => {
       try {
         const result = db.transaction((tx) => {
           const product = tx

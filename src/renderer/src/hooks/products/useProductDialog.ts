@@ -1,6 +1,6 @@
 import { ProductSchema } from "@/lib/validation";
 import { useProductsStore } from "@/store/productsStore";
-import type { ApiResponse, ProductsType } from "@shared/types";
+import type { ApiResponse, ProductPayload, ProductsType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -14,26 +14,26 @@ const handleDelete = async (productId: string) => {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
-const addProduct = async (formattedFormData: Omit<ProductsType, "id">) => {
+const addProduct = async (payload: ProductPayload) => {
   try {
-    const response = await window.productsApi.addNewProduct(formattedFormData);
+    const response = await window.productsApi.addNewProduct(payload);
     return response;
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
 
-const updateProduct = async (formattedFormData: ProductsType) => {
+const updateProduct = async (productId: string, updatedPayload: Partial<ProductsType>) => {
   try {
-    const response = await window.productsApi.updateProduct(
-      formattedFormData,
-      formattedFormData.id
-    );
+    const response = await window.productsApi.updateProduct(productId, updatedPayload);
     return response;
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
+
+const AddProductSchema = ProductSchema.omit({ id: true });
+const EditProductSchema = ProductSchema.partial();
 
 export const useProductDialog = () => {
   const filterType = useProductsStore((state) => state.filterType);
@@ -41,8 +41,12 @@ export const useProductDialog = () => {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const actionType = useProductsStore((state) => state.actionType);
   const setActionType = useProductsStore((state) => state.setActionType);
+  const productId = useProductsStore((state) => state.productId);
+  const setProductId = useProductsStore((state) => state.setProductId);
   const formDataState = useProductsStore((state) => state.formDataState);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
+  const dirtyFields = useProductsStore((state) => state.dirtyFields);
+  const setDirtyFields = useProductsStore((state) => state.setDirtyFields);
   const searchParam = useProductsStore((state) => state.searchParam);
   const errors = useProductsStore((state) => state.errors);
   const setErrors = useProductsStore((state) => state.setErrors);
@@ -64,10 +68,18 @@ export const useProductDialog = () => {
     if (actionType === "billing-page-edit") {
       setErrors({});
     }
-  }, [actionType, setFormDataState, setErrors]);
+  }, [actionType, setFormDataState, setErrors, setProductId]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormDataState({ [field]: value });
+    setFormDataState({
+      [field]: value
+    });
+
+    if (actionType === "billing-page-edit" || actionType === "edit") {
+      setDirtyFields({
+        [field]: value
+      });
+    }
 
     const result = ProductSchema.safeParse({
       ...formDataState,
@@ -86,30 +98,26 @@ export const useProductDialog = () => {
     }
   };
 
-  const formattedFormData = {
-    ...formDataState,
-    mrp: formDataState.mrp ? Number(formDataState.mrp) : null,
-    price: Number(formDataState.price),
-    purchasePrice: formDataState.purchasePrice ? Number(formDataState.purchasePrice) : null
-  };
-
   const productMutation = useMutation({
     mutationFn: async ({
       action,
-      formData
+      payload
     }:
       | {
           action: "add";
-          formData: Omit<ProductsType, "id">;
+          payload: ProductPayload;
         }
       | {
           action: "edit" | "billing-page-edit";
-          formData: ProductsType;
+          payload: Partial<ProductPayload>;
         }) => {
       if (action === "add") {
-        return addProduct(formData);
+        return addProduct(payload);
       } else {
-        return updateProduct(formData);
+        if (!productId) {
+          throw new Error("Product Id does not exist");
+        }
+        return updateProduct(productId, payload);
       }
     },
     onSuccess: (response) => {
@@ -129,10 +137,16 @@ export const useProductDialog = () => {
   });
 
   const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
-    const result = ProductSchema.safeParse(formattedFormData);
+    let parseResult;
 
-    if (!result.success) {
-      const formatted = z.flattenError(result.error);
+    if (action === "add") {
+      parseResult = AddProductSchema.safeParse(formDataState);
+    } else {
+      parseResult = EditProductSchema.safeParse(dirtyFields);
+    }
+
+    if (!parseResult.success) {
+      const formatted = z.flattenError(parseResult.error);
       const errorRecord = { ...errors };
 
       for (const field in formatted.fieldErrors) {
@@ -142,20 +156,11 @@ export const useProductDialog = () => {
       return;
     }
 
-    /**
-     * The `id` is optional in zod ProductSchema.
-     * So Omit id from ProductsType & check for `id` in actionType "edit" or "billing-page-edit"
-     */
     if (action === "add") {
-      productMutation.mutate({ action: action, formData: result.data as Omit<ProductsType, "id"> });
+      productMutation.mutate({ action, payload: parseResult.data });
       return;
     }
-
-    if (!result.data?.id) {
-      toast.error("Product does not exist");
-      return;
-    }
-    productMutation.mutate({ action: action, formData: result.data as ProductsType });
+    productMutation.mutate({ action, payload: parseResult.data });
   };
 
   const deleteProductMutation = useMutation<ApiResponse<string>, Error, string>({
@@ -186,8 +191,9 @@ export const useProductDialog = () => {
     setShowDeleteConfirm,
     errors,
     setErrors,
+    productId,
     formDataState,
-    setFormDataState,
+    dirtyFields,
     handleInputChange,
     handleSubmit,
     handleDelete,

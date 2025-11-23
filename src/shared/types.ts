@@ -174,7 +174,7 @@ export type EstimatePayloadItems = {
   totalPrice: number;
 };
 
-export type ProductPayload = ProductsType & { isDisabled?: boolean };
+export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
 
 export type FilteredGoogleContactsType = {
   id: number;
@@ -317,8 +317,11 @@ export interface ProductsApi {
     limit: number,
     filterType?: ProductFilterType
   ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
-  addNewProduct: (payload: Omit<ProductsType, "id">) => Promise<ApiResponse<string>>;
-  updateProduct: (payload: ProductPayload, productId: string) => Promise<ApiResponse<string>>;
+  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
+  updateProduct: (
+    productId: string,
+    payload: Partial<ProductPayload>
+  ) => Promise<ApiResponse<string>>;
   deleteProduct: (productId: string) => Promise<ApiResponse<string>>;
 }
 

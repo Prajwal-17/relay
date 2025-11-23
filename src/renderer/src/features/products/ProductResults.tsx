@@ -7,6 +7,7 @@ import { useProductsStore } from "@/store/productsStore";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
+  const setProductId = useProductsStore((state) => state.setProductId);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
@@ -128,6 +129,7 @@ export default function ProductResults() {
                               onClick={() => {
                                 setActionType("edit");
                                 setOpenProductDialog();
+                                setProductId(product.id);
                                 setFormDataState({
                                   ...product,
                                   mrp: product.mrp,
