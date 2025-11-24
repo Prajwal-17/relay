@@ -1,9 +1,9 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductPayload } from "../../../shared/types";
+import type { ApiResponse, ProductHistoryType, ProductPayload } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
-import { products } from "../../db/schema";
+import { productHistory, products } from "../../db/schema";
 
 export function updateProduct() {
   // update product
@@ -65,6 +65,7 @@ export function updateProduct() {
           }
         }
 
+        // disabled state
         const isDisabledProvided = Object.keys(payload).includes("isDisabled");
 
         if (isDisabledProvided && existingProduct.isDisabled !== payload.isDisabled) {
@@ -74,7 +75,7 @@ export function updateProduct() {
           updatedFields["disabledAt"] = disabledAt;
         }
 
-        const result = db
+        const updatedProduct = db
           .update(products)
           .set({
             ...updatedFields
@@ -83,13 +84,47 @@ export function updateProduct() {
           .returning()
           .get();
 
-        if (!result) {
+        if (!updatedProduct) {
           throw new Error("Failed to updated product.");
+        }
+
+        function cap(s: string) {
+          return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        const changedFields: Partial<ProductHistoryType> = {};
+
+        currencyFields.forEach((field) => {
+          const oldValue = existingProduct[field];
+          const newValue = updatedProduct[field];
+
+          if (oldValue !== newValue) {
+            changedFields[`old${cap(field)}`] = oldValue;
+
+            changedFields[`new${cap(field)}`] = newValue;
+          }
+        });
+
+        if (Object.keys(changedFields).length > 0) {
+          db.insert(productHistory)
+            .values({
+              name: updatedProduct.name,
+              weight: updatedProduct.weight,
+              unit: updatedProduct.unit,
+              productId: updatedProduct.id,
+              oldPrice: changedFields.oldPrice ?? null,
+              newPrice: changedFields.newPrice ?? null,
+              oldMrp: changedFields.oldMrp ?? null,
+              newMrp: changedFields.newMrp ?? null,
+              oldPurchasePrice: changedFields.oldPurchasePrice ?? null,
+              newPurchasePrice: changedFields.newPurchasePrice ?? null
+            })
+            .run();
         }
 
         return {
           status: "success",
-          data: `Successfully updated product: ${result?.name}`
+          data: `Successfully updated product: ${updatedProduct?.name}`
         };
       } catch (error) {
         console.log(error);
