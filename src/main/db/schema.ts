@@ -3,21 +3,6 @@ import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { Role } from "./enum";
 
-export const users = sqliteTable("users", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  name: text("name").notNull(),
-  role: text("role").notNull(),
-  password: text("password").notNull(),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
-
 export const customers = sqliteTable("customers", {
   id: text("id")
     .primaryKey()
@@ -38,6 +23,7 @@ export const products = sqliteTable("products", {
     .primaryKey()
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull(),
+  productSnapshot: text("product_snapshot").notNull().default(""),
   weight: text("weight"),
   unit: text("unit"),
   mrp: integer("mrp"),
@@ -110,6 +96,7 @@ export const saleItems = sqliteTable("sale_items", {
     .notNull(),
   productId: text("product_id").references(() => products.id),
   name: text("name").notNull(),
+  productSnapshot: text("product_snapshot").notNull().default(""),
   mrp: integer("mrp"),
   price: integer("price").notNull(),
   purchasePrice: integer("purchase_price"),
@@ -117,6 +104,51 @@ export const saleItems = sqliteTable("sale_items", {
   unit: text("unit"),
   quantity: integer("quantity").notNull(),
   totalPrice: integer("total_price").notNull(),
+  checkedQty: integer("checked_qty").default(0),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
+export const drafts = sqliteTable("drafts", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
+  type: text("type", { enum: ["sale", "estimate"] }).notNull(),
+  draftNo: integer("invoice_no").notNull().unique(),
+  customerId: text("customer_id")
+    .references(() => customers.id)
+    .notNull(),
+  grandTotal: integer("grand_total", { mode: "number" }),
+  totalQuantity: real("total_quantity"),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
+export const draftItems = sqliteTable("draft_items", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
+  draftId: text("draft_id")
+    .references(() => drafts.id, { onDelete: "cascade" })
+    .notNull(),
+  productId: text("product_id").references(() => products.id),
+  name: text("name").notNull(),
+  productSnapshot: text("product_snapshot").default(""),
+  mrp: integer("mrp"),
+  price: integer("price"),
+  purchasePrice: integer("purchase_price"),
+  weight: text("weight"),
+  unit: text("unit"),
+  quantity: integer("quantity"),
+  totalPrice: integer("total_price"),
   checkedQty: integer("checked_qty").default(0),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
@@ -154,6 +186,7 @@ export const estimateItems = sqliteTable("estimate_items", {
     .notNull(),
   productId: text("product_id").references(() => products.id),
   name: text("name").notNull(),
+  productSnapshot: text("product_snapshot").notNull().default(""),
   mrp: integer("mrp"),
   price: integer("price").notNull(),
   purchasePrice: integer("purchase_price"),
