@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { AlertTriangle, History, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 export function ProductDialog() {
   const {
@@ -22,9 +23,10 @@ export function ProductDialog() {
     actionType,
     showDeleteConfirm,
     setShowDeleteConfirm,
+    productId,
     formDataState,
+    dirtyFields,
     deleteProductMutation,
-    setFormDataState,
     handleSubmit,
     handleInputChange,
     errors,
@@ -186,7 +188,7 @@ export function ProductDialog() {
                         <Switch
                           id="status"
                           checked={!formDataState.isDisabled}
-                          onCheckedChange={(checked) => setFormDataState({ isDisabled: !checked })}
+                          onCheckedChange={(checked) => handleInputChange("isDisabled", !checked)}
                           className="scale-125"
                         />
                       </div>
@@ -262,7 +264,11 @@ export function ProductDialog() {
                                 size="default"
                                 disabled={deleteProductMutation.isPending}
                                 onClick={() => {
-                                  deleteProductMutation.mutate(formDataState.id);
+                                  if (!productId) {
+                                    toast.error("Product Id does exist.");
+                                    return;
+                                  }
+                                  deleteProductMutation.mutate(productId);
                                 }}
                                 className="bg-destructive text-destructive-foreground h-12 flex-1 cursor-pointer text-lg hover:opacity-90 disabled:opacity-60"
                               >
@@ -295,7 +301,12 @@ export function ProductDialog() {
                   onClick={() => {
                     handleSubmit(actionType);
                   }}
-                  disabled={productMutation.isPending}
+                  disabled={
+                    productMutation.isPending ||
+                    (actionType === "add"
+                      ? Object.keys(formDataState).length === 0
+                      : Object.keys(dirtyFields).length === 0)
+                  }
                   className="bg-primary hover:bg-primary/80 h-12 cursor-pointer px-8 text-base disabled:opacity-60"
                 >
                   {productMutation.isPending

@@ -1,7 +1,7 @@
 import { PRODUCT_FILTER, type ProductFilterType, type ProductsType } from "@shared/types";
 import { create } from "zustand";
 
-export type ProductsFormType = Omit<ProductsType, "price"> & {
+export type ProductsFormType = Omit<ProductsType, "price" | "id"> & {
   price: string;
 };
 
@@ -16,15 +16,18 @@ type ProductsStoreType = {
   setSearchParam: (param: string) => void;
   searchResult: ProductsType[] | [];
   setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
+  productId: string | null;
+  setProductId: (id: string | null) => void;
   formDataState: ProductsFormType;
   setFormDataState: (data: Partial<ProductsFormType>) => void;
+  dirtyFields: Partial<ProductsFormType>;
+  setDirtyFields: (data: Partial<ProductsFormType>) => void;
   errors: Record<string, string>;
   setErrors: (errObj: Record<string, string>) => void;
 };
 
 function initialFormData() {
   return {
-    id: "",
     name: "",
     weight: null,
     unit: null,
@@ -75,6 +78,12 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
       }
     }),
 
+  productId: null,
+  setProductId: (id) =>
+    set(() => ({
+      productId: id
+    })),
+
   formDataState: initialFormData(),
   setFormDataState: (data) =>
     set((state) => {
@@ -86,6 +95,20 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
 
       return {
         formDataState: { ...state.formDataState, ...data }
+      };
+    }),
+
+  dirtyFields: {},
+  setDirtyFields: (data) =>
+    set((state) => {
+      if (Object.keys(data).length === 0) {
+        return {
+          dirtyFields: initialFormData()
+        };
+      }
+
+      return {
+        dirtyFields: { ...state.dirtyFields, ...data }
       };
     }),
 

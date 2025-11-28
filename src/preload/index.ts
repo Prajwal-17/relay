@@ -28,8 +28,8 @@ const productsApi: ProductsApi = {
   search: (query, pageNo, limit, filterType) =>
     ipcRenderer.invoke("productsApi:search", query, pageNo, limit, filterType),
   addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload),
-  updateProduct: (payload, productId) =>
-    ipcRenderer.invoke("productsApi:updateProduct", payload, productId),
+  updateProduct: (productId, payload) =>
+    ipcRenderer.invoke("productsApi:updateProduct", productId, payload),
   deleteProduct: (productId) => ipcRenderer.invoke("productsApi:deleteProduct", productId)
 };
 

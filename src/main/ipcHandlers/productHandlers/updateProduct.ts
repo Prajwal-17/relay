@@ -1,6 +1,6 @@
-import { eq, SQL, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductPayload } from "../../../shared/types";
+import type { ApiResponse, ProductHistoryType, ProductPayload } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { productHistory, products } from "../../db/schema";
@@ -9,81 +9,122 @@ export function updateProduct() {
   // update product
   ipcMain.handle(
     "productsApi:updateProduct",
-    async (_event, payload: ProductPayload, productId: string): Promise<ApiResponse<string>> => {
+    async (
+      _event,
+      productId: string,
+      payload: Partial<ProductPayload>
+    ): Promise<ApiResponse<string>> => {
       try {
-        const product = db.select().from(products).where(eq(products.id, productId)).get();
+        const currencyFields = ["price", "purchasePrice", "mrp"] as const;
 
-        let disabledAt: SQL | null = null;
-
-        if (product?.isDisabled !== payload.isDisabled) {
-          disabledAt = payload.isDisabled ? sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))` : null;
+        if (!productId) {
+          return {
+            status: "error",
+            error: {
+              message: "The productsId cannot be empty."
+            }
+          };
         }
 
-        // eslint-disable-next-line
-        const { id, createdAt, updatedAt, ...updatePayload } = payload as any;
+        if (Object.keys(products).length === 0) {
+          return {
+            status: "error",
+            error: {
+              message: "The 'products' object cannot be empty. Please provide at least one product."
+            }
+          };
+        }
 
-        const result = db.transaction((tx) => {
-          const originalProduct = tx
-            .select()
-            .from(products)
-            .where(eq(products.id, productId))
-            .get();
+        const existingProduct = db.select().from(products).where(eq(products.id, productId)).get();
 
-          if (!originalProduct) {
-            throw new Error("Product does not exist");
+        if (!existingProduct) {
+          return {
+            status: "error",
+            error: {
+              message: "Product does not exist"
+            }
+          };
+        }
+
+        const updatedFields = {};
+
+        for (const field in payload) {
+          const value = payload[field];
+          if (value === undefined) {
+            continue;
           }
 
-          const hasChanged =
-            originalProduct.price != payload.price ||
-            originalProduct.mrp != payload.mrp ||
-            originalProduct.purchasePrice != payload.purchasePrice;
-
-          if (!hasChanged) return;
-
-          const updatedProduct = tx
-            .update(products)
-            .set({
-              ...updatePayload,
-              mrp: updatePayload.mrp ? formatToPaisa(updatePayload.mrp) : null,
-              price: formatToPaisa(updatePayload.price),
-              purchasePrice: updatePayload.purchasePrice
-                ? formatToPaisa(updatePayload.purchasePrice)
-                : null,
-              disabledAt,
-              updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
-            })
-            .where(eq(products.id, productId))
-            .returning()
-            .get();
-
-          if (!updatedProduct) {
-            throw new Error("Failed to get ID for the new product.");
+          if (currencyFields.includes(field as any)) {
+            if (value === null) {
+              updatedFields[field] = null;
+            } else {
+              updatedFields[field] = formatToPaisa(value);
+            }
+          } else {
+            updatedFields[field] = value;
           }
+        }
 
-          // version history
-          const historyEntry = tx
-            .insert(productHistory)
+        // disabled state
+        const isDisabledProvided = Object.keys(payload).includes("isDisabled");
+
+        if (isDisabledProvided && existingProduct.isDisabled !== payload.isDisabled) {
+          const disabledAt = payload.isDisabled
+            ? sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+            : null;
+          updatedFields["disabledAt"] = disabledAt;
+        }
+
+        const updatedProduct = db
+          .update(products)
+          .set({
+            ...updatedFields
+          })
+          .where(eq(products.id, productId))
+          .returning()
+          .get();
+
+        if (!updatedProduct) {
+          throw new Error("Failed to updated product.");
+        }
+
+        function cap(s: string) {
+          return s.charAt(0).toUpperCase() + s.slice(1);
+        }
+
+        const changedFields: Partial<ProductHistoryType> = {};
+
+        currencyFields.forEach((field) => {
+          const oldValue = existingProduct[field];
+          const newValue = updatedProduct[field];
+
+          if (oldValue !== newValue) {
+            changedFields[`old${cap(field)}`] = oldValue;
+
+            changedFields[`new${cap(field)}`] = newValue;
+          }
+        });
+
+        if (Object.keys(changedFields).length > 0) {
+          db.insert(productHistory)
             .values({
               name: updatedProduct.name,
               weight: updatedProduct.weight,
               unit: updatedProduct.unit,
               productId: updatedProduct.id,
-              oldPrice: originalProduct.price,
-              newPrice: updatedProduct.price,
-              oldMrp: originalProduct.mrp,
-              newMrp: updatedProduct.mrp ? updatedProduct.mrp : null,
-              oldPurchasePrice: originalProduct.purchasePrice,
-              newPurchasePrice: updatedProduct.purchasePrice ? updatedProduct.purchasePrice : null
+              oldPrice: changedFields.oldPrice ?? null,
+              newPrice: changedFields.newPrice ?? null,
+              oldMrp: changedFields.oldMrp ?? null,
+              newMrp: changedFields.newMrp ?? null,
+              oldPurchasePrice: changedFields.oldPurchasePrice ?? null,
+              newPurchasePrice: changedFields.newPurchasePrice ?? null
             })
-            .returning()
-            .get();
-
-          return { updatedProduct, historyEntry };
-        });
+            .run();
+        }
 
         return {
           status: "success",
-          data: `Successfully updated product: ${result?.updatedProduct.name}`
+          data: `Successfully updated product: ${updatedProduct?.name}`
         };
       } catch (error) {
         console.log(error);
