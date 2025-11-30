@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import type { ApiResponse, CustomersType } from "../../../shared/types";
 import { db } from "../../db/db";
-import { Role } from "../../db/enum";
+import { CustomerRole } from "../../db/enum";
 import { customers } from "../../db/schema";
 
 export function updateCustomer() {
@@ -20,7 +20,7 @@ export function updateCustomer() {
           .set({
             name: customerPayload.name,
             contact: customerPayload.contact,
-            customerType: Role.CASH
+            customerType: CustomerRole.CASH
           })
           .where(eq(customers.id, customerPayload.id))
           .returning();

@@ -1,7 +1,7 @@
 import { ipcMain } from "electron/main";
 import type { ApiResponse, CustomersType } from "../../../shared/types";
 import { db } from "../../db/db";
-import { Role } from "../../db/enum";
+import { CustomerRole } from "../../db/enum";
 import { customers } from "../../db/schema";
 
 export function addCustomer() {
@@ -15,7 +15,7 @@ export function addCustomer() {
           .values({
             name: customerPayload.name,
             contact: customerPayload.contact,
-            customerType: Role.CASH
+            customerType: CustomerRole.CASH
           })
           .returning();
 

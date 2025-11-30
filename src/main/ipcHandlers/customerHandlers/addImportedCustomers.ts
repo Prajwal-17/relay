@@ -1,7 +1,7 @@
 import { ipcMain } from "electron/main";
 import type { ApiResponse, FilteredGoogleContactsType } from "../../../shared/types";
 import { db } from "../../db/db";
-import { Role } from "../../db/enum";
+import { CustomerRole } from "../../db/enum";
 import { customers } from "../../db/schema";
 
 export function addImportedCustomers() {
@@ -13,7 +13,7 @@ export function addImportedCustomers() {
         const customerPay = customerPayload.map((c: FilteredGoogleContactsType) => ({
           name: c.name ?? "",
           contact: c.contact?.replace(/^\+91/, "") ?? "",
-          customerType: Role.CASH
+          customerType: CustomerRole.CASH
         }));
         const newCustomer = db
           .insert(customers)

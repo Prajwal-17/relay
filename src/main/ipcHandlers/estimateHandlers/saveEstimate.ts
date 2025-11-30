@@ -9,7 +9,7 @@ import {
 } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
-import { Role } from "../../db/enum";
+import { CustomerRole } from "../../db/enum";
 import { customers, estimateItems, estimates, products } from "../../db/schema";
 
 export function saveEstimate() {
@@ -46,7 +46,7 @@ export function saveEstimate() {
               .insert(customers)
               .values({
                 name: estimateObj.customerName,
-                customerType: Role.CASH
+                customerType: CustomerRole.CASH
               })
               .returning({
                 id: customers.id,
