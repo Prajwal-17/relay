@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
-import type { Role } from "./enum";
+import type { CustomerRole, DraftType } from "./enum";
 
 export const customers = sqliteTable("customers", {
   id: text("id")
@@ -9,7 +9,7 @@ export const customers = sqliteTable("customers", {
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull().unique(),
   contact: text("contact"),
-  customerType: text("customer_type").$type<Role>().notNull(),
+  customerType: text("customer_type").$type<CustomerRole>().notNull(),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
@@ -117,7 +117,7 @@ export const drafts = sqliteTable("drafts", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv4()),
-  type: text("type", { enum: ["sale", "estimate"] }).notNull(),
+  type: text("type").$type<DraftType>().notNull(),
   draftNo: integer("invoice_no").notNull().unique(),
   customerId: text("customer_id")
     .references(() => customers.id)

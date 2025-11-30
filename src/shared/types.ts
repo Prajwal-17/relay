@@ -16,6 +16,7 @@ export type CustomersType = {
 export type ProductsType = {
   id: string;
   name: string;
+  productSnapshot: string;
   weight: string | null;
   unit: string | null;
   mrp: number | null;
@@ -28,6 +29,7 @@ export type ProductsType = {
 export type ProductHistoryType = {
   id: string;
   name: string;
+  productSnapshot: string;
   weight: string;
   unit: string;
   productId: string;
@@ -66,6 +68,7 @@ export type SaleItemsType = {
   saleId: string;
   productId: string | null;
   name: string;
+  productSnapshot: string;
   mrp: number | null;
   price: number;
   purchasePrice: number | null;
@@ -81,6 +84,7 @@ export type EstimateItemsType = {
   estimateId: string;
   productId: string | null;
   name: string;
+  productSnapshot: string;
   mrp: number | null;
   price: number;
   purchasePrice: number | null;
