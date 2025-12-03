@@ -19,14 +19,14 @@ export function saveAsPDF() {
         const doc = new jsPDF();
 
         let transaction;
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           transaction = await db.query.sales.findFirst({
             where: eq(sales.id, id),
             with: {
               saleItems: true
             }
           });
-        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATE) {
           transaction = await db.query.estimates.findFirst({
             where: eq(estimates.id, id),
             with: {
@@ -48,7 +48,7 @@ export function saveAsPDF() {
         }
 
         const billingNo =
-          type === TRANSACTION_TYPE.SALES ? transaction?.invoiceNo : transaction?.estimateNo;
+          type === TRANSACTION_TYPE.SALE ? transaction?.invoiceNo : transaction?.estimateNo;
         const trimmedDate = transaction.createdAt;
 
         const createdAt = new Date(trimmedDate).toLocaleString("en-IN", {
@@ -96,7 +96,7 @@ export function saveAsPDF() {
 
         // table
         let tableData;
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           tableData = await transaction.saleItems.map((item, idx) => {
             return [
               idx + 1,
@@ -106,7 +106,7 @@ export function saveAsPDF() {
               formatToRupees(item.totalPrice)
             ];
           });
-        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATE) {
           tableData = await transaction.estimateItems.map((item, idx) => {
             return [
               idx + 1,
@@ -135,11 +135,11 @@ export function saveAsPDF() {
         const finalY = (doc as any).lastAutoTable.finalY;
 
         let calcTotalAmount;
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           calcTotalAmount = transaction.saleItems.reduce((sum, currentItem) => {
             return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
           }, 0);
-        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATE) {
           calcTotalAmount = transaction.estimateItems.reduce((sum, currentItem) => {
             return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
           }, 0);

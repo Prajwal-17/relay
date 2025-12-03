@@ -17,11 +17,12 @@ import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const getLatestTransactionNo = async (type: TransactionType) => {
+  console.log("header", type);
   try {
     let response;
-    if (type === TRANSACTION_TYPE.SALES) {
+    if (type === TRANSACTION_TYPE.SALE) {
       response = await window.salesApi.getNextInvoiceNo();
-    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
       response = await window.estimatesApi.getNextEstimateNo();
     } else {
       throw new Error("Transaction Type is undefined");
@@ -60,7 +61,7 @@ const BillingHeader = () => {
     queryKey: [type, "getTransactionNo"],
     // null assertion - type cannot be null here
     queryFn: () => getLatestTransactionNo(type!),
-    enabled: !id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
+    enabled: !id && (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE)
   });
 
   useEffect(() => {

@@ -121,7 +121,7 @@ export function saveSale() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TRANSACTION_TYPE.SALES },
+            data: { id: result.id, type: TRANSACTION_TYPE.SALE },
             message: result.message
           };
         }
@@ -219,7 +219,7 @@ export function saveSale() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TRANSACTION_TYPE.SALES },
+            data: { id: result.id, type: TRANSACTION_TYPE.SALE },
             message: result.message
           };
         }

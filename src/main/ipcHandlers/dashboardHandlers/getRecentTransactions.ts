@@ -22,7 +22,7 @@ export function getRecentTransactions() {
       >
     > => {
       try {
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           const result = await db.query.sales.findMany({
             with: {
               customer: true
@@ -43,7 +43,7 @@ export function getRecentTransactions() {
                   }))
                 : []
           };
-        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATE) {
           const result = await db.query.estimates.findMany({
             with: {
               customer: true

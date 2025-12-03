@@ -1,5 +1,4 @@
 import {
-  DASHBOARD_TYPE,
   TRANSACTION_TYPE,
   type EstimateType,
   type PageNo,
@@ -73,7 +72,7 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
           return [];
         }
 
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           const saleData = page.data as SalesType[];
           return saleData
             ? saleData.map((sale) => ({
@@ -89,7 +88,7 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
             : [];
         }
 
-        if (type === DASHBOARD_TYPE.ESTIMATES) {
+        if (type === TRANSACTION_TYPE.ESTIMATE) {
           const estimateData = page.data as EstimateType[];
           return estimateData
             ? estimateData.map((estimate) => ({

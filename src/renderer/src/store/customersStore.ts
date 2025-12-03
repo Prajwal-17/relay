@@ -26,7 +26,7 @@ function initialFormData() {
 }
 
 export const useCustomerStore = create<CustomersStoreType>((set) => ({
-  filterType: TRANSACTION_TYPE.SALES,
+  filterType: TRANSACTION_TYPE.SALE,
   setFilterType: (newType) =>
     set(() => ({
       filterType: newType

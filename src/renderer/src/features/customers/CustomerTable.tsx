@@ -8,7 +8,7 @@ import { useState } from "react";
 import CustomerTableRow from "./CustomerTableRow";
 
 export const CustomerTable = ({ customerId }: { customerId: string }) => {
-  const [filterType, setFilterType] = useState<TransactionType>(TRANSACTION_TYPE.SALES);
+  const [filterType, setFilterType] = useState<TransactionType>(TRANSACTION_TYPE.SALE);
   const { deleteMutation, convertMutation } = useCustomers();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData } = useCustomerTable(
     customerId,
@@ -26,13 +26,13 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
           >
             <TabsList className="grid w-full grid-cols-2 rounded-lg bg-slate-100 p-1">
               <TabsTrigger
-                value={TRANSACTION_TYPE.SALES}
+                value={TRANSACTION_TYPE.SALE}
                 className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
                 Sales
               </TabsTrigger>
               <TabsTrigger
-                value={TRANSACTION_TYPE.ESTIMATES}
+                value={TRANSACTION_TYPE.ESTIMATE}
                 className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
               >
                 Estimates

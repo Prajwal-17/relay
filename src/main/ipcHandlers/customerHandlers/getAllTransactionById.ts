@@ -28,7 +28,7 @@ export function getAllTransactionsById() {
             data: []
           };
         }
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           const offset = (pageNo - 1) * 20;
           const result = await db.query.sales.findMany({
             where: eq(sales.customerId, customerId),
@@ -53,7 +53,7 @@ export function getAllTransactionsById() {
           };
         }
 
-        if (type === TRANSACTION_TYPE.ESTIMATES) {
+        if (type === TRANSACTION_TYPE.ESTIMATE) {
           const offset = (pageNo - 1) * 20;
           const result = await db.query.estimates.findMany({
             where: eq(estimates.customerId, customerId),

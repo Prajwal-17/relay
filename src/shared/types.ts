@@ -1,9 +1,3 @@
-export type UsersType = {
-  id: string;
-  name: string;
-  role: string;
-};
-
 export type CustomersType = {
   id: string;
   name: string;
@@ -206,11 +200,14 @@ export type DateRangeType = {
 };
 
 export const TRANSACTION_TYPE = {
+  SALE: "sale",
+  ESTIMATE: "estimate"
+} as const;
+
+export const DASHBOARD_TYPE = {
   SALES: "sales",
   ESTIMATES: "estimates"
 } as const;
-
-export const DASHBOARD_TYPE = TRANSACTION_TYPE;
 
 export const PRODUCT_FILTER = {
   ALL: "all",

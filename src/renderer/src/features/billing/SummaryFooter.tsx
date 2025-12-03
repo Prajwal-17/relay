@@ -9,7 +9,7 @@ export const SummaryFooter = () => {
   const { type } = useParams();
 
   const { calcTotalAmount, handleActionMutation } = useTransactionActions(
-    type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
+    type === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
   );
 
   if (!type) {

@@ -45,7 +45,7 @@ const CustomerTableRow = ({
 }) => {
   const navigate = useNavigate();
   const handleView = useCallback(() => {
-    type === TRANSACTION_TYPE.SALES
+    type === TRANSACTION_TYPE.SALE
       ? navigate(`/billing/sales/edit/${transaction.id}`)
       : navigate(`/billing/estimates/edit/${transaction.id}`);
   }, [navigate, transaction.id, type]);

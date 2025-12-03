@@ -18,12 +18,12 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
       throw new Error("Transaction Id does not exist");
     }
     let response;
-    if (pathname === TRANSACTION_TYPE.SALES) {
+    if (pathname === TRANSACTION_TYPE.SALE) {
       response = await window.salesApi.getTransactionById(transactionId);
       if (response.status === "success") {
         return response;
       }
-    } else if (pathname === TRANSACTION_TYPE.ESTIMATES) {
+    } else if (pathname === TRANSACTION_TYPE.ESTIMATE) {
       response = await window.estimatesApi.getTransactionById(transactionId);
       if (response.status === "success") {
         return response;
@@ -53,12 +53,12 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
       if (!id) throw new Error("Transaction Id does not exist");
       return fetchTransactionById(type, id);
     },
-    enabled: !!id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
+    enabled: !!id && (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE)
   });
 
   useEffect(() => {
     if (isSuccess && data) {
-      if (type === TRANSACTION_TYPE.SALES) {
+      if (type === TRANSACTION_TYPE.SALE) {
         const res = data as {
           status: string;
           data: SalesType & { customer: CustomersType; items: SaleItemsType[] };
@@ -85,7 +85,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
         setLineItems([...items]);
       }
 
-      if (type === TRANSACTION_TYPE.ESTIMATES) {
+      if (type === TRANSACTION_TYPE.ESTIMATE) {
         const res = data as {
           status: string;
           data: EstimateType & { customer: CustomersType; items: EstimateItemsType[] };

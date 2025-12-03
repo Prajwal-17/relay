@@ -120,7 +120,7 @@ export function saveEstimate() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATES },
+            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATE },
             message: result.message
           };
         }
@@ -225,7 +225,7 @@ export function saveEstimate() {
           });
           return {
             status: "success",
-            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATES },
+            data: { id: result.id, type: TRANSACTION_TYPE.ESTIMATE },
             message: result.message
           };
         }

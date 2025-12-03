@@ -13,7 +13,7 @@ const handleSave = async (
   payload: any
 ) => {
   try {
-    if (transactionType === TRANSACTION_TYPE.SALES) {
+    if (transactionType === TRANSACTION_TYPE.SALE) {
       const response = await window.salesApi.save({
         ...payload,
         invoiceNo: Number(transactionNo)
@@ -23,7 +23,7 @@ const handleSave = async (
       } else {
         throw new Error(response.error.message);
       }
-    } else if (transactionType === TRANSACTION_TYPE.ESTIMATES) {
+    } else if (transactionType === TRANSACTION_TYPE.ESTIMATE) {
       const response = await window.estimatesApi.save({
         ...payload,
         estimateNo: Number(transactionNo)
@@ -72,7 +72,7 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     customerContact,
     grandTotal: calcTotalAmount,
     totalQuantity: calcTotalQuantity,
-    isPaid: transactionType === TRANSACTION_TYPE.SALES ? true : false,
+    isPaid: transactionType === TRANSACTION_TYPE.SALE ? true : false,
     createdAt: billingDate.toISOString(),
     items: [
       ...lineItems

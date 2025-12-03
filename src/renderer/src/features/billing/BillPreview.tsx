@@ -12,7 +12,7 @@ const BillPreview = () => {
 
   const { lineItems, transactionNo, customerName } = useTransactionState();
   const { calcTotalAmount } = useTransactionActions(
-    type === TRANSACTION_TYPE.SALES ? TRANSACTION_TYPE.SALES : TRANSACTION_TYPE.ESTIMATES
+    type === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
   );
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
@@ -37,7 +37,7 @@ const BillPreview = () => {
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
             <p className="text-xs">6TH MAIN, RUKMINI NAGAR NAGASANDRA POST BANGALORE 560073</p>
-            {type === TRANSACTION_TYPE.SALES && (
+            {type === TRANSACTION_TYPE.SALE && (
               <p className="text-xs">
                 <span className="font-semibold">GSTIN:</span>29BHBPR8333N2ZM
               </p>
@@ -54,14 +54,14 @@ const BillPreview = () => {
               </div>
               <div>
                 <span className="font-semibold">
-                  {type === TRANSACTION_TYPE.SALES ? "Invoice No:" : "Estimate No:"}
+                  {type === TRANSACTION_TYPE.SALE ? "Invoice No:" : "Estimate No:"}
                 </span>{" "}
                 {transactionNo}
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}
                 {customerName === "DEFAULT" || customerName === ""
-                  ? type === TRANSACTION_TYPE.SALES
+                  ? type === TRANSACTION_TYPE.SALE
                     ? "Sale"
                     : "Estimate"
                   : customerName}
