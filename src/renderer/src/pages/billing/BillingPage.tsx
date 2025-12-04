@@ -11,6 +11,7 @@ import { useParams } from "react-router-dom";
 
 const BillingPage = () => {
   const { type, id } = useParams();
+  const formattedType = type?.slice(0, -1);
   const billingStateReset = useBillingStore((state) => state.reset);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const BillingPage = () => {
     // eslint-disable-next-line
   }, [type, id]);
 
-  useLoadTransactionDetails(type as TransactionType, id);
+  useLoadTransactionDetails(formattedType as TransactionType, id);
 
   return (
     <>

@@ -17,7 +17,6 @@ import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const getLatestTransactionNo = async (type: TransactionType) => {
-  console.log("header", type);
   try {
     let response;
     if (type === TRANSACTION_TYPE.SALE) {
@@ -56,12 +55,15 @@ const BillingHeader = () => {
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
   const { type, id } = useParams<{ type: TransactionType; id?: string }>();
+  const formattedType = type?.slice(0, -1) as TransactionType;
 
   const { data, isFetched, isError, error } = useQuery({
-    queryKey: [type, "getTransactionNo"],
+    queryKey: [formattedType, "getTransactionNo"],
     // null assertion - type cannot be null here
-    queryFn: () => getLatestTransactionNo(type!),
-    enabled: !id && (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE)
+    queryFn: () => getLatestTransactionNo(formattedType),
+    enabled:
+      !id &&
+      (formattedType === TRANSACTION_TYPE.SALE || formattedType === TRANSACTION_TYPE.ESTIMATE)
   });
 
   useEffect(() => {

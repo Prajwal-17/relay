@@ -50,6 +50,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
     queryKey: [type, id],
     queryFn: async () => {
+      console.log(type);
       if (!id) throw new Error("Transaction Id does not exist");
       return fetchTransactionById(type, id);
     },

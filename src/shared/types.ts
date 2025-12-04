@@ -18,6 +18,9 @@ export type ProductsType = {
   purchasePrice: number | null;
   totalQuantitySold: number | null;
   isDisabled?: boolean;
+  disabledAt?: string;
+  updatedAt?: string;
+  createdAt?: string;
 };
 
 export type ProductHistoryType = {
@@ -33,6 +36,34 @@ export type ProductHistoryType = {
   newPurchasePrice: number;
   oldMrp: number;
   newMrp: number;
+};
+
+export type UnifiedTransactionType = {
+  type: "sale" | "estimate"; // FIX
+  id: string;
+  invoiceNo: number;
+  customerId: string | null;
+  grandTotal: number | null;
+  totalQuantity: number | null;
+  isPaid: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type UnifiedTransactionItemType = {
+  id: string;
+  parentId: string;
+  productId: string | null;
+  name: string;
+  productSnapshot: string;
+  mrp: number | null;
+  price: number;
+  purchasePrice: number | null;
+  weight: string | null;
+  unit: string | null;
+  quantity: number;
+  totalPrice: number;
+  checkedQty: number;
 };
 
 export type SalesType = {
