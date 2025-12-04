@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type {
-  ApiResponse,
-  CustomersType,
-  EstimateItemsType,
-  EstimateType
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type UnifiedTransaction,
+  type UnifiedTransactionItem,
+  type UnifiedTransctionWithItems
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -13,14 +14,9 @@ import { estimates } from "../../db/schema";
 export function getEstimateById() {
   ipcMain.handle(
     "estimatesApi:getTransactionById",
-    async (
-      _event,
-      id: string
-    ): Promise<
-      ApiResponse<EstimateType & { customer: CustomersType; items: EstimateItemsType[] }>
-    > => {
+    async (_event, id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
       try {
-        const estimateObj = await db.query.estimates.findFirst({
+        const result = await db.query.estimates.findFirst({
           where: eq(estimates.id, id),
           with: {
             customer: true,
@@ -28,31 +24,45 @@ export function getEstimateById() {
           }
         });
 
-        if (!estimateObj) {
+        if (!result) {
           throw new Error(`Could not find estimate with ${id}`);
         }
+
+        const unifiedTransaction: UnifiedTransaction = {
+          type: TRANSACTION_TYPE.SALE,
+          id: result.id,
+          transactionNo: result.estimateNo,
+          customerId: result.customerId,
+          grandTotal: result.grandTotal && formatToRupees(result.grandTotal),
+          totalQuantity: result.totalQuantity,
+          isPaid: result.isPaid,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt
+        };
+
+        const unifiedItems: UnifiedTransactionItem[] = result.estimateItems.map((item) => {
+          return {
+            id: item.id,
+            parentId: item.estimateId,
+            productId: item.productId,
+            name: item.name,
+            productSnapshot: item.productSnapshot,
+            weight: item.weight,
+            unit: item.unit,
+            price: item.price,
+            mrp: item.mrp,
+            quantity: item.quantity,
+            totalPrice: item.totalPrice,
+            purchasePrice: item.purchasePrice,
+            checkedQty: item.checkedQty ?? 0
+          };
+        });
 
         return {
           status: "success",
           data: {
-            id: estimateObj.id,
-            estimateNo: estimateObj.estimateNo,
-            customerId: estimateObj.customerId,
-            customer: estimateObj.customer,
-            grandTotal: estimateObj.grandTotal && formatToRupees(estimateObj.grandTotal),
-            totalQuantity: estimateObj.totalQuantity,
-            isPaid: estimateObj.isPaid,
-            items: estimateObj.estimateItems.map((item) => {
-              return {
-                ...item,
-                mrp: item.mrp && formatToRupees(item.mrp),
-                price: formatToRupees(item.price),
-                totalPrice: formatToRupees(item.totalPrice),
-                checkedQty: item.checkedQty ?? 0
-              };
-            }),
-            updatedAt: estimateObj.updatedAt,
-            createdAt: estimateObj.createdAt
+            ...unifiedTransaction,
+            items: unifiedItems
           }
         };
       } catch (error) {

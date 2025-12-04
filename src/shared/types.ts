@@ -39,9 +39,9 @@ export type ProductHistoryType = {
 };
 
 export type UnifiedTransactionType = {
-  type: "sale" | "estimate"; // FIX
+  type: TransactionType;
   id: string;
-  invoiceNo: number;
+  transactionNo: number;
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
@@ -50,7 +50,7 @@ export type UnifiedTransactionType = {
   updatedAt?: string;
 };
 
-export type UnifiedTransactionItemType = {
+export type UnifiedTransactionItem = {
   id: string;
   parentId: string;
   productId: string | null;
@@ -61,9 +61,16 @@ export type UnifiedTransactionItemType = {
   purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
+  price: number;
+  mrp: number | null;
   quantity: number;
   totalPrice: number;
+  purchasePrice: number | null;
   checkedQty: number;
+};
+
+export type UnifiedTransctionWithItems = UnifiedTransaction & {
+  items: UnifiedTransactionItem[];
 };
 
 export type SalesType = {
@@ -361,9 +368,7 @@ export interface SalesApi {
   getNextInvoiceNo: () => Promise<ApiResponse<number>>;
   save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllSales: () => Promise<ApiResponse<SalesType[]>>;
-  getTransactionById: (
-    id: string
-  ) => Promise<ApiResponse<SalesType & { customer: CustomersType; items: SaleItemsType[] }>>;
+  getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
   getSalesDateRange: (
     range: DateRangeType,
     sortBy: SortType,
@@ -385,9 +390,7 @@ export interface EstimatesApi {
   getNextEstimateNo: () => Promise<ApiResponse<number>>;
   save: (payload: EstimatePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
   getAllEstimates: () => Promise<ApiResponse<EstimateType[]>>;
-  getTransactionById: (
-    id: string
-  ) => Promise<ApiResponse<EstimateType & { customer: CustomersType; items: EstimateItemsType[] }>>;
+  getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
   getEstimatesDateRange: (
     range: DateRangeType,
     sortBy: SortType,

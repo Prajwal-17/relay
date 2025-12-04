@@ -1,6 +1,12 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, CustomersType, SaleItemsType, SalesType } from "../../../shared/types";
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type UnifiedTransaction,
+  type UnifiedTransactionItem,
+  type UnifiedTransctionWithItems
+} from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { sales } from "../../db/schema";
@@ -9,12 +15,9 @@ export function getSaleById() {
   //get sale by id
   ipcMain.handle(
     "salesApi:getTransactionById",
-    async (
-      _event,
-      id: string
-    ): Promise<ApiResponse<SalesType & { customer: CustomersType; items: SaleItemsType[] }>> => {
+    async (_event, id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
       try {
-        const saleObj = await db.query.sales.findFirst({
+        const result = await db.query.sales.findFirst({
           where: eq(sales.id, id),
           with: {
             customer: true,
@@ -22,31 +25,45 @@ export function getSaleById() {
           }
         });
 
-        if (!saleObj) {
+        if (!result) {
           throw new Error(`Could not find sale with ${id}`);
         }
+
+        const unifiedTransaction: UnifiedTransaction = {
+          type: TRANSACTION_TYPE.SALE,
+          id: result.id,
+          transactionNo: result.invoiceNo,
+          customerId: result.customerId,
+          grandTotal: result.grandTotal && formatToRupees(result.grandTotal),
+          totalQuantity: result.totalQuantity,
+          isPaid: result.isPaid,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt
+        };
+
+        const unifiedItems: UnifiedTransactionItem[] = result.saleItems.map((item) => {
+          return {
+            id: item.id,
+            parentId: item.saleId,
+            productId: item.productId,
+            name: item.name,
+            productSnapshot: item.productSnapshot,
+            weight: item.weight,
+            unit: item.unit,
+            price: item.price,
+            mrp: item.mrp,
+            quantity: item.quantity,
+            totalPrice: item.totalPrice,
+            purchasePrice: item.purchasePrice,
+            checkedQty: item.checkedQty ?? 0
+          };
+        });
 
         return {
           status: "success",
           data: {
-            id: saleObj.id,
-            invoiceNo: saleObj.invoiceNo,
-            customerId: saleObj.customerId,
-            customer: saleObj.customer,
-            grandTotal: saleObj.grandTotal && formatToRupees(saleObj.grandTotal),
-            totalQuantity: saleObj.totalQuantity,
-            isPaid: saleObj.isPaid,
-            items: saleObj.saleItems.map((item) => {
-              return {
-                ...item,
-                mrp: item.mrp && formatToRupees(item.mrp),
-                price: formatToRupees(item.price),
-                totalPrice: formatToRupees(item.totalPrice),
-                checkedQty: item.checkedQty ?? 0
-              };
-            }),
-            updatedAt: saleObj.updatedAt,
-            createdAt: saleObj.createdAt
+            ...unifiedTransaction,
+            items: unifiedItems
           }
         };
       } catch (error) {
