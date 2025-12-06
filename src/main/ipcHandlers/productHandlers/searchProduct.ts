@@ -1,4 +1,4 @@
-import { and, eq, like, ne, SQL, sql } from "drizzle-orm";
+import { and, desc, eq, like, ne, SQL } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   PRODUCT_FILTER,
@@ -44,17 +44,7 @@ export function searchProduct() {
             whereClause = and(ne(products.isDeleted, true), ne(products.isDisabled, true))!;
         }
 
-        const cleanedQuery = query
-          .replace(/\d+\s*(rs?|₹)/gi, "")
-          .replace(/\d+\s*(g|kg|ml|l|pc|none)/gi, "")
-          .replace(/\b(g|kg|ml|l|pc|none)\b/gi, "")
-          .trim();
-
-        const searchTerms = cleanedQuery
-          .trim()
-          .toLowerCase()
-          .split(" ")
-          .filter((term) => term.length > 0);
+        const searchTerms = query.trim();
 
         const offset = (pageNo - 1) * limit;
 
@@ -65,6 +55,7 @@ export function searchProduct() {
             .select({
               id: products.id,
               name: products.name,
+              productSnapshot: products.productSnapshot,
               weight: products.weight,
               unit: products.unit,
               mrp: products.mrp,
@@ -75,27 +66,15 @@ export function searchProduct() {
             })
             .from(products)
             .where(whereClause)
-            .orderBy(products.name)
+            .orderBy(products.productSnapshot)
             .limit(limit)
             .offset(offset);
         } else {
-          const combinedSearchField = sql<string>`lower(${products.name} || ' ' || COALESCE(${products.weight}, '') || ' ' || COALESCE(${products.unit}, '') || ' ' || COALESCE(${products.mrp}, '') || ' ' || ${products.price})`;
-
-          const searchConditions = searchTerms.map((term) =>
-            like(combinedSearchField, `%${term}%`)
-          );
-
-          const priorityOrder = sql`
-        CASE
-          WHEN lower(${products.name}) LIKE ${searchTerms[0] + "%"} THEN 1
-          ELSE 2
-        END
-      `;
-
           searchResult = await db
             .select({
               id: products.id,
               name: products.name,
+              productSnapshot: products.productSnapshot,
               weight: products.weight,
               unit: products.unit,
               mrp: products.mrp,
@@ -105,8 +84,8 @@ export function searchProduct() {
               isDisabled: products.isDisabled
             })
             .from(products)
-            .where(and(whereClause, ...searchConditions))
-            .orderBy(priorityOrder, products.name)
+            .where(and(whereClause, like(products.productSnapshot, `${searchTerms}%`)))
+            .orderBy(desc(products.totalQuantitySold))
             .limit(limit)
             .offset(offset);
         }
