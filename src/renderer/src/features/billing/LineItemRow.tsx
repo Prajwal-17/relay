@@ -1,4 +1,4 @@
-import { useBillingStore, type LineItemsType } from "@/store/billingStore";
+import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
@@ -7,12 +7,12 @@ import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
 const LineItemRow = memo(
-  ({ idx, item }: { idx: number; item: LineItemsType }) => {
+  ({ idx, item }: { idx: number; item: LineItem }) => {
     // using 'useShallow' to compare only the top level properties does not check nested objects.
     // since they are function their references are stable which dont require re-renders
-    const { updateLineItems, deleteLineItem } = useBillingStore(
+    const { updateLineItem, deleteLineItem } = useLineItemsStore(
       useShallow((state) => ({
-        updateLineItems: state.updateLineItems,
+        updateLineItem: state.updateLineItem,
         deleteLineItem: state.deleteLineItem
       }))
     );
@@ -39,17 +39,17 @@ const LineItemRow = memo(
                 className="hover:bg-accent invisible px-1 py-1 group-hover:visible hover:cursor-grab"
                 size={33}
               />
-              <span className="text-xl">{idx + 1}</span>
+              <span className="text-xl font-medium">{idx + 1}</span>
               <Trash2
                 className="text-destructive hover:bg-accent invisible rounded-md px-1 py-1 group-hover:visible hover:scale-103 hover:cursor-pointer active:scale-98"
                 size={33}
-                onClick={() => deleteLineItem(item.id)}
+                onClick={() => deleteLineItem(item.rowId)}
               />
             </div>
           </div>
           <div className="col-span-9 border-r px-1 py-1">
             <input
-              value={item.name}
+              value={item.productSnapshot}
               className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={() => {
                 setSearchRow(idx + 1);
@@ -57,7 +57,7 @@ const LineItemRow = memo(
               }}
               onChange={(e) => {
                 setSearchParam(e.target.value);
-                updateLineItems(item.id, "name", e.target.value);
+                updateLineItem(item.rowId, "name", e.target.value);
               }}
             />
           </div>
@@ -67,7 +67,7 @@ const LineItemRow = memo(
                 onClick={() => {
                   if (item.quantity >= 0) {
                     const newQuantity = item.quantity + 1;
-                    updateLineItems(item.id, "quantity", newQuantity);
+                    updateLineItem(item.rowId, "quantity", newQuantity);
                   }
                 }}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
@@ -83,7 +83,7 @@ const LineItemRow = memo(
                 value={item.quantity === 0 ? "" : item.quantity}
                 className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
-                  updateLineItems(item.id, "quantity", e.target.value);
+                  updateLineItem(item.rowId, "quantity", e.target.value);
                 }}
                 placeholder="0"
               />
@@ -93,14 +93,14 @@ const LineItemRow = memo(
                 onClick={() => {
                   if (item.quantity > 1) {
                     const newQuantity = item.quantity - 1;
-                    updateLineItems(item.id, "quantity", newQuantity);
+                    updateLineItem(item.rowId, "quantity", newQuantity);
                   }
                 }}
               >
                 <Minus size={22} />
               </button>
               <QuantityPresets
-                itemId={item.id}
+                rowId={item.rowId}
                 qtyPresetOpen={qtyPresetOpen}
                 idx={idx}
                 setQtyPresetOpen={setQtyPresetOpen}
@@ -114,10 +114,19 @@ const LineItemRow = memo(
               </span>
               <input
                 type="number"
-                value={item.price === 0 ? "" : item.price}
-                onChange={(e) => updateLineItems(item.id, "price", e.target.value)}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none"
                 placeholder="0"
+                value={item.price === 0 ? "" : item.price / 100}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    updateLineItem(item.rowId, "price", 0);
+                  } else {
+                    const paise = Math.round(parseFloat(val) * 100);
+                    updateLineItem(item.rowId, "price", paise);
+                  }
+                }}
+                onWheel={(e) => e.currentTarget.blur()}
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -126,13 +135,9 @@ const LineItemRow = memo(
               <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={18} />
               </span>
-              <input
-                disabled
-                type="number"
-                value={item.totalPrice === 0 ? "" : item.totalPrice.toFixed(2)}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
-                placeholder="0"
-              />
+              <div className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed">
+                {item.totalPrice === 0 ? "0" : item.totalPrice / 100}
+              </div>
             </div>
           </div>
         </div>

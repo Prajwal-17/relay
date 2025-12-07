@@ -38,11 +38,12 @@ export type ProductHistoryType = {
   newMrp: number;
 };
 
-export type UnifiedTransactionType = {
+export type UnifiedTransaction = {
   type: TransactionType;
   id: string;
   transactionNo: number;
   customerId: string | null;
+  customer: CustomersType;
   grandTotal: number | null;
   totalQuantity: number | null;
   isPaid: boolean;
@@ -56,9 +57,6 @@ export type UnifiedTransactionItem = {
   productId: string | null;
   name: string;
   productSnapshot: string;
-  mrp: number | null;
-  price: number;
-  purchasePrice: number | null;
   weight: string | null;
   unit: string | null;
   price: number;

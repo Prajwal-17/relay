@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import useTransactionState from "@/hooks/useTransactionState";
-import type { LineItemsType } from "@/store/billingStore";
+import type { LineItem } from "@/store/lineItemsStore";
 import { useEffect } from "react";
 import LineItemRow from "./LineItemRow";
 
@@ -33,8 +33,8 @@ const LineItemsTable = () => {
           </div>
 
           <div className="relative space-y-1 pt-2">
-            {lineItems.map((item: LineItemsType, idx: number) => (
-              <LineItemRow key={item.id} idx={idx} item={item} />
+            {lineItems.map((item: LineItem, idx: number) => (
+              <LineItemRow key={item.rowId} idx={idx} item={item} />
             ))}
 
             <div className="grid w-full grid-cols-10">

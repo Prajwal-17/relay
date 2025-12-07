@@ -100,7 +100,7 @@ export function searchProduct() {
               ? searchResult.map((product) => ({
                   ...product,
                   mrp: product.mrp && formatToRupees(product.mrp),
-                  price: formatToRupees(product.price),
+                  price: product.price,
                   purchasePrice: product.purchasePrice && formatToRupees(product.purchasePrice)
                 }))
               : []

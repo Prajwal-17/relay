@@ -1,11 +1,7 @@
 import {
   TRANSACTION_TYPE,
-  type CustomersType,
-  type EstimateItemsType,
-  type EstimateType,
-  type SaleItemsType,
-  type SalesType,
-  type TransactionType
+  type TransactionType,
+  type UnifiedTransctionWithItems
 } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -20,17 +16,14 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
     let response;
     if (pathname === TRANSACTION_TYPE.SALE) {
       response = await window.salesApi.getTransactionById(transactionId);
-      if (response.status === "success") {
-        return response;
-      }
+      if (response.status === "success") return response;
     } else if (pathname === TRANSACTION_TYPE.ESTIMATE) {
       response = await window.estimatesApi.getTransactionById(transactionId);
-      if (response.status === "success") {
-        return response;
-      }
+      if (response.status === "success") return response;
     } else {
       throw new Error("Something went wrong");
     }
+    return response;
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
@@ -38,6 +31,7 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
 
 const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const {
+    setBillingType,
     setTransactionNo,
     setLineItems,
     setCustomerName,
@@ -50,81 +44,19 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
     queryKey: [type, id],
     queryFn: async () => {
-      console.log(type);
       if (!id) throw new Error("Transaction Id does not exist");
       return fetchTransactionById(type, id);
     },
-    enabled: !!id && (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE)
-  });
-
-  useEffect(() => {
-    if (isSuccess && data) {
-      if (type === TRANSACTION_TYPE.SALE) {
-        const res = data as {
-          status: string;
-          data: SalesType & { customer: CustomersType; items: SaleItemsType[] };
-        };
-        const d = res.data;
-        setBillingId(d.id);
-        setCustomerId(d.customerId);
-        setTransactionNo(d.invoiceNo);
-        setCustomerContact(d.customer.contact);
-        setCustomerName(d.customer.name);
-        setBillingDate(new Date(d.createdAt as string));
-        const items = d.items.map((item) => ({
-          id: item.id,
-          productId: item.productId ?? "",
-          name: item.name,
-          weight: item.weight ?? null,
-          unit: item.unit ?? null,
-          quantity: item.quantity,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          totalPrice: item.totalPrice
-        }));
-        setLineItems([...items]);
+    enabled: !!id && (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE),
+    select: (response) => {
+      if (response?.status === "success") {
+        return response.data as UnifiedTransctionWithItems;
+      } else if (response?.status === "error") {
+        throw new Error(response?.error?.message);
       }
-
-      if (type === TRANSACTION_TYPE.ESTIMATE) {
-        const res = data as {
-          status: string;
-          data: EstimateType & { customer: CustomersType; items: EstimateItemsType[] };
-        };
-        const d = res.data;
-        setBillingId(d.id);
-        setCustomerId(d.customerId);
-        setTransactionNo(d.estimateNo);
-        setCustomerContact(d.customer.contact);
-        setCustomerName(d.customer.name);
-        setBillingDate(new Date(d.createdAt as string));
-        const items = d.items.map((item) => ({
-          id: item.id,
-          productId: item.productId ?? "",
-          name: item.name,
-          weight: item.weight ?? null,
-          unit: item.unit ?? null,
-          quantity: item.quantity,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          totalPrice: item.totalPrice
-        }));
-        setLineItems([...items]);
-      }
+      throw new Error("Something went wrong");
     }
-  }, [
-    isSuccess,
-    data,
-    type,
-    setBillingDate,
-    setBillingId,
-    setCustomerContact,
-    setCustomerId,
-    setCustomerName,
-    setTransactionNo,
-    setLineItems
-  ]);
+  });
 
   useEffect(() => {
     if (isError && error) {
@@ -132,6 +64,29 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     }
   }, [isError, error]);
 
+  useEffect(() => {
+    if (isSuccess && data) {
+      setBillingId(data.id);
+      setBillingType(data.type);
+      setTransactionNo(data.transactionNo);
+      setBillingDate(new Date(data.createdAt as string));
+      setCustomerId(data.customerId);
+      setCustomerName(data.customer.name);
+      setCustomerContact(data.customer.contact);
+      setLineItems(data.items);
+    }
+  }, [
+    isSuccess,
+    data,
+    setBillingId,
+    setBillingType,
+    setTransactionNo,
+    setBillingDate,
+    setCustomerId,
+    setCustomerName,
+    setCustomerContact,
+    setLineItems
+  ]);
   return { status, isLoading, isFetched };
 };
 

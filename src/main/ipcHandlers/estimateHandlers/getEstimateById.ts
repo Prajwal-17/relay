@@ -33,6 +33,7 @@ export function getEstimateById() {
           id: result.id,
           transactionNo: result.estimateNo,
           customerId: result.customerId,
+          customer: result.customer,
           grandTotal: result.grandTotal && formatToRupees(result.grandTotal),
           totalQuantity: result.totalQuantity,
           isPaid: result.isPaid,

@@ -4,7 +4,6 @@ import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
-import { useBillingStore } from "@/store/billingStore";
 import type { TransactionType } from "@shared/types";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -12,11 +11,11 @@ import { useParams } from "react-router-dom";
 const BillingPage = () => {
   const { type, id } = useParams();
   const formattedType = type?.slice(0, -1);
-  const billingStateReset = useBillingStore((state) => state.reset);
+  // const billingStateReset = useBillingStore((state) => state.reset);
 
   useEffect(() => {
     return () => {
-      billingStateReset();
+      // billingStateReset();
       localStorage.setItem("bill-preview-date", new Date().toISOString());
     };
     // eslint-disable-next-line

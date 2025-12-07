@@ -34,6 +34,7 @@ export function getSaleById() {
           id: result.id,
           transactionNo: result.invoiceNo,
           customerId: result.customerId,
+          customer: result.customer,
           grandTotal: result.grandTotal && formatToRupees(result.grandTotal),
           totalQuantity: result.totalQuantity,
           isPaid: result.isPaid,
