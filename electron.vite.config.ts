@@ -23,6 +23,13 @@ export default defineConfig({
         allow: [".."] // allow parent folders outside of root
       }
     },
-    plugins: [react(), tailwindcss()]
+    plugins: [
+      react({
+        babel: {
+          plugins: ["babel-plugin-react-compiler"]
+        }
+      }),
+      tailwindcss()
+    ]
   }
 });
