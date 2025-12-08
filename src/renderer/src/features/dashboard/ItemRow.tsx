@@ -79,7 +79,7 @@ export const ItemRow = ({
             variant="outline"
             size="sm"
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
-            disabled={item.quantity === item.checkedQty}
+            disabled={checked}
             className="flex h-7 w-7 cursor-pointer items-center justify-center bg-transparent p-0"
           >
             <Plus className="size-5" />

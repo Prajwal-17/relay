@@ -26,6 +26,7 @@ const useTransactionState = () => {
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
   const updateLineItem = useLineItemsStore((state) => state.updateLineItem);
   const deleteLineItem = useLineItemsStore((state) => state.deleteLineItem);
+  const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
   // search drop down store
   const setSearchParam = useSearchDropdownStore((state) => state.setSearchParam);
   const setSearchRow = useSearchDropdownStore((state) => state.setSearchRow);
@@ -53,6 +54,7 @@ const useTransactionState = () => {
     addEmptyLineItem,
     updateLineItem,
     deleteLineItem,
+    setAllChecked,
     setSearchParam,
     setSearchRow,
     setIsDropdownOpen

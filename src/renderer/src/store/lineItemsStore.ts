@@ -26,6 +26,7 @@ type LineItemsStore = {
   addLineItem: (index: number, newItem: ProductsType) => void;
   updateLineItem: (id: string, field: string, value: string | number) => void;
   deleteLineItem: (id: string) => void;
+  setAllChecked: (checked: boolean) => void;
 };
 
 function initialLineItem() {
@@ -171,5 +172,13 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       return {
         lineItems: updatedLineItems
       };
-    })
+    }),
+
+  setAllChecked: (checked) =>
+    set((state) => ({
+      lineItems: state.lineItems.map((item: LineItem) => ({
+        ...item,
+        checkedQty: checked ? item.quantity : 0
+      }))
+    }))
 }));

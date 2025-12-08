@@ -1,6 +1,9 @@
+import { Button } from "@/components/ui/button";
 import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
+import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
+import { UPDATE_QTY_ACTION } from "@shared/types";
+import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
@@ -8,8 +11,6 @@ import QuantityPresets from "./QuantityPresets";
 
 const LineItemRow = memo(
   ({ idx, item }: { idx: number; item: LineItem }) => {
-    // using 'useShallow' to compare only the top level properties does not check nested objects.
-    // since they are function their references are stable which dont require re-renders
     const { updateLineItem, deleteLineItem } = useLineItemsStore(
       useShallow((state) => ({
         updateLineItem: state.updateLineItem,
@@ -29,11 +30,13 @@ const LineItemRow = memo(
       );
 
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
+    const checked = item.quantity === item.checkedQty && item.quantity > 0;
+    const checkedColor = getCheckStatusColor(item.checkedQty, item.quantity);
 
     return (
       <div key={item.id} className="relative">
-        <div className="group bg-background-secondary/60 grid w-full grid-cols-20 border">
-          <div className="bg-background col-span-2 h-full w-full border-r">
+        <div className={`group ${checkedColor} grid w-full grid-cols-23 border transition-colors`}>
+          <div className="col-span-2 h-full w-full border-r">
             <div className="flex h-full w-full items-center justify-between gap-2 px-4">
               <GripVertical
                 className="hover:bg-accent invisible px-1 py-1 group-hover:visible hover:cursor-grab"
@@ -47,7 +50,7 @@ const LineItemRow = memo(
               />
             </div>
           </div>
-          <div className="col-span-9 border-r px-1 py-1">
+          <div className="col-span-7 border-r px-1 py-1">
             <input
               value={item.productSnapshot}
               className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
@@ -121,7 +124,7 @@ const LineItemRow = memo(
                   if (val === "") {
                     updateLineItem(item.rowId, "price", 0);
                   } else {
-                    const paise = Math.round(parseFloat(val) * 100);
+                    const paise = Math.round(Number.parseFloat(val) * 100);
                     updateLineItem(item.rowId, "price", paise);
                   }
                 }}
@@ -139,6 +142,61 @@ const LineItemRow = memo(
                 {item.totalPrice === 0 ? "0" : item.totalPrice / 100}
               </div>
             </div>
+          </div>
+          <div className="col-span-1 flex items-center justify-center py-1">
+            <button
+              onClick={() => {
+                const newCheckedAt = checked ? 0 : item.quantity;
+                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+              }}
+              className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 transition-all ${
+                checked
+                  ? "bg-success border-success"
+                  : "border-muted-foreground hover:border-foreground"
+              }`}
+            >
+              {checked && <Check className="text-background" strokeWidth={3} size={18} />}
+            </button>
+          </div>
+          <div className="col-span-2 flex items-center justify-center py-1">
+            <span className="text-base font-semibold whitespace-nowrap">
+              {item.checkedQty}/{item.quantity}
+            </span>
+          </div>
+          <div className="col-span-2 flex items-center justify-center gap-1 py-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newCheckedAt = updateCheckedQuantity(
+                  UPDATE_QTY_ACTION.INCREMENT,
+                  item.quantity,
+                  item.checkedQty
+                );
+                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+              }}
+              disabled={checked}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+            >
+              <Plus className="size-5" />
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newCheckedAt = updateCheckedQuantity(
+                  UPDATE_QTY_ACTION.DECREMENT,
+                  item.quantity,
+                  item.checkedQty
+                );
+                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+              }}
+              disabled={item.checkedQty === 0}
+              className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+            >
+              <Minus className="size-5" />
+            </Button>
           </div>
         </div>
 
