@@ -21,6 +21,8 @@ const useTransactionState = () => {
   const isNewCustomer = useBillingStore((state) => state.isNewCustomer);
   const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
   // lineItems store
+  const isCountColumnVisible = useLineItemsStore((state) => state.isCountColumnVisible);
+  const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const setLineItems = useLineItemsStore((state) => state.setLineItems);
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
@@ -49,6 +51,8 @@ const useTransactionState = () => {
     setCustomerContact,
     isNewCustomer,
     setIsNewCustomer,
+    isCountColumnVisible,
+    setIsCountControlsVisible,
     lineItems,
     setLineItems,
     addEmptyLineItem,

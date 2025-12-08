@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import useTransactionState from "@/hooks/useTransactionState";
 import type { LineItem } from "@/store/lineItemsStore";
-import { CheckCheck, ChevronDown, X } from "lucide-react";
+import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { useEffect } from "react";
 import LineItemRow from "./LineItemRow";
 
@@ -21,7 +21,14 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const { lineItems, addEmptyLineItem, setLineItems, setAllChecked } = useTransactionState();
+  const {
+    isCountColumnVisible,
+    setIsCountControlsVisible,
+    lineItems,
+    addEmptyLineItem,
+    setLineItems,
+    setAllChecked
+  } = useTransactionState();
 
   useEffect(() => {
     setLineItems([]);
@@ -31,20 +38,55 @@ const LineItemsTable = () => {
     <>
       <div className="mx-6 h-full">
         <div className="bg-background relative w-full flex-1 rounded-xl px-1 py-2 shadow-xl">
-          <div className="text-accent-foreground border-border bg-accent grid grid-cols-23 items-center rounded-tl-lg rounded-tr-lg border py-1 text-base font-semibold">
+          <div
+            className={`text-accent-foreground border-border bg-accent grid items-center rounded-tl-lg rounded-tr-lg border py-1 text-base font-semibold ${
+              isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
+            }`}
+          >
             <div className="col-span-2 py-2 text-center">#</div>
-            <div className="col-span-7 px-4 py-2 text-center">ITEM</div>
-            <div className="col-span-3 px-4 py-2 text-center">QTY</div>
-            <div className="col-span-3 px-4 py-2 text-center">PRICE</div>
-            <div className="col-span-3 px-4 py-2 text-center">AMOUNT</div>
-            <div className="col-span-1 px-1 py-2 text-center">Box</div>
-            <div className="col-span-2 px-1 py-2 text-center">Count</div>
-            <div className="col-span-2 px-1 py-2 text-center">Button</div>
+            <div className="col-span-7 px-4 py-2 text-left">ITEM</div>
+            <div className="col-span-3 px-4 py-2 text-left">QTY</div>
+            <div className="col-span-3 px-4 py-2 text-left">PRICE</div>
+            <div className="col-span-3 px-4 py-2 text-left">AMOUNT</div>
+            {isCountColumnVisible ? (
+              <>
+                <div className="col-span-1 px-1 py-2 text-center">Box</div>
+                <div className="col-span-2 px-1 py-2 text-center">Count</div>
+                <div className="col-span-2 flex items-center justify-center gap-2 px-1 py-2 text-center">
+                  <span>Button</span>
+                  <Button
+                    variant="ghost"
+                    onClick={setIsCountControlsVisible}
+                    className="h-8 w-8 p-0"
+                    title="Hide count column"
+                  >
+                    <PanelRightClose className="h-6! w-6!" />
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div className="col-span-1 flex items-center justify-center gap-2 px-1 py-2 text-center">
+                <span>Box</span>
+                <Button
+                  variant="ghost"
+                  onClick={setIsCountControlsVisible}
+                  className="h-8 w-8 p-0"
+                  title="Show count column"
+                >
+                  <PanelRightOpen className="h-6! w-6!" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="relative space-y-1 pt-2">
             {lineItems.map((item: LineItem, idx: number) => (
-              <LineItemRow key={item.rowId} idx={idx} item={item} />
+              <LineItemRow
+                key={item.rowId}
+                idx={idx}
+                item={item}
+                isCountColumnVisible={isCountColumnVisible}
+              />
             ))}
 
             <div className="flex justify-between px-4 py-2">

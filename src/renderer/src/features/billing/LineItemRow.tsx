@@ -10,7 +10,15 @@ import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
 const LineItemRow = memo(
-  ({ idx, item }: { idx: number; item: LineItem }) => {
+  ({
+    idx,
+    item,
+    isCountColumnVisible
+  }: {
+    idx: number;
+    item: LineItem;
+    isCountColumnVisible: boolean;
+  }) => {
     const { updateLineItem, deleteLineItem } = useLineItemsStore(
       useShallow((state) => ({
         updateLineItem: state.updateLineItem,
@@ -35,7 +43,11 @@ const LineItemRow = memo(
 
     return (
       <div key={item.id} className="relative">
-        <div className={`group ${checkedColor} grid w-full grid-cols-23 border transition-colors`}>
+        <div
+          className={`group ${checkedColor} grid w-full border transition-colors ${
+            isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
+          }`}
+        >
           <div className="col-span-2 h-full w-full border-r">
             <div className="flex h-full w-full items-center justify-between gap-2 px-4">
               <GripVertical
@@ -158,46 +170,50 @@ const LineItemRow = memo(
               {checked && <Check className="text-background" strokeWidth={3} size={18} />}
             </button>
           </div>
-          <div className="col-span-2 flex items-center justify-center py-1">
-            <span className="text-base font-semibold whitespace-nowrap">
-              {item.checkedQty}/{item.quantity}
-            </span>
-          </div>
-          <div className="col-span-2 flex items-center justify-center gap-1 py-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newCheckedAt = updateCheckedQuantity(
-                  UPDATE_QTY_ACTION.INCREMENT,
-                  item.quantity,
-                  item.checkedQty
-                );
-                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
-              }}
-              disabled={checked}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
-            >
-              <Plus className="size-5" />
-            </Button>
+          {isCountColumnVisible && (
+            <>
+              <div className="col-span-2 flex items-center justify-center py-1">
+                <span className="text-base font-semibold whitespace-nowrap">
+                  {item.checkedQty}/{item.quantity}
+                </span>
+              </div>
+              <div className="col-span-2 flex items-center justify-center gap-1 py-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newCheckedAt = updateCheckedQuantity(
+                      UPDATE_QTY_ACTION.INCREMENT,
+                      item.quantity,
+                      item.checkedQty
+                    );
+                    updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                  }}
+                  disabled={checked}
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+                >
+                  <Plus className="size-5" />
+                </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newCheckedAt = updateCheckedQuantity(
-                  UPDATE_QTY_ACTION.DECREMENT,
-                  item.quantity,
-                  item.checkedQty
-                );
-                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
-              }}
-              disabled={item.checkedQty === 0}
-              className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
-            >
-              <Minus className="size-5" />
-            </Button>
-          </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const newCheckedAt = updateCheckedQuantity(
+                      UPDATE_QTY_ACTION.DECREMENT,
+                      item.quantity,
+                      item.checkedQty
+                    );
+                    updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                  }}
+                  disabled={item.checkedQty === 0}
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+                >
+                  <Minus className="size-5" />
+                </Button>
+              </div>
+            </>
+          )}
         </div>
 
         {isDropdownOpen && searchRow === idx + 1 && <MemoizedSearchDropdown idx={idx} />}
@@ -205,7 +221,11 @@ const LineItemRow = memo(
     );
   },
   (prevProps, nextProps) => {
-    return prevProps.item === nextProps.item && prevProps.idx === nextProps.idx;
+    return (
+      prevProps.item === nextProps.item &&
+      prevProps.idx === nextProps.idx &&
+      prevProps.isCountColumnVisible === nextProps.isCountColumnVisible
+    );
   }
 );
 

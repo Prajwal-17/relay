@@ -20,6 +20,8 @@ export type LineItem = {
 };
 
 type LineItemsStore = {
+  isCountColumnVisible: boolean;
+  setIsCountControlsVisible: () => void;
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (type?: "button") => void;
@@ -60,6 +62,12 @@ const reCalculateLineItem = (item: LineItem): LineItem => {
 };
 
 export const useLineItemsStore = create<LineItemsStore>((set) => ({
+  isCountColumnVisible: false,
+  setIsCountControlsVisible: () =>
+    set((state) => ({
+      isCountColumnVisible: !state.isCountColumnVisible
+    })),
+
   lineItems: [initialLineItem()],
 
   setLineItems: (itemsArray) =>
