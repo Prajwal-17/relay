@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, CustomersType } from "../../../shared/types";
+import type { ApiResponse, Customer } from "../../../shared/types";
 import { db } from "../../db/db";
 import { customers } from "../../db/schema";
 
@@ -8,7 +8,7 @@ export function getCustomerById() {
   // get Customer by id
   ipcMain.handle(
     "customersApi:getCustomerById",
-    async (_event, customerId): Promise<ApiResponse<Partial<CustomersType>>> => {
+    async (_event, customerId): Promise<ApiResponse<Partial<Customer>>> => {
       try {
         const customer = await db
           .select({

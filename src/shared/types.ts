@@ -1,4 +1,4 @@
-export type CustomersType = {
+export type Customer = {
   id: string;
   name: string;
   contact: string | null;
@@ -7,7 +7,7 @@ export type CustomersType = {
   createdAt?: string;
 };
 
-export type ProductsType = {
+export type Product = {
   id: string;
   name: string;
   productSnapshot: string;
@@ -23,7 +23,7 @@ export type ProductsType = {
   createdAt?: string;
 };
 
-export type ProductHistoryType = {
+export type ProductHistory = {
   id: string;
   name: string;
   productSnapshot: string;
@@ -43,7 +43,7 @@ export type UnifiedTransaction = {
   id: string;
   transactionNo: number;
   customerId: string | null;
-  customer: CustomersType;
+  customer: Customer;
   grandTotal: number | null;
   totalQuantity: number | null;
   isPaid: boolean;
@@ -71,7 +71,7 @@ export type UnifiedTransctionWithItems = UnifiedTransaction & {
   items: UnifiedTransactionItem[];
 };
 
-export type SalesType = {
+export type Sale = {
   id: string;
   invoiceNo: number;
   customerId: string | null;
@@ -82,7 +82,7 @@ export type SalesType = {
   updatedAt?: string;
 };
 
-export type EstimateType = {
+export type Estimate = {
   id: string;
   estimateNo: number;
   customerId: string | null;
@@ -93,7 +93,7 @@ export type EstimateType = {
   updatedAt?: string;
 };
 
-export type SaleItemsType = {
+export type SaleItem = {
   id: string;
   saleId: string;
   productId: string | null;
@@ -109,7 +109,7 @@ export type SaleItemsType = {
   checkedQty: number;
 };
 
-export type EstimateItemsType = {
+export type EstimateItem = {
   id: string;
   estimateId: string;
   productId: string | null;
@@ -166,10 +166,10 @@ export type SalePayload = {
   totalQuantity: number | null;
   isPaid: boolean;
   createdAt?: string;
-  items: SalePayloadItems[];
+  items: SalePayloadItem[];
 };
 
-export type SalePayloadItems = {
+export type SalePayloadItem = {
   id: string;
   productId: string;
   name: string;
@@ -192,10 +192,10 @@ export type EstimatePayload = {
   totalQuantity: number | null;
   isPaid: boolean;
   createdAt: string;
-  items: EstimatePayloadItems[];
+  items: EstimatePayloadItem[];
 };
 
-export type EstimatePayloadItems = {
+export type EstimatePayloadItem = {
   id: string;
   productId: string;
   name: string;
@@ -208,7 +208,7 @@ export type EstimatePayloadItems = {
   totalPrice: number;
 };
 
-export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
+export type ProductPayload = Omit<Product, "id"> & { isDisabled?: boolean };
 
 export type FilteredGoogleContactsType = {
   id: number;
@@ -219,16 +219,16 @@ export type FilteredGoogleContactsType = {
 export type SaleSummaryType = {
   totalRevenue: number;
   totalTransactions: number;
-  sales: (SalesType & { customerName: string })[];
+  sales: (Sale & { customerName: string })[];
 };
 
 export type EstimateSummaryType = {
   totalRevenue: number;
   totalTransactions: number;
-  estimates: (EstimateType & { customerName: string })[];
+  estimates: (Estimate & { customerName: string })[];
 };
 
-export type AllTransactionsType = (SalesType | EstimateType)[];
+export type AllTransactionsType = (Sale | Estimate)[];
 
 export type DateRangeType = {
   from: Date;
@@ -339,21 +339,19 @@ export interface DashboardApi {
   getRecentTransactions: (
     type: TransactionType
   ) => Promise<
-    ApiResponse<
-      (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
-    >
+    ApiResponse<(Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []>
   >;
   getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
 }
 
 export interface ProductsApi {
-  getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
+  getAllProducts: () => Promise<ApiResponse<Product[]>>;
   search: (
     query: string,
     pageNo: PageNo,
     limit: number,
     filterType?: ProductFilterType
-  ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
+  ) => Promise<PaginatedApiResponse<Product[] | []>>;
   addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
   updateProduct: (
     productId: string,
@@ -365,7 +363,7 @@ export interface ProductsApi {
 export interface SalesApi {
   getNextInvoiceNo: () => Promise<ApiResponse<number>>;
   save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
-  getAllSales: () => Promise<ApiResponse<SalesType[]>>;
+  getAllSales: () => Promise<ApiResponse<Sale[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
   getSalesDateRange: (
     range: DateRangeType,
@@ -387,7 +385,7 @@ export interface SalesApi {
 export interface EstimatesApi {
   getNextEstimateNo: () => Promise<ApiResponse<number>>;
   save: (payload: EstimatePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
-  getAllEstimates: () => Promise<ApiResponse<EstimateType[]>>;
+  getAllEstimates: () => Promise<ApiResponse<Estimate[]>>;
   getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
   getEstimatesDateRange: (
     range: DateRangeType,
@@ -407,20 +405,20 @@ export interface EstimatesApi {
 }
 
 export interface CustomersApi {
-  addNewCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
-  updateCustomer: (payload: CustomersType) => Promise<ApiResponse<CustomersType>>;
-  getCustomerById: (customerId: string) => Promise<ApiResponse<CustomersType>>;
-  getCustomerByName: (customerName: string) => Promise<ApiResponse<CustomersType | null>>;
-  getAllCustomers: () => Promise<ApiResponse<CustomersType[]>>;
+  addNewCustomer: (payload: Customer) => Promise<ApiResponse<Customer>>;
+  updateCustomer: (payload: Customer) => Promise<ApiResponse<Customer>>;
+  getCustomerById: (customerId: string) => Promise<ApiResponse<Customer>>;
+  getCustomerByName: (customerName: string) => Promise<ApiResponse<Customer | null>>;
+  getAllCustomers: () => Promise<ApiResponse<Customer[]>>;
   getAllTransactionsById: (
     customerId: string,
     type: TransactionType,
     pageNo: PageNo
-  ) => Promise<PaginatedApiResponse<SalesType[] | EstimateType[] | []>>;
+  ) => Promise<PaginatedApiResponse<Sale[] | Estimate[] | []>>;
   deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
   importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
   importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
-  searchCustomers: (query: string) => Promise<ApiResponse<CustomersType[]>>;
+  searchCustomers: (query: string) => Promise<ApiResponse<Customer[]>>;
 }
 
 export interface ShareApi {

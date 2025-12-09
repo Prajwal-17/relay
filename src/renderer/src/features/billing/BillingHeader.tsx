@@ -144,7 +144,7 @@ const BillingHeader = () => {
                 <>
                   <Input
                     type="number"
-                    className="text-primary w-24 px-1 py-1 text-center !text-xl font-extrabold"
+                    className="text-primary w-24 px-1 py-1 text-center text-xl! font-extrabold"
                     value={Number(tempTransactionNo)}
                     onChange={(e) => setTempTransactionNo(Number(e.target.value))}
                   />
@@ -205,7 +205,7 @@ const BillingHeader = () => {
                 step="60"
                 value={formatDateObjToHHmmss(billingDate)}
                 onChange={(e) => handleTimeChange(e)}
-                className="bg-background appearance-none !text-lg [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                className="bg-background appearance-none text-lg! [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />
             </div>
           </div>
@@ -225,7 +225,7 @@ const BillingHeader = () => {
 
                 <Input
                   id="customer-contact"
-                  className="py-6 pl-16 !text-lg font-medium focus:border-none"
+                  className="py-6 pl-16 text-lg! font-medium focus:border-none"
                   placeholder="Contact Number"
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}

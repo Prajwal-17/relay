@@ -2,9 +2,9 @@ import { desc, eq } from "drizzle-orm";
 import { ipcMain } from "electron/main";
 import {
   TRANSACTION_TYPE,
-  type EstimateType,
+  type Estimate,
   type PaginatedApiResponse,
-  type SalesType
+  type Sale
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -19,7 +19,7 @@ export function getAllTransactionsById() {
       customerId,
       type,
       pageNo
-    ): Promise<PaginatedApiResponse<SalesType[] | EstimateType[] | []>> => {
+    ): Promise<PaginatedApiResponse<Sale[] | Estimate[] | []>> => {
       try {
         if (pageNo === null || pageNo === undefined) {
           return {

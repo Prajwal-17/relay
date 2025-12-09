@@ -1,4 +1,4 @@
-import { TRANSACTION_TYPE, type CustomersType, type TransactionType } from "@shared/types";
+import { TRANSACTION_TYPE, type Customer, type TransactionType } from "@shared/types";
 import { create } from "zustand";
 
 type CustomersStoreType = {
@@ -8,12 +8,12 @@ type CustomersStoreType = {
   setOpenCustomerDialog: () => void;
   actionType: "add" | "edit";
   setActionType: (action: "add" | "edit") => void;
-  selectedCustomer: CustomersType | null;
-  setSelectedCustomer: (customer: CustomersType | null) => void;
+  selectedCustomer: Customer | null;
+  setSelectedCustomer: (customer: Customer | null) => void;
   customerSearch: string;
   setCustomerSearch: (value: string) => void;
-  formData: CustomersType;
-  setFormData: (data: Partial<CustomersType>) => void;
+  formData: Customer;
+  setFormData: (data: Partial<Customer>) => void;
 };
 
 function initialFormData() {

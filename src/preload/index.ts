@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  Customer,
   CustomersApi,
-  CustomersType,
   DashboardApi,
   DateRangeType,
   EstimatePayload,
@@ -67,10 +67,8 @@ const estimatesApi: EstimatesApi = {
 };
 
 const customersApi: CustomersApi = {
-  addNewCustomer: (payload: CustomersType) =>
-    ipcRenderer.invoke("customersApi:addNewCustomer", payload),
-  updateCustomer: (payload: CustomersType) =>
-    ipcRenderer.invoke("customersApi:updateCustomer", payload),
+  addNewCustomer: (payload: Customer) => ipcRenderer.invoke("customersApi:addNewCustomer", payload),
+  updateCustomer: (payload: Customer) => ipcRenderer.invoke("customersApi:updateCustomer", payload),
   getCustomerById: (customerId: string) =>
     ipcRenderer.invoke("customersApi:getCustomerById", customerId),
   getCustomerByName: (customerName: string) =>

@@ -1,11 +1,7 @@
 import { PRODUCTS_SEARCH_DELAY, PRODUCTS_SEARCH_PAGE_SIZE } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import {
-  type PaginatedApiResponse,
-  type ProductFilterType,
-  type ProductsType
-} from "@shared/types";
+import { type PaginatedApiResponse, type Product, type ProductFilterType } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
@@ -103,7 +99,7 @@ export const useProductSearch = (type: ProductSearchType) => {
     },
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
-    getNextPageParam: (lastPage: PaginatedApiResponse<ProductsType[] | []>) => {
+    getNextPageParam: (lastPage: PaginatedApiResponse<Product[] | []>) => {
       return lastPage.status === "success" ? (lastPage.nextPageNo ?? null) : null;
     }
   });

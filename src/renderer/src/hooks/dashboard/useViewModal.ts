@@ -2,20 +2,20 @@ import {
   DASHBOARD_TYPE,
   type ApiResponse,
   type BatchCheckAction,
-  type CustomersType,
+  type Customer,
   type DashboardType,
-  type EstimateItemsType,
-  type EstimateType,
-  type SaleItemsType,
-  type SalesType,
+  type Estimate,
+  type EstimateItem,
+  type Sale,
+  type SaleItem,
   type UpdateQtyAction
 } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 
-type SaleObject = SalesType & { customer: CustomersType; items: SaleItemsType[] };
-type EstimateObject = EstimateType & { customer: CustomersType; items: EstimateItemsType[] };
+type SaleObject = Sale & { customer: Customer; items: SaleItem[] };
+type EstimateObject = Estimate & { customer: Customer; items: EstimateItem[] };
 type UnifiedType = SaleObject | EstimateObject;
 export type MutationVariables = {
   type: DashboardType;
@@ -38,7 +38,7 @@ export type UnifiedTransaction = {
   grandTotal: number;
   totalQuantity: number;
   isPaid: boolean;
-  items: SaleItemsType[] | EstimateItemsType[];
+  items: SaleItem[] | EstimateItem[];
   createdAt?: string;
   updatedAt?: string;
 };

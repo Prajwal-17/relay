@@ -3,8 +3,8 @@ import { ipcMain } from "electron";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
-  type EstimateType,
-  type SalesType
+  type Estimate,
+  type Sale
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -18,7 +18,7 @@ export function getRecentTransactions() {
       type
     ): Promise<
       ApiResponse<
-        (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+        (Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []
       >
     > => {
       try {

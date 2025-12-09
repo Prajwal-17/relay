@@ -18,7 +18,7 @@ const BillingPage = () => {
       // billingStateReset();
       localStorage.setItem("bill-preview-date", new Date().toISOString());
     };
-    // eslint-disable-next-line
+    // // eslint-disable-next-line
   }, [type, id]);
 
   useLoadTransactionDetails(formattedType as TransactionType, id);

@@ -64,7 +64,7 @@ export default function ProductResults() {
                         data-index={virtualRow.index}
                       >
                         <div className="group hover:bg-accent/70 flex items-center justify-between gap-4 px-6 py-3 transition-colors">
-                          <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100">
+                          <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
                             <Package className="h-5 w-5 text-blue-600" />
                           </div>
                           <div className="flex flex-1 items-center gap-6">

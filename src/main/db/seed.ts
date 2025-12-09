@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { v4 as uuidv4 } from "uuid";
-import type { CustomersType, ProductsType, SalesType, UsersType } from "../../shared/types";
+import type { Customer, Product, Sale, UsersType } from "../../shared/types";
 import { customers, products, sales, users } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
@@ -18,7 +18,7 @@ export async function main() {
       password: "password"
     }));
 
-    const customersData: CustomersType[] = Array.from({ length: 10 }).map(() => ({
+    const customersData: Customer[] = Array.from({ length: 10 }).map(() => ({
       id: uuidv4(),
       name: faker.person.firstName(),
       contact: faker.phone.number({ style: "national" }),
@@ -26,7 +26,7 @@ export async function main() {
     }));
 
     // @ts-ignore - temp fix
-    const productsData: ProductsType[] = Array.from({ length: 10 }).map(() => ({
+    const productsData: Product[] = Array.from({ length: 10 }).map(() => ({
       id: uuidv4(),
       name: faker.commerce.product(),
       weight: faker.string.numeric(2),
@@ -36,7 +36,7 @@ export async function main() {
       purchasePrice: Number(faker.commerce.price())
     }));
 
-    const salesData: SalesType[] = Array.from({ length: 3 }).map(() => {
+    const salesData: Sale[] = Array.from({ length: 3 }).map(() => {
       const customer = faker.helpers.arrayElement(customersData);
       return {
         id: uuidv4(),

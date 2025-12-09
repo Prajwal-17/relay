@@ -4,8 +4,8 @@ import {
   PRODUCT_FILTER,
   type PageNo,
   type PaginatedApiResponse,
-  type ProductFilterType,
-  type ProductsType
+  type Product,
+  type ProductFilterType
 } from "../../../shared/types";
 import { db } from "../../db/db";
 import { products } from "../../db/schema";
@@ -19,7 +19,7 @@ export function searchProduct() {
       pageNo: PageNo,
       limit: number,
       filterType?: ProductFilterType
-    ): Promise<PaginatedApiResponse<ProductsType[] | []>> => {
+    ): Promise<PaginatedApiResponse<Product[] | []>> => {
       try {
         if (pageNo === null || pageNo === undefined) {
           return {
@@ -47,7 +47,7 @@ export function searchProduct() {
 
         const offset = (pageNo - 1) * limit;
 
-        let searchResult: ProductsType[] | [];
+        let searchResult: Product[] | [];
 
         if (searchTerms.length === 0) {
           searchResult = await db

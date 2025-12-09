@@ -4,8 +4,8 @@ import { useHomeDashboard } from "@/hooks/useHomeDashboard";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
-  type EstimateType,
-  type SalesType,
+  type Estimate,
+  type Sale,
   type TransactionType
 } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ export function RecentActivitiesTable() {
     queryFn: () => fetchRecentTransactions(type),
     select: (
       response: ApiResponse<
-        (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+        (Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []
       >
     ) => {
       return response.status === "success" ? response.data : null;

@@ -113,7 +113,7 @@ export const Sidebar = () => {
                     size="lg"
                     className="group border-border hover:bg-accent hover:text-accent-foreground w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
                   >
-                    <FileText className="size-5 transition-transform duration-300 group-hover:rotate-[-12deg]" />
+                    <FileText className="size-5 transition-transform duration-300 group-hover:-rotate-12" />
                     <span>New Estimate</span>
                   </Button>
                 </Link>

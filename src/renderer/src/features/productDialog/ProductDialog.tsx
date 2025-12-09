@@ -73,7 +73,7 @@ export function ProductDialog() {
                       value={formDataState.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter product name"
-                      className="px-4 py-6 !text-xl font-semibold"
+                      className="px-4 py-6 text-xl! font-semibold"
                     />
                     {errors.name && <div className="text-destructive">{errors.name}</div>}
                   </div>
@@ -89,7 +89,7 @@ export function ProductDialog() {
                           value={formDataState.weight ?? ""}
                           onChange={(e) => handleInputChange("weight", e.target.value)}
                           placeholder="e.g., 500"
-                          className="px-4 py-6 !text-lg font-medium"
+                          className="px-4 py-6 text-lg! font-medium"
                         />
                         {errors.weight && <div className="text-destructive">{errors.weight}</div>}
                       </div>
@@ -128,7 +128,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("purchasePrice", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-lg font-medium"
+                        className="px-4 py-6 text-lg! font-medium"
                       />
                       {errors.purchasePrice && (
                         <div className="text-destructive">{errors.purchasePrice}</div>
@@ -148,7 +148,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("price", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-lg font-medium"
+                        className="px-4 py-6 text-lg! font-medium"
                       />
                       {errors.price && <div className="text-destructive">{errors.price}</div>}
                     </div>
@@ -163,7 +163,7 @@ export function ProductDialog() {
                           const value = e.target.value;
                           handleInputChange("mrp", value === "" ? null : value);
                         }}
-                        className="px-4 py-6 !text-lg font-medium"
+                        className="px-4 py-6 text-lg! font-medium"
                       />
                       {errors.mrp && <div className="text-destructive">{errors.mrp}</div>}
                     </div>
@@ -236,7 +236,7 @@ export function ProductDialog() {
                         ) : (
                           <div className="border-destructive bg-card text-card-foreground space-y-4 rounded-lg border p-6">
                             <div className="flex items-start gap-4">
-                              <AlertTriangle className="text-destructive mt-0.5 h-6 w-6 flex-shrink-0" />
+                              <AlertTriangle className="text-destructive mt-0.5 h-6 w-6 shrink-0" />
                               <div className="space-y-3">
                                 <p className="text-destructive text-base font-semibold">
                                   Are you sure you want to delete this product?
@@ -286,7 +286,7 @@ export function ProductDialog() {
               </div>
             </div>
 
-            <div className="flex-shrink-0 border-t p-8">
+            <div className="shrink-0 border-t p-8">
               <div className="flex justify-end gap-4">
                 <Button
                   type="button"

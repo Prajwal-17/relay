@@ -111,7 +111,7 @@ export const CustomerDialog = () => {
       onOpenAutoFocus={(e) => {
         e.preventDefault();
       }}
-      className="w-full !max-w-3xl"
+      className="w-full max-w-3xl!"
     >
       <DialogHeader>
         <DialogTitle>{actionType === "add" ? "Add New Customer" : "Edit Customer"}</DialogTitle>
@@ -127,7 +127,7 @@ export const CustomerDialog = () => {
             onChange={(e) => handleInputChange("name", e.target.value)}
             placeholder="Enter customer name"
             required
-            className="h-12 !text-lg"
+            className="h-12 text-lg!"
           />
           {errors.name && <div className="text-destructive">{errors.name}</div>}
         </div>
@@ -140,7 +140,7 @@ export const CustomerDialog = () => {
             value={formData.contact ?? ""}
             onChange={(e) => handleInputChange("contact", e.target.value)}
             placeholder="Enter contact information"
-            className="h-12 !text-lg"
+            className="h-12 text-lg!"
           />
           {errors.contact && <div className="text-destructive">{errors.contact}</div>}
         </div>
@@ -152,7 +152,7 @@ export const CustomerDialog = () => {
             value={formData.customerType}
             onValueChange={(value) => handleInputChange("customerType", value)}
           >
-            <SelectTrigger className="h-12 !text-lg">
+            <SelectTrigger className="h-12 text-lg!">
               <SelectValue placeholder="Select customer type" />
             </SelectTrigger>
             <SelectContent>

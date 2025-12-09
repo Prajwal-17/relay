@@ -1,10 +1,10 @@
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductsType } from "../../../shared/types";
+import type { ApiResponse, Product } from "../../../shared/types";
 import { db } from "../../db/db";
 import { products } from "../../db/schema";
 
 export function getAllProducts() {
-  ipcMain.handle("productsApi:getAllProducts", async (): Promise<ApiResponse<ProductsType[]>> => {
+  ipcMain.handle("productsApi:getAllProducts", async (): Promise<ApiResponse<Product[]>> => {
     try {
       const allProducts = await db.select().from(products);
       return { status: "success", data: allProducts };

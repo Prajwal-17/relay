@@ -70,7 +70,7 @@ export const CustomerSidebar = () => {
               placeholder="Search customers..."
               value={customerSearch}
               onChange={(e) => setCustomerSearch(e.target.value)}
-              className="h-14 pl-10 !text-lg"
+              className="h-14 pl-10 text-lg!"
             />
           </div>
         </div>

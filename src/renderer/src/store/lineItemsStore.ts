@@ -1,4 +1,4 @@
-import type { ProductsType, UnifiedTransactionItem } from "@shared/types";
+import type { Product, UnifiedTransactionItem } from "@shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
@@ -25,7 +25,7 @@ type LineItemsStore = {
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (type?: "button") => void;
-  addLineItem: (rowId: string, newItem: ProductsType) => void;
+  addLineItem: (rowId: string, newItem: Product) => void;
   updateLineItem: (id: string, field: string, value: string | number) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;

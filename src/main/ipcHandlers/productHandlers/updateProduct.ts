@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, ProductHistoryType, ProductPayload } from "../../../shared/types";
+import type { ApiResponse, ProductHistory, ProductPayload } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { productHistory, products } from "../../db/schema";
@@ -92,7 +92,7 @@ export function updateProduct() {
           return s.charAt(0).toUpperCase() + s.slice(1);
         }
 
-        const changedFields: Partial<ProductHistoryType> = {};
+        const changedFields: Partial<ProductHistory> = {};
 
         currencyFields.forEach((field) => {
           const oldValue = existingProduct[field];

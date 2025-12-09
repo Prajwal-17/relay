@@ -67,7 +67,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               }}
                               onMouseDown={(e) => e.preventDefault()}
                             >
-                              <div className="border-border flex h-8 w-8 items-center justify-center rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100">
+                              <div className="border-border flex h-8 w-8 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
                                 <Package className="h-5 w-5 text-blue-600" />
                               </div>
 

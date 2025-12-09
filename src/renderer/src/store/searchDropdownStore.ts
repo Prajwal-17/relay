@@ -1,11 +1,11 @@
-import type { ProductsType } from "src/shared/types";
+import type { Product } from "src/shared/types";
 import { create } from "zustand";
 
 type SearchDropdownStoreType = {
   itemQuery: string;
   setItemQuery: (query: string) => void;
-  availableProducts: ProductsType[] | [];
-  setAvailableProducts: (mode: "append" | "replace", newResult: ProductsType[]) => void;
+  availableProducts: Product[] | [];
+  setAvailableProducts: (mode: "append" | "replace", newResult: Product[]) => void;
   activeRowId: string | null;
   setActiveRowId: (rowId: string | null) => void;
   isDropdownOpen: boolean;

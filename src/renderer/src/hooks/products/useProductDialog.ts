@@ -1,6 +1,6 @@
 import { ProductSchema } from "@/lib/validation";
 import { useProductsStore } from "@/store/productsStore";
-import type { ApiResponse, ProductPayload, ProductsType } from "@shared/types";
+import type { ApiResponse, Product, ProductPayload } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -23,7 +23,7 @@ const addProduct = async (payload: ProductPayload) => {
   }
 };
 
-const updateProduct = async (productId: string, updatedPayload: Partial<ProductsType>) => {
+const updateProduct = async (productId: string, updatedPayload: Partial<Product>) => {
   try {
     const response = await window.productsApi.updateProduct(productId, updatedPayload);
     return response;

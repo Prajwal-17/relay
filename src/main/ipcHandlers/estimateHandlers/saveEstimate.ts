@@ -3,7 +3,7 @@ import { ipcMain } from "electron/main";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
-  type CustomersType,
+  type Customer,
   type EstimatePayload,
   type TransactionType
 } from "../../../shared/types";
@@ -20,7 +20,7 @@ export function saveEstimate() {
       estimateObj: EstimatePayload
     ): Promise<ApiResponse<{ id: string; type: TransactionType }>> => {
       try {
-        let customer: CustomersType | undefined;
+        let customer: Customer | undefined;
         if (!estimateObj.customerName || estimateObj.customerName.trim() === "") {
           const [defaultCustomer] = await db
             .select()

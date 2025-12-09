@@ -1,5 +1,5 @@
 import { ipcMain } from "electron/main";
-import type { ApiResponse, CustomersType } from "../../../shared/types";
+import type { ApiResponse, Customer } from "../../../shared/types";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers } from "../../db/schema";
@@ -8,7 +8,7 @@ export function addCustomer() {
   // create new customer
   ipcMain.handle(
     "customersApi:addNewCustomer",
-    async (_event, customerPayload: CustomersType): Promise<ApiResponse<CustomersType>> => {
+    async (_event, customerPayload: Customer): Promise<ApiResponse<Customer>> => {
       try {
         const newCustomer = await db
           .insert(customers)

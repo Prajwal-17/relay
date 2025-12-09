@@ -1,6 +1,6 @@
 import { like } from "drizzle-orm";
 import { ipcMain } from "electron/main";
-import type { ApiResponse, CustomersType } from "../../../shared/types";
+import type { ApiResponse, Customer } from "../../../shared/types";
 import { db } from "../../db/db";
 import { customers } from "../../db/schema";
 
@@ -8,7 +8,7 @@ export function searchCustomers() {
   // search customers by name
   ipcMain.handle(
     "customersApi:searchCustomers",
-    async (_event, query): Promise<ApiResponse<CustomersType[]>> => {
+    async (_event, query): Promise<ApiResponse<Customer[]>> => {
       try {
         if (query === "") {
           const allCustomers = await db

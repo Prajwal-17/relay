@@ -1,9 +1,9 @@
 import {
   TRANSACTION_TYPE,
-  type EstimateType,
+  type Estimate,
   type PageNo,
   type PaginatedApiResponse,
-  type SalesType,
+  type Sale,
   type TransactionType
 } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -53,7 +53,7 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
     },
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
-    getNextPageParam: (lastPage: PaginatedApiResponse<SalesType[] | EstimateType[]>) => {
+    getNextPageParam: (lastPage: PaginatedApiResponse<Sale[] | Estimate[]>) => {
       return lastPage.status === "success" ? (lastPage.nextPageNo ?? null) : null;
     },
     enabled: !!customerId && !!type
@@ -73,7 +73,7 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
         }
 
         if (type === TRANSACTION_TYPE.SALE) {
-          const saleData = page.data as SalesType[];
+          const saleData = page.data as Sale[];
           return saleData
             ? saleData.map((sale) => ({
                 id: sale.id,
@@ -89,7 +89,7 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
         }
 
         if (type === TRANSACTION_TYPE.ESTIMATE) {
-          const estimateData = page.data as EstimateType[];
+          const estimateData = page.data as Estimate[];
           return estimateData
             ? estimateData.map((estimate) => ({
                 id: estimate.id,

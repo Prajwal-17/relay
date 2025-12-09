@@ -1,13 +1,13 @@
 import { Input } from "@/components/ui/input";
 import useTransactionState from "@/hooks/useTransactionState";
-import type { CustomersType } from "@shared/types";
+import type { Customer } from "@shared/types";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export const CustomerNameInput = () => {
   const { setCustomerId, customerName, setCustomerName, setCustomerContact, setIsNewCustomer } =
     useTransactionState();
-  const [customers, setCustomers] = useState<CustomersType[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLDivElement | null>(null);
@@ -103,7 +103,7 @@ export const CustomerNameInput = () => {
           placeholder="Enter Name"
           id="customer-name"
           value={customerName}
-          className="px-4 py-6 !text-lg font-medium focus:border-none"
+          className="px-4 py-6 text-lg! font-medium focus:border-none"
           onClick={() => setOpenDropdown((prev) => !prev)}
           onChange={(e) => setCustomerName(e.target.value)}
         />

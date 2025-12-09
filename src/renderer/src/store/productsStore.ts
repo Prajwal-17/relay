@@ -1,7 +1,7 @@
-import { PRODUCT_FILTER, type ProductFilterType, type ProductsType } from "@shared/types";
+import { PRODUCT_FILTER, type Product, type ProductFilterType } from "@shared/types";
 import { create } from "zustand";
 
-export type ProductsFormType = Omit<ProductsType, "price" | "id"> & {
+export type ProductsFormType = Omit<Product, "price" | "id"> & {
   price: string;
 };
 
@@ -14,8 +14,8 @@ type ProductsStoreType = {
   setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
   searchParam: string;
   setSearchParam: (param: string) => void;
-  searchResult: ProductsType[] | [];
-  setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
+  searchResult: Product[] | [];
+  setSearchResult: (mode: "append" | "replace", newResult: Product[]) => void;
   productId: string | null;
   setProductId: (id: string | null) => void;
   formDataState: ProductsFormType;
