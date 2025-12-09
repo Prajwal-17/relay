@@ -25,7 +25,7 @@ type LineItemsStore = {
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (type?: "button") => void;
-  addLineItem: (index: number, newItem: ProductsType) => void;
+  addLineItem: (rowId: string, newItem: ProductsType) => void;
   updateLineItem: (id: string, field: string, value: string | number) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;
@@ -113,7 +113,7 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
     }),
 
   // add new item on selection
-  addLineItem: (index, newItem) =>
+  addLineItem: (rowId, newItem) =>
     set((state) => {
       /**
        * always create a new array to update the existing state array, coz react/zustand does
@@ -122,7 +122,10 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
        */
       const currLineItems = [...state.lineItems];
 
-      // existing line item at index
+      // get index of item at rowId
+      const index = currLineItems.findIndex((item) => item.rowId === rowId);
+
+      // existing line item at rowId
       const oldItem = currLineItems[index];
       const oldItemQuantity = oldItem.quantity > 1 ? oldItem.quantity : 1;
       const oldItemCheckedQty = oldItem.checkedQty > 1 ? oldItem.checkedQty : 0;

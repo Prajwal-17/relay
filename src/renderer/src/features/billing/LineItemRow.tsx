@@ -26,13 +26,13 @@ const LineItemRow = memo(
       }))
     );
 
-    const { searchRow, setSearchRow, isDropdownOpen, setSearchParam, setIsDropdownOpen } =
+    const { activeRowId, setActiveRowId, isDropdownOpen, setItemQuery, setIsDropdownOpen } =
       useSearchDropdownStore(
         useShallow((state) => ({
-          searchRow: state.searchRow,
-          setSearchRow: state.setSearchRow,
+          activeRowId: state.activeRowId,
+          setActiveRowId: state.setActiveRowId,
           isDropdownOpen: state.isDropdownOpen,
-          setSearchParam: state.setSearchParam,
+          setItemQuery: state.setItemQuery,
           setIsDropdownOpen: state.setIsDropdownOpen
         }))
       );
@@ -67,12 +67,12 @@ const LineItemRow = memo(
               value={item.productSnapshot}
               className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={() => {
-                setSearchRow(idx + 1);
+                setActiveRowId(item.rowId);
                 setIsDropdownOpen();
               }}
               onChange={(e) => {
-                setSearchParam(e.target.value);
-                updateLineItem(item.rowId, "name", e.target.value);
+                setItemQuery(e.target.value);
+                updateLineItem(item.rowId, "productSnapshot", e.target.value);
               }}
             />
           </div>
@@ -216,7 +216,9 @@ const LineItemRow = memo(
           )}
         </div>
 
-        {isDropdownOpen && searchRow === idx + 1 && <MemoizedSearchDropdown idx={idx} />}
+        {isDropdownOpen && activeRowId === item.rowId && (
+          <MemoizedSearchDropdown rowId={item.rowId} />
+        )}
       </div>
     );
   },

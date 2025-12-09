@@ -30,8 +30,8 @@ const useTransactionState = () => {
   const deleteLineItem = useLineItemsStore((state) => state.deleteLineItem);
   const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
   // search drop down store
-  const setSearchParam = useSearchDropdownStore((state) => state.setSearchParam);
-  const setSearchRow = useSearchDropdownStore((state) => state.setSearchRow);
+  const setItemQuery = useSearchDropdownStore((state) => state.setItemQuery);
+  const setActiveRowId = useSearchDropdownStore((state) => state.setActiveRowId);
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
 
   return {
@@ -59,8 +59,8 @@ const useTransactionState = () => {
     updateLineItem,
     deleteLineItem,
     setAllChecked,
-    setSearchParam,
-    setSearchRow,
+    setItemQuery,
+    setActiveRowId,
     setIsDropdownOpen
   };
 };

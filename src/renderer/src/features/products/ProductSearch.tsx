@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
 import { Search, X } from "lucide-react";
@@ -10,7 +10,7 @@ export default function ProductSearch() {
   const inputRef = useRef<HTMLInputElement>(null);
   const filterType = useProductsStore((state) => state.filterType);
   const setFilterType = useProductsStore((state) => state.setFilterType);
-  const { productsSearchParam, setProductsSearchParam } = useProductSearchV2(
+  const { productsSearchParam, setProductsSearchParam } = useProductSearch(
     PRODUCTSEARCH_TYPE.PRODUCTPAGE
   );
 

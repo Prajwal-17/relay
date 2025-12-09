@@ -7,7 +7,6 @@ import {
   type ProductFilterType,
   type ProductsType
 } from "../../../shared/types";
-import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { products } from "../../db/schema";
 
@@ -99,9 +98,9 @@ export function searchProduct() {
             searchResult.length > 0
               ? searchResult.map((product) => ({
                   ...product,
-                  mrp: product.mrp && formatToRupees(product.mrp),
+                  mrp: product.mrp,
                   price: product.price,
-                  purchasePrice: product.purchasePrice && formatToRupees(product.purchasePrice)
+                  purchasePrice: product.purchasePrice
                 }))
               : []
         };

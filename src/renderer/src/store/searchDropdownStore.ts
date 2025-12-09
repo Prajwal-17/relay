@@ -2,42 +2,42 @@ import type { ProductsType } from "src/shared/types";
 import { create } from "zustand";
 
 type SearchDropdownStoreType = {
-  searchParam: string;
-  setSearchParam: (query: string) => void;
-  searchResult: ProductsType[] | [];
-  setSearchResult: (mode: "append" | "replace", newResult: ProductsType[]) => void;
-  searchRow: number | null;
-  setSearchRow: (rowIndex: number | null) => void;
+  itemQuery: string;
+  setItemQuery: (query: string) => void;
+  availableProducts: ProductsType[] | [];
+  setAvailableProducts: (mode: "append" | "replace", newResult: ProductsType[]) => void;
+  activeRowId: string | null;
+  setActiveRowId: (rowId: string | null) => void;
   isDropdownOpen: boolean;
   setIsDropdownOpen: () => void;
   reset: () => void;
 };
 
 export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => ({
-  searchParam: "",
-  setSearchParam: (query) =>
+  itemQuery: "",
+  setItemQuery: (query) =>
     set(() => ({
-      searchParam: query
+      itemQuery: query
     })),
 
-  searchResult: [],
-  setSearchResult: (mode, newResult) =>
+  availableProducts: [],
+  setAvailableProducts: (mode, newResult) =>
     set((state) => {
       if (mode === "append") {
         return {
-          searchResult: [...state.searchResult, ...newResult]
+          availableProducts: [...state.availableProducts, ...newResult]
         };
       } else {
         return {
-          searchResult: newResult
+          availableProducts: newResult
         };
       }
     }),
 
-  searchRow: null,
-  setSearchRow: (rowIndex) =>
+  activeRowId: null,
+  setActiveRowId: (rowIndex) =>
     set(() => ({
-      searchRow: rowIndex
+      activeRowId: rowIndex
     })),
 
   isDropdownOpen: false,
@@ -48,9 +48,9 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>((set) => (
 
   reset: () =>
     set(() => ({
-      searchParam: "",
-      searchResults: [],
-      searchRow: null,
+      itemQuery: "",
+      availableProducts: [],
+      activeRowId: null,
       isDropDownOpen: false
     }))
 }));

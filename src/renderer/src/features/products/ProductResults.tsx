@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
-import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
@@ -13,7 +13,7 @@ export default function ProductResults() {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
 
   const { searchResults, parentRef, rowVirtualizer, status, virtualItems, hasNextPage } =
-    useProductSearchV2(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
+    useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
 
   return (
     <Card className="border-border bg-background border py-2 shadow-sm">
