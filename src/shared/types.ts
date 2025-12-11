@@ -28,8 +28,8 @@ export type ProductsType = {
 export type ProductHistoryType = {
   id: string;
   name: string;
-  weight: string;
-  unit: string;
+  weight: string | null;
+  unit: string | null;
   productId: string;
   oldPrice: number;
   newPrice: number;
@@ -307,22 +307,6 @@ export interface DashboardApi {
     >
   >;
   getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
-}
-
-export interface ProductsApi {
-  getAllProducts: () => Promise<ApiResponse<ProductsType[]>>;
-  search: (
-    query: string,
-    pageNo: PageNo,
-    limit: number,
-    filterType?: ProductFilterType
-  ) => Promise<PaginatedApiResponse<ProductsType[] | []>>;
-  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
-  updateProduct: (
-    productId: string,
-    payload: Partial<ProductPayload>
-  ) => Promise<ApiResponse<string>>;
-  deleteProduct: (productId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface SalesApi {

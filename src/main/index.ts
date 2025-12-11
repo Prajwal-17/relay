@@ -2,6 +2,7 @@ import { electronApp, is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow, screen } from "electron";
 import { join } from "node:path";
+import { startServer } from "./server";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 import { setupMenu } from "./setupMenu";
 
@@ -24,6 +25,7 @@ if (!gotTheLock) {
   app.whenReady().then(() => {
     electronApp.setAppUserModelId("com.electron");
     setupIpcHandlers();
+    startServer();
     createWindow();
 
     app.on("activate", function () {

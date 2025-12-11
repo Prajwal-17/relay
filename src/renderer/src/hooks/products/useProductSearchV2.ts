@@ -26,8 +26,16 @@ export const fetchProducts = async (
   filterType: ProductFilterType
 ) => {
   try {
-    const response = await window.productsApi.search(query, pageNo, pageSize, filterType);
-    return response;
+    const response = await fetch(
+      `http://localhost:3000/api/products/search?query=${encodeURIComponent(query)}&pageNo=${pageNo}&pageSize=${pageSize}&filterType=${filterType}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-type": "application/json"
+        }
+      }
+    );
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }

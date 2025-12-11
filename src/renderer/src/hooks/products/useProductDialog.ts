@@ -8,16 +8,27 @@ import z from "zod";
 
 const handleDelete = async (productId: string) => {
   try {
-    const response = await window.productsApi.deleteProduct(productId);
-    return response;
+    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json"
+      }
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
 const addProduct = async (payload: ProductPayload) => {
   try {
-    const response = await window.productsApi.addNewProduct(payload);
-    return response;
+    const response = await fetch("http://localhost:3000/api/products", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
@@ -25,8 +36,14 @@ const addProduct = async (payload: ProductPayload) => {
 
 const updateProduct = async (productId: string, updatedPayload: Partial<ProductsType>) => {
   try {
-    const response = await window.productsApi.updateProduct(productId, updatedPayload);
-    return response;
+    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(updatedPayload)
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }

@@ -8,7 +8,6 @@ import type {
   EstimatesApi,
   FilteredGoogleContactsType,
   PageNo,
-  ProductsApi,
   SalePayload,
   SalesApi,
   ShareApi,
@@ -21,16 +20,6 @@ const dashboardApi: DashboardApi = {
   getChartMetrics: (timePeriod) => ipcRenderer.invoke("dashboardApi:getChartMetrics", timePeriod),
   getRecentTransactions: (type) => ipcRenderer.invoke("dashboardApi:getRecentTransactions", type),
   getTopProducts: () => ipcRenderer.invoke("dashboardApi:getTopProducts")
-};
-
-const productsApi: ProductsApi = {
-  getAllProducts: () => ipcRenderer.invoke("productsApi:getAllProducts"),
-  search: (query, pageNo, limit, filterType) =>
-    ipcRenderer.invoke("productsApi:search", query, pageNo, limit, filterType),
-  addNewProduct: (payload) => ipcRenderer.invoke("productsApi:addNewProduct", payload),
-  updateProduct: (productId, payload) =>
-    ipcRenderer.invoke("productsApi:updateProduct", productId, payload),
-  deleteProduct: (productId) => ipcRenderer.invoke("productsApi:deleteProduct", productId)
 };
 
 const salesApi: SalesApi = {
@@ -97,7 +86,6 @@ if (process.contextIsolated) {
       printReceipt: (html: string) => ipcRenderer.send("print-receipt", html)
     });
     contextBridge.exposeInMainWorld("dashboardApi", dashboardApi);
-    contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
     contextBridge.exposeInMainWorld("customersApi", customersApi);
@@ -110,8 +98,6 @@ if (process.contextIsolated) {
   window.electron = electronAPI;
   // @ts-ignore (define in dts)
   window.dashboardApi = dashboardApi;
-  // @ts-ignore (define in dts)
-  window.productsApi = productsApi;
   // @ts-ignore (define in dts)
   window.salesApi = salesApi;
   // @ts-ignore (define in dts)
