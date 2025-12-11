@@ -3,7 +3,11 @@ import { PRODUCT_FILTER, type ApiResponse, type ProductHistoryType } from "../..
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { productRepository } from "./products.repository";
-import type { ProductPayload, ProductSearchParams } from "./products.types";
+import type {
+  AddProductPayload,
+  ProductSearchParams,
+  UpdateProductPayload
+} from "./products.types";
 
 const searchProduct = async (params: ProductSearchParams) => {
   try {
@@ -66,7 +70,7 @@ const searchProduct = async (params: ProductSearchParams) => {
   }
 };
 
-const addProduct = async (payload: ProductPayload): Promise<ApiResponse<string>> => {
+const addProduct = async (payload: AddProductPayload): Promise<ApiResponse<string>> => {
   try {
     const product = await productRepository.createProduct(payload);
 
@@ -82,7 +86,7 @@ const addProduct = async (payload: ProductPayload): Promise<ApiResponse<string>>
 
 const updateProduct = async (
   productId: string,
-  payload: Partial<ProductPayload>
+  payload: Partial<UpdateProductPayload>
 ): Promise<ApiResponse<string>> => {
   try {
     const currencyFields = ["price", "purchasePrice", "mrp"] as const;

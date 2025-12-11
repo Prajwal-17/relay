@@ -174,7 +174,8 @@ export type EstimatePayloadItems = {
   totalPrice: number;
 };
 
-export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
+// export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
+// export type AddProductPayload = z.infer<typeof addProductSchema>;
 
 export type FilteredGoogleContactsType = {
   id: number;

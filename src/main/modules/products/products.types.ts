@@ -1,7 +1,7 @@
 import type { SQL } from "drizzle-orm";
-import type { ProductFilterType, ProductsType } from "../../../shared/types";
-
-export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
+import type z from "zod";
+import type { ProductFilterType } from "../../../shared/types";
+import type { addProductSchema, updateProductSchema } from "./products.schema";
 
 export type ProductSearchParams = {
   query: string;
@@ -16,3 +16,6 @@ export type ProductSearchQuery = {
   limit: number;
   offset: number;
 };
+
+export type AddProductPayload = z.infer<typeof addProductSchema>;
+export type UpdateProductPayload = z.infer<typeof updateProductSchema>;

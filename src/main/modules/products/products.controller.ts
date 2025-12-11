@@ -1,35 +1,27 @@
 import { Hono } from "hono";
-import { PRODUCT_FILTER, type ProductPayload } from "../../../shared/types";
+import { addProductSchema, productSearchSchema, updateProductSchema } from "./products.schema";
 import { productService } from "./products.service";
 
 export const productsController = new Hono();
 
+// search product
 productsController.get("/search", async (c) => {
   try {
-    const query = c.req.query("query") ?? " ";
-    const pageNoRaw = c.req.query("pageNo") ?? "1";
-    const pageSizeRaw = c.req.query("pageSize") ?? "20";
-    const filterType = c.req.query("filterType") ?? PRODUCT_FILTER.ACTIVE;
+    const rawParams = {
+      query: c.req.query("query"),
+      pageNo: c.req.query("pageNo"),
+      pageSize: c.req.query("pageSize"),
+      filterType: c.req.query("filterType")
+    };
 
-    const pageNo = Number(pageNoRaw);
-    const pageSize = Number(pageSizeRaw);
-    console.log(query, pageNoRaw, pageSizeRaw, filterType);
+    const parseResult = productSearchSchema.safeParse(rawParams);
 
-    // zod validate , all params
-    // if (!query || !pageNo || !pageSize || !filterType) {
-    //   return c.json({ status: "error", error: { message: "Invalid product payload" } }, 400);
-    // }
-
-    if (pageNo === null || pageNo === undefined) {
-      return c.json(
-        {
-          status: "success",
-          nextPageNo: null,
-          data: []
-        },
-        200
-      );
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
     }
+
+    const { query, pageNo, pageSize, filterType } = parseResult.data;
 
     const result = await productService.searchProduct({
       query,
@@ -46,10 +38,19 @@ productsController.get("/search", async (c) => {
   }
 });
 
+// add product
 productsController.post("/", async (c) => {
   try {
-    const payload = (await c.req.json()) as ProductPayload;
-    const result = await productService.addProduct(payload);
+    const payload = await c.req.json();
+
+    const parseResult = addProductSchema.safeParse(payload);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await productService.addProduct(parseResult.data);
 
     const status = result.status === "success" ? 201 : 400;
     return c.json(result, status);
@@ -59,23 +60,22 @@ productsController.post("/", async (c) => {
   }
 });
 
+// update Product
 productsController.post("/:id", async (c) => {
   try {
     const productId = c.req.param("id") as string;
-    const payload = (await c.req.json()) as ProductPayload;
+    const payload = await c.req.json();
+
+    const parseResult = updateProductSchema.safeParse(payload);
+
     if (!productId) {
       return c.json({ status: "error", error: { message: "Product id is required" } }, 400);
     }
 
-    // zod validation
-    // if (Object.keys(products).length === 0) {
-    //        return {
-    //          status: "error",
-    //          error: {
-    //            message: "The 'products' object cannot be empty. Please provide at least one product."
-    //          }
-    //        };
-    //      }
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
 
     const result = await productService.updateProduct(productId, payload);
 
@@ -87,6 +87,7 @@ productsController.post("/:id", async (c) => {
   }
 });
 
+// delete product
 productsController.delete("/:id", async (c) => {
   try {
     const productId = c.req.param("id");
