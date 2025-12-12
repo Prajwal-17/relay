@@ -75,7 +75,9 @@ export const useProductDialog = () => {
 
   useEffect(() => {
     if (actionType === "add") {
+      setProductId(null);
       setFormDataState({});
+      setDirtyFields({});
       setErrors({});
     }
 
@@ -86,7 +88,7 @@ export const useProductDialog = () => {
     if (actionType === "billing-page-edit") {
       setErrors({});
     }
-  }, [actionType, setFormDataState, setErrors, setProductId]);
+  }, [actionType, setProductId, setFormDataState, setDirtyFields, setErrors]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormDataState({
@@ -142,7 +144,9 @@ export const useProductDialog = () => {
       if (response.status === "success") {
         queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
         setErrors({});
+        setProductId(null);
         setFormDataState({});
+        setDirtyFields({});
         setOpenProductDialog();
         toast.success(response.data);
       } else if (response.status === "error") {
