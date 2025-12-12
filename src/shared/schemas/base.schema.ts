@@ -2,14 +2,14 @@ import * as z from "zod";
 
 export const ProductSchema = z.object({
   id: z.uuidv4(),
-  name: z.string().min(2),
+  name: z.string().trim().min(2, { error: "Name must be more than 2 characters" }),
   weight: z.string().nullable(),
   unit: z.string().nullable(),
   mrp: z.number().int().nonnegative().nullable(),
   price: z.number().int().nonnegative(),
   purchasePrice: z.number().int().nonnegative().nullable(),
-  totalQuantitySold: z.number().nonnegative().default(0),
-  isDisabled: z.boolean().default(false),
+  totalQuantitySold: z.number().nonnegative(),
+  isDisabled: z.boolean(),
   disabledAt: z.iso.datetime().nullable(),
   isDeleted: z.boolean().default(false),
   deletedAt: z.iso.datetime().nullable(),

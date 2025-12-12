@@ -1,5 +1,9 @@
 import { Hono } from "hono";
-import { addProductSchema, productSearchSchema, updateProductSchema } from "./products.schema";
+import {
+  createProductSchema,
+  dirtyFieldsProductSchema
+} from "../../../shared/schemas/products.schema";
+import { productSearchSchema } from "./products.schema";
 import { productService } from "./products.service";
 
 export const productsController = new Hono();
@@ -43,7 +47,7 @@ productsController.post("/", async (c) => {
   try {
     const payload = await c.req.json();
 
-    const parseResult = addProductSchema.safeParse(payload);
+    const parseResult = createProductSchema.safeParse(payload);
 
     if (!parseResult.success) {
       const errorMessage = parseResult.error.issues[0].message;
@@ -66,7 +70,7 @@ productsController.post("/:id", async (c) => {
     const productId = c.req.param("id") as string;
     const payload = await c.req.json();
 
-    const parseResult = updateProductSchema.safeParse(payload);
+    const parseResult = dirtyFieldsProductSchema.safeParse(payload);
 
     if (!productId) {
       return c.json({ status: "error", error: { message: "Product id is required" } }, 400);

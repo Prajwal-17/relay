@@ -1,6 +1,6 @@
 {
   "name": "pos",
-  "version": "3.2.3",
+  "version": "3.2.4",
   "description": "A billing software for creating and managing invoices and customer accounts.",
   "main": "./out/main/index.js",
   "repository": {

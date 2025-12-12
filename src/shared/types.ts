@@ -1,3 +1,6 @@
+import type z from "zod";
+import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
+
 export type UsersType = {
   id: string;
   name: string;
@@ -174,8 +177,8 @@ export type EstimatePayloadItems = {
   totalPrice: number;
 };
 
-// export type ProductPayload = Omit<ProductsType, "id"> & { isDisabled?: boolean };
-// export type AddProductPayload = z.infer<typeof addProductSchema>;
+export type CreateProductPayload = z.infer<typeof createProductSchema>;
+export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
 
 export type FilteredGoogleContactsType = {
   id: number;

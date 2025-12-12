@@ -1,13 +1,15 @@
 import { and, eq, ne, SQL, sql } from "drizzle-orm";
-import { PRODUCT_FILTER, type ApiResponse, type ProductHistoryType } from "../../../shared/types";
+import {
+  PRODUCT_FILTER,
+  type ApiResponse,
+  type CreateProductPayload,
+  type ProductHistoryType,
+  type UpdateProductPayload
+} from "../../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { productRepository } from "./products.repository";
-import type {
-  AddProductPayload,
-  ProductSearchParams,
-  UpdateProductPayload
-} from "./products.types";
+import type { ProductSearchParams } from "./products.types";
 
 const searchProduct = async (params: ProductSearchParams) => {
   try {
@@ -70,7 +72,7 @@ const searchProduct = async (params: ProductSearchParams) => {
   }
 };
 
-const addProduct = async (payload: AddProductPayload): Promise<ApiResponse<string>> => {
+const addProduct = async (payload: CreateProductPayload): Promise<ApiResponse<string>> => {
   try {
     const product = await productRepository.createProduct(payload);
 

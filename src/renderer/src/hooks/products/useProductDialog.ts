@@ -1,6 +1,10 @@
-import { ProductSchema } from "@/lib/validation";
 import { useProductsStore } from "@/store/productsStore";
-import type { ApiResponse, ProductPayload, ProductsType } from "@shared/types";
+import {
+  createProductSchema,
+  dirtyFieldsProductSchema,
+  updateProductSchema
+} from "@shared/schemas/products.schema";
+import type { ApiResponse, CreateProductPayload, UpdateProductPayload } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -19,7 +23,7 @@ const handleDelete = async (productId: string) => {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
-const addProduct = async (payload: ProductPayload) => {
+const addProduct = async (payload: CreateProductPayload) => {
   try {
     const response = await fetch("http://localhost:3000/api/products", {
       method: "POST",
@@ -34,7 +38,7 @@ const addProduct = async (payload: ProductPayload) => {
   }
 };
 
-const updateProduct = async (productId: string, updatedPayload: Partial<ProductsType>) => {
+const updateProduct = async (productId: string, updatedPayload: UpdateProductPayload) => {
   try {
     const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
       method: "POST",
@@ -48,9 +52,6 @@ const updateProduct = async (productId: string, updatedPayload: Partial<Products
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
-
-const AddProductSchema = ProductSchema.omit({ id: true });
-const EditProductSchema = ProductSchema.partial();
 
 export const useProductDialog = () => {
   const filterType = useProductsStore((state) => state.filterType);
@@ -98,7 +99,7 @@ export const useProductDialog = () => {
       });
     }
 
-    const result = ProductSchema.safeParse({
+    const result = updateProductSchema.safeParse({
       ...formDataState,
       [field]: value
     });
@@ -122,11 +123,11 @@ export const useProductDialog = () => {
     }:
       | {
           action: "add";
-          payload: ProductPayload;
+          payload: CreateProductPayload;
         }
       | {
           action: "edit" | "billing-page-edit";
-          payload: Partial<ProductPayload>;
+          payload: UpdateProductPayload;
         }) => {
       if (action === "add") {
         return addProduct(payload);
@@ -157,9 +158,9 @@ export const useProductDialog = () => {
     let parseResult;
 
     if (action === "add") {
-      parseResult = AddProductSchema.safeParse(formDataState);
+      parseResult = createProductSchema.safeParse(formDataState);
     } else {
-      parseResult = EditProductSchema.safeParse(dirtyFields);
+      parseResult = dirtyFieldsProductSchema.safeParse(dirtyFields);
     }
 
     if (!parseResult.success) {

@@ -1,9 +1,9 @@
 import { and, eq, like, sql } from "drizzle-orm";
-import type { ProductsType } from "../../../shared/types";
+import type { CreateProductPayload, ProductsType } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
-import type { ProductPayload, ProductSearchQuery } from "./products.types";
+import type { ProductSearchQuery } from "./products.types";
 
 const findById = async (id: string) => {
   return db.select().from(products).where(eq(products.id, id)).get();
@@ -63,7 +63,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
   return searchResult;
 };
 
-const createProduct = async (payload: ProductPayload) => {
+const createProduct = async (payload: CreateProductPayload) => {
   return db.transaction((tx) => {
     const product = tx
       .insert(products)
