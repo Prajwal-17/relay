@@ -1,6 +1,14 @@
-import { ProductSchema } from "@/lib/validation";
 import { useProductsStore } from "@/store/productsStore";
-import type { ApiResponse, Product, ProductPayload } from "@shared/types";
+// <<<<<<< HEAD
+// import type { ApiResponse, Product, ProductPayload } from "@shared/types";
+// =======
+import {
+  createProductSchema,
+  dirtyFieldsProductSchema,
+  updateProductSchema
+} from "@shared/schemas/products.schema";
+import type { ApiResponse, CreateProductPayload, UpdateProductPayload } from "@shared/types";
+// >>>>>>> master
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,32 +16,50 @@ import z from "zod";
 
 const handleDelete = async (productId: string) => {
   try {
-    const response = await window.productsApi.deleteProduct(productId);
-    return response;
+    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json"
+      }
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
-const addProduct = async (payload: ProductPayload) => {
+const addProduct = async (payload: CreateProductPayload) => {
   try {
-    const response = await window.productsApi.addNewProduct(payload);
-    return response;
+    const response = await fetch("http://localhost:3000/api/products", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
 
-const updateProduct = async (productId: string, updatedPayload: Partial<Product>) => {
+// <<<<<<< HEAD
+// const updateProduct = async (productId: string, updatedPayload: Partial<Product>) => {
+// =======
+const updateProduct = async (productId: string, updatedPayload: UpdateProductPayload) => {
+  // >>>>>>> master
   try {
-    const response = await window.productsApi.updateProduct(productId, updatedPayload);
-    return response;
+    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(updatedPayload)
+    });
+    return await response.json();
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
 };
-
-const AddProductSchema = ProductSchema.omit({ id: true });
-const EditProductSchema = ProductSchema.partial();
 
 export const useProductDialog = () => {
   const filterType = useProductsStore((state) => state.filterType);
@@ -57,7 +83,9 @@ export const useProductDialog = () => {
 
   useEffect(() => {
     if (actionType === "add") {
+      setProductId(null);
       setFormDataState({});
+      setDirtyFields({});
       setErrors({});
     }
 
@@ -68,7 +96,7 @@ export const useProductDialog = () => {
     if (actionType === "billing-page-edit") {
       setErrors({});
     }
-  }, [actionType, setFormDataState, setErrors, setProductId]);
+  }, [actionType, setProductId, setFormDataState, setDirtyFields, setErrors]);
 
   const handleInputChange = (field: string, value: any) => {
     setFormDataState({
@@ -81,7 +109,7 @@ export const useProductDialog = () => {
       });
     }
 
-    const result = ProductSchema.safeParse({
+    const result = updateProductSchema.safeParse({
       ...formDataState,
       [field]: value
     });
@@ -105,11 +133,11 @@ export const useProductDialog = () => {
     }:
       | {
           action: "add";
-          payload: ProductPayload;
+          payload: CreateProductPayload;
         }
       | {
           action: "edit" | "billing-page-edit";
-          payload: Partial<ProductPayload>;
+          payload: UpdateProductPayload;
         }) => {
       if (action === "add") {
         return addProduct(payload);
@@ -124,7 +152,9 @@ export const useProductDialog = () => {
       if (response.status === "success") {
         queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
         setErrors({});
+        setProductId(null);
         setFormDataState({});
+        setDirtyFields({});
         setOpenProductDialog();
         toast.success(response.data);
       } else if (response.status === "error") {
@@ -140,9 +170,9 @@ export const useProductDialog = () => {
     let parseResult;
 
     if (action === "add") {
-      parseResult = AddProductSchema.safeParse(formDataState);
+      parseResult = createProductSchema.safeParse(formDataState);
     } else {
-      parseResult = EditProductSchema.safeParse(dirtyFields);
+      parseResult = dirtyFieldsProductSchema.safeParse(dirtyFields);
     }
 
     if (!parseResult.success) {

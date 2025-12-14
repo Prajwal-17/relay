@@ -1,3 +1,12 @@
+import type z from "zod";
+import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
+
+export type UsersType = {
+  id: string;
+  name: string;
+  role: string;
+};
+
 export type Customer = {
   id: string;
   name: string;
@@ -27,8 +36,8 @@ export type ProductHistory = {
   id: string;
   name: string;
   productSnapshot: string;
-  weight: string;
-  unit: string;
+  weight: string | null;
+  unit: string | null;
   productId: string;
   oldPrice: number;
   newPrice: number;
@@ -208,7 +217,8 @@ export type EstimatePayloadItem = {
   totalPrice: number;
 };
 
-export type ProductPayload = Omit<Product, "id"> & { isDisabled?: boolean };
+export type CreateProductPayload = z.infer<typeof createProductSchema>;
+export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
 
 export type FilteredGoogleContactsType = {
   id: number;
@@ -342,22 +352,6 @@ export interface DashboardApi {
     ApiResponse<(Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []>
   >;
   getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
-}
-
-export interface ProductsApi {
-  getAllProducts: () => Promise<ApiResponse<Product[]>>;
-  search: (
-    query: string,
-    pageNo: PageNo,
-    limit: number,
-    filterType?: ProductFilterType
-  ) => Promise<PaginatedApiResponse<Product[] | []>>;
-  addNewProduct: (payload: ProductPayload) => Promise<ApiResponse<string>>;
-  updateProduct: (
-    productId: string,
-    payload: Partial<ProductPayload>
-  ) => Promise<ApiResponse<string>>;
-  deleteProduct: (productId: string) => Promise<ApiResponse<string>>;
 }
 
 export interface SalesApi {

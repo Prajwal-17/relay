@@ -103,7 +103,7 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
     set((state) => {
       if (Object.keys(data).length === 0) {
         return {
-          dirtyFields: initialFormData()
+          dirtyFields: {}
         };
       }
 

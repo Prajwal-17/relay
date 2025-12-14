@@ -17,6 +17,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
+  const setProductId = useProductsStore((state) => state.setProductId);
 
   const { dropdownRef, searchResults, parentRef, rowVirtualizer, hasNextPage, virtualItems } =
     useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
@@ -113,6 +114,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  setProductId(product.id);
                                   setActionType("billing-page-edit");
                                   setOpenProductDialog();
                                   setFormDataState({
