@@ -13,6 +13,7 @@ import type { ProductSearchParams } from "./products.types";
 
 const searchProduct = async (params: ProductSearchParams) => {
   try {
+
     let whereClause: SQL;
 
     switch (params.filterType) {
@@ -21,6 +22,9 @@ const searchProduct = async (params: ProductSearchParams) => {
         break;
       case PRODUCT_FILTER.INACTIVE:
         whereClause = and(ne(products.isDeleted, true), eq(products.isDisabled, true))!;
+        break;
+      case PRODUCT_FILTER.DELETED:
+        whereClause = eq(products.isDeleted, true);
         break;
       case PRODUCT_FILTER.ACTIVE:
       default:

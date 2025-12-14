@@ -1,5 +1,5 @@
 import { and, eq, like, sql } from "drizzle-orm";
-import type { CreateProductPayload, ProductsType } from "../../../shared/types";
+import type { CreateProductPayload, Product } from "../../../shared/types";
 import { formatToPaisa } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
@@ -10,13 +10,14 @@ const findById = async (id: string) => {
 };
 
 const searchProducts = async (params: ProductSearchQuery) => {
-  let searchResult: ProductsType[] | [];
+  let searchResult: Product[] | [];
 
   if (params.searchTerms.length === 0) {
     searchResult = await db
       .select({
         id: products.id,
         name: products.name,
+        productSnapshot: products.productSnapshot,
         weight: products.weight,
         unit: products.unit,
         mrp: products.mrp,
@@ -46,6 +47,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
     .select({
       id: products.id,
       name: products.name,
+      productSnapshot: products.productSnapshot,
       weight: products.weight,
       unit: products.unit,
       mrp: products.mrp,
@@ -100,7 +102,7 @@ const createProduct = async (payload: CreateProductPayload) => {
   });
 };
 
-const updateById = async (productId: string, updatedFields: Partial<ProductsType>) => {
+const updateById = async (productId: string, updatedFields: Partial<Product>) => {
   return db
     .update(products)
     .set({

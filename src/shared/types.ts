@@ -258,7 +258,8 @@ export const DASHBOARD_TYPE = {
 export const PRODUCT_FILTER = {
   ALL: "all",
   ACTIVE: "active",
-  INACTIVE: "inactive"
+  INACTIVE: "inactive",
+  DELETED: "deleted"
 } as const;
 
 export const SortOption = {
