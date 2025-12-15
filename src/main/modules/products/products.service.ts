@@ -3,17 +3,17 @@ import {
   PRODUCT_FILTER,
   type ApiResponse,
   type CreateProductPayload,
-  type ProductHistoryType,
+  type ProductHistory,
   type UpdateProductPayload
 } from "../../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
+import { generateProductSnapshot } from "../../utils/product.utils";
 import { productRepository } from "./products.repository";
 import type { ProductSearchParams } from "./products.types";
 
 const searchProduct = async (params: ProductSearchParams) => {
   try {
-
     let whereClause: SQL;
 
     switch (params.filterType) {
@@ -133,30 +133,50 @@ const updateProduct = async (
       updatedFields["disabledAt"] = disabledAt;
     }
 
-    const updatedProduct = await productRepository.updateById(productId, updatedFields);
+    let updatedProduct = await productRepository.updateById(productId, updatedFields);
     if (!updatedProduct) throw new Error("Failed to update product");
 
-    // history insert
-
-    function cap(s: string) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    const historyObj: Partial<ProductHistoryType> = {
+    const snapshotName = generateProductSnapshot({
       name: updatedProduct.name,
       weight: updatedProduct.weight,
       unit: updatedProduct.unit,
-      productId: updatedProduct.id
-    };
-
-    currencyFields.forEach((field) => {
-      if (existingProduct[field] !== updatedProduct[field]) {
-        historyObj[`old${cap(field)}`] = existingProduct[field];
-        historyObj[`new${cap(field)}`] = updatedProduct[field];
-      }
+      mrp: updatedProduct.mrp ? formatToRupees(updatedProduct.mrp) : null
     });
 
-    await productRepository.insertHistory(historyObj);
+    // update productSnapshot
+    if (updatedProduct.productSnapshot !== snapshotName) {
+      updatedProduct = await productRepository.updateById(productId, {
+        productSnapshot: snapshotName
+      });
+    }
+
+    // history insert
+    // only insert when price,mrp,purchase price changes
+    if (
+      existingProduct.price !== updatedProduct.price ||
+      existingProduct.mrp !== updatedProduct.mrp ||
+      existingProduct.purchasePrice !== updatedProduct.purchasePrice
+    ) {
+      function cap(s: string) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      const historyObj: Partial<ProductHistory> = {
+        name: updatedProduct.name,
+        weight: updatedProduct.weight,
+        unit: updatedProduct.unit,
+        productId: updatedProduct.id
+      };
+
+      currencyFields.forEach((field) => {
+        if (existingProduct[field] !== updatedProduct[field]) {
+          historyObj[`old${cap(field)}`] = existingProduct[field];
+          historyObj[`new${cap(field)}`] = updatedProduct[field];
+        }
+      });
+
+      await productRepository.insertHistory(historyObj);
+    }
 
     return {
       status: "success",

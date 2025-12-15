@@ -1,8 +1,9 @@
 import { and, eq, like, sql } from "drizzle-orm";
 import type { CreateProductPayload, Product } from "../../../shared/types";
-import { formatToPaisa } from "../../../shared/utils/utils";
+import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
+import { generateProductSnapshot } from "../../utils/product.utils";
 import type { ProductSearchQuery } from "./products.types";
 
 const findById = async (id: string) => {
@@ -71,6 +72,12 @@ const createProduct = async (payload: CreateProductPayload) => {
       .insert(products)
       .values({
         name: payload.name,
+        productSnapshot: generateProductSnapshot({
+          name: payload.name,
+          weight: payload.weight ?? null,
+          unit: payload.unit ?? null,
+          mrp: payload.mrp ? formatToRupees(payload.mrp) : null
+        }),
         weight: payload.weight ?? null,
         unit: payload.unit ?? null,
         mrp: payload.mrp != null ? formatToPaisa(payload.mrp) : null,

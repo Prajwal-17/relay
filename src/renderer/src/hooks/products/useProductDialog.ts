@@ -1,14 +1,10 @@
 import { useProductsStore } from "@/store/productsStore";
-// <<<<<<< HEAD
-// import type { ApiResponse, Product, ProductPayload } from "@shared/types";
-// =======
 import {
   createProductSchema,
   dirtyFieldsProductSchema,
   updateProductSchema
 } from "@shared/schemas/products.schema";
 import type { ApiResponse, CreateProductPayload, UpdateProductPayload } from "@shared/types";
-// >>>>>>> master
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -42,11 +38,7 @@ const addProduct = async (payload: CreateProductPayload) => {
   }
 };
 
-// <<<<<<< HEAD
-// const updateProduct = async (productId: string, updatedPayload: Partial<Product>) => {
-// =======
 const updateProduct = async (productId: string, updatedPayload: UpdateProductPayload) => {
-  // >>>>>>> master
   try {
     const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
       method: "POST",
