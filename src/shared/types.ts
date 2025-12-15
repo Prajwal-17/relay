@@ -1,4 +1,5 @@
 import type z from "zod";
+import type { createCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
 
 export type UsersType = {
@@ -216,6 +217,9 @@ export type EstimatePayloadItem = {
   quantity: number;
   totalPrice: number;
 };
+
+export type CreateCustomerPayload = z.infer<typeof createCustomerSchema>;
+export type UpdateCustomerPayload = z.infer<typeof updateProductSchema>;
 
 export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;

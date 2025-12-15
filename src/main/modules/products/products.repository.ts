@@ -1,5 +1,5 @@
 import { and, eq, like, sql } from "drizzle-orm";
-import type { CreateProductPayload, Product } from "../../../shared/types";
+import type { CreateProductPayload, Product, UpdateProductPayload } from "../../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
@@ -109,7 +109,7 @@ const createProduct = async (payload: CreateProductPayload) => {
   });
 };
 
-const updateById = async (productId: string, updatedFields: Partial<Product>) => {
+const updateById = async (productId: string, updatedFields: Partial<UpdateProductPayload>) => {
   return db
     .update(products)
     .set({
