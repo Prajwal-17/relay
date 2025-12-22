@@ -81,6 +81,8 @@ export type UnifiedTransctionWithItems = UnifiedTransaction & {
   items: UnifiedTransactionItem[];
 };
 
+export type CustomerTransaction = Omit<UnifiedTransaction, "customer">;
+
 export type Sale = {
   id: string;
   invoiceNo: number;
