@@ -1,4 +1,3 @@
-import { customerHandlers } from "./ipcHandlers/customerHandlers";
 import { dashboardHandlers } from "./ipcHandlers/dashboardHandlers";
 import { estimateHandlers } from "./ipcHandlers/estimateHandlers";
 import { saleHandlers } from "./ipcHandlers/saleHandlers";
@@ -8,6 +7,5 @@ export function setupIpcHandlers() {
   dashboardHandlers();
   saleHandlers();
   estimateHandlers();
-  customerHandlers();
   shareHandlers();
 }

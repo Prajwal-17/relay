@@ -1,10 +1,43 @@
-import { eq } from "drizzle-orm";
+import { eq, like } from "drizzle-orm";
 import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
 import { db } from "../../db/db";
 import { customers, estimates, sales } from "../../db/schema";
 
 const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
+};
+
+const getAll = async () => {
+  return db.select().from(customers).all();
+};
+
+const searchCustomers = async (searchTerm: string) => {
+  if (searchTerm === "") {
+    return await db
+      .select({
+        id: customers.id,
+        name: customers.name,
+        contact: customers.contact,
+        customerType: customers.customerType,
+        createdAt: customers.createdAt,
+        updatedAt: customers.updatedAt
+      })
+      .from(customers);
+  }
+
+  const searchQuery = `${searchTerm}%`;
+  return await db
+    .select({
+      id: customers.id,
+      name: customers.name,
+      contact: customers.contact,
+      customerType: customers.customerType,
+      createdAt: customers.createdAt,
+      updatedAt: customers.updatedAt
+    })
+    .from(customers)
+    .where(like(customers.name, searchQuery))
+    .orderBy(customers.name);
 };
 
 const createCustomers = async (payload: CreateCustomerPayload) => {
@@ -46,6 +79,8 @@ const hasExistingTransactions = async (customerId: string) => {
 
 export const customersRepository = {
   findById,
+  getAll,
+  searchCustomers,
   createCustomers,
   updateById,
   deleteById,

@@ -1,18 +1,14 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
-  Customer,
-  CustomersApi,
   DashboardApi,
   DateRangeType,
   EstimatePayload,
   EstimatesApi,
-  FilteredGoogleContactsType,
   PageNo,
   SalePayload,
   SalesApi,
   ShareApi,
-  SortType,
-  TransactionType
+  SortType
 } from "../shared/types";
 
 const dashboardApi: DashboardApi = {
@@ -55,24 +51,6 @@ const estimatesApi: EstimatesApi = {
     ipcRenderer.invoke("estimatesApi:markAllEstimateItemsChecked", estimateId, action)
 };
 
-const customersApi: CustomersApi = {
-  addNewCustomer: (payload: Customer) => ipcRenderer.invoke("customersApi:addNewCustomer", payload),
-  updateCustomer: (payload: Customer) => ipcRenderer.invoke("customersApi:updateCustomer", payload),
-  getCustomerById: (customerId: string) =>
-    ipcRenderer.invoke("customersApi:getCustomerById", customerId),
-  getCustomerByName: (customerName: string) =>
-    ipcRenderer.invoke("customersApi:getCustomerByName", customerName),
-  getAllCustomers: () => ipcRenderer.invoke("customersApi:getAllCustomers"),
-  getAllTransactionsById: (customerId: string, type: TransactionType, pageNo: PageNo) =>
-    ipcRenderer.invoke("customersApi:getAllTransactionsById", customerId, type, pageNo),
-  deleteCustomer: (customerId: string) =>
-    ipcRenderer.invoke("customersApi:deleteCustomer", customerId),
-  importContactsFromGoogle: () => ipcRenderer.invoke("customers:importContactsFromGoogle"),
-  importContacts: (customerPayload: FilteredGoogleContactsType[]) =>
-    ipcRenderer.invoke("customersApi:importContacts", customerPayload),
-  searchCustomers: (query: string) => ipcRenderer.invoke("customersApi:searchCustomers", query)
-};
-
 const shareApi: ShareApi = {
   saveAsPDF: (transactionId: string, type: "sales" | "estimates") =>
     ipcRenderer.invoke("shareApi:saveAsPDF", transactionId, type)
@@ -86,7 +64,6 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("dashboardApi", dashboardApi);
     contextBridge.exposeInMainWorld("salesApi", salesApi);
     contextBridge.exposeInMainWorld("estimatesApi", estimatesApi);
-    contextBridge.exposeInMainWorld("customersApi", customersApi);
     contextBridge.exposeInMainWorld("shareApi", shareApi);
   } catch (error) {
     console.error(error);
@@ -100,8 +77,6 @@ if (process.contextIsolated) {
   window.salesApi = salesApi;
   // @ts-ignore (define in dts)
   window.estimatesApi = estimatesApi;
-  // @ts-ignore (define in dts)
-  window.customersApi = customersApi;
   // @ts-ignore (define in ts)
   window.shareApi = shareApi;
 }

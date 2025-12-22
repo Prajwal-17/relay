@@ -403,23 +403,6 @@ export interface EstimatesApi {
   ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
 }
 
-export interface CustomersApi {
-  addNewCustomer: (payload: Customer) => Promise<ApiResponse<Customer>>;
-  updateCustomer: (payload: Customer) => Promise<ApiResponse<Customer>>;
-  getCustomerById: (customerId: string) => Promise<ApiResponse<Customer>>;
-  getCustomerByName: (customerName: string) => Promise<ApiResponse<Customer | null>>;
-  getAllCustomers: () => Promise<ApiResponse<Customer[]>>;
-  getAllTransactionsById: (
-    customerId: string,
-    type: TransactionType,
-    pageNo: PageNo
-  ) => Promise<PaginatedApiResponse<Sale[] | Estimate[] | []>>;
-  deleteCustomer: (customerId: string) => Promise<ApiResponse<string>>;
-  importContactsFromGoogle: () => Promise<ApiResponse<FilteredGoogleContactsType[] | []>>;
-  importContacts: (customerPayload: FilteredGoogleContactsType[]) => Promise<ApiResponse<string>>;
-  searchCustomers: (query: string) => Promise<ApiResponse<Customer[]>>;
-}
-
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: "sales" | "estimates") => Promise<ApiResponse<string>>;
 }

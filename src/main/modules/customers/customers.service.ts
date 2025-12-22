@@ -6,6 +6,71 @@ import type {
 } from "../../../shared/types";
 import { customersRepository } from "./customers.repository";
 
+const findById = async (id: string): Promise<ApiResponse<Customer>> => {
+  try {
+    const customer = await customersRepository.findById(id);
+
+    if (!customer) {
+      return {
+        status: "error",
+        error: {
+          message: `Customer with ID ${id} not found`
+        }
+      };
+    }
+
+    return {
+      status: "success",
+      data: customer
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while fetching customer"
+      }
+    };
+  }
+};
+
+const getAllCustomers = async (): Promise<ApiResponse<Customer[]>> => {
+  try {
+    const customers = await customersRepository.getAll();
+
+    return {
+      status: "success",
+      data: customers
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while fetching customers"
+      }
+    };
+  }
+};
+
+const searchCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>> => {
+  try {
+    const searchResult = await customersRepository.searchCustomers(searchTerm);
+
+    return {
+      status: "success",
+      data: searchResult
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while fetching customers"
+      }
+    };
+  }
+};
+
 const createCustomer = async (payload: CreateCustomerPayload): Promise<ApiResponse<Customer>> => {
   try {
     const customer = await customersRepository.createCustomers(payload);
@@ -95,6 +160,9 @@ const deleteCustomerById = async (id: string): Promise<ApiResponse<string>> => {
 };
 
 export const customersService = {
+  findById,
+  getAllCustomers,
+  searchCustomers,
   createCustomer,
   updateCustomerById,
   deleteCustomerById
