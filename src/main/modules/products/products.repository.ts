@@ -109,7 +109,10 @@ const createProduct = async (payload: CreateProductPayload) => {
   });
 };
 
-const updateById = async (productId: string, updatedFields: Partial<UpdateProductPayload>) => {
+const updateById = async (
+  productId: string,
+  updatedFields: Partial<UpdateProductPayload & { productSnapshot: string }>
+) => {
   return db
     .update(products)
     .set({
