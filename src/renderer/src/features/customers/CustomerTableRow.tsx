@@ -19,10 +19,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/customers/useCustomers";
-import type { UnifiedTransaction } from "@/hooks/customers/useCustomerTable";
-import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "@shared/types";
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type CustomerTransaction,
+  type TransactionType
+} from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { IndianRupees } from "@shared/utils/utils";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, LoaderCircle, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
@@ -37,7 +41,7 @@ const CustomerTableRow = ({
   convertMutation
 }: {
   type: TransactionType;
-  transaction: UnifiedTransaction;
+  transaction: CustomerTransaction;
   isLoaderRow: boolean;
   hasNextPage: boolean;
   deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
@@ -88,7 +92,7 @@ const CustomerTableRow = ({
             # {transaction.transactionNo}
           </div>
           <div className="col-span-2 flex items-center font-semibold">
-            {transaction.grandTotal ? IndianRupees.format(transaction.grandTotal) : "-"}
+            {transaction.grandTotal && IndianRupees.format(formatToRupees(transaction.grandTotal))}
           </div>
           <div className="col-span-2 flex items-center">
             {transaction.isPaid ? (

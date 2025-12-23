@@ -7,11 +7,7 @@ const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
 };
 
-const getAll = async () => {
-  return db.select().from(customers).all();
-};
-
-const searchCustomers = async (searchTerm: string) => {
+const getCustomers = async (searchTerm: string) => {
   if (searchTerm === "") {
     return await db
       .select({
@@ -22,7 +18,8 @@ const searchCustomers = async (searchTerm: string) => {
         createdAt: customers.createdAt,
         updatedAt: customers.updatedAt
       })
-      .from(customers);
+      .from(customers)
+      .orderBy(customers.name);
   }
 
   const searchQuery = `${searchTerm}%`;
@@ -79,8 +76,7 @@ const hasExistingTransactions = async (customerId: string) => {
 
 export const customersRepository = {
   findById,
-  getAll,
-  searchCustomers,
+  getCustomers,
   createCustomers,
   updateById,
   deleteById,

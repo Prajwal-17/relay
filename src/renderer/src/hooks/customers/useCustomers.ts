@@ -8,26 +8,24 @@ export type MutationVariables = {
   type: TransactionType;
   id: string;
 };
-const getAllCustomers = async () => {
-  const response = await window.customersApi.getAllCustomers();
 
-  if (response.status === "success") {
-    return response.data;
+const getCustomers = async (customerSearch: string) => {
+  const response = await fetch(
+    `http://localhost:3000/api/customers${customerSearch ? `?query=${customerSearch}` : ""}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json"
+      }
+    }
+  );
+
+  const data = await response.json();
+
+  if (data.status === "success") {
+    return await data.data;
   }
-  throw new Error(response.error.message ?? "Something went wrong in getting customers");
-};
-
-const searchCustomers = async (customerSearch: string) => {
-  if (!customerSearch) {
-    return [];
-  }
-  const response = await window.customersApi.searchCustomers(customerSearch);
-
-  if (response.status === "success") {
-    return response.data;
-  }
-
-  throw new Error(response.error.message ?? "Something went wrong while fetching customers");
+  throw new Error(data.error.message ?? "Something went wrong in getting customers");
 };
 
 const handleDelete = async ({ type, id }: MutationVariables) => {
@@ -87,10 +85,7 @@ const useCustomers = () => {
   } = useQuery({
     queryKey: ["customers", customerSearch],
     queryFn: () => {
-      if (customerSearch) {
-        return searchCustomers(customerSearch);
-      }
-      return getAllCustomers();
+      return getCustomers(customerSearch);
     },
     placeholderData: (previousData) => previousData
   });

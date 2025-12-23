@@ -7,12 +7,12 @@ import { customersService } from "./customers.service";
 
 export const customersController = new Hono();
 
-// search customers
+// get all customers or search
 customersController.get("/", async (c) => {
   try {
     const searchTerm = c.req.query("query");
 
-    const result = await customersService.searchCustomers(searchTerm ?? "");
+    const result = await customersService.getCustomers(searchTerm ?? "");
 
     const status = result.status === "success" ? 201 : 400;
     return c.json(result, status);
@@ -41,19 +41,6 @@ customersController.get("/:id", async (c) => {
   }
 });
 
-// get all customers
-customersController.get("/", async (c) => {
-  try {
-    const result = await customersService.getAllCustomers();
-
-    const status = result.status === "success" ? 201 : 400;
-    return c.json(result, status);
-  } catch (error) {
-    console.log(error);
-    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
-  }
-});
-
 // createCustomer
 customersController.post("/", async (c) => {
   try {
@@ -72,7 +59,10 @@ customersController.post("/", async (c) => {
     return c.json(result, status);
   } catch (error) {
     console.log(error);
-    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+    return c.json(
+      { status: "error", error: { message: (error as Error).message ?? "Something went wrong" } },
+      400
+    );
   }
 });
 

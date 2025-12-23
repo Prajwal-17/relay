@@ -9,28 +9,48 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import useCustomers from "@/hooks/customers/useCustomers";
-import { CustomerSchema } from "@/lib/validation";
 import { Label } from "@radix-ui/react-label";
+import { createCustomerSchema, updateCustomerSchema } from "@shared/schemas/customers.schema";
+import type { CreateCustomerPayload, UpdateCustomerPayload } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import z from "zod";
 
-const saveCustomer = async ({ action, data }) => {
+const addCustomer = async (payload: CreateCustomerPayload) => {
   try {
-    if (action === "add") {
-      const response = await window.customersApi.addNewCustomer(data);
-      if (response.status === "success") {
-        return response;
-      }
-      return response;
-    } else if (action === "edit") {
-      const response = await window.customersApi.updateCustomer(data);
-      if (response.status === "success") {
-        return response;
-      }
-      return response;
+    const response = await fetch("http://localhost:3000/api/customers", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (data.status === "success") {
+      return data;
     }
-    throw new Error("Something went wrong");
+    throw new Error(data.error.message);
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+};
+
+const updateCustomer = async (payload: UpdateCustomerPayload, customerId: string) => {
+  try {
+    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (data.status === "success") {
+      return data;
+    }
+    throw new Error(data.error.message);
   } catch (error) {
     throw new Error((error as Error).message);
   }
@@ -42,14 +62,35 @@ export const CustomerDialog = () => {
     formData,
     actionType,
     setFormData,
+    selectedCustomer,
     setSelectedCustomer,
     setOpenCustomerDialog,
     errors,
     setErrors
   } = useCustomers();
 
-  const mutation = useMutation({
-    mutationFn: saveCustomer,
+  const customerMutation = useMutation({
+    mutationFn: async ({
+      action,
+      payload
+    }:
+      | {
+          action: "add";
+          payload: CreateCustomerPayload;
+        }
+      | {
+          action: "edit";
+          payload: UpdateCustomerPayload;
+        }) => {
+      if (action == "add") {
+        return addCustomer(payload);
+      } else {
+        if (!selectedCustomer?.id) {
+          throw new Error("Customer Id does not exist");
+        }
+        return updateCustomer(payload, selectedCustomer.id);
+      }
+    },
     onSuccess: (response) => {
       if (response.status === "success") {
         setOpenCustomerDialog();
@@ -72,10 +113,15 @@ export const CustomerDialog = () => {
 
   const handleSubmit = async (action: "add" | "edit") => {
     setErrors({});
-    const result = CustomerSchema.safeParse(formData);
+    let parseResult;
+    if (action === "add") {
+      parseResult = createCustomerSchema.safeParse(formData);
+    } else {
+      parseResult = updateCustomerSchema.safeParse(formData);
+    }
 
-    if (!result.success) {
-      const formatted = z.flattenError(result.error);
+    if (!parseResult.success) {
+      const formatted = z.flattenError(parseResult.error);
       const errorRecord = { ...errors };
 
       for (const field in formatted.fieldErrors) {
@@ -83,7 +129,12 @@ export const CustomerDialog = () => {
       }
       setErrors(errorRecord);
     }
-    mutation.mutate({ action: action, data: result.data });
+
+    if (action === "add") {
+      customerMutation.mutate({ action: action, payload: parseResult.data });
+      return;
+    }
+    customerMutation.mutate({ action: action, payload: parseResult.data });
   };
 
   const handleInputChange = (field: string, value: any) => {
@@ -91,7 +142,7 @@ export const CustomerDialog = () => {
 
     const errorRecord = { ...errors };
 
-    const result = CustomerSchema.safeParse({
+    const result = updateCustomerSchema.safeParse({
       ...formData,
       [field]: value
     });
@@ -172,15 +223,15 @@ export const CustomerDialog = () => {
             Cancel
           </Button>
           <Button
-            disabled={mutation.isPending}
+            disabled={customerMutation.isPending}
             className="hover:bg-primary/80 cursor-pointer"
             onClick={() => handleSubmit(actionType)}
           >
             {actionType === "add"
-              ? mutation.isPending
+              ? customerMutation.isPending
                 ? "Adding Customer..."
                 : "Add Customer"
-              : mutation.isPending
+              : customerMutation.isPending
                 ? "Updating Customer..."
                 : "Update Customer"}
           </Button>

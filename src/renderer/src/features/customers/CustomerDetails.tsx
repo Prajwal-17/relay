@@ -24,8 +24,14 @@ import { getCustomerTypeColor } from "./CustomerTypeColor";
 
 const handleDelete = async (customerId: string) => {
   try {
-    const response = await window.customersApi.deleteCustomer(customerId);
-    return response;
+    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
+      method: "DELETE"
+    });
+    const data = await response.json();
+    if (data.status === "success") {
+      return data;
+    }
+    throw new Error(data.error.message);
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }

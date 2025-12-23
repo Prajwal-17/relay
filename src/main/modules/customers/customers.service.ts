@@ -33,32 +33,13 @@ const findById = async (id: string): Promise<ApiResponse<Customer>> => {
   }
 };
 
-const getAllCustomers = async (): Promise<ApiResponse<Customer[]>> => {
+const getCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>> => {
   try {
-    const customers = await customersRepository.getAll();
+    const customerResult = await customersRepository.getCustomers(searchTerm);
 
     return {
       status: "success",
-      data: customers
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong while fetching customers"
-      }
-    };
-  }
-};
-
-const searchCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>> => {
-  try {
-    const searchResult = await customersRepository.searchCustomers(searchTerm);
-
-    return {
-      status: "success",
-      data: searchResult
+      data: customerResult
     };
   } catch (error) {
     console.log(error);
@@ -94,7 +75,7 @@ const createCustomer = async (payload: CreateCustomerPayload): Promise<ApiRespon
 const updateCustomerById = async (
   customerId: string,
   payload: Partial<UpdateProductPayload>
-): Promise<ApiResponse<string>> => {
+): Promise<ApiResponse<Customer>> => {
   try {
     const existingCustomer = await customersRepository.findById(customerId);
 
@@ -112,7 +93,8 @@ const updateCustomerById = async (
 
     return {
       status: "success",
-      data: `Successfully updated customer:${updatedCustomer.name}`
+      data: updatedCustomer,
+      message: `Successfully updated customer:${updatedCustomer.name}`
     };
   } catch (error) {
     console.log(error);
@@ -161,8 +143,7 @@ const deleteCustomerById = async (id: string): Promise<ApiResponse<string>> => {
 
 export const customersService = {
   findById,
-  getAllCustomers,
-  searchCustomers,
+  getCustomers,
   createCustomer,
   updateCustomerById,
   deleteCustomerById
