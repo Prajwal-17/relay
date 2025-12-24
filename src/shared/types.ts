@@ -232,16 +232,10 @@ export type FilteredGoogleContactsType = {
   contact: string | null;
 };
 
-export type SaleSummaryType = {
+export type TransactionListResponse = {
   totalRevenue: number;
   totalTransactions: number;
-  sales: (Sale & { customerName: string })[];
-};
-
-export type EstimateSummaryType = {
-  totalRevenue: number;
-  totalTransactions: number;
-  estimates: (Estimate & { customerName: string })[];
+  transactions: (Omit<UnifiedTransaction, "customer"> & { customerName: string })[];
 };
 
 export type AllTransactionsType = (Sale | Estimate)[];
