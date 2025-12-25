@@ -42,3 +42,7 @@ export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
   }
   return bgColor;
 };
+
+export const toSentenceCase = (word: string) => {
+  return word.charAt(0).toUpperCase() + word.slice(1);
+};

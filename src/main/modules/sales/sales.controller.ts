@@ -86,7 +86,8 @@ salesController.get("/", async (c) => {
   }
 });
 
-salesController.post("/convert/:id", async (c) => {
+// convert Sale To Estimate
+salesController.post("/:id/convert", async (c) => {
   try {
     const id = c.req.param("id");
 
@@ -104,7 +105,8 @@ salesController.post("/convert/:id", async (c) => {
   }
 });
 
-salesController.post("/:id", async (c) => {
+// delete Sale By Id
+salesController.delete("/:id", async (c) => {
   try {
     const id = c.req.param("id");
 

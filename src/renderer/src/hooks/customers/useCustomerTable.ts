@@ -10,17 +10,6 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 
-export type UnifiedTransaction = {
-  id: string;
-  transactionNo: number;
-  type: "sale" | "estimate";
-  customerId: string;
-  grandTotal: number;
-  totalQuantity: number;
-  isPaid: boolean;
-  createdAt?: string;
-};
-
 const fetchTransactions = async (
   type: TransactionType,
   customerId: string,

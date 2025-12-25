@@ -14,11 +14,25 @@ export type MutationVariables = {
 const handleDelete = async ({ type, id }: MutationVariables) => {
   try {
     if (type === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.deleteSale(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+
+      if (data.status === "success") {
+        return data;
+      }
+      throw new Error(data.error.message);
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.deleteEstimate(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
+        method: "POST"
+      });
+      const data = await response.json();
+
+      if (data.status === "success") {
+        return data;
+      }
+      throw new Error(data.error.message);
     } else {
       throw new Error("Something went wrong");
     }
@@ -42,6 +56,7 @@ const handleConvert = async ({ type, id }: MutationVariables) => {
     throw new Error((error as Error).message);
   }
 };
+
 export const useDashboard = () => {
   const { type } = useParams();
   const { date } = useDateRangePicker();

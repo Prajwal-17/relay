@@ -19,10 +19,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
-import type { UnifiedTransaction } from "@/hooks/dashboard/useInfiniteScroll";
-import type { ApiResponse } from "@shared/types";
+import type { ApiResponse, UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { IndianRupees } from "@shared/utils/utils";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   Download,
@@ -48,7 +47,7 @@ const DashboardTableRow = ({
   setTransactionId
 }: {
   pathname: string;
-  transaction: UnifiedTransaction;
+  transaction: Omit<UnifiedTransaction, "customer"> & { customerName: string };
   isLoaderRow: boolean;
   hasNextPage: boolean;
   deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
@@ -57,6 +56,7 @@ const DashboardTableRow = ({
   setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
+
   const handleView = useCallback(() => {
     setIsViewModalOpen(true);
     setTransactionId(transaction.id);
@@ -69,12 +69,12 @@ const DashboardTableRow = ({
   }, [navigate, transaction.id, pathname]);
 
   const onDelete = useCallback(() => {
-    deleteMutation.mutate({ type: pathname, id: transaction.id });
-  }, [deleteMutation, pathname, transaction.id]);
+    deleteMutation.mutate({ type: transaction.type, id: transaction.id });
+  }, [deleteMutation, transaction.type, transaction.id]);
 
   const onConvert = useCallback(() => {
-    convertMutation.mutate({ type: pathname, id: transaction.id });
-  }, [convertMutation, pathname, transaction.id]);
+    convertMutation.mutate({ type: transaction.type, id: transaction.id });
+  }, [convertMutation, transaction.type, transaction.id]);
 
   return (
     <div>
@@ -112,7 +112,9 @@ const DashboardTableRow = ({
             # {transaction.transactionNo}
           </div>
           <div className="col-span-2 flex items-center font-semibold">
-            {transaction.grandTotal ? IndianRupees.format(transaction.grandTotal) : "-"}
+            {transaction.grandTotal
+              ? IndianRupees.format(formatToRupees(transaction.grandTotal))
+              : "-"}
           </div>
           <div className="col-span-1 flex items-center justify-start">
             {transaction.isPaid ? (
@@ -253,6 +255,7 @@ function memoComparator(prev: any, next: any) {
 
   if (p?.id !== n?.id) return false;
   if (p.transactionNo !== n.transactionNo) return false;
+  if (p.customerId !== n.customerId) return false;
   if (p.customerName !== n.customerName) return false;
   if (p.grandTotal !== n.grandTotal) return false;
   if (p.isPaid !== n.isPaid) return false;

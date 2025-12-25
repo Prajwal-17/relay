@@ -63,7 +63,6 @@ const deleteSaleById = async (id: string) => {
     const existingSale = tx.select().from(sales).where(eq(sales.id, id)).get();
 
     if (!existingSale) {
-      tx.rollback();
       throw new Error(`Sale with id:${id} does not exists`);
     }
 
@@ -81,7 +80,6 @@ const deleteSaleById = async (id: string) => {
     }
 
     if (items.length === 0) {
-      tx.rollback();
       throw new Error("Sale Items does not exist");
     }
 
