@@ -3,6 +3,7 @@ import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { UPDATE_QTY_ACTION } from "@shared/types";
+import { formatToRupees } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -38,11 +39,12 @@ const LineItemRow = memo(
       );
 
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
-    const checked = item.quantity === item.checkedQty && item.quantity > 0;
-    const checkedColor = getCheckStatusColor(item.checkedQty, item.quantity);
+    const qtyVal = parseFloat(item.quantity || "0");
+    const checked = qtyVal === item.checkedQty && qtyVal > 0;
+    const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
 
     return (
-      <div key={item.id} className="relative">
+      <div key={item.rowId} className="relative">
         <div
           className={`group ${checkedColor} grid w-full border transition-colors ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
@@ -80,9 +82,10 @@ const LineItemRow = memo(
             <div className="border-border bg-background relative flex h-full w-full items-center rounded-lg border font-bold shadow-xs">
               <button
                 onClick={() => {
-                  if (item.quantity >= 0) {
-                    const newQuantity = item.quantity + 1;
-                    updateLineItem(item.rowId, "quantity", newQuantity);
+                  const currentQty = parseFloat(item.quantity || "0");
+                  if (currentQty >= 0) {
+                    const newQuantity = currentQty + 1;
+                    updateLineItem(item.rowId, "quantity", newQuantity.toString());
                   }
                 }}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
@@ -90,25 +93,31 @@ const LineItemRow = memo(
                 <Plus size={22} />
               </button>
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 onContextMenu={(e) => {
                   e.preventDefault();
                   setQtyPresetOpen(idx);
                 }}
-                value={item.quantity === 0 ? "" : item.quantity}
+                value={item.quantity}
                 className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
-                  updateLineItem(item.rowId, "quantity", e.target.value);
+                  const val = e.target.value;
+                  if (/[^0-9.]/.test(val)) {
+                    return;
+                  }
+                  updateLineItem(item.rowId, "quantity", val);
                 }}
                 placeholder="0"
               />
               <button
-                disabled={item.quantity <= 0}
+                disabled={parseFloat(item.quantity || "0") <= 0}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
-                  if (item.quantity > 1) {
-                    const newQuantity = item.quantity - 1;
-                    updateLineItem(item.rowId, "quantity", newQuantity);
+                  const currentQty = parseFloat(item.quantity || "0");
+                  if (currentQty >= 1) {
+                    const newQuantity = currentQty - 1;
+                    updateLineItem(item.rowId, "quantity", newQuantity.toString());
                   }
                 }}
               >
@@ -128,19 +137,16 @@ const LineItemRow = memo(
                 <IndianRupee size={18} />
               </span>
               <input
-                type="number"
+                type="string"
+                value={item.price}
                 placeholder="0"
-                value={item.price === 0 ? "" : item.price / 100}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val === "") {
-                    updateLineItem(item.rowId, "price", 0);
-                  } else {
-                    const paise = Math.round(Number.parseFloat(val) * 100);
-                    updateLineItem(item.rowId, "price", paise);
+                  // allow numbers and one decimal point
+                  if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                    updateLineItem(item.rowId, "price", val);
                   }
                 }}
-                onWheel={(e) => e.currentTarget.blur()}
                 className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
               />
             </div>
@@ -151,14 +157,15 @@ const LineItemRow = memo(
                 <IndianRupee size={18} />
               </span>
               <div className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed">
-                {item.totalPrice === 0 ? "0" : item.totalPrice / 100}
+                {item.totalPrice ? formatToRupees(item.totalPrice) : "0"}
               </div>
             </div>
           </div>
           <div className="col-span-1 flex items-center justify-center py-1">
             <button
               onClick={() => {
-                const newCheckedAt = checked ? 0 : item.quantity;
+                const currentQty = parseFloat(item.quantity || "0");
+                const newCheckedAt = checked ? 0 : currentQty;
                 updateLineItem(item.rowId, "checkedQty", newCheckedAt);
               }}
               className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 transition-all ${
@@ -184,7 +191,7 @@ const LineItemRow = memo(
                   onClick={() => {
                     const newCheckedAt = updateCheckedQuantity(
                       UPDATE_QTY_ACTION.INCREMENT,
-                      item.quantity,
+                      parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
                     updateLineItem(item.rowId, "checkedQty", newCheckedAt);
@@ -201,7 +208,7 @@ const LineItemRow = memo(
                   onClick={() => {
                     const newCheckedAt = updateCheckedQuantity(
                       UPDATE_QTY_ACTION.DECREMENT,
-                      item.quantity,
+                      parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
                     updateLineItem(item.rowId, "checkedQty", newCheckedAt);

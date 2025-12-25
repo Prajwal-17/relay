@@ -48,7 +48,7 @@ export const useBillingStore = create<BillingStore>((set) => ({
   customerContact: "",
   setCustomerContact: (newCustomerContact) => set({ customerContact: newCustomerContact }),
 
-  isNewCustomer: false,
+  isNewCustomer: true,
   setIsNewCustomer: (value) =>
     set(() => ({
       isNewCustomer: value

@@ -1,19 +1,19 @@
 import type { Product, UnifiedTransactionItem } from "@shared/types";
+import { formatToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
 export type LineItem = {
   rowId: string;
-  id: string | null;
   productId: string | null;
   name: string;
   productSnapshot: string;
   weight: string | null;
   unit: string | null;
   mrp: number | null;
-  price: number;
+  price: string;
   purchasePrice: number | null;
-  quantity: number;
+  quantity: string;
   totalPrice: number;
   checkedQty: number;
   isInventoryItem: boolean;
@@ -26,7 +26,7 @@ type LineItemsStore = {
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (type?: "button") => void;
   addLineItem: (rowId: string, newItem: Product) => void;
-  updateLineItem: (id: string, field: string, value: string | number) => void;
+  updateLineItem: (id: string, field: keyof LineItem, value: string | number) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;
 };
@@ -34,16 +34,15 @@ type LineItemsStore = {
 function initialLineItem() {
   const lineItem: LineItem = {
     rowId: uuidv4(),
-    id: null,
     productId: null,
     name: "",
     productSnapshot: "",
     weight: null,
     unit: null,
     mrp: null,
-    price: 0,
+    price: "",
     purchasePrice: null,
-    quantity: 0,
+    quantity: "",
     totalPrice: 0,
     checkedQty: 0,
     isInventoryItem: false
@@ -53,8 +52,10 @@ function initialLineItem() {
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {
-  const rawTotal = item.price * item.quantity;
-  const totalPrice = Math.round(rawTotal);
+  const priceVal = parseFloat(item.price) || 0;
+  const qtyVal = parseFloat(item.quantity) || 0;
+  const rawTotal = priceVal * qtyVal;
+  const totalPrice = Math.round(rawTotal * 100);
   return {
     ...item,
     totalPrice: totalPrice
@@ -87,9 +88,9 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
         weight: item.weight,
         unit: item.unit,
         mrp: item.mrp,
-        price: item.price,
+        price: item.price ? formatToRupees(Number(item.price)).toString() : "",
         purchasePrice: item.purchasePrice,
-        quantity: item.quantity,
+        quantity: item.quantity.toString(),
         totalPrice: item.totalPrice,
         checkedQty: item.checkedQty,
         isInventoryItem: item.productId ? true : false
@@ -127,21 +128,21 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
 
       // existing line item at rowId
       const oldItem = currLineItems[index];
-      const oldItemQuantity = oldItem.quantity > 1 ? oldItem.quantity : 1;
+      const oldQtyNum = parseFloat(oldItem.quantity || "0");
+      const oldItemQuantity = oldQtyNum >= 1 ? oldQtyNum : 1;
       const oldItemCheckedQty = oldItem.checkedQty > 1 ? oldItem.checkedQty : 0;
 
       const updatedItem: LineItem = {
         rowId: uuidv4(),
-        id: null,
         productId: newItem.id,
         name: newItem.name,
         productSnapshot: newItem.productSnapshot,
         weight: newItem.weight,
         unit: newItem.unit,
         mrp: newItem.mrp,
-        price: newItem.price,
+        price: newItem.price ? formatToRupees(newItem.price).toString() : "",
         purchasePrice: newItem.purchasePrice,
-        quantity: oldItemQuantity,
+        quantity: oldItemQuantity.toString(),
         totalPrice: parseFloat((oldItemQuantity * newItem.price).toFixed(2)),
         checkedQty: oldItemCheckedQty,
         isInventoryItem: true
@@ -160,9 +161,16 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       const updatedLineItems = state.lineItems.map((item: LineItem) => {
         if (rowId !== item.rowId) return item;
 
+        let finalValue: any;
+        if (field === "price" || field === "quantity") {
+          finalValue = value;
+        } else {
+          finalValue = value;
+        }
+
         const draftItem = {
           ...item,
-          [field]: value
+          [field]: finalValue
         };
 
         if (["quantity", "price"].includes(field)) {
@@ -189,7 +197,7 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
     set((state) => ({
       lineItems: state.lineItems.map((item: LineItem) => ({
         ...item,
-        checkedQty: checked ? item.quantity : 0
+        checkedQty: checked ? parseFloat(item.quantity || "0") : 0
       }))
     }))
 }));
