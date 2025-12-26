@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
@@ -88,7 +89,7 @@ export default function ProductResults() {
                                     variant="outline"
                                     className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                   >
-                                    MRP ₹{product.mrp}
+                                    MRP ₹{formatToRupees(product.mrp)}
                                   </Badge>
                                 )}
                               </div>
@@ -100,7 +101,7 @@ export default function ProductResults() {
                                   <>
                                     <span className="text-muted-foreground">•</span>
                                     <p className="text-foreground mt-1 text-base font-semibold">
-                                      Purchase Price ₹ {product.purchasePrice}
+                                      Purchase Price ₹{formatToRupees(product.purchasePrice)}
                                     </p>
                                   </>
                                 )}
@@ -108,7 +109,9 @@ export default function ProductResults() {
                             </div>
                             <div className="text-right">
                               <div className="flex items-center gap-2">
-                                <span className="text-2xl font-bold">₹ {product.price}</span>
+                                <span className="text-2xl font-bold">
+                                  {IndianRupees.format(formatToRupees(product.price))}
+                                </span>
                               </div>
                             </div>
                             <Badge

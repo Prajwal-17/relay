@@ -57,15 +57,7 @@ const searchProduct = async (params: ProductSearchParams) => {
     return {
       status: "success",
       nextPageNo: nextpageNo,
-      data:
-        searchResult.length > 0
-          ? searchResult.map((product) => ({
-              ...product,
-              mrp: product.mrp && formatToRupees(product.mrp),
-              price: formatToRupees(product.price),
-              purchasePrice: product.purchasePrice && formatToRupees(product.purchasePrice)
-            }))
-          : []
+      data: searchResult.length > 0 ? searchResult : []
     };
   } catch (error) {
     console.log(error);
