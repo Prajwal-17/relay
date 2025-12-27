@@ -24,6 +24,10 @@ const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
   });
 };
 
+const getLatestInvoiceNo = async () => {
+  return db.select().from(sales).orderBy(desc(sales.invoiceNo)).limit(1).get();
+};
+
 const filterSalesByDate = async (
   params: Omit<FilterSalesParams, "sortBy"> & {
     orderByClause: SQL;
@@ -214,6 +218,7 @@ const convertSaleToEstimate = async (id: string) => {
 export const salesRepository = {
   getSaleById,
   getSalesByCustomerId,
+  getLatestInvoiceNo,
   filterSalesByDate,
   createSale,
   convertSaleToEstimate,

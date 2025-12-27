@@ -18,18 +18,24 @@ import { CustomerNameInput } from "./CustomerInputBox";
 
 const getLatestTransactionNo = async (type: TransactionType) => {
   try {
-    let response;
+    let reqResponse;
     if (type === TRANSACTION_TYPE.SALE) {
-      response = await window.salesApi.getNextInvoiceNo();
+      const response = await fetch("http://localhost:3000/api/sales/next-number", {
+        method: "GET"
+      });
+      reqResponse = await response.json();
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      response = await window.estimatesApi.getNextEstimateNo();
+      const response = await fetch("http://localhost:3000/api/estimates/next-number", {
+        method: "GET"
+      });
+      reqResponse = await response.json();
     } else {
       throw new Error("Transaction Type is undefined");
     }
-    if (response.status === "success") {
-      return response;
+    if (reqResponse.status === "success") {
+      return reqResponse;
     }
-    throw new Error(response.error.message);
+    throw new Error(reqResponse.error.message);
   } catch (error) {
     console.log(error);
     throw new Error((error as Error).message);

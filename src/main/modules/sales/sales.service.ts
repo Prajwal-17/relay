@@ -93,6 +93,30 @@ const getSalesByCustomerId = async (
   }
 };
 
+const getNextInvoiceNo = async (): Promise<ApiResponse<number>> => {
+  try {
+    const latestInvoice = await salesRepository.getLatestInvoiceNo();
+    let nextInvoiceNo = 1;
+
+    if (latestInvoice) {
+      nextInvoiceNo = latestInvoice.invoiceNo + 1;
+    }
+
+    return {
+      status: "success",
+      data: nextInvoiceNo
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong"
+      }
+    };
+  }
+};
+
 const filterSalesByDate = async (
   params: FilterSalesParams
 ): Promise<PaginatedApiResponse<TransactionListResponse>> => {
@@ -290,6 +314,7 @@ const deleteSaleById = async (id: string): Promise<ApiResponse<string>> => {
 export const salesService = {
   getSaleById,
   getSalesByCustomerId,
+  getNextInvoiceNo,
   filterSalesByDate,
   createSale,
   convertSaleToEstimate,

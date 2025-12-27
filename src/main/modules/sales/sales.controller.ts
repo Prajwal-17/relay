@@ -5,6 +5,19 @@ import { salesService } from "./sales.service";
 
 export const salesController = new Hono();
 
+// get next Invoice No
+salesController.get("/next-number", async (c) => {
+  try {
+    const result = await salesService.getNextInvoiceNo();
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
 // get Sale (UnifiedTransctionWithItems) by Id
 salesController.get("/:id", async (c) => {
   try {
