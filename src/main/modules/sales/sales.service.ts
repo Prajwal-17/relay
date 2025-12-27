@@ -3,13 +3,17 @@ import {
   SortOption,
   TRANSACTION_TYPE,
   type ApiResponse,
+  type Customer,
   type CustomerTransaction,
   type PaginatedApiResponse,
   type TransactionListResponse,
+  type TxnPayload,
   type UnifiedTransactionItem,
   type UnifiedTransctionWithItems
 } from "../../../shared/types";
+import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
+import { customersRepository } from "../customers/customers.repository";
 import { salesRepository } from "./sales.repository";
 import type { FilterSalesParams, SalesByCustomerParams } from "./sales.types";
 
@@ -159,6 +163,74 @@ const filterSalesByDate = async (
   }
 };
 
+const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => {
+  try {
+    // customer validation
+    let customer: Customer | undefined;
+    if (!payload.customerName || payload.customerName.trim() === "") {
+      const [defaultCustomer] = await customersRepository.getCustomers("DEFAULT");
+      customer = defaultCustomer;
+    } else if (payload.customerId && payload.customerName) {
+      const existingCustomer = await customersRepository.findById(payload.customerId);
+      customer = existingCustomer;
+    } else if (!payload.customerId && payload.customerName) {
+      const [existingCustomer] = await customersRepository.getCustomers(payload.customerName);
+
+      if (existingCustomer) {
+        customer = existingCustomer;
+      } else {
+        const newCustomer = await customersRepository.createCustomer({
+          name: payload.customerName,
+          contact: payload.customerContact ?? null,
+          customerType: CustomerRole.CASH
+        });
+        customer = newCustomer;
+      }
+    }
+
+    if (!customer) {
+      throw new Error("Something went wrong.Could not find customer.");
+    }
+    const finalItems = payload.items.map((item) => {
+      const rawTotal = item.price * item.quantity;
+      return {
+        ...item,
+        totalPrice: Math.round(rawTotal)
+      };
+    });
+
+    const total = finalItems.reduce((sum, currentItem) => {
+      return sum + Number(currentItem.totalPrice || 0);
+    }, 0);
+
+    const totalQuantity = finalItems.reduce((sum, currentItem) => {
+      return sum + (Number(currentItem.quantity) || 0);
+    }, 0);
+
+    const finalPayload = {
+      ...payload,
+      items: finalItems,
+      grandTotal: total,
+      totalQuantity: totalQuantity
+    };
+
+    const newSale = await salesRepository.createSale(customer.id, finalPayload);
+
+    return {
+      status: "success",
+      data: newSale
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while creating sale"
+      }
+    };
+  }
+};
+
 const convertSaleToEstimate = async (id: string): Promise<ApiResponse<string>> => {
   try {
     const result = await salesRepository.convertSaleToEstimate(id);
@@ -186,6 +258,7 @@ const convertSaleToEstimate = async (id: string): Promise<ApiResponse<string>> =
     };
   }
 };
+
 const deleteSaleById = async (id: string): Promise<ApiResponse<string>> => {
   try {
     const result = await salesRepository.deleteSaleById(id);
@@ -218,6 +291,7 @@ export const salesService = {
   getSaleById,
   getSalesByCustomerId,
   filterSalesByDate,
+  createSale,
   convertSaleToEstimate,
   deleteSaleById
 };

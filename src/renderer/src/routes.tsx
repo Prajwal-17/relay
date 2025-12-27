@@ -42,19 +42,19 @@ export const router = createHashRouter([
         path: "billing/*",
         children: [
           {
-            path: ":type/create/new",
+            path: ":type/create",
             element: <BillingPage />
           },
           {
-            path: ":type/create/new",
+            path: ":type/create",
             element: <BillingPage />
           },
           {
-            path: ":type/edit/:id",
+            path: ":type/:id/edit",
             element: <BillingPage />
           },
           {
-            path: ":type/edit/:id",
+            path: ":type/:id/edit",
             element: <BillingPage />
           }
         ]

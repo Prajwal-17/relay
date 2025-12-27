@@ -4,14 +4,22 @@ import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
-import type { TransactionType } from "@shared/types";
+import useTransactionState from "@/hooks/useTransactionState";
+import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 const BillingPage = () => {
   const { type, id } = useParams();
-  const formattedType = type?.slice(0, -1);
+  const formattedType = type?.slice(0, -1) as TransactionType;
   // const billingStateReset = useBillingStore((state) => state.reset);
+  const { setBillingType } = useTransactionState();
+
+  useEffect(() => {
+    if (formattedType && Object.values(TRANSACTION_TYPE).includes(formattedType)) {
+      setBillingType(formattedType);
+    }
+  }, [formattedType, setBillingType]);
 
   useEffect(() => {
     return () => {

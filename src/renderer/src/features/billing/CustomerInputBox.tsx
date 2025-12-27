@@ -15,9 +15,12 @@ export const CustomerNameInput = () => {
   useEffect(() => {
     async function searchCustomers() {
       try {
-        const response = await window.customersApi.searchCustomers(customerName);
-        if (response.status === "success") {
-          setCustomers(response.data);
+        const response = await fetch(`http://localhost:3000/api/customers?query${customerName}`, {
+          method: "GET"
+        });
+        const data = await response.json();
+        if (data.status === "success") {
+          setCustomers(data.data);
         } else {
           console.log("error");
         }
@@ -54,45 +57,6 @@ export const CustomerNameInput = () => {
     };
   }, [openDropdown, setOpenDropdown]);
 
-  useEffect(() => {
-    let isCurrent = true;
-    async function getCustomerByName() {
-      try {
-        if (customerName === "") {
-          setIsNewCustomer(false);
-          setCustomerId(null);
-          setCustomerContact(null);
-          return;
-        }
-        const response = await window.customersApi.getCustomerByName(customerName);
-        if (isCurrent) {
-          if (response.status === "success") {
-            if (response.data === null) {
-              setIsNewCustomer(true);
-              setCustomerId(null);
-              setCustomerContact(null);
-            } else {
-              setIsNewCustomer(false);
-              setCustomerId(response.data.id);
-              setCustomerContact(response.data.contact);
-            }
-          } else {
-            console.log("error");
-            toast.error("Something went wrong while fetching customer");
-          }
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-      }
-    }
-
-    getCustomerByName();
-    return () => {
-      isCurrent = false;
-    };
-  }, [customerName, setCustomerId, setCustomerContact, setIsNewCustomer]);
-
   return (
     <>
       <div ref={inputRef} className="relative w-full">
@@ -117,6 +81,7 @@ export const CustomerNameInput = () => {
                   setCustomerId(c.id);
                   setCustomerName(c.name);
                   setCustomerContact(c.contact);
+                  setIsNewCustomer(false);
                   setOpenDropdown((prev) => !prev);
                 }}
               >

@@ -1,37 +1,80 @@
-import type { LineItemsType } from "@/store/billingStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import { txnPayloadSchema } from "@shared/schemas/transaction.schema";
 import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "@shared/types";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import useTransactionState from "./useTransactionState";
 
-const handleSave = async (
+const saveTransaction = async (
+  id: string | null,
   transactionType: TransactionType,
-  transactionNo: number,
   payload: any
 ) => {
   try {
     if (transactionType === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.save({
-        ...payload,
-        invoiceNo: Number(transactionNo)
+      if (id) {
+        const response = await fetch(`http://localhost:3000/api/sales/${id}/edit`, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (data.status === "success") {
+          return data;
+        } else {
+          throw new Error(data.error.message);
+        }
+      }
+      const response = await fetch("http://localhost:3000/api/sales/create", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
-      if (response.status === "success") {
-        return response;
+      const data = await response.json();
+
+      if (data.status === "success") {
+        return data;
       } else {
-        throw new Error(response.error.message);
+        throw new Error(data.error.message);
       }
     } else if (transactionType === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.save({
-        ...payload,
-        estimateNo: Number(transactionNo)
+      if (id) {
+        const response = await fetch(`http://localhost:3000/api/estimates/${id}/edit`, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+
+        if (data.status === "success") {
+          return data;
+        } else {
+          throw new Error(data.error.message);
+        }
+      }
+      const response = await fetch("http://localhost:3000/api/estimates/create", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
-      if (response.status === "success") {
-        return response;
+      const data = await response.json();
+
+      if (data.status === "success") {
+        return data;
       } else {
-        throw new Error(response.error.message);
+        throw new Error(data.error.message);
       }
     }
     throw new Error("Something went wrong");
@@ -57,39 +100,28 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     contentRef: receiptRef || undefined
   });
 
-  const calcTotalAmount = lineItems.reduce((sum, currentItem) => {
+  const total = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
 
+  const subtotal = IndianRupees.format(formatToRupees(total));
+  const grandTotal = IndianRupees.format(Math.round(formatToRupees(total)));
+
   const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
-    return sum + currentItem.quantity;
+    return sum + (Number(currentItem.quantity) || 0);
   }, 0);
 
   const payload = {
-    billingId: billingId,
+    transactionNo,
+    transactionType,
     customerId,
     customerName,
     customerContact,
-    grandTotal: calcTotalAmount,
-    totalQuantity: calcTotalQuantity,
     isPaid: transactionType === TRANSACTION_TYPE.SALE ? true : false,
-    createdAt: billingDate.toISOString(),
-    items: [
-      ...lineItems
-        .filter((item: LineItemsType) => item.name !== "")
-        .map((item: LineItemsType) => ({
-          id: item.id,
-          productId: item.productId,
-          name: item.name,
-          weight: item.weight,
-          unit: item.unit,
-          quantity: item.quantity,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          totalPrice: item.totalPrice
-        }))
-    ]
+    items: lineItems.filter((item) => {
+      return item.productId !== null && item.name !== "" && parseFloat(item.price) !== 0;
+    }),
+    createdAt: billingDate.toISOString()
   };
 
   const handleActionMutation = useMutation<
@@ -98,10 +130,14 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     "save" | "save&print" | "saveAsPDF"
   >({
     mutationFn: async (type: "save" | "save&print" | "saveAsPDF") => {
-      if (!transactionNo) {
-        throw new Error("Missing transaction number");
+      const parseResult = txnPayloadSchema.safeParse(payload);
+
+      if (!parseResult.success) {
+        const errorMessage = parseResult.error.issues[0].message;
+        throw new Error(errorMessage);
       }
-      const saveResponse = await handleSave(transactionType, transactionNo, payload);
+
+      const saveResponse = await saveTransaction(billingId, transactionType, payload);
 
       if (type === "save&print") {
         if (!receiptRef?.current) {
@@ -117,6 +153,7 @@ export const useTransactionActions = (transactionType: TransactionType) => {
       }
 
       if (type === "saveAsPDF") {
+        // Fix
         const response = await window.shareApi.saveAsPDF(
           saveResponse.data.id,
           saveResponse.data.type
@@ -144,8 +181,9 @@ export const useTransactionActions = (transactionType: TransactionType) => {
   });
 
   return {
+    subtotal,
+    grandTotal,
     receiptRef,
-    handleActionMutation,
-    calcTotalAmount
+    handleActionMutation
   };
 };

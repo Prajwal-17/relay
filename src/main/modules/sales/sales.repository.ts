@@ -58,6 +58,62 @@ const filterSalesByDate = async (
   };
 };
 
+const createSale = async (customerId, payload) => {
+  return db.transaction((tx) => {
+    const newSale = tx
+      .insert(sales)
+      .values({
+        invoiceNo: Number(payload.transactionNo),
+        customerId: customerId,
+        grandTotal: payload.grandTotal,
+        totalQuantity: payload.totalQuantity,
+        isPaid: payload.isPaid,
+        createdAt: payload.createdAt
+          ? payload.createdAt
+          : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .returning({ id: sales.id })
+      .get();
+
+    if (!newSale || !newSale.id) {
+      throw new Error("Failed to Create Sale");
+    }
+
+    for (const item of payload.items) {
+      if (!item.name) {
+        throw new Error("Item name field cannot be empty");
+      }
+
+      tx.insert(saleItems)
+        .values({
+          saleId: newSale.id,
+          productId: item.productId ? item.productId : null,
+          name: item.name,
+          productSnapshot: item.productSnapshot,
+          mrp: item.mrp,
+          price: item.price,
+          purchasePrice: item.purchasePrice,
+          weight: item.weight,
+          unit: item.unit,
+          quantity: item.quantity,
+          totalPrice: item.totalPrice
+        })
+        .run();
+
+      if (products.id) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+          })
+          .where(eq(products.id, item.productId))
+          .run();
+      }
+    }
+
+    return "Successfully created Sale";
+  });
+};
+
 const deleteSaleById = async (id: string) => {
   return db.transaction((tx) => {
     const existingSale = tx.select().from(sales).where(eq(sales.id, id)).get();
@@ -159,6 +215,7 @@ export const salesRepository = {
   getSaleById,
   getSalesByCustomerId,
   filterSalesByDate,
+  createSale,
   convertSaleToEstimate,
   deleteSaleById
 };

@@ -37,7 +37,7 @@ const getCustomers = async (searchTerm: string) => {
     .orderBy(customers.name);
 };
 
-const createCustomers = async (payload: CreateCustomerPayload) => {
+const createCustomer = async (payload: CreateCustomerPayload) => {
   return db.insert(customers).values(payload).returning().get();
 };
 
@@ -77,7 +77,7 @@ const hasExistingTransactions = async (customerId: string) => {
 export const customersRepository = {
   findById,
   getCustomers,
-  createCustomers,
+  createCustomer,
   updateById,
   deleteById,
   hasExistingTransactions

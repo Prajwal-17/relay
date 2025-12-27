@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { useTransactionActions } from "@/hooks/useTransactionActions";
 import { TRANSACTION_TYPE } from "@shared/types";
-import { IndianRupees } from "@shared/utils/utils";
 import { FileText, Printer, Save } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
 
 export const SummaryFooter = () => {
   const { type } = useParams();
 
-  const { calcTotalAmount, handleActionMutation } = useTransactionActions(
-    type === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
+  const { subtotal, grandTotal, handleActionMutation } = useTransactionActions(
+    type?.slice(0, -1) === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
   );
 
   if (!type) {
@@ -25,15 +24,11 @@ export const SummaryFooter = () => {
         <div className="flex items-center gap-8 text-right">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground text-lg">Subtotal:</span>
-            <span className="text-foreground text-lg font-semibold">
-              {IndianRupees.format(calcTotalAmount)}
-            </span>
+            <span className="text-foreground text-lg font-semibold">{subtotal}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-xl font-medium">Total:</span>
-            <span className="text-foreground text-3xl font-bold">
-              {IndianRupees.format(Math.round(calcTotalAmount))}
-            </span>
+            <span className="text-foreground text-3xl font-bold">{grandTotal}</span>
           </div>
         </div>
 

@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { txnPayloadSchema } from "../../../shared/schemas/transaction.schema";
 import { filterSalesParamsSchema, getSalesByCustomerSchema } from "./sales.schema";
 import { salesService } from "./sales.service";
 
@@ -77,6 +78,28 @@ salesController.get("/", async (c) => {
     }
 
     const result = await salesService.getSalesByCustomerId(parseResult.data);
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// create new Sale
+salesController.post("/create", async (c) => {
+  try {
+    const payload = await c.req.json();
+
+    const parseResult = txnPayloadSchema.safeParse(payload);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await salesService.createSale(payload);
 
     const status = result.status === "success" ? 200 : 400;
     return c.json(result, status);

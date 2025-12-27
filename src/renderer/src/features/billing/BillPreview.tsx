@@ -3,7 +3,6 @@ import useTransactionState from "@/hooks/useTransactionState";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
-import { IndianRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
@@ -12,7 +11,7 @@ const BillPreview = () => {
   const formattedType = type?.slice(0, -1);
 
   const { lineItems, transactionNo, customerName } = useTransactionState();
-  const { calcTotalAmount } = useTransactionActions(
+  const { subtotal, grandtotal } = useTransactionActions(
     formattedType === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
   );
   const { setReceiptRef } = useReceiptRefStore();
@@ -89,7 +88,8 @@ const BillPreview = () => {
                   <div className="col-span-5">{item.name}</div>
                   <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>
                   <div className="col-span-2 text-right tracking-tight">
-                    {item.price.toFixed(2)}
+                    {item.price}
+                    {/*{item.price.toFixed(2)}*/}
                   </div>
                   <div className="col-span-2 text-right tracking-tight">
                     {item.totalPrice.toFixed(2)}
@@ -100,12 +100,12 @@ const BillPreview = () => {
           </div>
           <div className="py-1 text-right">
             <span className="text-xs font-semibold">SubTotal: </span>
-            <span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>
+            {/*<span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>*/}
           </div>
           <div className="mb-8 text-right">
             <span className="text-base font-semibold">Total: </span>
             <span className="text-lg font-semibold">
-              {IndianRupees.format(Math.round(calcTotalAmount))}
+              {/*{IndianRupees.format(Math.round(calcTotalAmount))}*/}
             </span>
             <div className="pb-4 text-center">Thank You</div>
           </div>

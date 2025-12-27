@@ -103,10 +103,10 @@ const LineItemRow = memo(
                 className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (/[^0-9.]/.test(val)) {
-                    return;
+                  // allow numbers and one decimal point
+                  if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                    updateLineItem(item.rowId, "quantity", val);
                   }
-                  updateLineItem(item.rowId, "quantity", val);
                 }}
                 placeholder="0"
               />

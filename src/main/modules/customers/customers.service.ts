@@ -54,7 +54,7 @@ const getCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>
 
 const createCustomer = async (payload: CreateCustomerPayload): Promise<ApiResponse<Customer>> => {
   try {
-    const customer = await customersRepository.createCustomers(payload);
+    const customer = await customersRepository.createCustomer(payload);
 
     return {
       status: "success",

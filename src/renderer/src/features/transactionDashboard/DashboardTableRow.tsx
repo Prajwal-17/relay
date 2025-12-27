@@ -64,8 +64,8 @@ const DashboardTableRow = ({
 
   const handleEdit = useCallback(() => {
     pathname === "sales"
-      ? navigate(`/billing/sales/edit/${transaction.id}`)
-      : navigate(`/billing/estimates/edit/${transaction.id}`);
+      ? navigate(`/billing/sales/${transaction.id}/edit`)
+      : navigate(`/billing/estimates/${transaction.id}/edit`);
   }, [navigate, transaction.id, pathname]);
 
   const onDelete = useCallback(() => {
