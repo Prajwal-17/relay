@@ -358,50 +358,6 @@ export interface DashboardApi {
   getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
 }
 
-export interface SalesApi {
-  getNextInvoiceNo: () => Promise<ApiResponse<number>>;
-  save: (payload: SalePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
-  getAllSales: () => Promise<ApiResponse<Sale[]>>;
-  getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
-  getSalesDateRange: (
-    range: DateRangeType,
-    sortBy: SortType,
-    pageNo: PageNo
-  ) => Promise<PaginatedApiResponse<SaleSummaryType>>;
-  deleteSale: (saleId: string) => Promise<ApiResponse<string>>;
-  convertSaletoEstimate: (saleId: string) => Promise<ApiResponse<string>>;
-  registerSaleItemQty: (
-    saleItemId: string,
-    action: UpdateQtyAction
-  ) => Promise<ApiResponse<string>>;
-  markAllSaleItemsChecked: (
-    saleid: string,
-    action: BatchCheckAction
-  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
-}
-
-export interface EstimatesApi {
-  getNextEstimateNo: () => Promise<ApiResponse<number>>;
-  save: (payload: EstimatePayload) => Promise<ApiResponse<{ id: string; type: TransactionType }>>;
-  getAllEstimates: () => Promise<ApiResponse<Estimate[]>>;
-  getTransactionById: (id: string) => Promise<ApiResponse<UnifiedTransctionWithItems>>;
-  getEstimatesDateRange: (
-    range: DateRangeType,
-    sortBy: SortType,
-    pageNo: PageNo
-  ) => Promise<PaginatedApiResponse<EstimateSummaryType>>;
-  deleteEstimate: (estimateId: string) => Promise<ApiResponse<string>>;
-  convertEstimateToSale: (estimateId: string) => Promise<ApiResponse<string>>;
-  registerEstimateItemQty: (
-    estimateItemId: string,
-    action: UpdateQtyAction
-  ) => Promise<ApiResponse<string>>;
-  markAllEstimateItemsChecked: (
-    estimateId: string,
-    action: BatchCheckAction
-  ) => Promise<ApiResponse<{ isAllChecked: boolean }>>;
-}
-
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: "sales" | "estimates") => Promise<ApiResponse<string>>;
 }

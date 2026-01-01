@@ -2,11 +2,11 @@ import type { Product, UnifiedTransactionItem } from "@shared/types";
 import { formatToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
+import { useBillingStore } from "./billingStore";
 
 export type LineItem = {
-  // TODO
-  // id: string, // saleItem.id || estimateItem.id
-  // parentId: sale.id || estimate.id
+  id: string | null; // saleItem.id || estimateItem.id
+  parentId: string; // sale.id || estimate.id,
   rowId: string;
   productId: string | null;
   name: string;
@@ -36,6 +36,8 @@ type LineItemsStore = {
 
 function initialLineItem() {
   const lineItem: LineItem = {
+    id: null,
+    parentId: useBillingStore.getState().billingId ?? "",
     rowId: uuidv4(),
     productId: null,
     name: "",
@@ -72,6 +74,7 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       isCountColumnVisible: !state.isCountColumnVisible
     })),
 
+  // live state
   lineItems: [initialLineItem()],
 
   setLineItems: (itemsArray) =>
@@ -83,11 +86,9 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       }
 
       const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
-        // TODO
-        // id: string, // saleItem.id || estimateItem.id
-        // parentId: sale.id || estimate.id
-        rowId: uuidv4(),
         id: item.id,
+        parentId: item.parentId,
+        rowId: uuidv4(),
         productId: item.productId,
         name: item.name,
         productSnapshot: item.productSnapshot,
@@ -139,6 +140,8 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       const oldItemCheckedQty = oldItem.checkedQty > 1 ? oldItem.checkedQty : 0;
 
       const updatedItem: LineItem = {
+        id: null,
+        parentId: useBillingStore.getState().billingId ?? "",
         rowId: uuidv4(),
         productId: newItem.id,
         name: newItem.name,
