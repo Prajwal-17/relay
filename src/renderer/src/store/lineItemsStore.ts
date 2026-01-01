@@ -4,6 +4,9 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
 export type LineItem = {
+  // TODO
+  // id: string, // saleItem.id || estimateItem.id
+  // parentId: sale.id || estimate.id
   rowId: string;
   productId: string | null;
   name: string;
@@ -80,6 +83,9 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       }
 
       const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
+        // TODO
+        // id: string, // saleItem.id || estimateItem.id
+        // parentId: sale.id || estimate.id
         rowId: uuidv4(),
         id: item.id,
         productId: item.productId,

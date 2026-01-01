@@ -13,17 +13,23 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
     if (!transactionId) {
       throw new Error("Transaction Id does not exist");
     }
-    let response;
+    let data;
     if (pathname === TRANSACTION_TYPE.SALE) {
-      response = await window.salesApi.getTransactionById(transactionId);
-      if (response.status === "success") return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${transactionId}`, {
+        method: "GET"
+      });
+      data = await response.json();
+      if (data.status === "success") return data;
     } else if (pathname === TRANSACTION_TYPE.ESTIMATE) {
-      response = await window.estimatesApi.getTransactionById(transactionId);
-      if (response.status === "success") return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${transactionId}`, {
+        method: "GET"
+      });
+      data = await response.json();
+      if (data.status === "success") return data;
     } else {
       throw new Error("Something went wrong");
     }
-    return response;
+    return data;
   } catch (error) {
     throw new Error((error as Error).message ?? "Something went wrong");
   }
