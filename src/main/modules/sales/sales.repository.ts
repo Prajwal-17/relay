@@ -129,17 +129,6 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       })
       .where(eq(sales.id, saleId));
 
-    const keptItemIds = payload.items.map((item) => item.id).filter((id): id is string => !!id);
-
-    // delete items NOT in the payload
-    if (keptItemIds.length > 0) {
-      tx.delete(saleItems)
-        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
-        .run();
-    } else {
-      tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
-    }
-
     const resultItems: any = [];
 
     for (const item of payload.items) {
@@ -171,7 +160,6 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       } else {
         // insert new
         dbItem = tx.insert(saleItems).values(values).returning().get();
-        console.log("dbitem", dbItem);
       }
 
       // merge DB result with FE rowId
@@ -180,6 +168,18 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
         ...dbItem, // overwrite with DB props (id)
         rowId: item.rowId // force keep the specific rowId
       });
+    }
+
+    const keptItemIds = resultItems.map((item) => item.id);
+
+    // delete items NOT in the payload
+    if (keptItemIds.length > 0) {
+      tx.delete(saleItems)
+        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
+        .run();
+    } else {
+      // delete all items if item array is empty
+      tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
     }
 
     return {
