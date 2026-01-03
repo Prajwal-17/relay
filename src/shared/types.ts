@@ -1,7 +1,11 @@
 import type z from "zod";
 import type { createCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
-import type { txnPayloadSchema } from "./schemas/transaction.schema";
+import type {
+  lineItemSchema,
+  payloadDataSchema,
+  txnPayloadSchema
+} from "./schemas/transaction.schema";
 
 export type UsersType = {
   id: string;
@@ -228,6 +232,8 @@ export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
 
 export type TxnPayload = z.infer<typeof txnPayloadSchema>;
+export type TxnPayloadData = z.infer<typeof payloadDataSchema>;
+export type LineItemSchema = z.infer<typeof lineItemSchema>;
 
 export type FilteredGoogleContactsType = {
   id: number;

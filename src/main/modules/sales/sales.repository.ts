@@ -1,7 +1,7 @@
-import { and, count, desc, eq, gte, lte, sql, type SQL, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, notInArray, sql, type SQL, sum } from "drizzle-orm";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
-import type { FilterSalesParams, SalesByCustomerParams } from "./sales.types";
+import type { FilterSalesParams, SalesByCustomerParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
   return await db.query.sales.findFirst({
@@ -118,6 +118,77 @@ const createSale = async (customerId, payload) => {
   });
 };
 
+const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
+  return db.transaction((tx) => {
+    // update sale
+    tx.update(sales)
+      .set({
+        grandTotal: payload.grandTotal,
+        isPaid: payload.isPaid,
+        totalQuantity: payload.totalQuantity
+      })
+      .where(eq(sales.id, saleId));
+
+    const keptItemIds = payload.items.map((item) => item.id).filter((id): id is string => !!id);
+
+    // delete items NOT in the payload
+    if (keptItemIds.length > 0) {
+      tx.delete(saleItems)
+        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
+        .run();
+    } else {
+      tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
+    }
+
+    const resultItems: any = [];
+
+    for (const item of payload.items) {
+      const values = {
+        saleId: saleId,
+        productId: item.productId,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        purchasePrice: item.purchasePrice,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+        checkedQty: item.checkedQty
+      };
+
+      let dbItem;
+
+      if (item.id) {
+        // update existing
+        dbItem = tx
+          .update(saleItems)
+          .set(values)
+          .where(eq(saleItems.id, item.id))
+          .returning()
+          .get();
+      } else {
+        // insert new
+        dbItem = tx.insert(saleItems).values(values).returning().get();
+        console.log("dbitem", dbItem);
+      }
+
+      // merge DB result with FE rowId
+      resultItems.push({
+        ...item, // retain FE props
+        ...dbItem, // overwrite with DB props (id)
+        rowId: item.rowId // force keep the specific rowId
+      });
+    }
+
+    return {
+      ...payload,
+      items: resultItems
+    };
+  });
+};
+
 const deleteSaleById = async (id: string) => {
   return db.transaction((tx) => {
     const existingSale = tx.select().from(sales).where(eq(sales.id, id)).get();
@@ -221,6 +292,7 @@ export const salesRepository = {
   getLatestInvoiceNo,
   filterSalesByDate,
   createSale,
+  updateSale,
   convertSaleToEstimate,
   deleteSaleById
 };

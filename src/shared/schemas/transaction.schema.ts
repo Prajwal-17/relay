@@ -5,7 +5,7 @@ export const lineItemSchema = z.object({
   id: z.uuidv4().nullable().default(null),
   parentId: z.union([z.string(), z.uuidv4()]).default(""),
   rowId: z.uuidv4(),
-  productId: z.uuidv4(),
+  productId: z.uuidv4().nullable(),
   name: z.string().trim(),
   productSnapshot: z.string().trim(),
   weight: z.string().nullable().default(null),
@@ -18,7 +18,7 @@ export const lineItemSchema = z.object({
   isInventoryItem: z.boolean()
 });
 
-export const txnPayloadSchema = z.object({
+export const payloadDataSchema = z.object({
   transactionNo: z.number().positive(),
   transactionType: z.enum(TRANSACTION_TYPE),
   customerId: z.uuidv4().nullable(),
@@ -34,5 +34,10 @@ export const txnPayloadSchema = z.object({
   // .optional(),
   isPaid: z.boolean(),
   items: z.array(lineItemSchema),
-  createdAt: z.iso.datetime()
+  createdAt: z.iso.datetime().optional()
+});
+
+export const txnPayloadSchema = z.object({
+  isAutoSave: z.boolean(),
+  data: payloadDataSchema
 });

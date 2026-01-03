@@ -7,7 +7,7 @@ import {
   type CustomerTransaction,
   type PaginatedApiResponse,
   type TransactionListResponse,
-  type TxnPayload,
+  type TxnPayloadData,
   type UnifiedTransactionItem,
   type UnifiedTransctionWithItems
 } from "../../../shared/types";
@@ -15,7 +15,7 @@ import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
 import { customersRepository } from "../customers/customers.repository";
 import { salesRepository } from "./sales.repository";
-import type { FilterSalesParams, SalesByCustomerParams } from "./sales.types";
+import type { FilterSalesParams, SalesByCustomerParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
   try {
@@ -187,7 +187,7 @@ const filterSalesByDate = async (
   }
 };
 
-const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => {
+const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<string>> => {
   try {
     // customer validation
     let customer: Customer | undefined;
@@ -255,6 +255,56 @@ const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => 
   }
 };
 
+const updateSale = async (
+  id: string,
+  payload: TxnPayloadData
+): Promise<ApiResponse<Omit<UnifiedTransctionWithItems, "customer">>> => {
+  try {
+    // TODO - customer validation
+
+    const finalItems = payload.items.map((item) => {
+      const rawTotal = item.price * item.quantity;
+      return {
+        ...item,
+        totalPrice: Math.round(rawTotal)
+      };
+    });
+
+    const total = finalItems.reduce((sum, currentItem) => {
+      return sum + Number(currentItem.totalPrice || 0);
+    }, 0);
+
+    const totalQuantity = finalItems.reduce((sum, currentItem) => {
+      return sum + (Number(currentItem.quantity) || 0);
+    }, 0);
+
+    const finalPayload: UpdateSaleParams = {
+      ...payload,
+      items: finalItems,
+      grandTotal: total,
+      totalQuantity: totalQuantity
+    };
+
+    const result = await salesRepository.updateSale(id, finalPayload);
+
+    return {
+      status: "success",
+      data: {
+        id,
+        type: TRANSACTION_TYPE.SALE,
+        ...result
+      }
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while updating sale"
+      }
+    };
+  }
+};
+
 const convertSaleToEstimate = async (id: string): Promise<ApiResponse<string>> => {
   try {
     const result = await salesRepository.convertSaleToEstimate(id);
@@ -317,6 +367,7 @@ export const salesService = {
   getNextInvoiceNo,
   filterSalesByDate,
   createSale,
+  updateSale,
   convertSaleToEstimate,
   deleteSaleById
 };

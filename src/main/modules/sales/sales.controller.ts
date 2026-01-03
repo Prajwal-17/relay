@@ -112,7 +112,30 @@ salesController.post("/create", async (c) => {
       return c.json({ status: "error", error: { message: errorMessage } }, 400);
     }
 
-    const result = await salesService.createSale(payload);
+    const result = await salesService.createSale(payload.data);
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// update an existing sale
+salesController.post("/:id/edit", async (c) => {
+  try {
+    const id = c.req.param("id");
+    const payload = await c.req.json();
+
+    const parseResult = txnPayloadSchema.safeParse(payload);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await salesService.updateSale(id, payload.data);
 
     const status = result.status === "success" ? 200 : 400;
     return c.json(result, status);
