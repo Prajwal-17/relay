@@ -150,7 +150,48 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       let dbItem;
 
       if (item.id) {
-        // update existing
+        const currentDbItem = tx
+          .select({
+            quantity: saleItems.quantity,
+            productId: saleItems.productId
+          })
+          .from(saleItems)
+          .where(eq(saleItems.id, item.id))
+          .get();
+
+        if (currentDbItem) {
+          const isSameProduct = currentDbItem.productId === item.productId;
+
+          if (isSameProduct) {
+            const quantityDifference = item.quantity - currentDbItem.quantity;
+
+            if (quantityDifference !== 0) {
+              tx.update(products)
+                .set({
+                  totalQuantitySold: sql`${products.totalQuantitySold} + ${quantityDifference}`
+                })
+                .where(eq(products.id, item.productId));
+            }
+          } else {
+            if (currentDbItem.productId) {
+              tx.update(products)
+                .set({
+                  totalQuantitySold: sql`${products.totalQuantitySold} - ${currentDbItem.quantity}`
+                })
+                .where(eq(products.id, currentDbItem.productId));
+            }
+
+            if (item.productId) {
+              tx.update(products)
+                .set({
+                  totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+                })
+                .where(eq(products.id, item.productId));
+            }
+          }
+        }
+
+        // update sale item
         dbItem = tx
           .update(saleItems)
           .set(values)
@@ -160,6 +201,14 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       } else {
         // insert new
         dbItem = tx.insert(saleItems).values(values).returning().get();
+        if (dbItem.productId) {
+          tx.update(products)
+            .set({
+              totalQuantitySold: sql`${products.totalQuantitySold} + ${dbItem.quantity}`
+            })
+            .where(eq(products.id, dbItem.productId))
+            .run();
+        }
       }
 
       // merge DB result with FE rowId
@@ -174,10 +223,57 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
 
     // delete items NOT in the payload
     if (keptItemIds.length > 0) {
-      tx.delete(saleItems)
+      const itemsToDelete = tx
+        .select({
+          productId: saleItems.productId,
+          totalQty: saleItems.quantity
+        })
+        .from(saleItems)
         .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
-        .run();
+        .groupBy(saleItems.productId)
+        .all();
+
+      // reduce totalQtySold
+      if (itemsToDelete.length > 0) {
+        for (const item of itemsToDelete) {
+          if (item.productId) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: sql`${products.totalQuantitySold} - ${item.totalQty}`
+              })
+              .where(eq(products.id, item.productId))
+              .run();
+          }
+        }
+      }
+
+      tx.delete(saleItems).where(
+        and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds))
+      );
     } else {
+      const itemsToDelete = tx
+        .select({
+          productId: saleItems.productId,
+          totalQty: saleItems.quantity
+        })
+        .from(saleItems)
+        .where(eq(saleItems.saleId, saleId))
+        .groupBy(saleItems.productId)
+        .all();
+
+      // reduce totalQtySold
+      if (itemsToDelete.length > 0) {
+        for (const item of itemsToDelete) {
+          if (item.productId) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: sql`${products.totalQuantitySold} - ${item.totalQty}`
+              })
+              .where(eq(products.id, item.productId))
+              .run();
+          }
+        }
+      }
       // delete all items if item array is empty
       tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
     }
