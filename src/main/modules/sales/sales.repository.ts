@@ -1,7 +1,12 @@
 import { and, count, desc, eq, gte, lte, notInArray, sql, type SQL, sum } from "drizzle-orm";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
-import type { FilterSalesParams, SalesByCustomerParams, UpdateSaleParams } from "./sales.types";
+import type {
+  CreateSaleParams,
+  FilterSalesParams,
+  SalesByCustomerParams,
+  UpdateSaleParams
+} from "./sales.types";
 
 const getSaleById = async (id: string) => {
   return await db.query.sales.findFirst({
@@ -62,7 +67,7 @@ const filterSalesByDate = async (
   };
 };
 
-const createSale = async (customerId, payload) => {
+const createSale = async (customerId, payload: CreateSaleParams) => {
   return db.transaction((tx) => {
     const newSale = tx
       .insert(sales)
@@ -104,7 +109,7 @@ const createSale = async (customerId, payload) => {
         })
         .run();
 
-      if (products.id) {
+      if (item.productId) {
         tx.update(products)
           .set({
             totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
@@ -114,7 +119,8 @@ const createSale = async (customerId, payload) => {
       }
     }
 
-    return "Successfully created Sale";
+    return newSale.id;
+    // return "Successfully created Sale";
   });
 };
 

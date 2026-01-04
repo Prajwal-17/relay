@@ -17,6 +17,7 @@
     "postinstall": "electron-builder install-app-deps",
     "dev": "pnpm run rebuild:electron && cross-env ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
     "dev:hono": "pnpm run rebuild:node && tsx src/main/standalone.ts",
+    "test": "pnpm run rebuild:node && vitest --ui",
     "rebuild:node": "pnpm rebuild better-sqlite3",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "db:seed": "pnpm run rebuild:node && tsx src/main/db/seed.ts",
@@ -91,6 +92,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.7.0",
+    "@vitest/ui": "^4.0.16",
     "babel-plugin-react-compiler": "^1.0.0",
     "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.4",
@@ -107,7 +109,8 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-scan": "^0.4.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.16"
   },
   "build": {
     "appId": "pos.quickcart",

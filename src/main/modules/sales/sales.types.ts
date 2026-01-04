@@ -13,6 +13,14 @@ export type SalesByCustomerParams = PaginatedQuery & {
 
 export type FilterSalesParams = z.infer<typeof filterSalesParamsSchema>;
 
+export type CreateSaleParams = TxnPayloadData & {
+  items: (LineItemSchema & {
+    totalPrice: number;
+  })[];
+  grandTotal: number;
+  totalQuantity: number;
+};
+
 export type UpdateSaleParams = TxnPayloadData & {
   items: (LineItemSchema & {
     totalPrice: number;
