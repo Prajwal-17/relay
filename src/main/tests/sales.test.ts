@@ -1,7 +1,6 @@
 import Database from "better-sqlite3";
 import dotenv from "dotenv";
 import { eq } from "drizzle-orm";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import path from "node:path";
@@ -9,8 +8,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TRANSACTION_TYPE, type TxnPayloadData } from "../../shared/types";
 import * as schema from "../db/schema";
 import { customers, products, saleItems, sales } from "../db/schema";
+import { productRepository } from "../modules/products/products.repository";
 import { salesService } from "../modules/sales/sales.service";
-import { rowId1, rowId2, rowId3, seedInitialData } from "./helpers";
+import { rowId1, rowId2, rowId3, seedInitialData, type DB } from "./helpers";
 
 dotenv.config();
 
@@ -29,7 +29,7 @@ vi.mock("../db/db", () => {
 });
 
 describe("Update Sale Feat - AutoSave + Manual", () => {
-  let db: BetterSQLite3Database<typeof schema>;
+  let db: DB;
   let sqlite: Database.Database;
   beforeEach(() => {
     sqlite = new Database(":memory:");
@@ -98,6 +98,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    const product1 = await productRepository.findById(initialData.product1.id);
+    const product2 = await productRepository.findById(initialData.product2.id);
+
     if (result.status === "success") {
       expect(result.data.items[0].rowId).toBe(rowId1);
       expect(result.data.items[1].rowId).toBe(rowId2);
@@ -110,6 +113,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item1?.checkedQty).toBe(5);
 
     expect(item2?.checkedQty).toBe(4);
+
+    expect(product1?.totalQuantitySold).toBe(35); // 30 + 5(replace 7)
+    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4(replace 5)
 
     expect(allSaleitems.length).toBe(2);
   });
@@ -167,6 +173,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    const product1 = await productRepository.findById(initialData.product1.id);
+    const product2 = await productRepository.findById(initialData.product2.id);
+
     if (result.status === "success") {
       expect(result.data.items[0].rowId).toBe(rowId1);
       expect(result.data.items[1].rowId).toBe(rowId2);
@@ -183,6 +192,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item1?.checkedQty).toBe(3);
 
     expect(item2?.checkedQty).toBe(4);
+
+    expect(product1?.totalQuantitySold).toBe(30); // 30 + productId=null
+    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4(replace 5)
 
     expect(allSaleitems.length).toBe(2);
   });
@@ -242,6 +254,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    const product1 = await productRepository.findById(initialData.product1.id);
+    const product2 = await productRepository.findById(initialData.product2.id);
+
     if (result.status === "success") {
       expect(result.data.items[0].rowId).toBe(rowId1);
       expect(result.data.items[1].rowId).toBe(rowId2);
@@ -258,6 +273,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item3?.totalPrice).toBe(158400);
     expect(item3?.quantity).toBe(22);
     expect(item3?.checkedQty).toBe(16);
+
+    expect(product1?.totalQuantitySold).toBe(58); // 30 + 6 + 22
+    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4
 
     expect(allSaleitems.length).toBe(3);
   });
@@ -280,8 +298,14 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    const product1 = await productRepository.findById(initialData.product1.id);
+    const product2 = await productRepository.findById(initialData.product2.id);
+
     expect(sale?.totalQuantity).toBe(0);
     expect(sale?.grandTotal).toBe(0);
+
+    expect(product1?.totalQuantitySold).toBe(30); // 37 - 7
+    expect(product2?.totalQuantitySold).toBe(20); // 25 - 5
 
     expect(allSaleitems.length).toBe(0);
   });
@@ -317,12 +341,19 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    const product1 = await productRepository.findById(initialData.product1.id);
+    const product2 = await productRepository.findById(initialData.product2.id);
+
     if (result.status === "success") {
       expect(result.data.items[0].rowId).toBe(rowId1);
     }
 
     expect(sale?.totalQuantity).toBe(6);
     expect(sale?.grandTotal).toBe(40800);
+
+    expect(product1?.totalQuantitySold).toBe(36);
+    expect(product2?.totalQuantitySold).toBe(20);
+
     expect(allSaleitems.length).toBe(1);
   });
 });

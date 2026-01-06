@@ -1,4 +1,5 @@
 import type Database from "better-sqlite3";
+import { eq, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { CustomerRole } from "../../db/enum";
 import * as schema from "../../db/schema";
@@ -69,15 +70,11 @@ export async function seedSaleItem(
   db: DB,
   params: {
     saleId: string;
-    productId: string;
+    productId: string | null;
   } & Partial<typeof saleItems.$inferInsert>
 ) {
   if (!params.saleId) {
     throw new Error("seedSaleItem: saleId is required");
-  }
-
-  if (!params.productId) {
-    throw new Error("seedSaleItem: productId is required");
   }
 
   const saleItem = {
@@ -100,7 +97,7 @@ export async function seedSaleItem(
   return saleItem;
 }
 
-export async function seedInitialData(db) {
+export async function seedInitialData(db: DB) {
   const customer = await seedCustomer(db);
 
   const product1 = await seedProduct(db, {
@@ -165,7 +162,7 @@ export async function seedInitialData(db) {
 
   const saleItem3 = await seedSaleItem(db, {
     saleId: sale.id,
-    productId: product2.id,
+    productId: null,
     name: "Maggi 2-Minute Noodles Masala",
     productSnapshot: "Maggi Masala 70g pouch",
     mrp: 1400,
@@ -177,6 +174,20 @@ export async function seedInitialData(db) {
     totalPrice: 58500,
     checkedQty: 45
   });
+
+  db.update(products)
+    .set({
+      totalQuantitySold: sql`${products.totalQuantitySold} + ${saleItem1.quantity}`
+    })
+    .where(eq(products.id, product1.id))
+    .run();
+
+  db.update(products)
+    .set({
+      totalQuantitySold: sql`${products.totalQuantitySold} + ${saleItem2.quantity}`
+    })
+    .where(eq(products.id, product2.id))
+    .run();
 
   return {
     customer,

@@ -138,6 +138,38 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
 
     const resultItems: any = [];
 
+    const quantitySoldAdjustments = new Map<string, number>();
+
+    const existingSaleItems = tx.select().from(saleItems).where(eq(saleItems.saleId, saleId)).all();
+
+    for (const saleItem of existingSaleItems) {
+      if (saleItem.productId) {
+        const current = quantitySoldAdjustments.get(saleItem.productId) || 0;
+        quantitySoldAdjustments.set(saleItem.productId, current - saleItem.quantity);
+      }
+    }
+
+    for (const item of payload.items) {
+      if (item.productId) {
+        const current = quantitySoldAdjustments.get(item.productId) || 0;
+        console.log("current in item", current, item.quantity, current + item.quantity);
+        quantitySoldAdjustments.set(item.productId, current + item.quantity);
+        const current2 = quantitySoldAdjustments.get(item.productId) || 0;
+        console.log("after updating", current2);
+      }
+    }
+
+    for (const [productId, netChange] of quantitySoldAdjustments) {
+      if (netChange !== 0) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${netChange}`
+          })
+          .where(eq(products.id, productId))
+          .run();
+      }
+    }
+
     for (const item of payload.items) {
       const values = {
         saleId: saleId,
@@ -157,47 +189,6 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       let dbItem;
 
       if (item.id) {
-        const currentDbItem = tx
-          .select({
-            quantity: saleItems.quantity,
-            productId: saleItems.productId
-          })
-          .from(saleItems)
-          .where(eq(saleItems.id, item.id))
-          .get();
-
-        if (currentDbItem) {
-          const isSameProduct = currentDbItem.productId === item.productId;
-
-          if (isSameProduct) {
-            const quantityDifference = item.quantity - currentDbItem.quantity;
-
-            if (quantityDifference !== 0) {
-              tx.update(products)
-                .set({
-                  totalQuantitySold: sql`${products.totalQuantitySold} + ${quantityDifference}`
-                })
-                .where(eq(products.id, item.productId));
-            }
-          } else {
-            if (currentDbItem.productId) {
-              tx.update(products)
-                .set({
-                  totalQuantitySold: sql`${products.totalQuantitySold} - ${currentDbItem.quantity}`
-                })
-                .where(eq(products.id, currentDbItem.productId));
-            }
-
-            if (item.productId) {
-              tx.update(products)
-                .set({
-                  totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
-                })
-                .where(eq(products.id, item.productId));
-            }
-          }
-        }
-
         // update sale item
         dbItem = tx
           .update(saleItems)
@@ -208,14 +199,6 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
       } else {
         // insert new
         dbItem = tx.insert(saleItems).values(values).returning().get();
-        if (dbItem.productId) {
-          tx.update(products)
-            .set({
-              totalQuantitySold: sql`${products.totalQuantitySold} + ${dbItem.quantity}`
-            })
-            .where(eq(products.id, dbItem.productId))
-            .run();
-        }
       }
 
       // merge DB result with FE rowId
@@ -230,57 +213,10 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
 
     // delete items NOT in the payload
     if (keptItemIds.length > 0) {
-      const itemsToDelete = tx
-        .select({
-          productId: saleItems.productId,
-          totalQty: saleItems.quantity
-        })
-        .from(saleItems)
-        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
-        .groupBy(saleItems.productId)
-        .all();
-
-      // reduce totalQtySold
-      if (itemsToDelete.length > 0) {
-        for (const item of itemsToDelete) {
-          if (item.productId) {
-            tx.update(products)
-              .set({
-                totalQuantitySold: sql`${products.totalQuantitySold} - ${item.totalQty}`
-              })
-              .where(eq(products.id, item.productId))
-              .run();
-          }
-        }
-      }
-
       tx.delete(saleItems)
         .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
         .run();
     } else {
-      const itemsToDelete = tx
-        .select({
-          productId: saleItems.productId,
-          totalQty: saleItems.quantity
-        })
-        .from(saleItems)
-        .where(eq(saleItems.saleId, saleId))
-        .groupBy(saleItems.productId)
-        .all();
-
-      // reduce totalQtySold
-      if (itemsToDelete.length > 0) {
-        for (const item of itemsToDelete) {
-          if (item.productId) {
-            tx.update(products)
-              .set({
-                totalQuantitySold: sql`${products.totalQuantitySold} - ${item.totalQty}`
-              })
-              .where(eq(products.id, item.productId))
-              .run();
-          }
-        }
-      }
       // delete all items if item array is empty
       tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
     }
