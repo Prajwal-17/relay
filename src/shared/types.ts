@@ -353,6 +353,12 @@ export const BATCH_CHECK_ACTION = {
 
 export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
 
+export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
+  items: (UnifiedTransactionItem & {
+    rowId: string;
+  })[];
+};
+
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
   getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;

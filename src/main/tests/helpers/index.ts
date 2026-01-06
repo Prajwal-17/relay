@@ -8,6 +8,10 @@ export type DB = BetterSQLite3Database<typeof schema> & {
   $client: Database.Database;
 };
 
+export const rowId1 = "30f1f3db-e902-4ffb-a20c-a6e04513b36e";
+export const rowId2 = "a7ff0837-22cd-4ed6-b796-fae53ef265a3";
+export const rowId3 = "d2bd676b-7fda-49c5-b7fc-7e4acd86ee49";
+
 export async function seedCustomer(db: DB, overrides = {}) {
   const customer = {
     id: crypto.randomUUID(),

@@ -10,7 +10,7 @@ import { TRANSACTION_TYPE, type TxnPayloadData } from "../../shared/types";
 import * as schema from "../db/schema";
 import { customers, products, saleItems, sales } from "../db/schema";
 import { salesService } from "../modules/sales/sales.service";
-import { seedInitialData } from "./helpers";
+import { rowId1, rowId2, rowId3, seedInitialData } from "./helpers";
 
 dotenv.config();
 
@@ -61,7 +61,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem1,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId1,
           mrp: 8000,
           price: 7000,
           purchasePrice: 6500,
@@ -74,7 +74,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem2,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
           isInventoryItem: false
@@ -82,7 +82,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       ]
     };
 
-    await salesService.updateSale(initialData.sale.id, payload);
+    const result = await salesService.updateSale(initialData.sale.id, payload);
 
     const item1 = db
       .select()
@@ -98,6 +98,10 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     const allSaleitems = db.select().from(saleItems).all();
 
+    if (result.status === "success") {
+      expect(result.data.items[0].rowId).toBe(rowId1);
+      expect(result.data.items[1].rowId).toBe(rowId2);
+    }
     expect(item1?.mrp).toBe(8000);
     expect(item1?.price).toBe(7000);
     expect(item1?.purchasePrice).toBe(6500);
@@ -126,7 +130,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
           productId: null,
           name: "Test Product 1",
           productSnapshot: "Test Product 1 2Kg Mrp=123Rs",
-          rowId: crypto.randomUUID(),
+          rowId: rowId1,
           mrp: 12300,
           price: 12000,
           purchasePrice: 11000,
@@ -139,7 +143,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem2,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
           isInventoryItem: false
@@ -147,7 +151,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       ]
     };
 
-    await salesService.updateSale(initialData.sale.id, payload);
+    const result = await salesService.updateSale(initialData.sale.id, payload);
 
     const item1 = db
       .select()
@@ -162,6 +166,11 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       .get();
 
     const allSaleitems = db.select().from(saleItems).all();
+
+    if (result.status === "success") {
+      expect(result.data.items[0].rowId).toBe(rowId1);
+      expect(result.data.items[1].rowId).toBe(rowId2);
+    }
 
     expect(item1?.productId).toBe(null);
     expect(item1?.name).toBe("Test Product 1");
@@ -191,7 +200,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem1,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId1,
           quantity: 6,
           checkedQty: 3,
           isInventoryItem: false
@@ -199,7 +208,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem2,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
           isInventoryItem: false
@@ -207,7 +216,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           id: null,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId3,
           productId: initialData.product1.id,
           name: "Amul Gold Milk 1L",
           productSnapshot: "Amul Gold Full Cream Milk 1 Liter Mrp=72rs",
@@ -223,7 +232,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       ]
     };
 
-    await salesService.updateSale(initialData.sale.id, payload);
+    const result = await salesService.updateSale(initialData.sale.id, payload);
 
     const item3 = db
       .select()
@@ -232,6 +241,12 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       .get();
 
     const allSaleitems = db.select().from(saleItems).all();
+
+    if (result.status === "success") {
+      expect(result.data.items[0].rowId).toBe(rowId1);
+      expect(result.data.items[1].rowId).toBe(rowId2);
+      expect(result.data.items[2].rowId).toBe(rowId3);
+    }
 
     expect(item3?.id).toBeTruthy();
     expect(item3?.saleId).toBe(initialData.sale.id);
@@ -284,7 +299,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem1,
           parentId: initialData.sale.id,
-          rowId: crypto.randomUUID(),
+          rowId: rowId1,
           quantity: 6,
           checkedQty: 3,
           isInventoryItem: false
@@ -296,11 +311,15 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     expect(allSaleitemsBeforeUpdate.length).toBe(3);
 
-    await salesService.updateSale(initialData.sale.id, payload);
+    const result = await salesService.updateSale(initialData.sale.id, payload);
 
     const sale = db.select().from(sales).where(eq(sales.id, initialData.sale.id)).get();
 
     const allSaleitems = db.select().from(saleItems).all();
+
+    if (result.status === "success") {
+      expect(result.data.items[0].rowId).toBe(rowId1);
+    }
 
     expect(sale?.totalQuantity).toBe(6);
     expect(sale?.grandTotal).toBe(40800);

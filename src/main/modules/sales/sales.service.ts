@@ -9,7 +9,8 @@ import {
   type TransactionListResponse,
   type TxnPayloadData,
   type UnifiedTransactionItem,
-  type UnifiedTransctionWithItems
+  type UnifiedTransctionWithItems,
+  type UpdateSaleResponse
 } from "../../../shared/types";
 import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
@@ -258,7 +259,7 @@ const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<string>>
 const updateSale = async (
   id: string,
   payload: TxnPayloadData
-): Promise<ApiResponse<Omit<UnifiedTransctionWithItems, "customer">>> => {
+): Promise<ApiResponse<UpdateSaleResponse>> => {
   try {
     // TODO - customer validation
 
