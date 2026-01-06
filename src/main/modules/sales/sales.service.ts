@@ -270,13 +270,19 @@ const updateSale = async (
       };
     });
 
-    const total = finalItems.reduce((sum, currentItem) => {
-      return sum + Number(currentItem.totalPrice || 0);
-    }, 0);
+    const total =
+      finalItems.length > 0
+        ? finalItems.reduce((sum, currentItem) => {
+            return sum + Number(currentItem.totalPrice || 0);
+          }, 0)
+        : 0;
 
-    const totalQuantity = finalItems.reduce((sum, currentItem) => {
-      return sum + (Number(currentItem.quantity) || 0);
-    }, 0);
+    const totalQuantity =
+      finalItems.length > 0
+        ? finalItems.reduce((sum, currentItem) => {
+            return sum + (Number(currentItem.quantity) || 0);
+          }, 0)
+        : 0;
 
     const finalPayload: UpdateSaleParams = {
       ...payload,

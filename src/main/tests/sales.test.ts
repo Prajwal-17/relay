@@ -28,7 +28,7 @@ vi.mock("../db/db", () => {
   };
 });
 
-describe("testing update sale feature", () => {
+describe("Update Sale Feat - AutoSave + Manual", () => {
   let db: BetterSQLite3Database<typeof schema>;
   let sqlite: Database.Database;
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe("testing update sale feature", () => {
     sqlite.close();
   });
 
-  it("update sale with id(item.id | saleItem.id) for each item and productId exists", async () => {
+  it("when item.id(saleItem.id) exists && productId exists for all Items (UPDATE)", async () => {
     const initialData = await seedInitialData(db);
 
     const payload: TxnPayloadData = {
@@ -110,7 +110,7 @@ describe("testing update sale feature", () => {
     expect(allSaleitems.length).toBe(2);
   });
 
-  it("update sale with id(item.id | saleItem.id) for each item and productId=null", async () => {
+  it("when item.id(saleItem.id) exists && productId=null (UPDATE)", async () => {
     const initialData = await seedInitialData(db);
 
     const payload: TxnPayloadData = {
@@ -176,5 +176,134 @@ describe("testing update sale feature", () => {
     expect(item2?.checkedQty).toBe(4);
 
     expect(allSaleitems.length).toBe(2);
+  });
+
+  it("when item.id(saleItem.id) does not exists && for both productId=null and productId exits (INSERT)", async () => {
+    const initialData = await seedInitialData(db);
+
+    const payload: TxnPayloadData = {
+      transactionNo: initialData.sale.invoiceNo,
+      transactionType: TRANSACTION_TYPE.SALE,
+      customerId: initialData.customer.id,
+      customerName: initialData.customer.name,
+      isPaid: true,
+      items: [
+        {
+          ...initialData.saleItem1,
+          parentId: initialData.sale.id,
+          rowId: crypto.randomUUID(),
+          quantity: 6,
+          checkedQty: 3,
+          isInventoryItem: false
+        },
+        {
+          ...initialData.saleItem2,
+          parentId: initialData.sale.id,
+          rowId: crypto.randomUUID(),
+          quantity: 4,
+          checkedQty: 4,
+          isInventoryItem: false
+        },
+        {
+          id: null,
+          parentId: initialData.sale.id,
+          rowId: crypto.randomUUID(),
+          productId: initialData.product1.id,
+          name: "Amul Gold Milk 1L",
+          productSnapshot: "Amul Gold Full Cream Milk 1 Liter Mrp=72rs",
+          mrp: 7200,
+          price: 7200,
+          purchasePrice: 6000,
+          weight: "1",
+          unit: "Litre",
+          quantity: 22,
+          checkedQty: 16,
+          isInventoryItem: false
+        }
+      ]
+    };
+
+    await salesService.updateSale(initialData.sale.id, payload);
+
+    const item3 = db
+      .select()
+      .from(saleItems)
+      .where(eq(saleItems.productSnapshot, "Amul Gold Full Cream Milk 1 Liter Mrp=72rs"))
+      .get();
+
+    const allSaleitems = db.select().from(saleItems).all();
+
+    expect(item3?.id).toBeTruthy();
+    expect(item3?.saleId).toBe(initialData.sale.id);
+    expect(item3?.name).toBe("Amul Gold Milk 1L");
+    expect(item3?.productSnapshot).toBe("Amul Gold Full Cream Milk 1 Liter Mrp=72rs");
+    expect(item3?.mrp).toBe(7200);
+    expect(item3?.price).toBe(7200);
+    expect(item3?.purchasePrice).toBe(6000);
+    expect(item3?.totalPrice).toBe(158400);
+    expect(item3?.quantity).toBe(22);
+    expect(item3?.checkedQty).toBe(16);
+
+    expect(allSaleitems.length).toBe(3);
+  });
+
+  it("delete all sale Items empty [] array (DELETE)", async () => {
+    const initialData = await seedInitialData(db);
+
+    const payload: TxnPayloadData = {
+      transactionNo: initialData.sale.invoiceNo,
+      transactionType: TRANSACTION_TYPE.SALE,
+      customerId: initialData.customer.id,
+      customerName: initialData.customer.name,
+      isPaid: true,
+      items: []
+    };
+
+    await salesService.updateSale(initialData.sale.id, payload);
+
+    const sale = db.select().from(sales).where(eq(sales.id, initialData.sale.id)).get();
+
+    const allSaleitems = db.select().from(saleItems).all();
+
+    expect(sale?.totalQuantity).toBe(0);
+    expect(sale?.grandTotal).toBe(0);
+
+    expect(allSaleitems.length).toBe(0);
+  });
+
+  it("delete multiple items array (DELETE)", async () => {
+    const initialData = await seedInitialData(db);
+
+    const payload: TxnPayloadData = {
+      transactionNo: initialData.sale.invoiceNo,
+      transactionType: TRANSACTION_TYPE.SALE,
+      customerId: initialData.customer.id,
+      customerName: initialData.customer.name,
+      isPaid: true,
+      items: [
+        {
+          ...initialData.saleItem1,
+          parentId: initialData.sale.id,
+          rowId: crypto.randomUUID(),
+          quantity: 6,
+          checkedQty: 3,
+          isInventoryItem: false
+        }
+      ]
+    };
+
+    const allSaleitemsBeforeUpdate = db.select().from(saleItems).all();
+
+    expect(allSaleitemsBeforeUpdate.length).toBe(3);
+
+    await salesService.updateSale(initialData.sale.id, payload);
+
+    const sale = db.select().from(sales).where(eq(sales.id, initialData.sale.id)).get();
+
+    const allSaleitems = db.select().from(saleItems).all();
+
+    expect(sale?.totalQuantity).toBe(6);
+    expect(sale?.grandTotal).toBe(40800);
+    expect(allSaleitems.length).toBe(1);
   });
 });

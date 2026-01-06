@@ -17,7 +17,7 @@
     "postinstall": "electron-builder install-app-deps",
     "dev": "pnpm run rebuild:electron && cross-env ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
     "dev:hono": "pnpm run rebuild:node && tsx src/main/standalone.ts",
-    "test": "pnpm run rebuild:node && vitest --ui",
+    "test": "pnpm run rebuild:node && vitest",
     "rebuild:node": "pnpm rebuild better-sqlite3",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "db:seed": "pnpm run rebuild:node && tsx src/main/db/seed.ts",

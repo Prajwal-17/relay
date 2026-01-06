@@ -133,7 +133,8 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
         isPaid: payload.isPaid,
         totalQuantity: payload.totalQuantity
       })
-      .where(eq(sales.id, saleId));
+      .where(eq(sales.id, saleId))
+      .run();
 
     const resultItems: any = [];
 
@@ -253,9 +254,9 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
         }
       }
 
-      tx.delete(saleItems).where(
-        and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds))
-      );
+      tx.delete(saleItems)
+        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
+        .run();
     } else {
       const itemsToDelete = tx
         .select({

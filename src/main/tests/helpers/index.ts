@@ -159,28 +159,29 @@ export async function seedInitialData(db) {
     checkedQty: 5
   });
 
-  // const saleItem3 = await seedSaleItem(db, {
-  //   saleId: sale.id,
-  //   productId: product2.id,
-  //   name: "Maggi 2-Minute Noodles Masala",
-  //   productSnapshot: "Maggi Masala 70g pouch",
-  //   mrp: 1400,
-  //   price: 1300,
-  //   purchasePrice: 1100,
-  //   weight: "70",
-  //   unit: "g",
-  //   quantity: 45,
-  //   totalPrice: 58500,
-  //   checkedQty: 45
-  // });
+  const saleItem3 = await seedSaleItem(db, {
+    saleId: sale.id,
+    productId: product2.id,
+    name: "Maggi 2-Minute Noodles Masala",
+    productSnapshot: "Maggi Masala 70g pouch",
+    mrp: 1400,
+    price: 1300,
+    purchasePrice: 1100,
+    weight: "70",
+    unit: "g",
+    quantity: 45,
+    totalPrice: 58500,
+    checkedQty: 45
+  });
+
   return {
     customer,
     product1,
     product2,
     sale,
     saleItem1,
-    saleItem2
+    saleItem2,
+    saleItem3
     // items: [saleItem1, saleItem2]
-    // saleItem3
   };
 }
