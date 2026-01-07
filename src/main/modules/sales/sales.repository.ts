@@ -152,10 +152,7 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
     for (const item of payload.items) {
       if (item.productId) {
         const current = quantitySoldAdjustments.get(item.productId) || 0;
-        console.log("current in item", current, item.quantity, current + item.quantity);
         quantitySoldAdjustments.set(item.productId, current + item.quantity);
-        const current2 = quantitySoldAdjustments.get(item.productId) || 0;
-        console.log("after updating", current2);
       }
     }
 
