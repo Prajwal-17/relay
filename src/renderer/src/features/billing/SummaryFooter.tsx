@@ -3,6 +3,7 @@ import { useTransactionActions } from "@/hooks/useTransactionActions";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { FileText, Printer, Save } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
+import { BillingSaveStatus } from "./BillingSaveStatus";
 
 export const SummaryFooter = () => {
   const { type } = useParams();
@@ -20,7 +21,11 @@ export const SummaryFooter = () => {
       className="bg-background absolute right-0 bottom-0 left-0 border-t shadow-lg"
       role="contentinfo"
     >
-      <div className="flex items-center justify-end gap-6 px-3 py-2">
+      <div className="relative flex items-center justify-end gap-6 px-3 py-2">
+        <div className="absolute top-0 right-4 -translate-y-full">
+          <BillingSaveStatus />
+        </div>
+
         <div className="flex items-center gap-8 text-right">
           <div className="flex items-center gap-2 text-sm">
             <span className="text-muted-foreground text-lg">Subtotal:</span>
