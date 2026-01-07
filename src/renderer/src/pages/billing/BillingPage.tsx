@@ -3,6 +3,7 @@ import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
+import { useAutoSave } from "@/hooks/useAutoSave";
 import useLoadTransactionDetails from "@/hooks/useLoadTransactionDetails";
 import useTransactionState from "@/hooks/useTransactionState";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
@@ -30,6 +31,7 @@ const BillingPage = () => {
   }, [type, id]);
 
   useLoadTransactionDetails(formattedType as TransactionType, id);
+  useAutoSave();
 
   return (
     <>

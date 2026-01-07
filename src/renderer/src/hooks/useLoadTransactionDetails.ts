@@ -40,6 +40,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     setBillingType,
     setTransactionNo,
     setLineItems,
+    setOriginalLineItems,
     setCustomerName,
     setCustomerContact,
     setBillingId,
@@ -80,6 +81,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
       setCustomerName(data.customer.name);
       setCustomerContact(data.customer.contact);
       setLineItems(data.items);
+      setOriginalLineItems(data.items);
     }
   }, [
     isSuccess,
@@ -91,7 +93,8 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     setCustomerId,
     setCustomerName,
     setCustomerContact,
-    setLineItems
+    setLineItems,
+    setOriginalLineItems
   ]);
   return { status, isLoading, isFetched };
 };

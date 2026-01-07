@@ -5,8 +5,8 @@ import { create } from "zustand";
 import { useBillingStore } from "./billingStore";
 
 export type LineItem = {
-  id: string | null; // saleItem.id || estimateItem.id
-  parentId: string; // sale.id || estimate.id,
+  id: string | null; // saleItem.id | estimateItem.id
+  parentId: string; // sale.id | estimate.id,
   rowId: string;
   productId: string | null;
   name: string;
@@ -27,6 +27,8 @@ type LineItemsStore = {
   setIsCountControlsVisible: () => void;
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
+  originalLineItems: LineItem[] | [];
+  setOriginalLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (type?: "button") => void;
   addLineItem: (rowId: string, newItem: Product) => void;
   updateLineItem: (id: string, field: keyof LineItem, value: string | number) => void;
@@ -38,7 +40,7 @@ function initialLineItem() {
   const lineItem: LineItem = {
     id: null,
     parentId: useBillingStore.getState().billingId ?? "",
-    rowId: uuidv4(),
+    rowId: "",
     productId: null,
     name: "",
     productSnapshot: "",
@@ -54,6 +56,32 @@ function initialLineItem() {
   };
 
   return lineItem;
+}
+
+function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
+  if (!itemsArray || itemsArray.length === 0) {
+    return [initialLineItem()];
+  }
+
+  const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
+    id: item.id,
+    parentId: item.parentId,
+    rowId: uuidv4(),
+    productId: item.productId,
+    name: item.name,
+    productSnapshot: item.productSnapshot,
+    weight: item.weight,
+    unit: item.unit,
+    mrp: item.mrp,
+    price: item.price ? formatToRupees(Number(item.price)).toString() : "",
+    purchasePrice: item.purchasePrice,
+    quantity: item.quantity.toString(),
+    totalPrice: item.totalPrice,
+    checkedQty: item.checkedQty,
+    isInventoryItem: item.productId ? true : false
+  }));
+
+  return lineItemsArray;
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {
@@ -78,35 +106,16 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
   lineItems: [initialLineItem()],
 
   setLineItems: (itemsArray) =>
-    set(() => {
-      if (!itemsArray || itemsArray.length === 0) {
-        return {
-          lineItems: [initialLineItem()]
-        };
-      }
+    set(() => ({
+      lineItems: normalizeLineItems(itemsArray)
+    })),
 
-      const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
-        id: item.id,
-        parentId: item.parentId,
-        rowId: uuidv4(),
-        productId: item.productId,
-        name: item.name,
-        productSnapshot: item.productSnapshot,
-        weight: item.weight,
-        unit: item.unit,
-        mrp: item.mrp,
-        price: item.price ? formatToRupees(Number(item.price)).toString() : "",
-        purchasePrice: item.purchasePrice,
-        quantity: item.quantity.toString(),
-        totalPrice: item.totalPrice,
-        checkedQty: item.checkedQty,
-        isInventoryItem: item.productId ? true : false
-      }));
-
-      return {
-        lineItems: lineItemsArray
-      };
-    }),
+  // recently saved result from DB
+  originalLineItems: [],
+  setOriginalLineItems: (itemsArray) =>
+    set(() => ({
+      originalLineItems: normalizeLineItems(itemsArray)
+    })),
 
   // add empty row
   addEmptyLineItem: (type) =>

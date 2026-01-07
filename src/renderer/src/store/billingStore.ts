@@ -1,6 +1,8 @@
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { create } from "zustand";
 
+type Status = "idle" | "saving" | "saved" | "unsaved" | "error";
+
 type BillingStore = {
   billingId: string | null; // sales.id | estimates.id
   setBillingId: (newId: string | null) => void;
@@ -18,6 +20,8 @@ type BillingStore = {
   setCustomerContact: (newCustomerContact: string | null) => void;
   isNewCustomer: boolean;
   setIsNewCustomer: (value: boolean) => void;
+  status: Status;
+  setStatus: (newStatus: Status) => void;
 };
 
 export const useBillingStore = create<BillingStore>((set) => ({
@@ -58,5 +62,11 @@ export const useBillingStore = create<BillingStore>((set) => ({
   setBillingDate: (newDate) =>
     set(() => ({
       billingDate: newDate
+    })),
+
+  status: "idle",
+  setStatus: (newStatus) =>
+    set(() => ({
+      status: newStatus
     }))
 }));
