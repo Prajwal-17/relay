@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_HOUR } from "@/constants";
-import useTransactionState from "@/hooks/useTransactionState";
+import useTransactionState from "@/hooks/transaction/useTransactionState";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";

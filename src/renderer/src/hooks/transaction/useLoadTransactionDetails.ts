@@ -81,7 +81,7 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
       setCustomerName(data.customer.name);
       setCustomerContact(data.customer.contact);
       setLineItems(data.items);
-      setOriginalLineItems(data.items);
+      setOriginalLineItems();
     }
   }, [
     isSuccess,

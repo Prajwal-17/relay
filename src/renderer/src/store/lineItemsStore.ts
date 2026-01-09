@@ -1,4 +1,5 @@
-import type { Product, UnifiedTransactionItem } from "@shared/types";
+import { filterValidLineItems } from "@/utils";
+import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
 import { formatToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -28,10 +29,11 @@ type LineItemsStore = {
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
   originalLineItems: LineItem[] | [];
-  setOriginalLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
+  setOriginalLineItems: () => void;
   addEmptyLineItem: (type?: "button") => void;
   addLineItem: (rowId: string, newItem: Product) => void;
   updateLineItem: (id: string, field: keyof LineItem, value: string | number) => void;
+  updateInternalIds: (responseItems: UpdateResponseItem[]) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;
 };
@@ -40,7 +42,7 @@ function initialLineItem() {
   const lineItem: LineItem = {
     id: null,
     parentId: useBillingStore.getState().billingId ?? "",
-    rowId: "",
+    rowId: uuidv4(),
     productId: null,
     name: "",
     productSnapshot: "",
@@ -112,9 +114,9 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
 
   // recently saved result from DB
   originalLineItems: [],
-  setOriginalLineItems: (itemsArray) =>
-    set(() => ({
-      originalLineItems: normalizeLineItems(itemsArray)
+  setOriginalLineItems: () =>
+    set((state) => ({
+      originalLineItems: state.lineItems
     })),
 
   // add empty row
@@ -199,6 +201,32 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
 
       return {
         lineItems: updatedLineItems
+      };
+    }),
+
+  /**
+   * Update Internal Id's of LineItems array & update original LineItems
+   */
+  updateInternalIds: (responseItems) =>
+    set((state) => {
+      const updatedLineItems = state.lineItems.map((lineItem: LineItem) => {
+        const current = responseItems.find((item) => item.rowId === lineItem.rowId);
+
+        if (!current) return lineItem;
+        if (current.id === lineItem.id && current.parentId === lineItem.parentId) {
+          return lineItem;
+        }
+
+        return {
+          ...lineItem,
+          id: current?.id,
+          parentId: current?.parentId
+        };
+      });
+
+      return {
+        lineItems: updatedLineItems,
+        originalLineItems: filterValidLineItems(updatedLineItems)
       };
     }),
 

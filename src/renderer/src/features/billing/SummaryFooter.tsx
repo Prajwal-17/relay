@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useTransactionActions } from "@/hooks/useTransactionActions";
+import useTransaction from "@/hooks/transaction/useTransaction";
+import { useTransactionActions } from "@/hooks/transaction/useTransactionActions";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { FileText, Printer, Save } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
@@ -8,7 +9,8 @@ import { BillingSaveStatus } from "./BillingSaveStatus";
 export const SummaryFooter = () => {
   const { type } = useParams();
 
-  const { subtotal, grandTotal, handleActionMutation } = useTransactionActions(
+  const { subtotal, grandTotal } = useTransaction();
+  const { handleActionMutation } = useTransactionActions(
     type?.slice(0, -1) === TRANSACTION_TYPE.SALE ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE
   );
 
@@ -22,7 +24,7 @@ export const SummaryFooter = () => {
       role="contentinfo"
     >
       <div className="relative flex items-center justify-end gap-6 px-3 py-2">
-        <div className="absolute top-0 right-4 -translate-y-full">
+        <div className="absolute top-0 right-2 -translate-y-full">
           <BillingSaveStatus />
         </div>
 

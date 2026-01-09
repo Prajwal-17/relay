@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import useTransactionState from "@/hooks/useTransactionState";
+import useTransactionState from "@/hooks/transaction/useTransactionState";
 import type { Customer } from "@shared/types";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";

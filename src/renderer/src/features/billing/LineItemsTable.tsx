@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import useTransactionState from "@/hooks/useTransactionState";
+import useTransactionState from "@/hooks/transaction/useTransactionState";
 import type { LineItem } from "@/store/lineItemsStore";
 import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { useEffect } from "react";

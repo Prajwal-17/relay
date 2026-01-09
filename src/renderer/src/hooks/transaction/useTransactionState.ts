@@ -31,6 +31,7 @@ const useTransactionState = () => {
   const setOriginalLineItems = useLineItemsStore((state) => state.setOriginalLineItems);
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
   const updateLineItem = useLineItemsStore((state) => state.updateLineItem);
+  const updateInternalIds = useLineItemsStore((state) => state.updateInternalIds);
   const deleteLineItem = useLineItemsStore((state) => state.deleteLineItem);
   const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
   // search drop down store
@@ -65,6 +66,7 @@ const useTransactionState = () => {
     setOriginalLineItems,
     addEmptyLineItem,
     updateLineItem,
+    updateInternalIds,
     deleteLineItem,
     setAllChecked,
     setItemQuery,

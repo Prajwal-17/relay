@@ -1,7 +1,5 @@
-import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
+import { BILLSTATUS, TRANSACTION_TYPE, type BillStatus, type TransactionType } from "@shared/types";
 import { create } from "zustand";
-
-type Status = "idle" | "saving" | "saved" | "unsaved" | "error";
 
 type BillingStore = {
   billingId: string | null; // sales.id | estimates.id
@@ -20,8 +18,8 @@ type BillingStore = {
   setCustomerContact: (newCustomerContact: string | null) => void;
   isNewCustomer: boolean;
   setIsNewCustomer: (value: boolean) => void;
-  status: Status;
-  setStatus: (newStatus: Status) => void;
+  status: BillStatus;
+  setStatus: (newStatus: BillStatus) => void;
 };
 
 export const useBillingStore = create<BillingStore>((set) => ({
@@ -64,7 +62,7 @@ export const useBillingStore = create<BillingStore>((set) => ({
       billingDate: newDate
     })),
 
-  status: "idle",
+  status: BILLSTATUS.IDLE,
   setStatus: (newStatus) =>
     set(() => ({
       status: newStatus

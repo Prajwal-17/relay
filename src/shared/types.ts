@@ -353,11 +353,23 @@ export const BATCH_CHECK_ACTION = {
 
 export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
 
-export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
-  items: (UnifiedTransactionItem & {
-    rowId: string;
-  })[];
+export type UpdateResponseItem = UnifiedTransactionItem & {
+  rowId: string;
 };
+
+export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
+  items: UpdateResponseItem[];
+};
+
+export const BILLSTATUS = {
+  IDLE: "idle",
+  SAVING: "saving",
+  SAVED: "saved",
+  UNSAVED: "unsaved",
+  ERROR: "error"
+} as const;
+
+export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
 export interface DashboardApi {
   getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;

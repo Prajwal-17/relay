@@ -1,4 +1,6 @@
+import type { LineItem } from "@/store/lineItemsStore";
 import { UPDATE_QTY_ACTION, type UpdateQtyAction } from "@shared/types";
+import { formatToPaisa } from "@shared/utils/utils";
 
 export const updateCheckedQuantity = (
   action: UpdateQtyAction,
@@ -46,3 +48,60 @@ export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
 export const toSentenceCase = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
+
+export const filterValidLineItems = (items: LineItem[]) => {
+  return items.filter(
+    (item) =>
+      item.productSnapshot.trim().length > 0 &&
+      parseFloat(item.price) > 0 &&
+      parseFloat(item.quantity) > 0 &&
+      item.totalPrice > 0
+  );
+};
+
+/**
+ * Normalize Line Items for Api Payload construction
+ * - Do not use for zustand actions, This does not inject rowId()
+ * 1. Validation - Filter out invalid LineItems using `filterValidLineItems` func
+ * 2. Convert `price` string to (Paisa).
+ * 3. Transform `price` & `quantity` from string to number.
+ */
+export function normalizeLineItems(lineItems: LineItem[]) {
+  const filteredLineitems = filterValidLineItems(lineItems);
+
+  return filteredLineitems.map((item) => ({
+    ...item,
+    price: formatToPaisa(parseFloat(item.price || "0")),
+    quantity: parseFloat(item.quantity || "0")
+  }));
+}
+
+/**
+ * Normalize Original Line Items for comparision
+ * - Do not use for zustand actions, This does not inject rowId()
+ * 1. Validation - Filter out invalid original LineItems using `filterValidLineItems` func
+ * 2. Convert `price` string to (Paisa).
+ * 3. Transform `price` & `quantity` from string to number.
+ */
+export function normalizeOriginalLineItems(lineItems: LineItem[]) {
+  const filteredLineitems = filterValidLineItems(lineItems);
+
+  return filteredLineitems.map((item) => ({
+    ...item,
+    price: formatToPaisa(parseFloat(item.price || "0")),
+    quantity: parseFloat(item.quantity || "0")
+  }));
+}
+
+/** Strip off `id` & `rowId` fields in an array of objects for comparision */
+export function stripLineItems(originalLineItems: any[], currentLineItems: any[]) {
+  /* eslint-disable */
+  const stripedOriginal = originalLineItems.map(({ id, rowId, isInventoryItem, ...rest }) => rest);
+  const stripedCurrent = currentLineItems.map(({ id, rowId, isInventoryItem, ...rest }) => rest);
+  /* eslint-enable */
+
+  return {
+    originalCleaned: stripedOriginal,
+    currentCleaned: stripedCurrent
+  };
+}
