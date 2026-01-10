@@ -1,4 +1,5 @@
-import useTransactionState from "@/hooks/transaction/useTransactionState";
+import { useBillingStore } from "@/store/billingStore";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
@@ -9,7 +10,9 @@ const BillPreview = () => {
   const { type } = useParams();
   const formattedType = type?.slice(0, -1);
 
-  const { lineItems, transactionNo, customerName } = useTransactionState();
+  const lineItems = useLineItemsStore((state) => state.lineItems);
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const customerName = useBillingStore((state) => state.customerName);
 
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);

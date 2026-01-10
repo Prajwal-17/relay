@@ -5,7 +5,7 @@ import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import { useAutoSave } from "@/hooks/transaction/useAutoSave";
 import useLoadTransactionDetails from "@/hooks/transaction/useLoadTransactionDetails";
-import useTransactionState from "@/hooks/transaction/useTransactionState";
+import { useBillingStore } from "@/store/billingStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -14,7 +14,7 @@ const BillingPage = () => {
   const { type, id } = useParams();
   const formattedType = type?.slice(0, -1) as TransactionType;
   // const billingStateReset = useBillingStore((state) => state.reset);
-  const { setBillingType } = useTransactionState();
+  const setBillingType = useBillingStore((state) => state.setBillingType);
 
   useEffect(() => {
     if (formattedType && Object.values(TRANSACTION_TYPE).includes(formattedType)) {

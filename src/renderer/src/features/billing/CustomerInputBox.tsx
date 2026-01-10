@@ -1,12 +1,15 @@
 import { Input } from "@/components/ui/input";
-import useTransactionState from "@/hooks/transaction/useTransactionState";
+import { useBillingStore } from "@/store/billingStore";
 import type { Customer } from "@shared/types";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export const CustomerNameInput = () => {
-  const { setCustomerId, customerName, setCustomerName, setCustomerContact, setIsNewCustomer } =
-    useTransactionState();
+  const setCustomerId = useBillingStore((state) => state.setCustomerId);
+  const customerName = useBillingStore((state) => state.customerName);
+  const setCustomerName = useBillingStore((state) => state.setCustomerName);
+  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+  const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
 

@@ -1,3 +1,5 @@
+import { useBillingStore } from "@/store/billingStore";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { txnPayloadSchema } from "@shared/schemas/transaction.schema";
 import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "@shared/types";
@@ -6,7 +8,6 @@ import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
-import useTransactionState from "./useTransactionState";
 
 const saveTransaction = async (
   id: string | null,
@@ -85,15 +86,17 @@ const saveTransaction = async (
 
 export const useTransactionActions = (transactionType: TransactionType) => {
   const navigate = useNavigate();
-  const {
-    lineItems,
-    transactionNo,
-    customerId,
-    customerName,
-    customerContact,
-    billingId,
-    billingDate
-  } = useTransactionState();
+
+  // Billing store state
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const customerId = useBillingStore((state) => state.customerId);
+  const customerName = useBillingStore((state) => state.customerName);
+  const customerContact = useBillingStore((state) => state.customerContact);
+  const billingId = useBillingStore((state) => state.billingId);
+  const billingDate = useBillingStore((state) => state.billingDate);
+
+  // Line items store state
+  const lineItems = useLineItemsStore((state) => state.lineItems);
 
   const receiptRef = useReceiptRefStore((state) => state.receiptRef);
   const handlePrint = useReactToPrint({

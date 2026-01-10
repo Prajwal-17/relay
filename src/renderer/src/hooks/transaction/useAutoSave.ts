@@ -1,9 +1,10 @@
+import { useBillingStore } from "@/store/billingStore";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { BILLSTATUS, TRANSACTION_TYPE, type TransactionType, type TxnPayload } from "@shared/types";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import useTransactionPayload from "./useTransactionPayload";
-import useTransactionState from "./useTransactionState";
 
 type MutationData = {
   billingType: TransactionType;
@@ -14,7 +15,9 @@ type MutationData = {
 // TODO - create sale or estimate
 
 export const useAutoSave = () => {
-  const { status, setStatus, updateInternalIds } = useTransactionState();
+  const status = useBillingStore((state) => state.status);
+  const setStatus = useBillingStore((state) => state.setStatus);
+  const updateInternalIds = useLineItemsStore((state) => state.updateInternalIds);
 
   const { isDirty, payload } = useTransactionPayload();
 

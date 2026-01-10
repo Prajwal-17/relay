@@ -1,8 +1,8 @@
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { formatToRupees, IndianRupees } from "@shared/utils/utils";
-import useTransactionState from "./useTransactionState";
 
 const useTransaction = () => {
-  const { lineItems } = useTransactionState();
+  const lineItems = useLineItemsStore((state) => state.lineItems);
 
   const total = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);

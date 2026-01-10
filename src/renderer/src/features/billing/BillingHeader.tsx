@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_HOUR } from "@/constants";
-import useTransactionState from "@/hooks/transaction/useTransactionState";
+import { useBillingStore } from "@/store/billingStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
@@ -43,15 +43,13 @@ const getLatestTransactionNo = async (type: TransactionType) => {
 };
 
 const BillingHeader = () => {
-  const {
-    transactionNo,
-    setTransactionNo,
-    customerContact,
-    setCustomerContact,
-    isNewCustomer,
-    billingDate,
-    setBillingDate
-  } = useTransactionState();
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
+  const customerContact = useBillingStore((state) => state.customerContact);
+  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+  const isNewCustomer = useBillingStore((state) => state.isNewCustomer);
+  const billingDate = useBillingStore((state) => state.billingDate);
+  const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
   const [open, setOpen] = useState(false);
   const [tempTransactionNo, setTempTransactionNo] = useState<number | null>(transactionNo);

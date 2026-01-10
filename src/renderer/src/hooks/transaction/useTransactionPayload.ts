@@ -1,17 +1,29 @@
+import { useBillingStore } from "@/store/billingStore";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { normalizeLineItems, normalizeOriginalLineItems, stripLineItems } from "@/utils";
 import { TRANSACTION_TYPE } from "@shared/types";
 import deepEqual from "fast-deep-equal";
 import { useMemo } from "react";
-import useTransactionState from "./useTransactionState";
 
 const useTransactionPayload = () => {
-  const state = useTransactionState();
+  // Billing store state
+  const billingId = useBillingStore((state) => state.billingId);
+  const billingType = useBillingStore((state) => state.billingType);
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const billingDate = useBillingStore((state) => state.billingDate);
+  const customerId = useBillingStore((state) => state.customerId);
+  const customerName = useBillingStore((state) => state.customerName);
+  const customerContact = useBillingStore((state) => state.customerContact);
 
-  const normalizedLineItems = useMemo(() => normalizeLineItems(state.lineItems), [state.lineItems]);
+  // Line items store state
+  const lineItems = useLineItemsStore((state) => state.lineItems);
+  const originalLineItems = useLineItemsStore((state) => state.originalLineItems);
+
+  const normalizedLineItems = useMemo(() => normalizeLineItems(lineItems), [lineItems]);
 
   const normalizedOriginalLineItems = useMemo(
-    () => normalizeOriginalLineItems(state.originalLineItems),
-    [state.originalLineItems]
+    () => normalizeOriginalLineItems(originalLineItems),
+    [originalLineItems]
   );
 
   const { originalCleaned, currentCleaned } = useMemo(
@@ -25,30 +37,30 @@ const useTransactionPayload = () => {
   );
 
   const payload = useMemo(() => {
-    if (!state.transactionNo) return null;
-    console.log("id", state.billingId);
+    if (!transactionNo) return null;
+    console.log("id", billingId);
 
     return {
-      billingType: state.billingType,
-      id: state.billingId,
+      billingType: billingType,
+      id: billingId,
       payload: {
         isAutoSave: true,
         data: {
-          transactionNo: state.transactionNo,
-          transactionType: state.billingType,
-          customerId: state.customerId,
-          customerName: state.customerName,
-          customerContact: state.customerContact ?? null,
-          isPaid: state.billingType === TRANSACTION_TYPE.SALE,
+          transactionNo: transactionNo,
+          transactionType: billingType,
+          customerId: customerId,
+          customerName: customerName,
+          customerContact: customerContact ?? null,
+          isPaid: billingType === TRANSACTION_TYPE.SALE,
           items: normalizedLineItems,
           createdAt:
-            state.billingDate instanceof Date
-              ? state.billingDate.toISOString()
-              : new Date(state.billingDate).toISOString()
+            billingDate instanceof Date
+              ? billingDate.toISOString()
+              : new Date(billingDate).toISOString()
         }
       }
     };
-  }, [state, normalizedLineItems]);
+  }, [billingId, billingType, transactionNo, billingDate, customerId, customerName, customerContact, normalizedLineItems]);
 
   return {
     isDirty,

@@ -1,12 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import useTransactionState from "@/hooks/transaction/useTransactionState";
-import type { LineItem } from "@/store/lineItemsStore";
+import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { useEffect } from "react";
 import LineItemRow from "./LineItemRow";
@@ -21,14 +20,12 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const {
-    isCountColumnVisible,
-    setIsCountControlsVisible,
-    lineItems,
-    addEmptyLineItem,
-    setLineItems,
-    setAllChecked
-  } = useTransactionState();
+  const isCountColumnVisible = useLineItemsStore((state) => state.isCountColumnVisible);
+  const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
+  const lineItems = useLineItemsStore((state) => state.lineItems);
+  const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
+  const setLineItems = useLineItemsStore((state) => state.setLineItems);
+  const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
 
   useEffect(() => {
     setLineItems([]);

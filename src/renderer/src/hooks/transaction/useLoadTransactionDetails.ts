@@ -1,3 +1,5 @@
+import { useBillingStore } from "@/store/billingStore";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import {
   TRANSACTION_TYPE,
   type TransactionType,
@@ -6,7 +8,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-import useTransactionState from "./useTransactionState";
 
 const fetchTransactionById = async (pathname: TransactionType, transactionId: string) => {
   try {
@@ -36,17 +37,18 @@ const fetchTransactionById = async (pathname: TransactionType, transactionId: st
 };
 
 const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
-  const {
-    setBillingType,
-    setTransactionNo,
-    setLineItems,
-    setOriginalLineItems,
-    setCustomerName,
-    setCustomerContact,
-    setBillingId,
-    setCustomerId,
-    setBillingDate
-  } = useTransactionState();
+  // Billing store setters
+  const setBillingId = useBillingStore((state) => state.setBillingId);
+  const setBillingType = useBillingStore((state) => state.setBillingType);
+  const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
+  const setBillingDate = useBillingStore((state) => state.setBillingDate);
+  const setCustomerId = useBillingStore((state) => state.setCustomerId);
+  const setCustomerName = useBillingStore((state) => state.setCustomerName);
+  const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+
+  // Line items store setters
+  const setLineItems = useLineItemsStore((state) => state.setLineItems);
+  const setOriginalLineItems = useLineItemsStore((state) => state.setOriginalLineItems);
 
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
     queryKey: [type, id],
