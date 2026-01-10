@@ -60,7 +60,16 @@ const useTransactionPayload = () => {
         }
       }
     };
-  }, [billingId, billingType, transactionNo, billingDate, customerId, customerName, customerContact, normalizedLineItems]);
+  }, [
+    billingId,
+    billingType,
+    transactionNo,
+    billingDate,
+    customerId,
+    customerName,
+    customerContact,
+    normalizedLineItems
+  ]);
 
   return {
     isDirty,
