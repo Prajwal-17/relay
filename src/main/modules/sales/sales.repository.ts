@@ -247,10 +247,6 @@ const deleteSaleById = async (id: string) => {
       }
     }
 
-    if (items.length === 0) {
-      throw new Error("Sale Items does not exist");
-    }
-
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
     if (result.changes === 0) {
       throw new Error("Failed to delete sale record");

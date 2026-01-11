@@ -49,7 +49,7 @@ const useTransactionPayload = () => {
           transactionType: billingType,
           customerId: customerId,
           customerName: customerName,
-          customerContact: customerContact ?? null,
+          customerContact: customerContact === "" ? null : customerContact,
           isPaid: billingType === TRANSACTION_TYPE.SALE,
           items: normalizedLineItems,
           createdAt:

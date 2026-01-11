@@ -83,7 +83,7 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     isInventoryItem: item.productId ? true : false
   }));
 
-  return lineItemsArray;
+  return [...lineItemsArray, initialLineItem()];
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {

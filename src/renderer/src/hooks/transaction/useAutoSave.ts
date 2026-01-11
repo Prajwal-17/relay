@@ -25,7 +25,6 @@ export const useAutoSave = () => {
     mutationFn: async (mutationData: MutationData) => {
       try {
         if (mutationData.billingType === TRANSACTION_TYPE.SALE) {
-          console.log("payload", mutationData.payload);
           if (mutationData.id) {
             const response = await fetch(
               `http://localhost:3000/api/sales/${mutationData.id}/edit`,
