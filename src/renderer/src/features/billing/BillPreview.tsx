@@ -1,8 +1,10 @@
+import useTransaction from "@/hooks/transaction/useTransaction";
 import { useBillingStore } from "@/store/billingStore";
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { formatToRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
@@ -13,6 +15,7 @@ const BillPreview = () => {
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const transactionNo = useBillingStore((state) => state.transactionNo);
   const customerName = useBillingStore((state) => state.customerName);
+  const { subtotal, grandTotal } = useTransaction();
 
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
@@ -81,18 +84,15 @@ const BillPreview = () => {
           </div>
           <div className="border-b border-dashed border-black text-xs font-medium">
             {lineItems.map((item, idx) => {
-              if (item.name === "") return;
+              if (item.productSnapshot === "") return;
               return (
                 <div key={idx} className="grid grid-cols-12 py-1">
                   <div className="col-span-1">{idx + 1}.</div>
-                  <div className="col-span-5">{item.name}</div>
+                  <div className="col-span-5">{item.productSnapshot}</div>
                   <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>
+                  <div className="col-span-2 text-right tracking-tight">{item.price}</div>
                   <div className="col-span-2 text-right tracking-tight">
-                    {item.price}
-                    {/*{item.price.toFixed(2)}*/}
-                  </div>
-                  <div className="col-span-2 text-right tracking-tight">
-                    {item.totalPrice.toFixed(2)}
+                    {formatToRupees(item.totalPrice)}
                   </div>
                 </div>
               );
@@ -100,13 +100,11 @@ const BillPreview = () => {
           </div>
           <div className="py-1 text-right">
             <span className="text-xs font-semibold">SubTotal: </span>
-            {/*<span className="text-xs font-semibold">{calcTotalAmount.toFixed(2)}</span>*/}
+            <span className="text-xs font-semibold">{subtotal}</span>
           </div>
           <div className="mb-8 text-right">
             <span className="text-base font-semibold">Total: </span>
-            <span className="text-lg font-semibold">
-              {/*{IndianRupees.format(Math.round(calcTotalAmount))}*/}
-            </span>
+            <span className="text-lg font-semibold">{grandTotal}</span>
             <div className="pb-4 text-center">Thank You</div>
           </div>
           {/* <div className="break-after-page"></div> */}

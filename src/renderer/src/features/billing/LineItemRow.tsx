@@ -111,7 +111,7 @@ const LineItemRow = memo(
                 placeholder="0"
               />
               <button
-                disabled={parseFloat(item.quantity || "0") <= 0}
+                disabled={parseFloat(item.quantity || "0") <= 1}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const currentQty = parseFloat(item.quantity || "0");

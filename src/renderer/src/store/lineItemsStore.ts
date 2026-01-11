@@ -234,6 +234,11 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
   deleteLineItem: (id) =>
     set((state) => {
       const updatedLineItems = state.lineItems.filter((item) => item.rowId !== id);
+      if (updatedLineItems.length === 0) {
+        return {
+          lineItems: [initialLineItem()]
+        };
+      }
       return {
         lineItems: updatedLineItems
       };

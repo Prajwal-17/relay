@@ -110,10 +110,6 @@ export const useTransactionActions = (transactionType: TransactionType) => {
   const subtotal = IndianRupees.format(formatToRupees(total));
   const grandTotal = IndianRupees.format(Math.round(formatToRupees(total)));
 
-  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
-    return sum + (Number(currentItem.quantity) || 0);
-  }, 0);
-
   const payload = {
     transactionNo,
     transactionType,
