@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
-import { useEffect } from "react";
 import LineItemRow from "./LineItemRow";
 
 export type ItemType = {
@@ -24,12 +23,12 @@ const LineItemsTable = () => {
   const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
-  const setLineItems = useLineItemsStore((state) => state.setLineItems);
+  // const setLineItems = useLineItemsStore((state) => state.setLineItems);
   const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
 
-  useEffect(() => {
-    setLineItems([]);
-  }, [setLineItems]);
+  // useEffect(() => {
+  //   setLineItems([]);
+  // }, [setLineItems]);
 
   return (
     <>

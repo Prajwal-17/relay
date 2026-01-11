@@ -188,7 +188,7 @@ const filterSalesByDate = async (
   }
 };
 
-const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<string>> => {
+const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: string }>> => {
   try {
     // customer validation
     let customer: Customer | undefined;
@@ -243,7 +243,9 @@ const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<string>>
 
     return {
       status: "success",
-      data: newSale
+      data: {
+        id: newSale
+      }
     };
   } catch (error) {
     console.log(error);

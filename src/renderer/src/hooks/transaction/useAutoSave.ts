@@ -12,11 +12,10 @@ type MutationData = {
   payload: TxnPayload;
 };
 
-// TODO - create sale or estimate
-
 export const useAutoSave = () => {
   const status = useBillingStore((state) => state.status);
   const setStatus = useBillingStore((state) => state.setStatus);
+  const setBillingId = useBillingStore((state) => state.setBillingId);
   const updateInternalIds = useLineItemsStore((state) => state.updateInternalIds);
 
   const { isDirty, payload } = useTransactionPayload();
@@ -26,6 +25,7 @@ export const useAutoSave = () => {
     mutationFn: async (mutationData: MutationData) => {
       try {
         if (mutationData.billingType === TRANSACTION_TYPE.SALE) {
+          console.log("payload", mutationData.payload);
           if (mutationData.id) {
             const response = await fetch(
               `http://localhost:3000/api/sales/${mutationData.id}/edit`,
@@ -99,13 +99,43 @@ export const useAutoSave = () => {
         console.log(error);
       }
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       if (response.status === "success") {
+        if (!variables.id) {
+          if (variables.billingType === TRANSACTION_TYPE.SALE) {
+            // navigate(
+            //   { pathname: `/billing/${variables.billingType}s/${response.data.id}/edit` },
+            //   { replace: true }
+            // );
+            setBillingId(response.data.id);
+            window.history.replaceState(
+              window.history.state,
+              "",
+              `#/billing/${variables.billingType}s/${response.data.id}/edit`
+            );
+            toast.success(response.message ?? "Save Successfull");
+            console.log(location.href);
+            return;
+          } else if (variables.billingType === TRANSACTION_TYPE.ESTIMATE) {
+            // navigate(
+            //   { pathname: `/billing/${variables.billingType}s/${response.data.id}/edit` },
+            //   { replace: true }
+            // );
+            setBillingId(response.data.id);
+            window.history.replaceState(
+              window.history.state,
+              "",
+              `#/billing/${variables.billingType}s/${response.data.id}/edit`
+            );
+            toast.success(response.message ?? "Save Successfull");
+            console.log(location.href);
+            return;
+          }
+          throw new Error("Something went wrong");
+        }
         setStatus(BILLSTATUS.SAVED);
         updateInternalIds(response.data.items);
         toast.success(response.message ?? "Save Successfull");
-        // setTimeout(() => setStatus("saved"), 2000);
-        // navigate("/");
       } else if (response.status === "error") {
         toast.error(response.error.message + "here");
       }
@@ -130,6 +160,7 @@ export const useAutoSave = () => {
       }
 
       setStatus(BILLSTATUS.SAVING);
+
       handleAutoSaveMutation.mutate({ ...payload });
     }, 5000);
 

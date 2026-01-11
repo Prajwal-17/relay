@@ -38,7 +38,6 @@ const useTransactionPayload = () => {
 
   const payload = useMemo(() => {
     if (!transactionNo) return null;
-    console.log("id", billingId);
 
     return {
       billingType: billingType,

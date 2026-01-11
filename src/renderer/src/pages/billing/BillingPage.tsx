@@ -1,4 +1,5 @@
 import BillingHeader from "@/features/billing/BillingHeader";
+import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
@@ -30,8 +31,12 @@ const BillingPage = () => {
     // // eslint-disable-next-line
   }, [type, id]);
 
-  useLoadTransactionDetails(formattedType as TransactionType, id);
+  const { isLoading } = useLoadTransactionDetails(formattedType as TransactionType, id);
   useAutoSave();
+
+  if (isLoading) {
+    return <BillingSkeleton />;
+  }
 
   return (
     <>
