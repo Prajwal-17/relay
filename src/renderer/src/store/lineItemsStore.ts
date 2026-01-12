@@ -36,6 +36,7 @@ type LineItemsStore = {
   updateInternalIds: (responseItems: UpdateResponseItem[]) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;
+  reset: () => void;
 };
 
 function initialLineItem() {
@@ -250,5 +251,12 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
         ...item,
         checkedQty: checked ? parseFloat(item.quantity || "0") : 0
       }))
+    })),
+
+  reset: () =>
+    set(() => ({
+      isCountColumnVisible: false,
+      lineItems: [initialLineItem()],
+      originalLineItems: []
     }))
 }));

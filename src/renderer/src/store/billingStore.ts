@@ -20,6 +20,7 @@ type BillingStore = {
   setIsNewCustomer: (value: boolean) => void;
   status: BillStatus;
   setStatus: (newStatus: BillStatus) => void;
+  reset: () => void;
 };
 
 export const useBillingStore = create<BillingStore>((set) => ({
@@ -66,5 +67,17 @@ export const useBillingStore = create<BillingStore>((set) => ({
   setStatus: (newStatus) =>
     set(() => ({
       status: newStatus
+    })),
+
+  reset: () =>
+    set(() => ({
+      billingId: null,
+      transactionNo: null,
+      billingDate: new Date(),
+      customerId: null,
+      customerName: "",
+      customerContact: null,
+      isNewCustomer: true,
+      status: BILLSTATUS.IDLE
     }))
 }));
