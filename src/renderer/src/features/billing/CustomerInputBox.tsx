@@ -5,10 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 export const CustomerNameInput = () => {
+  const customerId = useBillingStore((state) => state.customerId);
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
   const customerName = useBillingStore((state) => state.customerName);
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
+  const isNewCustomer = useBillingStore((state) => state.isNewCustomer);
   const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [openDropdown, setOpenDropdown] = useState<boolean>(false);
@@ -61,7 +63,7 @@ export const CustomerNameInput = () => {
   }, [openDropdown, setOpenDropdown]);
 
   return (
-    <>
+    <div className="flex w-full flex-col gap-1">
       <div ref={inputRef} className="relative w-full">
         <label htmlFor="customer-name" className="text-foreground text-lg font-medium">
           Customer Name
@@ -70,7 +72,7 @@ export const CustomerNameInput = () => {
           placeholder="Enter Name"
           id="customer-name"
           value={customerName}
-          className="px-4 py-6 text-lg! font-medium focus:border-none"
+          className="mt-1 px-4 py-6 text-lg! font-medium focus:border-none"
           onClick={() => setOpenDropdown((prev) => !prev)}
           onChange={(e) => setCustomerName(e.target.value)}
         />
@@ -94,6 +96,9 @@ export const CustomerNameInput = () => {
           </div>
         )}
       </div>
-    </>
+      <span className="bg-success text-success-foreground self-start rounded-md px-2 font-medium">
+        {(!customerId || customerName === "") && "New Customer"}
+      </span>
+    </div>
   );
 };

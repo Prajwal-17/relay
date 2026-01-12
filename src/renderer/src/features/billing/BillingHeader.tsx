@@ -5,7 +5,6 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_HOUR } from "@/constants";
 import { useBillingStore } from "@/store/billingStore";
-import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
@@ -47,7 +46,6 @@ const BillingHeader = () => {
   const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
   const customerContact = useBillingStore((state) => state.customerContact);
   const setCustomerContact = useBillingStore((state) => state.setCustomerContact);
-  const isNewCustomer = useBillingStore((state) => state.isNewCustomer);
   const billingDate = useBillingStore((state) => state.billingDate);
   const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
@@ -56,7 +54,6 @@ const BillingHeader = () => {
   const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
-  const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
   const { type, id } = useParams<{ type: TransactionType; id?: string }>();
   const formattedType = type?.slice(0, -1) as TransactionType;
@@ -215,7 +212,7 @@ const BillingHeader = () => {
           </div>
         </div>
         <div className="flex max-w-4xl flex-col justify-between">
-          <div className="flex w-full flex-1 items-center gap-4">
+          <div className="flex w-full flex-1 items-start gap-4">
             <CustomerNameInput />
             <div className="w-full">
               <label htmlFor="customer-contact" className="text-foreground text-lg font-medium">
@@ -237,9 +234,6 @@ const BillingHeader = () => {
               </div>
             </div>
           </div>
-          <span className="bg-success text-success-foreground my-1 self-start rounded-md px-2 font-medium">
-            {isNewCustomer && !isDropdownOpen ? "New Customer" : null}
-          </span>
         </div>
       </div>
     </>
