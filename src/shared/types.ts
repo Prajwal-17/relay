@@ -38,6 +38,11 @@ export type Product = {
   createdAt?: string;
 };
 
+export type ProductWithDeletion = Product & {
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+};
+
 export type ProductHistory = {
   id: string;
   name: string;

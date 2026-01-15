@@ -183,7 +183,7 @@ const LineItemRow = memo(
             <>
               <div className="col-span-2 flex items-center justify-center py-1">
                 <span className="text-base font-semibold whitespace-nowrap">
-                  {item.checkedQty}/{item.quantity}
+                  {item.checkedQty}/{item.quantity || "0"}
                 </span>
               </div>
               <div className="col-span-2 flex items-center justify-center gap-1 py-1">

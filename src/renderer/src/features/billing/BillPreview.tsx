@@ -5,6 +5,7 @@ import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
+import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
 
@@ -91,7 +92,16 @@ const BillPreview = () => {
                 <div key={idx} className="grid grid-cols-12 py-1">
                   <div className="col-span-1">{idx + 1}.</div>
                   <div className="col-span-5">{item.productSnapshot}</div>
-                  <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>
+                  <div className="col-span-2 text-center tracking-tight">
+                    {item.quantity}
+                    {(item.checkedQty || 0) > 0 && (
+                      <span className="ml-1 inline-flex items-center">
+                        {item.checkedQty !== parseFloat(item.quantity || "0") &&
+                          `(${item.checkedQty})`}
+                        <Check size={12} className="ml-0.5" strokeWidth={4} />
+                      </span>
+                    )}
+                  </div>
                   <div className="col-span-2 text-right tracking-tight">{item.price}</div>
                   <div className="col-span-2 text-right tracking-tight">
                     {formatToRupees(item.totalPrice).toFixed(2)}

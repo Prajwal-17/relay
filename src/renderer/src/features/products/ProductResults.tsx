@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
+import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
@@ -71,7 +72,11 @@ export default function ProductResults() {
                           <div className="flex flex-1 items-center gap-6">
                             <div className="flex-1">
                               <div className="flex gap-2">
-                                <h3 className="text-xl font-semibold">{product.name}</h3>
+                                <h3
+                                  className={`text-xl font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : ""}`}
+                                >
+                                  {product.name}
+                                </h3>
                                 {product.weight !== null &&
                                   ignoredWeight.some((w) =>
                                     `${product.weight}+${product.unit}`.includes(w)
@@ -114,37 +119,45 @@ export default function ProductResults() {
                                 </span>
                               </div>
                             </div>
-                            <Badge
-                              variant={product.isDisabled ? "secondary" : "default"}
-                              className={
-                                product.isDisabled
-                                  ? "text-secondary-foreground bg-secondary"
-                                  : "bg-success/20 text-success"
-                              }
-                            >
-                              {product.isDisabled ? "Inactive" : "Active"}
-                            </Badge>
+                            {product.isDeleted ? (
+                              <div className="text-destructive bg-accent/80 rounded-lg px-2.5 py-1 text-sm font-semibold">
+                                Deleted on • {formatDateStr(product.deletedAt || undefined)}
+                              </div>
+                            ) : (
+                              <Badge
+                                variant={product.isDisabled ? "secondary" : "default"}
+                                className={
+                                  product.isDisabled
+                                    ? "text-secondary-foreground bg-secondary"
+                                    : "bg-success/20 text-success"
+                                }
+                              >
+                                {product.isDisabled ? "Inactive" : "Active"}
+                              </Badge>
+                            )}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setActionType("edit");
-                                setOpenProductDialog();
-                                setProductId(product.id);
-                                setFormDataState({
-                                  ...product,
-                                  mrp: product.mrp,
-                                  price: product.price.toString()
-                                });
-                              }}
-                              className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-opacity group-hover:opacity-100"
-                            >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </Button>
-                          </div>
+                          {!product.isDeleted && (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setActionType("edit");
+                                  setOpenProductDialog();
+                                  setProductId(product.id);
+                                  setFormDataState({
+                                    ...product,
+                                    mrp: product.mrp,
+                                    price: product.price.toString()
+                                  });
+                                }}
+                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-opacity group-hover:opacity-100"
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );

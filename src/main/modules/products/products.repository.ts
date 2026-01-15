@@ -1,5 +1,9 @@
 import { and, eq, like, sql } from "drizzle-orm";
-import type { CreateProductPayload, Product, UpdateProductPayload } from "../../../shared/types";
+import type {
+  CreateProductPayload,
+  ProductWithDeletion,
+  UpdateProductPayload
+} from "../../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
@@ -11,7 +15,7 @@ const findById = async (id: string) => {
 };
 
 const searchProducts = async (params: ProductSearchQuery) => {
-  let searchResult: Product[] | [];
+  let searchResult: ProductWithDeletion[] | [];
 
   if (params.searchTerms.length === 0) {
     searchResult = await db
@@ -25,7 +29,9 @@ const searchProducts = async (params: ProductSearchQuery) => {
         price: products.price,
         purchasePrice: products.purchasePrice,
         totalQuantitySold: products.totalQuantitySold,
-        isDisabled: products.isDisabled
+        isDisabled: products.isDisabled,
+        isDeleted: products.isDeleted,
+        deletedAt: products.deletedAt
       })
       .from(products)
       .where(params.whereClause)
@@ -55,7 +61,9 @@ const searchProducts = async (params: ProductSearchQuery) => {
       price: products.price,
       purchasePrice: products.purchasePrice,
       totalQuantitySold: products.totalQuantitySold,
-      isDisabled: products.isDisabled
+      isDisabled: products.isDisabled,
+      isDeleted: products.isDeleted,
+      deletedAt: products.deletedAt
     })
     .from(products)
     .where(and(params.whereClause, ...searchConditions))
