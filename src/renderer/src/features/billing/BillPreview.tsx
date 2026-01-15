@@ -3,7 +3,7 @@ import { useBillingStore } from "@/store/billingStore";
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
-import { formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -14,6 +14,7 @@ const BillPreview = () => {
 
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const transactionNo = useBillingStore((state) => state.transactionNo);
+  const billingDate = useBillingStore((state) => state.billingDate);
   const customerName = useBillingStore((state) => state.customerName);
   const { subtotal, grandTotal } = useTransaction();
 
@@ -53,7 +54,8 @@ const BillPreview = () => {
           <div className="mb-4 flex justify-between border-t border-b border-dashed border-black py-1 text-xs">
             <div>
               <div>
-                <span className="font-semibold">Date:</span> {formatDateObjToStringMedium(value)}
+                <span className="font-semibold">Date:</span>{" "}
+                {formatDateStrToISTDateStr(billingDate.toString()).fullDate}
               </div>
               <div>
                 <span className="font-semibold">
@@ -72,7 +74,7 @@ const BillPreview = () => {
             </div>
             <div>
               <span className="font-semibold">Time:</span>
-              {value.toLocaleTimeString("en-IN", { timeStyle: "short" })}
+              {formatDateStrToISTDateStr(billingDate.toString()).timePart}
             </div>
           </div>
           <div className="grid grid-cols-12 border-b border-dashed border-black pb-1 text-xs font-bold">
@@ -92,7 +94,7 @@ const BillPreview = () => {
                   <div className="col-span-2 text-center tracking-tight">{item.quantity}</div>
                   <div className="col-span-2 text-right tracking-tight">{item.price}</div>
                   <div className="col-span-2 text-right tracking-tight">
-                    {formatToRupees(item.totalPrice)}
+                    {formatToRupees(item.totalPrice).toFixed(2)}
                   </div>
                 </div>
               );
