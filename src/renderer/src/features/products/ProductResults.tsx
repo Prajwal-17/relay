@@ -143,13 +143,22 @@ export default function ProductResults() {
                                 size="sm"
                                 onClick={() => {
                                   setActionType("edit");
-                                  setOpenProductDialog();
                                   setProductId(product.id);
                                   setFormDataState({
-                                    ...product,
-                                    mrp: product.mrp,
-                                    price: product.price.toString()
+                                    name: product.name,
+                                    weight: product.weight,
+                                    unit: product.unit,
+                                    mrp: product.mrp
+                                      ? formatToRupees(product.mrp).toString()
+                                      : null,
+                                    price: formatToRupees(product.price).toString(),
+                                    purchasePrice: product.purchasePrice
+                                      ? formatToRupees(product.purchasePrice).toString()
+                                      : null,
+                                    isDisabled: product.isDisabled,
+                                    isDeleted: product.isDeleted
                                   });
+                                  setOpenProductDialog();
                                 }}
                                 className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-opacity group-hover:opacity-100"
                               >

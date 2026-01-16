@@ -70,6 +70,7 @@ export function ProductDialog() {
                     </Label>
                     <Input
                       id="name"
+                      type="text"
                       value={formDataState.name}
                       onChange={(e) => handleInputChange("name", e.target.value)}
                       placeholder="Enter product name"
@@ -86,6 +87,7 @@ export function ProductDialog() {
                         </Label>
                         <Input
                           id="weight"
+                          type="text"
                           value={formDataState.weight ?? ""}
                           onChange={(e) => handleInputChange("weight", e.target.value)}
                           placeholder="e.g., 500"
@@ -123,6 +125,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="purchasePrice"
+                        type="text"
                         value={formDataState.purchasePrice ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -143,6 +146,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="price"
+                        type="text"
                         value={formDataState.price ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
@@ -158,6 +162,7 @@ export function ProductDialog() {
                       </Label>
                       <Input
                         id="mrp"
+                        type="text"
                         value={formDataState.mrp ?? ""}
                         onChange={(e) => {
                           const value = e.target.value;
