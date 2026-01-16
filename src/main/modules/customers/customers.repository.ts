@@ -1,7 +1,8 @@
-import { eq, like } from "drizzle-orm";
+import { desc, eq, like } from "drizzle-orm";
 import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
 import { db } from "../../db/db";
 import { customers, estimates, sales } from "../../db/schema";
+import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
 
 const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
@@ -35,6 +36,28 @@ const getCustomers = async (searchTerm: string) => {
     .from(customers)
     .where(like(customers.name, searchQuery))
     .orderBy(customers.name);
+};
+
+const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
+  const offset = (params.pageNo - 1) * params.pageSize;
+
+  return await db.query.sales.findMany({
+    where: eq(sales.customerId, params.customerId),
+    orderBy: desc(sales.createdAt),
+    limit: 20,
+    offset: offset
+  });
+};
+
+const getEstimatesByCustomerId = async (params: EstimatesByCustomerParams) => {
+  const offset = (params.pageNo - 1) * params.pageSize;
+
+  return await db.query.estimates.findMany({
+    where: eq(estimates.customerId, params.customerId),
+    orderBy: desc(estimates.createdAt),
+    limit: 20,
+    offset: offset
+  });
 };
 
 const createCustomer = async (payload: CreateCustomerPayload) => {
@@ -77,6 +100,8 @@ const hasExistingTransactions = async (customerId: string) => {
 export const customersRepository = {
   findById,
   getCustomers,
+  getSalesByCustomerId,
+  getEstimatesByCustomerId,
   createCustomer,
   updateById,
   deleteById,

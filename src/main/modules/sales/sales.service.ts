@@ -4,7 +4,6 @@ import {
   TRANSACTION_TYPE,
   type ApiResponse,
   type Customer,
-  type CustomerTransaction,
   type PaginatedApiResponse,
   type TransactionListResponse,
   type TxnPayloadData,
@@ -16,7 +15,7 @@ import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
 import { customersRepository } from "../customers/customers.repository";
 import { salesRepository } from "./sales.repository";
-import type { FilterSalesParams, SalesByCustomerParams, UpdateSaleParams } from "./sales.types";
+import type { FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
   try {
@@ -58,37 +57,6 @@ const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWit
       status: "error",
       error: {
         message: (error as Error).message ?? "Something went wrong while fetching Sale"
-      }
-    };
-  }
-};
-
-const getSalesByCustomerId = async (
-  params: SalesByCustomerParams
-): Promise<PaginatedApiResponse<CustomerTransaction[] | []>> => {
-  try {
-    const sales = await salesRepository.getSalesByCustomerId(params);
-
-    const nextPageNo = sales.length === 20 ? params.pageNo + 1 : null;
-
-    return {
-      status: "success",
-      nextPageNo: nextPageNo,
-      data:
-        sales.length > 0
-          ? sales.map((s) => ({
-              type: TRANSACTION_TYPE.SALE,
-              transactionNo: s.invoiceNo,
-              ...s
-            }))
-          : []
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
       }
     };
   }
@@ -372,7 +340,6 @@ const deleteSaleById = async (id: string): Promise<ApiResponse<string>> => {
 
 export const salesService = {
   getSaleById,
-  getSalesByCustomerId,
   getNextInvoiceNo,
   filterSalesByDate,
   createSale,

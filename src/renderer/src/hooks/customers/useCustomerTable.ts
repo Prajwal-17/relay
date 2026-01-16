@@ -20,7 +20,7 @@ const fetchTransactions = async (
     let response;
     if (type === TRANSACTION_TYPE.SALE) {
       response = await fetch(
-        `http://localhost:3000/api/sales?customerId=${customerId}&pageNo=${pageNo}&pageSize=${pageSize}`,
+        `http://localhost:3000/api/customers/${customerId}/sales?pageNo=${pageNo}&pageSize=${pageSize}`,
         {
           method: "GET",
           headers: {
@@ -30,7 +30,7 @@ const fetchTransactions = async (
       );
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
       response = await fetch(
-        `http://localhost:3000/api/estimates?customerId=${customerId}&pageNo=${pageNo}&pageSize=${pageSize}`,
+        `http://localhost:3000/api/customers/${customerId}/estimates?pageNo=${pageNo}&pageSize=${pageSize}`,
         {
           method: "GET",
           headers: {

@@ -1,12 +1,7 @@
 import { and, count, desc, eq, gte, lte, notInArray, sql, type SQL, sum } from "drizzle-orm";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
-import type {
-  CreateSaleParams,
-  FilterSalesParams,
-  SalesByCustomerParams,
-  UpdateSaleParams
-} from "./sales.types";
+import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
   return await db.query.sales.findFirst({
@@ -15,17 +10,6 @@ const getSaleById = async (id: string) => {
       customer: true,
       saleItems: true
     }
-  });
-};
-
-const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
-  const offset = (params.pageNo - 1) * params.pageSize;
-
-  return await db.query.sales.findMany({
-    where: eq(sales.customerId, params.customerId),
-    orderBy: desc(sales.createdAt),
-    limit: 20,
-    offset: offset
   });
 };
 
@@ -321,7 +305,6 @@ const convertSaleToEstimate = async (id: string) => {
 
 export const salesRepository = {
   getSaleById,
-  getSalesByCustomerId,
   getLatestInvoiceNo,
   filterSalesByDate,
   createSale,

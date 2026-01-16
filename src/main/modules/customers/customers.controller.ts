@@ -3,6 +3,7 @@ import {
   createCustomerSchema,
   dirtyFieldsCustomerSchema
 } from "../../../shared/schemas/customers.schema";
+import { getEstimatesByCustomerSchema, getSalesByCustomerSchema } from "./customers.schema";
 import { customersService } from "./customers.service";
 
 export const customersController = new Hono();
@@ -63,6 +64,58 @@ customersController.post("/", async (c) => {
       { status: "error", error: { message: (error as Error).message ?? "Something went wrong" } },
       400
     );
+  }
+});
+
+// get Sales wrt to customer.id
+customersController.get("/:id/sales", async (c) => {
+  try {
+    const rawParams = {
+      customerId: c.req.param("id"),
+      pageNo: c.req.query("pageNo"),
+      pageSize: c.req.query("pageSize")
+    };
+
+    const parseResult = getSalesByCustomerSchema.safeParse(rawParams);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await customersService.getSalesByCustomerId(parseResult.data);
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// get Estimates wrt to customer.id
+customersController.get("/:id/estimates", async (c) => {
+  try {
+    const rawParams = {
+      customerId: c.req.param("id"),
+      pageNo: c.req.query("pageNo"),
+      pageSize: c.req.query("pageSize")
+    };
+
+    const parseResult = getEstimatesByCustomerSchema.safeParse(rawParams);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await customersService.getEstimatesByCustomerId(parseResult.data);
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
   }
 });
 
