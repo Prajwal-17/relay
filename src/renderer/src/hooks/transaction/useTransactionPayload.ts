@@ -13,7 +13,6 @@ const useTransactionPayload = () => {
   const billingDate = useBillingStore((state) => state.billingDate);
   const customerId = useBillingStore((state) => state.customerId);
   const customerName = useBillingStore((state) => state.customerName);
-  const customerContact = useBillingStore((state) => state.customerContact);
 
   // Line items store state
   const lineItems = useLineItemsStore((state) => state.lineItems);
@@ -49,7 +48,6 @@ const useTransactionPayload = () => {
           transactionType: billingType,
           customerId: customerId,
           customerName: customerName,
-          customerContact: customerContact === "" ? null : customerContact,
           isPaid: billingType === TRANSACTION_TYPE.SALE,
           items: normalizedLineItems,
           createdAt:
@@ -66,7 +64,6 @@ const useTransactionPayload = () => {
     billingDate,
     customerId,
     customerName,
-    customerContact,
     normalizedLineItems
   ]);
 

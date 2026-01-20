@@ -14,8 +14,6 @@ type BillingStore = {
   setCustomerId: (id: string | null) => void;
   customerName: string;
   setCustomerName: (newCustomerName: string) => void;
-  customerContact: string | null;
-  setCustomerContact: (newCustomerContact: string | null) => void;
   isNewCustomer: boolean;
   setIsNewCustomer: (value: boolean) => void;
   status: BillStatus;
@@ -48,9 +46,6 @@ export const useBillingStore = create<BillingStore>((set) => ({
   customerName: "",
   setCustomerName: (newCustomerName) => set(() => ({ customerName: newCustomerName })),
 
-  customerContact: null,
-  setCustomerContact: (newCustomerContact) => set({ customerContact: newCustomerContact }),
-
   isNewCustomer: true,
   setIsNewCustomer: (value) =>
     set(() => ({
@@ -76,7 +71,6 @@ export const useBillingStore = create<BillingStore>((set) => ({
       billingDate: new Date(),
       customerId: null,
       customerName: "",
-      customerContact: null,
       isNewCustomer: true,
       status: BILLSTATUS.IDLE
     }))

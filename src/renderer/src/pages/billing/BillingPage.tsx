@@ -7,6 +7,7 @@ import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import { useAutoSave } from "@/hooks/transaction/useAutoSave";
 import useReset from "@/hooks/transaction/useBillingReset";
 import useLoadTransactionDetails from "@/hooks/transaction/useLoadTransactionDetails";
+import useTransactionNo from "@/hooks/transaction/useTransactionNo";
 import { useBillingStore } from "@/store/billingStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { useEffect } from "react";
@@ -18,6 +19,8 @@ const BillingPage = () => {
 
   // synchronous state reset
   useReset(formattedType, id);
+
+  useTransactionNo(formattedType, id);
 
   const setBillingType = useBillingStore((state) => state.setBillingType);
 
@@ -31,7 +34,6 @@ const BillingPage = () => {
     return () => {
       localStorage.setItem("bill-preview-date", new Date().toISOString());
     };
-    // // eslint-disable-next-line
   }, [type, id]);
 
   const { isLoading } = useLoadTransactionDetails(formattedType as TransactionType, id);

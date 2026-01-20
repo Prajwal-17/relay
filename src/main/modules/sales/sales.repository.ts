@@ -113,6 +113,7 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
     // update sale
     tx.update(sales)
       .set({
+        // customerId
         grandTotal: payload.grandTotal,
         isPaid: payload.isPaid,
         totalQuantity: payload.totalQuantity,

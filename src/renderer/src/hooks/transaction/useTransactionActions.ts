@@ -91,7 +91,6 @@ export const useTransactionActions = (transactionType: TransactionType) => {
   const transactionNo = useBillingStore((state) => state.transactionNo);
   const customerId = useBillingStore((state) => state.customerId);
   const customerName = useBillingStore((state) => state.customerName);
-  const customerContact = useBillingStore((state) => state.customerContact);
   const billingId = useBillingStore((state) => state.billingId);
   const billingDate = useBillingStore((state) => state.billingDate);
 
@@ -115,7 +114,6 @@ export const useTransactionActions = (transactionType: TransactionType) => {
     transactionType,
     customerId,
     customerName,
-    customerContact,
     isPaid: transactionType === TRANSACTION_TYPE.SALE ? true : false,
     items: lineItems.filter((item) => {
       return item.productId !== null && item.name !== "" && parseFloat(item.price) !== 0;
