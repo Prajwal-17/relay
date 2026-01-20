@@ -4,6 +4,7 @@ import { normalizeLineItems, normalizeOriginalLineItems, stripLineItems } from "
 import { TRANSACTION_TYPE } from "@shared/types";
 import deepEqual from "fast-deep-equal";
 import { useMemo } from "react";
+import useDebounce from "../useDebounce";
 
 const useTransactionPayload = () => {
   const billingId = useBillingStore((state) => state.billingId);
@@ -23,33 +24,43 @@ const useTransactionPayload = () => {
     [originalLineItems]
   );
 
+  // debounce building payload every time
+  const dependencyState = useMemo(
+    () => ({
+      normalizedLineItems,
+      customerId,
+      billingDate
+    }),
+    [normalizedLineItems, customerId, billingDate]
+  );
+
+  const debouncedState = useDebounce(dependencyState, 1000);
+
   const { originalCleaned, currentCleaned } = useMemo(
-    () => stripLineItems(normalizedOriginalLineItems, normalizedLineItems),
-    [normalizedLineItems, normalizedOriginalLineItems]
+    () => stripLineItems(normalizedOriginalLineItems, debouncedState.normalizedLineItems),
+    [debouncedState.normalizedLineItems, normalizedOriginalLineItems]
   );
 
   const isDirty = useMemo(() => {
     const isLineItemsDirty = !deepEqual(originalCleaned, currentCleaned);
-
-    const isCustomerDirty = customerId !== originalCustomerId;
-
+    const isCustomerDirty = debouncedState.customerId !== originalCustomerId;
     const isBillingDateDirty =
-      billingDate instanceof Date && originalBillingDate instanceof Date
-        ? billingDate.getTime() !== originalBillingDate.getTime()
-        : billingDate !== originalBillingDate;
+      debouncedState.billingDate instanceof Date && originalBillingDate instanceof Date
+        ? debouncedState.billingDate.getTime() !== originalBillingDate.getTime()
+        : debouncedState.billingDate !== originalBillingDate;
 
     return isLineItemsDirty || isCustomerDirty || isBillingDateDirty;
   }, [
     originalCleaned,
     currentCleaned,
-    customerId,
+    debouncedState.customerId,
     originalCustomerId,
-    billingDate,
+    debouncedState.billingDate,
     originalBillingDate
   ]);
 
   const payload = useMemo(() => {
-    if (!transactionNo || !customerId) return null;
+    if (!transactionNo || !debouncedState.customerId) return null;
 
     return {
       billingType: billingType,
@@ -59,17 +70,24 @@ const useTransactionPayload = () => {
         data: {
           transactionNo: transactionNo,
           transactionType: billingType,
-          customerId: customerId,
+          customerId: debouncedState.customerId,
           isPaid: billingType === TRANSACTION_TYPE.SALE,
-          items: normalizedLineItems,
+          items: debouncedState.normalizedLineItems,
           createdAt:
-            billingDate instanceof Date
-              ? billingDate.toISOString()
-              : new Date(billingDate).toISOString()
+            debouncedState.billingDate instanceof Date
+              ? debouncedState.billingDate.toISOString()
+              : new Date(debouncedState.billingDate).toISOString()
         }
       }
     };
-  }, [billingId, billingType, transactionNo, billingDate, customerId, normalizedLineItems]);
+  }, [
+    billingId,
+    billingType,
+    transactionNo,
+    debouncedState.billingDate,
+    debouncedState.customerId,
+    debouncedState.normalizedLineItems
+  ]);
 
   return {
     isDirty,
