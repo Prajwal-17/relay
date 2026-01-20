@@ -51,13 +51,13 @@ const filterSalesByDate = async (
   };
 };
 
-const createSale = async (customerId, payload: CreateSaleParams) => {
+const createSale = async (payload: CreateSaleParams) => {
   return db.transaction((tx) => {
     const newSale = tx
       .insert(sales)
       .values({
         invoiceNo: Number(payload.transactionNo),
-        customerId: customerId,
+        customerId: payload.customerId,
         grandTotal: payload.grandTotal,
         totalQuantity: payload.totalQuantity,
         isPaid: payload.isPaid,
@@ -113,7 +113,7 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
     // update sale
     tx.update(sales)
       .set({
-        // customerId
+        customerId: payload.customerId,
         grandTotal: payload.grandTotal,
         isPaid: payload.isPaid,
         totalQuantity: payload.totalQuantity,

@@ -6,8 +6,8 @@ import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import { useAutoSave } from "@/hooks/transaction/useAutoSave";
 import useReset from "@/hooks/transaction/useBillingReset";
+import useInitialBillingData from "@/hooks/transaction/useInitialBillingData";
 import useLoadTransactionDetails from "@/hooks/transaction/useLoadTransactionDetails";
-import useTransactionNo from "@/hooks/transaction/useTransactionNo";
 import { useBillingStore } from "@/store/billingStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { useEffect } from "react";
@@ -20,7 +20,7 @@ const BillingPage = () => {
   // synchronous state reset
   useReset(formattedType, id);
 
-  useTransactionNo(formattedType, id);
+  useInitialBillingData(formattedType, id);
 
   const setBillingType = useBillingStore((state) => state.setBillingType);
 

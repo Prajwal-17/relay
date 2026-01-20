@@ -23,6 +23,19 @@ customersController.get("/", async (c) => {
   }
 });
 
+// get DEFAULT customer
+customersController.get("/default", async (c) => {
+  try {
+    const result = await customersService.getDefaultCustomer();
+
+    const status = result.status === "success" ? 201 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
 // get customer by id
 customersController.get("/:id", async (c) => {
   try {

@@ -3,7 +3,6 @@ import {
   SortOption,
   TRANSACTION_TYPE,
   type ApiResponse,
-  type Customer,
   type PaginatedApiResponse,
   type TransactionListResponse,
   type TxnPayloadData,
@@ -11,9 +10,7 @@ import {
   type UnifiedTransctionWithItems,
   type UpdateSaleResponse
 } from "../../../shared/types";
-import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
-import { customersRepository } from "../customers/customers.repository";
 import { salesRepository } from "./sales.repository";
 import type { FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
@@ -158,32 +155,6 @@ const filterSalesByDate = async (
 
 const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: string }>> => {
   try {
-    // customer validation
-    let customer: Customer | undefined;
-    if (!payload.customerName || payload.customerName.trim() === "") {
-      const [defaultCustomer] = await customersRepository.getCustomers("DEFAULT");
-      customer = defaultCustomer;
-    } else if (payload.customerId && payload.customerName) {
-      const existingCustomer = await customersRepository.findById(payload.customerId);
-      customer = existingCustomer;
-    } else if (!payload.customerId && payload.customerName) {
-      const [existingCustomer] = await customersRepository.getCustomers(payload.customerName);
-
-      if (existingCustomer) {
-        customer = existingCustomer;
-      } else {
-        const newCustomer = await customersRepository.createCustomer({
-          name: payload.customerName,
-          contact: payload.customerContact ?? null,
-          customerType: CustomerRole.CASH
-        });
-        customer = newCustomer;
-      }
-    }
-
-    if (!customer) {
-      throw new Error("Something went wrong.Could not find customer.");
-    }
     const finalItems = payload.items.map((item) => {
       const rawTotal = item.price * item.quantity;
       return {
@@ -207,7 +178,7 @@ const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: st
       totalQuantity: totalQuantity
     };
 
-    const newSale = await salesRepository.createSale(customer.id, finalPayload);
+    const newSale = await salesRepository.createSale(finalPayload);
 
     return {
       status: "success",
@@ -231,8 +202,6 @@ const updateSale = async (
   payload: TxnPayloadData
 ): Promise<ApiResponse<UpdateSaleResponse>> => {
   try {
-    // TODO - customer validation
-
     const finalItems = payload.items.map((item) => {
       const rawTotal = item.price * item.quantity;
       return {

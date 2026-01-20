@@ -57,6 +57,34 @@ const getCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>
   }
 };
 
+const getDefaultCustomer = async (): Promise<ApiResponse<Customer>> => {
+  try {
+    const customerResult = await customersRepository.getDefaultCustomer();
+
+    if (!customerResult) {
+      return {
+        status: "error",
+        error: {
+          message: "Could not find DEFAULT customer"
+        }
+      };
+    }
+
+    return {
+      status: "success",
+      data: customerResult
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while fetching customer"
+      }
+    };
+  }
+};
+
 const getSalesByCustomerId = async (
   params: SalesByCustomerParams
 ): Promise<PaginatedApiResponse<CustomerTransaction[] | []>> => {
@@ -211,6 +239,7 @@ const deleteCustomerById = async (id: string): Promise<ApiResponse<string>> => {
 export const customersService = {
   findById,
   getCustomers,
+  getDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,
   createCustomer,

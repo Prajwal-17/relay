@@ -38,6 +38,10 @@ const getCustomers = async (searchTerm: string) => {
     .orderBy(customers.name);
 };
 
+const getDefaultCustomer = async () => {
+  return db.select().from(customers).where(like(customers.name, "DEFAULT")).get();
+};
+
 const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
   const offset = (params.pageNo - 1) * params.pageSize;
 
@@ -100,6 +104,7 @@ const hasExistingTransactions = async (customerId: string) => {
 export const customersRepository = {
   findById,
   getCustomers,
+  getDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,
   createCustomer,

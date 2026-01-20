@@ -21,17 +21,7 @@ export const lineItemSchema = z.object({
 export const payloadDataSchema = z.object({
   transactionNo: z.number().positive(),
   transactionType: z.enum(TRANSACTION_TYPE),
-  customerId: z.uuidv4().nullable(),
-  customerName: z.string().trim().default(""),
-  customerContact: z
-    .string()
-    .refine((val) => !isNaN(Number(val)), {
-      message: "Contact must contain only numbers"
-    })
-    .length(10, { error: "Contact must contain 10 digits" })
-    .nullable()
-    .default(null)
-    .optional(),
+  customerId: z.uuidv4(),
   isPaid: z.boolean(),
   items: z.array(lineItemSchema),
   createdAt: z.iso.datetime().optional()
