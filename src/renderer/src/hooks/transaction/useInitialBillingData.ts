@@ -49,6 +49,7 @@ const getDefaultCustomer = async (): Promise<Customer> => {
 const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
   const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
+  const setOriginalCustomerId = useBillingStore((state) => state.setOriginalCustomerId);
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
   const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
 
@@ -89,9 +90,17 @@ const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
       return;
     }
     setCustomerId(customerData.id);
+    setOriginalCustomerId(customerData.id);
     setCustomerName(customerData.name);
     setIsNewCustomer(false);
-  }, [customerData, setCustomerId, setCustomerName, setIsNewCustomer, isCustomerFetched]);
+  }, [
+    customerData,
+    setCustomerId,
+    setOriginalCustomerId,
+    setCustomerName,
+    setIsNewCustomer,
+    isCustomerFetched
+  ]);
 
   useEffect(() => {
     if (isTransactionError) {

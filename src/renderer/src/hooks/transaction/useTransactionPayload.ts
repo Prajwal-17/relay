@@ -6,15 +6,13 @@ import deepEqual from "fast-deep-equal";
 import { useMemo } from "react";
 
 const useTransactionPayload = () => {
-  // Billing store state
   const billingId = useBillingStore((state) => state.billingId);
   const billingType = useBillingStore((state) => state.billingType);
   const transactionNo = useBillingStore((state) => state.transactionNo);
   const billingDate = useBillingStore((state) => state.billingDate);
+  const originalBillingDate = useBillingStore((state) => state.originalBillingDate);
   const customerId = useBillingStore((state) => state.customerId);
-  const customerName = useBillingStore((state) => state.customerName);
-
-  // Line items store state
+  const originalCustomerId = useBillingStore((state) => state.originalCustomerId);
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const originalLineItems = useLineItemsStore((state) => state.originalLineItems);
 
@@ -30,13 +28,28 @@ const useTransactionPayload = () => {
     [normalizedLineItems, normalizedOriginalLineItems]
   );
 
-  const isDirty = useMemo(
-    () => !deepEqual(originalCleaned, currentCleaned),
-    [originalCleaned, currentCleaned]
-  );
+  const isDirty = useMemo(() => {
+    const isLineItemsDirty = !deepEqual(originalCleaned, currentCleaned);
+
+    const isCustomerDirty = customerId !== originalCustomerId;
+
+    const isBillingDateDirty =
+      billingDate instanceof Date && originalBillingDate instanceof Date
+        ? billingDate.getTime() !== originalBillingDate.getTime()
+        : billingDate !== originalBillingDate;
+
+    return isLineItemsDirty || isCustomerDirty || isBillingDateDirty;
+  }, [
+    originalCleaned,
+    currentCleaned,
+    customerId,
+    originalCustomerId,
+    billingDate,
+    originalBillingDate
+  ]);
 
   const payload = useMemo(() => {
-    if (!transactionNo) return null;
+    if (!transactionNo || !customerId) return null;
 
     return {
       billingType: billingType,
@@ -47,7 +60,6 @@ const useTransactionPayload = () => {
           transactionNo: transactionNo,
           transactionType: billingType,
           customerId: customerId,
-          customerName: customerName,
           isPaid: billingType === TRANSACTION_TYPE.SALE,
           items: normalizedLineItems,
           createdAt:
@@ -57,15 +69,7 @@ const useTransactionPayload = () => {
         }
       }
     };
-  }, [
-    billingId,
-    billingType,
-    transactionNo,
-    billingDate,
-    customerId,
-    customerName,
-    normalizedLineItems
-  ]);
+  }, [billingId, billingType, transactionNo, billingDate, customerId, normalizedLineItems]);
 
   return {
     isDirty,

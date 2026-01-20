@@ -10,8 +10,12 @@ type BillingStore = {
   setTransactionNo: (newTransactionNo: number | null) => void;
   billingDate: Date;
   setBillingDate: (newDate: Date) => void;
+  originalBillingDate: Date;
+  setOriginalBillingDate: (newDate: Date) => void;
   customerId: string | null;
   setCustomerId: (id: string | null) => void;
+  originalCustomerId: string | null;
+  setOriginalCustomerId: (id: string | null) => void;
   customerName: string;
   setCustomerName: (newCustomerName: string) => void;
   isNewCustomer: boolean;
@@ -43,6 +47,12 @@ export const useBillingStore = create<BillingStore>((set) => ({
       customerId: id
     })),
 
+  originalCustomerId: null,
+  setOriginalCustomerId: (id) =>
+    set(() => ({
+      originalCustomerId: id
+    })),
+
   customerName: "",
   setCustomerName: (newCustomerName) => set(() => ({ customerName: newCustomerName })),
 
@@ -58,6 +68,12 @@ export const useBillingStore = create<BillingStore>((set) => ({
       billingDate: newDate
     })),
 
+  originalBillingDate: new Date(),
+  setOriginalBillingDate: (newDate) =>
+    set(() => ({
+      originalBillingDate: newDate
+    })),
+
   status: BILLSTATUS.IDLE,
   setStatus: (newStatus) =>
     set(() => ({
@@ -69,7 +85,9 @@ export const useBillingStore = create<BillingStore>((set) => ({
       billingId: null,
       transactionNo: null,
       billingDate: new Date(),
+      originalBillingDate: new Date(),
       customerId: null,
+      originalCustomerId: null,
       customerName: "",
       isNewCustomer: true,
       status: BILLSTATUS.IDLE

@@ -117,7 +117,8 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
         grandTotal: payload.grandTotal,
         isPaid: payload.isPaid,
         totalQuantity: payload.totalQuantity,
-        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ','now'))`
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ','now'))`,
+        createdAt: payload.createdAt
       })
       .where(eq(sales.id, saleId))
       .run();
