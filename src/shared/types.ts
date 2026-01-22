@@ -366,6 +366,10 @@ export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & 
   items: UpdateResponseItem[];
 };
 
+export type UpdateEstimateResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
+  items: UpdateResponseItem[];
+};
+
 export const BILLSTATUS = {
   IDLE: "idle",
   SAVING: "saving",
