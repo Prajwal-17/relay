@@ -1,9 +1,9 @@
-import { useAutoSave } from "@/hooks/transaction/useAutoSave";
 import { cn } from "@/lib/utils";
+import { useBillingStore } from "@/store/billingStore";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 export const BillingSaveStatus = () => {
-  const { status } = useAutoSave();
+  const status = useBillingStore((state) => state.status);
 
   const currentStatus = status === "idle" ? "saved" : status;
 

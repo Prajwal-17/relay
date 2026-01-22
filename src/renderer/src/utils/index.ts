@@ -1,6 +1,16 @@
 import type { LineItem } from "@/store/lineItemsStore";
-import { UPDATE_QTY_ACTION, type UpdateQtyAction } from "@shared/types";
+import {
+  TRANSACTION_TYPE,
+  UPDATE_QTY_ACTION,
+  type TransactionType,
+  type UpdateQtyAction
+} from "@shared/types";
 import { formatToPaisa } from "@shared/utils/utils";
+
+type NormalizedLineItem = Omit<LineItem, "price" | "quantity"> & {
+  price: number;
+  quantity: number;
+};
 
 export const updateCheckedQuantity = (
   action: UpdateQtyAction,
@@ -66,7 +76,7 @@ export const filterValidLineItems = (items: LineItem[]) => {
  * 2. Convert `price` string to (Paisa).
  * 3. Transform `price` & `quantity` from string to number.
  */
-export function normalizeLineItems(lineItems: LineItem[]) {
+export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] {
   const filteredLineitems = filterValidLineItems(lineItems);
 
   return filteredLineitems.map((item) => ({
@@ -103,5 +113,39 @@ export function stripLineItems(originalLineItems: any[], currentLineItems: any[]
   return {
     originalCleaned: stripedOriginal,
     currentCleaned: stripedCurrent
+  };
+}
+
+export function buildTransactionPayload({
+  billingType,
+  billingId,
+  isAutoSave,
+  transactionNo,
+  customerId,
+  items,
+  createdAt
+}: {
+  billingType: TransactionType;
+  billingId: string | null;
+  isAutoSave: boolean;
+  transactionNo: number | null;
+  customerId: string | null;
+  items: NormalizedLineItem[];
+  createdAt: string;
+}) {
+  return {
+    billingType: billingType,
+    id: billingId,
+    payload: {
+      isAutoSave: isAutoSave,
+      data: {
+        transactionNo: transactionNo,
+        transactionType: billingType,
+        customerId,
+        isPaid: billingType === TRANSACTION_TYPE.SALE,
+        items,
+        createdAt
+      }
+    }
   };
 }

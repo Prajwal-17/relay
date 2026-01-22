@@ -4,7 +4,6 @@ import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
-import { useAutoSave } from "@/hooks/transaction/useAutoSave";
 import useReset from "@/hooks/transaction/useBillingReset";
 import useInitialBillingData from "@/hooks/transaction/useInitialBillingData";
 import useLoadTransactionDetails from "@/hooks/transaction/useLoadTransactionDetails";
@@ -37,7 +36,6 @@ const BillingPage = () => {
   }, [type, id]);
 
   const { isLoading } = useLoadTransactionDetails(formattedType as TransactionType, id);
-  useAutoSave();
 
   if (isLoading) {
     return <BillingSkeleton />;
