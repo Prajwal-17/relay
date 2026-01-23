@@ -17,7 +17,7 @@ const findById = async (id: string) => {
 const searchProducts = async (params: ProductSearchQuery) => {
   let searchResult: ProductWithDeletion[] | [];
 
-  if (params.searchTerms.length === 0) {
+  if (params.searchTerm === "") {
     searchResult = await db
       .select({
         id: products.id,
@@ -39,13 +39,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
       .limit(params.limit)
       .offset(params.offset);
   }
-  const combinedSearchField = sql<string>`lower(${products.name} || ' ' || COALESCE(${products.weight}, '') || ' ' || COALESCE(${products.unit}, '') || ' ' || COALESCE(${products.mrp}, '') || ' ' || ${products.price})`;
-
-  const searchConditions = params.searchTerms.map((term) => like(combinedSearchField, `%${term}%`));
 
   const priorityOrder = sql`
           CASE
-            WHEN lower(${products.name}) LIKE ${params.searchTerms[0] + "%"} THEN 1
+            WHEN lower(${products.name}) LIKE ${params.searchTerm + "%"} THEN 1
             ELSE 2
           END
         `;
@@ -66,8 +63,8 @@ const searchProducts = async (params: ProductSearchQuery) => {
       deletedAt: products.deletedAt
     })
     .from(products)
-    .where(and(params.whereClause, ...searchConditions))
-    .orderBy(priorityOrder, products.name)
+    .where(and(params.whereClause, like(products.productSnapshot, `%${params.searchTerm}%`)))
+    .orderBy(priorityOrder, products.productSnapshot)
     .limit(params.limit)
     .offset(params.offset);
 

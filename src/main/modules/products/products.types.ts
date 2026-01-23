@@ -9,7 +9,7 @@ export type ProductSearchParams = {
 };
 
 export type ProductSearchQuery = {
-  searchTerms: string[];
+  searchTerm: string;
   whereClause: SQL | undefined;
   limit: number;
   offset: number;
