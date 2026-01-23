@@ -154,7 +154,16 @@ const useTransactionPersistance = () => {
             await handlePrint();
           }
         } else if (action === "saveAsPDF") {
-          // save a PDF
+          if (!billingId) {
+            toast.error("Bill is Not Saved");
+            return;
+          }
+          const response = await window.shareApi.saveAsPDF(billingId, billingType);
+          if (response.status === "success") {
+            toast.success("Receipt successfully saved as a PDF.");
+          } else {
+            toast.error(response.error.message || "Failed to save PDF");
+          }
         } else if (action === "save") {
           navigate("/");
         }

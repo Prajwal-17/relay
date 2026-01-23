@@ -391,5 +391,5 @@ export interface DashboardApi {
 }
 
 export interface ShareApi {
-  saveAsPDF: (transactionId: string, type: "sales" | "estimates") => Promise<ApiResponse<string>>;
+  saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
 }

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { DashboardApi, ShareApi } from "../shared/types";
+import type { DashboardApi, ShareApi, TransactionType } from "../shared/types";
 
 const dashboardApi: DashboardApi = {
   getMetricsSummary: () => ipcRenderer.invoke("dashboardApi:getMetricsSummary"),
@@ -9,7 +9,7 @@ const dashboardApi: DashboardApi = {
 };
 
 const shareApi: ShareApi = {
-  saveAsPDF: (transactionId: string, type: "sales" | "estimates") =>
+  saveAsPDF: (transactionId: string, type: TransactionType) =>
     ipcRenderer.invoke("shareApi:saveAsPDF", transactionId, type)
 };
 
