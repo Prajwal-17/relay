@@ -29,7 +29,6 @@ const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWit
 
     const items: UnifiedTransactionItem[] = sale.saleItems.map((item) => ({
       ...item,
-      parentId: item.saleId,
       checkedQty: item.checkedQty ?? 0
     }));
 

@@ -3,7 +3,6 @@ import { TRANSACTION_TYPE } from "../types";
 
 export const lineItemSchema = z.object({
   id: z.uuidv4().nullable().default(null),
-  parentId: z.union([z.string(), z.uuidv4()]).default(""),
   rowId: z.uuidv4(),
   productId: z.uuidv4().nullable(),
   name: z.string().trim(),

@@ -73,7 +73,6 @@ export type UnifiedTransaction = {
 
 export type UnifiedTransactionItem = {
   id: string;
-  parentId: string;
   productId: string | null;
   name: string;
   productSnapshot: string;

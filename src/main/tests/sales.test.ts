@@ -55,12 +55,10 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
-      customerName: initialData.customer.name,
       isPaid: true,
       items: [
         {
           ...initialData.saleItem1,
-          parentId: initialData.sale.id,
           rowId: rowId1,
           mrp: 8000,
           price: 7000,
@@ -73,7 +71,6 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         },
         {
           ...initialData.saleItem2,
-          parentId: initialData.sale.id,
           rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
@@ -127,12 +124,10 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
-      customerName: initialData.customer.name,
       isPaid: true,
       items: [
         {
           ...initialData.saleItem1,
-          parentId: initialData.sale.id,
           productId: null,
           name: "Test Product 1",
           productSnapshot: "Test Product 1 2Kg Mrp=123Rs",
@@ -148,7 +143,6 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         },
         {
           ...initialData.saleItem2,
-          parentId: initialData.sale.id,
           rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
@@ -206,12 +200,10 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
-      customerName: initialData.customer.name,
       isPaid: true,
       items: [
         {
           ...initialData.saleItem1,
-          parentId: initialData.sale.id,
           rowId: rowId1,
           quantity: 6,
           checkedQty: 3,
@@ -219,7 +211,6 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         },
         {
           ...initialData.saleItem2,
-          parentId: initialData.sale.id,
           rowId: rowId2,
           quantity: 4,
           checkedQty: 4,
@@ -227,7 +218,6 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         },
         {
           id: null,
-          parentId: initialData.sale.id,
           rowId: rowId3,
           productId: initialData.product1.id,
           name: "Amul Gold Milk 1L",
@@ -287,7 +277,6 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
-      customerName: initialData.customer.name,
       isPaid: true,
       items: []
     };
@@ -317,12 +306,10 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
-      customerName: initialData.customer.name,
       isPaid: true,
       items: [
         {
           ...initialData.saleItem1,
-          parentId: initialData.sale.id,
           rowId: rowId1,
           quantity: 6,
           checkedQty: 3,

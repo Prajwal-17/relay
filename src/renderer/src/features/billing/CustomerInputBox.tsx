@@ -103,7 +103,7 @@ export const CustomerNameInput = () => {
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-[380px] p-0" align="start">
+        <PopoverContent className="z-40 w-[380px] p-0" align="start">
           <Command shouldFilter={false}>
             <CommandInput
               placeholder="Search customer..."
@@ -145,7 +145,7 @@ export const CustomerNameInput = () => {
                     className="w-full justify-center text-lg font-medium"
                   >
                     <Plus className="mr-2 h-5 w-5" />
-                    Create "{query}"
+                    Create &quot;{query}&quot;
                   </Button>
                 </div>
               )}

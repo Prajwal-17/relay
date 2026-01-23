@@ -3,11 +3,9 @@ import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@share
 import { formatToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
-import { useBillingStore } from "./billingStore";
 
 export type LineItem = {
   id: string | null; // saleItem.id | estimateItem.id
-  parentId: string; // sale.id | estimate.id,
   rowId: string;
   productId: string | null;
   name: string;
@@ -42,7 +40,6 @@ type LineItemsStore = {
 function initialLineItem() {
   const lineItem: LineItem = {
     id: null,
-    parentId: useBillingStore.getState().billingId ?? "",
     rowId: uuidv4(),
     productId: null,
     name: "",
@@ -68,7 +65,6 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
 
   const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
     id: item.id,
-    parentId: item.parentId,
     rowId: uuidv4(),
     productId: item.productId,
     name: item.name,
@@ -153,7 +149,6 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
 
       const updatedItem: LineItem = {
         id: null,
-        parentId: useBillingStore.getState().billingId ?? "",
         rowId: uuidv4(),
         productId: newItem.id,
         name: newItem.name,
@@ -182,16 +177,33 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       const updatedLineItems = state.lineItems.map((item: LineItem) => {
         if (rowId !== item.rowId) return item;
 
+        let updatedItem = item;
         let finalValue: any;
+        let isInventoryItem: boolean = item.isInventoryItem;
         if (field === "price" || field === "quantity") {
           finalValue = value;
+          isInventoryItem = true;
         } else {
           finalValue = value;
         }
 
+        if (field === "productSnapshot") {
+          updatedItem = {
+            ...item,
+            productId: null,
+            name: "",
+            weight: null,
+            unit: null,
+            mrp: null,
+            purchasePrice: null
+          };
+          isInventoryItem = false;
+        }
+
         const draftItem = {
-          ...item,
-          [field]: finalValue
+          ...updatedItem,
+          [field]: finalValue,
+          isInventoryItem
         };
 
         if (["quantity", "price"].includes(field)) {
@@ -214,14 +226,13 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
         const current = responseItems.find((item) => item.rowId === lineItem.rowId);
 
         if (!current) return lineItem;
-        if (current.id === lineItem.id && current.parentId === lineItem.parentId) {
+        if (current.id === lineItem.id) {
           return lineItem;
         }
 
         return {
           ...lineItem,
-          id: current?.id,
-          parentId: current?.parentId
+          id: current?.id
         };
       });
 

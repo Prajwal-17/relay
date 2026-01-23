@@ -29,7 +29,6 @@ const getEstimateById = async (id: string): Promise<ApiResponse<UnifiedTransctio
 
     const items: UnifiedTransactionItem[] = estimate.estimateItems.map((item) => ({
       ...item,
-      parentId: item.estimateId,
       checkedQty: item.checkedQty ?? 0
     }));
 
