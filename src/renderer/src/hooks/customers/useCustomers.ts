@@ -29,13 +29,20 @@ const getCustomers = async (customerSearch: string) => {
 };
 
 const handleDelete = async ({ type, id }: MutationVariables) => {
+  console.log("here");
   try {
     if (type === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.deleteSale(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+      return data;
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.deleteEstimate(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Something went wrong");
     }
@@ -47,11 +54,17 @@ const handleDelete = async ({ type, id }: MutationVariables) => {
 const handleConvert = async ({ type, id }: MutationVariables) => {
   try {
     if (type === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.convertSaletoEstimate(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.convertEstimateToSale(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Something went wrong");
     }
@@ -101,7 +114,7 @@ const useCustomers = () => {
     onSuccess: (response) => {
       if (response.status === "success") {
         queryClient.invalidateQueries({
-          queryKey: [selectedCustomer?.id, filterType],
+          queryKey: [selectedCustomer?.id],
           exact: false
         });
         toast.success(response.data);
@@ -116,8 +129,9 @@ const useCustomers = () => {
     mutationFn: ({ type, id }) => handleConvert({ type, id }),
     onSuccess: (response) => {
       if (response.status === "success") {
+        console.log(selectedCustomer?.id);
         queryClient.invalidateQueries({
-          queryKey: [selectedCustomer?.id, filterType],
+          queryKey: [selectedCustomer?.id],
           exact: false
         });
         toast.success(response.data);
