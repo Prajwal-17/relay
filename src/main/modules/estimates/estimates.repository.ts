@@ -1,4 +1,10 @@
-import { and, count, desc, eq, gte, lte, notInArray, sql, type SQL, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, notInArray, sql, sum, type SQL } from "drizzle-orm";
+import {
+  BATCH_CHECK_ACTION,
+  UPDATE_QTY_ACTION,
+  type BatchCheckAction,
+  type UpdateQtyAction
+} from "../../../shared/types";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import type {
@@ -73,7 +79,7 @@ const createEstimate = async (payload: CreateEstimateParams) => {
       .get();
 
     if (!newEstimate || !newEstimate.id) {
-      throw new Error("Failed to Create Sale");
+      throw new Error("Failed to Create Estimate");
     }
 
     for (const item of payload.items) {
@@ -131,13 +137,13 @@ const updateEstimate = async (estimateId: string, payload: UpdateEstimateParams)
 
     const quantitySoldAdjustments = new Map<string, number>();
 
-    const existingSaleItems = tx
+    const existingEstimateItems = tx
       .select()
       .from(estimateItems)
       .where(eq(estimateItems.estimateId, estimateId))
       .all();
 
-    for (const estimateItem of existingSaleItems) {
+    for (const estimateItem of existingEstimateItems) {
       if (estimateItem.productId) {
         const current = quantitySoldAdjustments.get(estimateItem.productId) || 0;
         quantitySoldAdjustments.set(estimateItem.productId, current - estimateItem.quantity);
@@ -224,10 +230,10 @@ const updateEstimate = async (estimateId: string, payload: UpdateEstimateParams)
 
 const deleteEstimateById = async (id: string) => {
   return db.transaction((tx) => {
-    const existingSale = tx.select().from(estimates).where(eq(estimates.id, id)).get();
+    const existingEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
 
-    if (!existingSale) {
-      throw new Error(`Sale with id:${id} does not exists`);
+    if (!existingEstimate) {
+      throw new Error(`Estimate with id:${id} does not exists`);
     }
 
     const items = tx.select().from(estimateItems).where(eq(estimateItems.estimateId, id)).all();
@@ -245,7 +251,7 @@ const deleteEstimateById = async (id: string) => {
 
     const result = tx.delete(estimates).where(eq(estimates.id, id)).run();
     if (result.changes === 0) {
-      throw new Error("Failed to delete sale record");
+      throw new Error("Failed to delete Estimate record");
     }
     return result;
   });
@@ -314,6 +320,68 @@ const convertEstimateToSale = async (id: string) => {
   });
 };
 
+const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction) => {
+  let updatedQty: number | undefined;
+
+  db.transaction((tx) => {
+    const item = tx.select().from(estimateItems).where(eq(estimateItems.id, estimateItemId)).get();
+    if (!item) {
+      throw new Error("Estimate Item not found");
+    }
+    updatedQty = item.checkedQty ?? 0;
+    const totalQty = item.quantity;
+    const remainder = parseFloat((totalQty % 1).toFixed(2));
+    if (action === UPDATE_QTY_ACTION.SET) {
+      updatedQty = item.checkedQty === item.quantity ? 0 : item.quantity;
+    } else if (action === UPDATE_QTY_ACTION.INCREMENT) {
+      const nextQty = updatedQty + 1;
+      if (nextQty > totalQty) {
+        const remainderQty = updatedQty + remainder;
+        if (remainderQty <= totalQty) {
+          updatedQty = remainderQty;
+        } else {
+          updatedQty = totalQty;
+        }
+      } else {
+        updatedQty = nextQty;
+      }
+    } else if (action === UPDATE_QTY_ACTION.DECREMENT) {
+      const nextQty = updatedQty - 1;
+      const remainderVal = parseFloat((updatedQty % 1).toFixed(2));
+      if (remainderVal !== 0 && updatedQty === totalQty) {
+        updatedQty = Math.floor(updatedQty);
+      } else {
+        updatedQty = Math.max(0, nextQty);
+      }
+    }
+    updatedQty = Math.round(updatedQty * 100) / 100;
+    tx.update(estimateItems)
+      .set({
+        checkedQty: updatedQty
+      })
+      .where(eq(estimateItems.id, estimateItemId))
+      .run();
+  });
+
+  if (updatedQty === undefined) {
+    throw new Error("Update failed unexpectedly");
+  }
+
+  return updatedQty;
+};
+
+const batchCheckItems = async (estimateId: string, action: BatchCheckAction) => {
+  const setCheckedQty = action === BATCH_CHECK_ACTION.MARK_ALL ? sql`${estimateItems.quantity}` : 0;
+
+  return db
+    .update(estimateItems)
+    .set({
+      checkedQty: setCheckedQty
+    })
+    .where(eq(estimateItems.estimateId, estimateId))
+    .run();
+};
+
 export const estimatesRepository = {
   getEstimateById,
   getLatestEstimateNo,
@@ -321,5 +389,7 @@ export const estimatesRepository = {
   createEstimate,
   updateEstimate,
   convertEstimateToSale,
+  updateCheckedQty,
+  batchCheckItems,
   deleteEstimateById
 };

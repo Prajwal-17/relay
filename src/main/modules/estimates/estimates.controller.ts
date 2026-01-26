@@ -142,6 +142,46 @@ estimatesController.post("/:id/convert", async (c) => {
   }
 });
 
+// update checked-qty of a estimate item - action "inc", "dec", "set"
+estimatesController.post("/:id/items/:itemId/checked-qty", async (c) => {
+  try {
+    const itemId = c.req.param("itemId");
+    const { action } = await c.req.json();
+
+    if (!itemId) {
+      return c.json({ status: "error", error: { message: "Id does not exist" } }, 400);
+    }
+
+    const result = await estimatesService.updateCheckedQtyService(itemId, action);
+    const status = result.status === "success" ? 200 : 400;
+
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// batch update checked-qty of a estimate
+estimatesController.post("/:id/items/checked-qty/batch", async (c) => {
+  try {
+    const id = c.req.param("id");
+    const { action } = await c.req.json();
+
+    if (!id) {
+      return c.json({ status: "error", error: { message: "Id does not exist" } }, 400);
+    }
+
+    const result = await estimatesService.batchCheckItemsService(id, action);
+    const status = result.status === "success" ? 200 : 400;
+
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
 // delete Estimate By Id
 estimatesController.delete("/:id", async (c) => {
   try {

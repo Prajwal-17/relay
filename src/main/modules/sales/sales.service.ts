@@ -1,13 +1,16 @@
 import { asc, desc, type SQL } from "drizzle-orm";
 import {
+  BATCH_CHECK_ACTION,
   SortOption,
   TRANSACTION_TYPE,
   type ApiResponse,
+  type BatchCheckAction,
   type PaginatedApiResponse,
   type TransactionListResponse,
   type TxnPayloadData,
   type UnifiedTransactionItem,
   type UnifiedTransctionWithItems,
+  type UpdateQtyAction,
   type UpdateSaleResponse
 } from "../../../shared/types";
 import { sales } from "../../db/schema";
@@ -27,9 +30,10 @@ const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWit
       };
     }
 
-    const items: UnifiedTransactionItem[] = sale.saleItems.map((item) => ({
-      ...item,
-      checkedQty: item.checkedQty ?? 0
+    // eslint-disable-next-line
+    const items: UnifiedTransactionItem[] = sale.saleItems.map(({ saleId, ...rest }) => ({
+      ...rest,
+      checkedQty: rest.checkedQty ?? 0
     }));
 
     return {
@@ -278,6 +282,54 @@ const convertSaleToEstimate = async (id: string): Promise<ApiResponse<string>> =
   }
 };
 
+const updateCheckedQtyService = async (
+  saleItemId: string,
+  action: UpdateQtyAction
+): Promise<ApiResponse<string>> => {
+  try {
+    await salesRepository.updateCheckedQty(saleItemId, action);
+    return {
+      status: "success",
+      data: "Successfully updated checkedQty"
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while updating checkedQty"
+      }
+    };
+  }
+};
+
+const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
+  try {
+    const result = await salesRepository.batchCheckItems(id, action);
+    if (result.changes > 0) {
+      return {
+        status: "success",
+        data: {
+          isAllChecked: action === BATCH_CHECK_ACTION.MARK_ALL
+        },
+        message:
+          action === BATCH_CHECK_ACTION.MARK_ALL
+            ? "All items have been marked as checked."
+            : "All items have been unchecked."
+      };
+    }
+    throw new Error("No Sale Items were updated");
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong"
+      }
+    };
+  }
+};
+
 const deleteSaleById = async (id: string): Promise<ApiResponse<string>> => {
   try {
     const result = await salesRepository.deleteSaleById(id);
@@ -313,5 +365,7 @@ export const salesService = {
   createSale,
   updateSale,
   convertSaleToEstimate,
+  updateCheckedQtyService,
+  batchCheckItemsService,
   deleteSaleById
 };

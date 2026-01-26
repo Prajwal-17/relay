@@ -1,4 +1,10 @@
-import { and, count, desc, eq, gte, lte, notInArray, sql, type SQL, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, notInArray, sql, sum, type SQL } from "drizzle-orm";
+import {
+  BATCH_CHECK_ACTION,
+  UPDATE_QTY_ACTION,
+  type BatchCheckAction,
+  type UpdateQtyAction
+} from "../../../shared/types";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
@@ -305,6 +311,68 @@ const convertSaleToEstimate = async (id: string) => {
   });
 };
 
+const updateCheckedQty = async (saleItemId: string, action: UpdateQtyAction) => {
+  let updatedQty: number | undefined;
+
+  db.transaction((tx) => {
+    const item = tx.select().from(saleItems).where(eq(saleItems.id, saleItemId)).get();
+    if (!item) {
+      throw new Error("Sale Item not found");
+    }
+    updatedQty = item.checkedQty ?? 0;
+    const totalQty = item.quantity;
+    const remainder = parseFloat((totalQty % 1).toFixed(2));
+    if (action === UPDATE_QTY_ACTION.SET) {
+      updatedQty = item.checkedQty === item.quantity ? 0 : item.quantity;
+    } else if (action === UPDATE_QTY_ACTION.INCREMENT) {
+      const nextQty = updatedQty + 1;
+      if (nextQty > totalQty) {
+        const remainderQty = updatedQty + remainder;
+        if (remainderQty <= totalQty) {
+          updatedQty = remainderQty;
+        } else {
+          updatedQty = totalQty;
+        }
+      } else {
+        updatedQty = nextQty;
+      }
+    } else if (action === UPDATE_QTY_ACTION.DECREMENT) {
+      const nextQty = updatedQty - 1;
+      const remainderVal = parseFloat((updatedQty % 1).toFixed(2));
+      if (remainderVal !== 0 && updatedQty === totalQty) {
+        updatedQty = Math.floor(updatedQty);
+      } else {
+        updatedQty = Math.max(0, nextQty);
+      }
+    }
+    updatedQty = Math.round(updatedQty * 100) / 100;
+    tx.update(saleItems)
+      .set({
+        checkedQty: updatedQty
+      })
+      .where(eq(saleItems.id, saleItemId))
+      .run();
+  });
+
+  if (updatedQty === undefined) {
+    throw new Error("Update failed unexpectedly");
+  }
+
+  return updatedQty;
+};
+
+const batchCheckItems = async (saleId: string, action: BatchCheckAction) => {
+  const setCheckedQty = action === BATCH_CHECK_ACTION.MARK_ALL ? sql`${saleItems.quantity}` : 0;
+
+  return db
+    .update(saleItems)
+    .set({
+      checkedQty: setCheckedQty
+    })
+    .where(eq(saleItems.saleId, saleId))
+    .run();
+};
+
 export const salesRepository = {
   getSaleById,
   getLatestInvoiceNo,
@@ -312,5 +380,7 @@ export const salesRepository = {
   createSale,
   updateSale,
   convertSaleToEstimate,
+  updateCheckedQty,
+  batchCheckItems,
   deleteSaleById
 };
