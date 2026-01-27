@@ -1,5 +1,11 @@
 import { useDashboardStore } from "@/store/dashboardStore";
-import { SortOption, TRANSACTION_TYPE, type ApiResponse, type SortType } from "@shared/types";
+import {
+  SortOption,
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type SortType,
+  type TransactionType
+} from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -7,7 +13,7 @@ import { useParams } from "react-router-dom";
 import { useDateRangePicker } from "./useDateRangePicker";
 
 export type MutationVariables = {
-  type: string;
+  type: TransactionType;
   id: string;
 };
 

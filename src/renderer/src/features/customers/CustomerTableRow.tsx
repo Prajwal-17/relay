@@ -50,8 +50,8 @@ const CustomerTableRow = ({
   const navigate = useNavigate();
   const handleView = useCallback(() => {
     type === TRANSACTION_TYPE.SALE
-      ? navigate(`/billing/sales/edit/${transaction.id}`)
-      : navigate(`/billing/estimates/edit/${transaction.id}`);
+      ? navigate(`/billing/sales/${transaction.id}/edit`)
+      : navigate(`/billing/estimates/${transaction.id}/edit`);
   }, [navigate, transaction.id, type]);
 
   const onDelete = useCallback(() => {

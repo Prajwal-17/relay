@@ -88,7 +88,7 @@ export function RecentActivitiesTable() {
                 {data.map((transaction, index) => (
                   <div key={transaction.id || index}>
                     <RecentTransactionsTableRow
-                      pathname={type}
+                      type={type}
                       transaction={transaction}
                       deleteMutation={deleteMutation}
                       convertMutation={convertMutation}

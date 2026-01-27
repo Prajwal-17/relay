@@ -19,8 +19,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
-import type { UnifiedTransaction } from "@/hooks/dashboard/useInfiniteScroll";
-import type { ApiResponse } from "@shared/types";
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type TransactionType,
+  type UnifiedTransaction
+} from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -29,30 +33,30 @@ import { memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
 const RecentTransactionsTableRow = ({
-  pathname,
+  type,
   transaction,
   deleteMutation,
   convertMutation
 }: {
-  pathname: string;
+  type: TransactionType;
   transaction: UnifiedTransaction;
   deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
   convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
 }) => {
   const navigate = useNavigate();
-  const handleView = useCallback(() => {
-    pathname === "sales"
-      ? navigate(`/billing/sales/edit/${transaction.id}`)
-      : navigate(`/billing/estimates/edit/${transaction.id}`);
-  }, [navigate, transaction.id, pathname]);
+  const handleEdit = useCallback(() => {
+    type === TRANSACTION_TYPE.SALE
+      ? navigate(`/billing/sales/${transaction.id}/edit`)
+      : navigate(`/billing/estimates/${transaction.id}/edit`);
+  }, [navigate, transaction.id, type]);
 
   const onDelete = useCallback(() => {
-    deleteMutation.mutate({ type: pathname, id: transaction.id });
-  }, [deleteMutation, pathname, transaction.id]);
+    deleteMutation.mutate({ type: type, id: transaction.id });
+  }, [deleteMutation, type, transaction.id]);
 
   const onConvert = useCallback(() => {
-    convertMutation.mutate({ type: pathname, id: transaction.id });
-  }, [convertMutation, pathname, transaction.id]);
+    convertMutation.mutate({ type: type, id: transaction.id });
+  }, [convertMutation, type, transaction.id]);
 
   return (
     <div>
@@ -71,9 +75,9 @@ const RecentTransactionsTableRow = ({
         </div>
         <div className="col-span-3 flex items-center gap-2 font-medium">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-200 text-purple-600">
-            {transaction.customerName.charAt(0)}
+            {transaction.customer.name.charAt(0)}
           </div>
-          <span className="truncate">{transaction.customerName}</span>
+          <span className="truncate">{transaction.customer.name}</span>
         </div>
 
         <div className="text-muted-foreground col-span-2 flex items-center font-medium">
@@ -94,7 +98,7 @@ const RecentTransactionsTableRow = ({
         <div className="col-span-1 flex items-center justify-center gap-1">
           <Tooltip>
             <TooltipTrigger
-              onClick={handleView}
+              onClick={handleEdit}
               className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
             >
               <Edit size={20} />
