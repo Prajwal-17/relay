@@ -16,8 +16,9 @@ const COLORS = [
 
 const fetchTopProducts = async () => {
   try {
-    const response = await window.dashboardApi.getTopProducts();
-    return response;
+    const response = await fetch("http://localhost:3000/api/dashboard/top-products");
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error((error as Error).message);
   }

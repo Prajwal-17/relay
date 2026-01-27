@@ -379,17 +379,6 @@ export const BILLSTATUS = {
 
 export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
-export interface DashboardApi {
-  getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
-  getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
-  getRecentTransactions: (
-    type: TransactionType
-  ) => Promise<
-    ApiResponse<(Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []>
-  >;
-  getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
-}
-
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
 }

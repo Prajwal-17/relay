@@ -28,8 +28,11 @@ const chartConfig = {
 
 const fetchChartMetrics = async (timePeriod: TimePeriodType) => {
   try {
-    const response = await window.dashboardApi.getChartMetrics(timePeriod);
-    return response;
+    const response = await fetch(
+      `http://localhost:3000/api/dashboard/sales-vs-estimates?timePeriod=${timePeriod}`
+    );
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error((error as Error).message);
   }
