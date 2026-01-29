@@ -22,9 +22,6 @@ const BillPreview = () => {
   const { setReceiptRef } = useReceiptRefStore();
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
 
-  const date = localStorage.getItem("bill-preview-date");
-  const value = new Date(date!);
-
   // update global ref whenever component renders
   useEffect(() => {
     setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
