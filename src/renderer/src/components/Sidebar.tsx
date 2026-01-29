@@ -11,10 +11,10 @@ export const Sidebar = () => {
   const pathname = location.pathname;
   const { id } = useParams();
   const billingPages = [
-    "/billing/sales/create/new",
-    "/billing/estimates/create/new",
-    `/billing/sales/edit/${id}`,
-    `/billing/estimates/edit/${id}`
+    "/billing/sales/create",
+    "/billing/estimates/create",
+    `/billing/sales/${id}/edit`,
+    `/billing/estimates/${id}/edit`
   ];
   const isBillingPage = billingPages.includes(pathname);
   const sidebarRef = useRef<HTMLDivElement | null>(null);
@@ -72,7 +72,7 @@ export const Sidebar = () => {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             ref={sidebarRef}
             onMouseLeave={handleMouseLeave}
-            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-20 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
+            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-50 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between">
@@ -97,7 +97,7 @@ export const Sidebar = () => {
                 )}
               </div>
               <div className="mt-6 flex w-full flex-col gap-3">
-                <Link to="/billing/sales/create/new" className="w-full">
+                <Link to="/billing/sales/create" className="w-full">
                   <Button
                     variant="default"
                     size="lg"
@@ -107,13 +107,13 @@ export const Sidebar = () => {
                     <span>New Sale</span>
                   </Button>
                 </Link>
-                <Link to="/billing/estimates/create/new" className="w-full">
+                <Link to="/billing/estimates/create" className="w-full">
                   <Button
                     variant="outline"
                     size="lg"
                     className="group border-border hover:bg-accent hover:text-accent-foreground w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
                   >
-                    <FileText className="size-5 transition-transform duration-300 group-hover:rotate-[-12deg]" />
+                    <FileText className="size-5 transition-transform duration-300 group-hover:-rotate-12" />
                     <span>New Estimate</span>
                   </Button>
                 </Link>

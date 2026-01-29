@@ -18,18 +18,24 @@ import { CustomerNameInput } from "./CustomerInputBox";
 
 const getLatestTransactionNo = async (type: TransactionType) => {
   try {
-    let response;
-    if (type === TRANSACTION_TYPE.SALES) {
-      response = await window.salesApi.getNextInvoiceNo();
-    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
-      response = await window.estimatesApi.getNextEstimateNo();
+    let reqResponse;
+    if (type === TRANSACTION_TYPE.SALE) {
+      const response = await fetch("http://localhost:3000/api/sales/next-number", {
+        method: "GET"
+      });
+      reqResponse = await response.json();
+    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
+      const response = await fetch("http://localhost:3000/api/estimates/next-number", {
+        method: "GET"
+      });
+      reqResponse = await response.json();
     } else {
       throw new Error("Transaction Type is undefined");
     }
-    if (response.status === "success") {
-      return response;
+    if (reqResponse.status === "success") {
+      return reqResponse;
     }
-    throw new Error(response.error.message);
+    throw new Error(reqResponse.error.message);
   } catch (error) {
     console.log(error);
     throw new Error((error as Error).message);
@@ -55,12 +61,15 @@ const BillingHeader = () => {
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
   const { type, id } = useParams<{ type: TransactionType; id?: string }>();
+  const formattedType = type?.slice(0, -1) as TransactionType;
 
   const { data, isFetched, isError, error } = useQuery({
-    queryKey: [type, "getTransactionNo"],
+    queryKey: [formattedType, "getTransactionNo"],
     // null assertion - type cannot be null here
-    queryFn: () => getLatestTransactionNo(type!),
-    enabled: !id && (type === TRANSACTION_TYPE.SALES || type === TRANSACTION_TYPE.ESTIMATES)
+    queryFn: () => getLatestTransactionNo(formattedType),
+    enabled:
+      !id &&
+      (formattedType === TRANSACTION_TYPE.SALE || formattedType === TRANSACTION_TYPE.ESTIMATE)
   });
 
   useEffect(() => {
@@ -141,7 +150,7 @@ const BillingHeader = () => {
                 <>
                   <Input
                     type="number"
-                    className="text-primary w-24 px-1 py-1 text-center !text-xl font-extrabold"
+                    className="text-primary w-24 px-1 py-1 text-center text-xl! font-extrabold"
                     value={Number(tempTransactionNo)}
                     onChange={(e) => setTempTransactionNo(Number(e.target.value))}
                   />
@@ -202,7 +211,7 @@ const BillingHeader = () => {
                 step="60"
                 value={formatDateObjToHHmmss(billingDate)}
                 onChange={(e) => handleTimeChange(e)}
-                className="bg-background appearance-none !text-lg [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                className="bg-background appearance-none text-lg! [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />
             </div>
           </div>
@@ -222,7 +231,7 @@ const BillingHeader = () => {
 
                 <Input
                   id="customer-contact"
-                  className="py-6 pl-16 !text-lg font-medium focus:border-none"
+                  className="py-6 pl-16 text-lg! font-medium focus:border-none"
                   placeholder="Contact Number"
                   value={customerContact ?? ""}
                   onChange={(e) => setCustomerContact(e.target.value)}

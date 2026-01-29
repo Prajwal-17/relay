@@ -1,6 +1,6 @@
 {
   "name": "pos",
-  "version": "3.2.6",
+  "version": "4.0.0",
   "description": "A billing software for creating and managing invoices and customer accounts.",
   "main": "./out/main/index.js",
   "repository": {
@@ -89,6 +89,7 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.7.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.4",
     "electron": "^31.0.1",

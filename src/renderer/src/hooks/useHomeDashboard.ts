@@ -5,10 +5,10 @@ import type { MutationVariables } from "./dashboard/useDashboard";
 
 const handleDelete = async ({ type, id }: MutationVariables) => {
   try {
-    if (type === TRANSACTION_TYPE.SALES) {
+    if (type === TRANSACTION_TYPE.SALE) {
       const response = await window.salesApi.deleteSale(id);
       return response;
-    } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
       const response = await window.estimatesApi.deleteEstimate(id);
       return response;
     } else {

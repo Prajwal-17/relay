@@ -3,11 +3,12 @@ import {
   PRODUCT_FILTER,
   type ApiResponse,
   type CreateProductPayload,
-  type ProductHistoryType,
+  type ProductHistory,
   type UpdateProductPayload
 } from "../../../shared/types";
 import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
+import { generateProductSnapshot } from "../../utils/product.utils";
 import { productRepository } from "./products.repository";
 import type { ProductSearchParams } from "./products.types";
 
@@ -21,6 +22,9 @@ const searchProduct = async (params: ProductSearchParams) => {
         break;
       case PRODUCT_FILTER.INACTIVE:
         whereClause = and(ne(products.isDeleted, true), eq(products.isDisabled, true))!;
+        break;
+      case PRODUCT_FILTER.DELETED:
+        whereClause = eq(products.isDeleted, true);
         break;
       case PRODUCT_FILTER.ACTIVE:
       default:
@@ -53,15 +57,7 @@ const searchProduct = async (params: ProductSearchParams) => {
     return {
       status: "success",
       nextPageNo: nextpageNo,
-      data:
-        searchResult.length > 0
-          ? searchResult.map((product) => ({
-              ...product,
-              mrp: product.mrp && formatToRupees(product.mrp),
-              price: formatToRupees(product.price),
-              purchasePrice: product.purchasePrice && formatToRupees(product.purchasePrice)
-            }))
-          : []
+      data: searchResult.length > 0 ? searchResult : []
     };
   } catch (error) {
     console.log(error);
@@ -129,30 +125,50 @@ const updateProduct = async (
       updatedFields["disabledAt"] = disabledAt;
     }
 
-    const updatedProduct = await productRepository.updateById(productId, updatedFields);
+    let updatedProduct = await productRepository.updateById(productId, updatedFields);
     if (!updatedProduct) throw new Error("Failed to update product");
 
-    // history insert
-
-    function cap(s: string) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
-    const historyObj: Partial<ProductHistoryType> = {
+    const snapshotName = generateProductSnapshot({
       name: updatedProduct.name,
       weight: updatedProduct.weight,
       unit: updatedProduct.unit,
-      productId: updatedProduct.id
-    };
-
-    currencyFields.forEach((field) => {
-      if (existingProduct[field] !== updatedProduct[field]) {
-        historyObj[`old${cap(field)}`] = existingProduct[field];
-        historyObj[`new${cap(field)}`] = updatedProduct[field];
-      }
+      mrp: updatedProduct.mrp ? formatToRupees(updatedProduct.mrp) : null
     });
 
-    await productRepository.insertHistory(historyObj);
+    // update productSnapshot
+    if (updatedProduct.productSnapshot !== snapshotName) {
+      updatedProduct = await productRepository.updateById(productId, {
+        productSnapshot: snapshotName
+      });
+    }
+
+    // history insert
+    // only insert when price,mrp,purchase price changes
+    if (
+      existingProduct.price !== updatedProduct.price ||
+      existingProduct.mrp !== updatedProduct.mrp ||
+      existingProduct.purchasePrice !== updatedProduct.purchasePrice
+    ) {
+      function cap(s: string) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
+      const historyObj: Partial<ProductHistory> = {
+        name: updatedProduct.name,
+        weight: updatedProduct.weight,
+        unit: updatedProduct.unit,
+        productId: updatedProduct.id
+      };
+
+      currencyFields.forEach((field) => {
+        if (existingProduct[field] !== updatedProduct[field]) {
+          historyObj[`old${cap(field)}`] = existingProduct[field];
+          historyObj[`new${cap(field)}`] = updatedProduct[field];
+        }
+      });
+
+      await productRepository.insertHistory(historyObj);
+    }
 
     return {
       status: "success",

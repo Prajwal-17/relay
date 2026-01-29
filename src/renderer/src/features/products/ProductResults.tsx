@@ -2,8 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ignoredWeight } from "@/constants";
-import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
@@ -13,7 +14,7 @@ export default function ProductResults() {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
 
   const { searchResults, parentRef, rowVirtualizer, status, virtualItems, hasNextPage } =
-    useProductSearchV2(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
+    useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
 
   return (
     <Card className="border-border bg-background border py-2 shadow-sm">
@@ -64,7 +65,7 @@ export default function ProductResults() {
                         data-index={virtualRow.index}
                       >
                         <div className="group hover:bg-accent/70 flex items-center justify-between gap-4 px-6 py-3 transition-colors">
-                          <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100">
+                          <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
                             <Package className="h-5 w-5 text-blue-600" />
                           </div>
                           <div className="flex flex-1 items-center gap-6">
@@ -88,7 +89,7 @@ export default function ProductResults() {
                                     variant="outline"
                                     className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                   >
-                                    MRP ₹{product.mrp}
+                                    MRP ₹{formatToRupees(product.mrp)}
                                   </Badge>
                                 )}
                               </div>
@@ -100,7 +101,7 @@ export default function ProductResults() {
                                   <>
                                     <span className="text-muted-foreground">•</span>
                                     <p className="text-foreground mt-1 text-base font-semibold">
-                                      Purchase Price ₹ {product.purchasePrice}
+                                      Purchase Price ₹{formatToRupees(product.purchasePrice)}
                                     </p>
                                   </>
                                 )}
@@ -108,7 +109,9 @@ export default function ProductResults() {
                             </div>
                             <div className="text-right">
                               <div className="flex items-center gap-2">
-                                <span className="text-2xl font-bold">₹ {product.price}</span>
+                                <span className="text-2xl font-bold">
+                                  {IndianRupees.format(formatToRupees(product.price))}
+                                </span>
                               </div>
                             </div>
                             <Badge

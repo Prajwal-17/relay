@@ -11,8 +11,8 @@ import {
   BATCH_CHECK_ACTION,
   DASHBOARD_TYPE,
   type DashboardType,
-  type EstimateItemsType,
-  type SaleItemsType
+  type EstimateItem,
+  type SaleItem
 } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { IndianRupees } from "@shared/utils/utils";
@@ -112,8 +112,8 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                           key={item.id}
                           item={
                             type === DASHBOARD_TYPE.SALES
-                              ? (item as SaleItemsType)
-                              : (item as EstimateItemsType)
+                              ? (item as SaleItem)
+                              : (item as EstimateItem)
                           }
                           index={index + 1}
                           type={type}

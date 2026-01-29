@@ -4,7 +4,7 @@ import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
 import { useViewModalStore } from "@/store/viewModalStore";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
-import { IndianRupees } from "@shared/utils/utils";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -51,7 +51,7 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
             </div>
             <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
             <span className="text-2xl font-bold">
-              {totalRevenue && IndianRupees.format(totalRevenue)}
+              {totalRevenue && IndianRupees.format(formatToRupees(totalRevenue))}
             </span>
           </div>
           <div className="flex items-center gap-2">

@@ -4,8 +4,8 @@ import {
   UPDATE_QTY_ACTION,
   type ApiResponse,
   type DashboardType,
-  type EstimateItemsType,
-  type SaleItemsType,
+  type EstimateItem,
+  type SaleItem,
   type UpdateQtyAction
 } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ export const ItemRow = ({
   type,
   updateQtyMutation
 }: {
-  item: SaleItemsType | EstimateItemsType;
+  item: SaleItem | EstimateItem;
   index: number;
   type: DashboardType;
   updateQtyMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
@@ -79,7 +79,7 @@ export const ItemRow = ({
             variant="outline"
             size="sm"
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
-            disabled={item.quantity === item.checkedQty}
+            disabled={checked}
             className="flex h-7 w-7 cursor-pointer items-center justify-center bg-transparent p-0"
           >
             <Plus className="size-5" />

@@ -3,8 +3,8 @@ import { ipcMain } from "electron";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
-  type EstimateType,
-  type SalesType
+  type Estimate,
+  type Sale
 } from "../../../shared/types";
 import { formatToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -18,11 +18,11 @@ export function getRecentTransactions() {
       type
     ): Promise<
       ApiResponse<
-        (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+        (Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []
       >
     > => {
       try {
-        if (type === TRANSACTION_TYPE.SALES) {
+        if (type === TRANSACTION_TYPE.SALE) {
           const result = await db.query.sales.findMany({
             with: {
               customer: true
@@ -43,7 +43,7 @@ export function getRecentTransactions() {
                   }))
                 : []
           };
-        } else if (type === TRANSACTION_TYPE.ESTIMATES) {
+        } else if (type === TRANSACTION_TYPE.ESTIMATE) {
           const result = await db.query.estimates.findMany({
             with: {
               customer: true

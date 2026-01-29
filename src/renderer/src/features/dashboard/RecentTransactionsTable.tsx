@@ -4,8 +4,8 @@ import { useHomeDashboard } from "@/hooks/useHomeDashboard";
 import {
   TRANSACTION_TYPE,
   type ApiResponse,
-  type EstimateType,
-  type SalesType,
+  type Estimate,
+  type Sale,
   type TransactionType
 } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +23,7 @@ const fetchRecentTransactions = async (type: TransactionType) => {
   }
 };
 export function RecentActivitiesTable() {
-  const [type, setType] = useState<TransactionType>(TRANSACTION_TYPE.SALES);
+  const [type, setType] = useState<TransactionType>(TRANSACTION_TYPE.SALE);
   const { deleteMutation, convertMutation } = useHomeDashboard({ type });
 
   const { data, status, isError, error } = useQuery({
@@ -31,7 +31,7 @@ export function RecentActivitiesTable() {
     queryFn: () => fetchRecentTransactions(type),
     select: (
       response: ApiResponse<
-        (SalesType & { customerName: string })[] | (EstimateType & { customerName: string })[] | []
+        (Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []
       >
     ) => {
       return response.status === "success" ? response.data : null;
@@ -50,13 +50,13 @@ export function RecentActivitiesTable() {
         <CardTitle className="text-xl">Recent Transactions</CardTitle>
         <Tabs value={type} onValueChange={(value) => setType(value as TransactionType)}>
           <TabsList>
-            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.SALES}>
-              {TRANSACTION_TYPE.SALES.charAt(0).toUpperCase()}
-              {TRANSACTION_TYPE.SALES.slice(1)}
+            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.SALE}>
+              {TRANSACTION_TYPE.SALE.charAt(0).toUpperCase()}
+              {TRANSACTION_TYPE.SALE.slice(1)}
             </TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.ESTIMATES}>
-              {TRANSACTION_TYPE.ESTIMATES.charAt(0).toUpperCase()}
-              {TRANSACTION_TYPE.ESTIMATES.slice(1)}
+            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.ESTIMATE}>
+              {TRANSACTION_TYPE.ESTIMATE.charAt(0).toUpperCase()}
+              {TRANSACTION_TYPE.ESTIMATE.slice(1)}
             </TabsTrigger>
           </TabsList>
         </Tabs>
@@ -73,7 +73,7 @@ export function RecentActivitiesTable() {
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer Name</div>
               <div className="col-span-2 flex items-center">
-                {type === TRANSACTION_TYPE.SALES ? "Invoice No" : "Estimate No"}
+                {type === TRANSACTION_TYPE.SALE ? "Invoice No" : "Estimate No"}
               </div>
               <div className="col-span-2 flex items-center">Amount</div>
               <div className="col-span-2 flex items-center">Status</div>

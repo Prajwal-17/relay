@@ -1,26 +1,15 @@
-import { ignoredWeight } from "@/constants";
-import type { ProductsType } from "src/shared/types";
-import { v4 as uuidv4 } from "uuid";
+import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { create } from "zustand";
 
-export type LineItemsType = {
-  id: string;
-  productId: string;
-  name: string;
-  weight: string | null;
-  unit: string | null;
-  quantity: number;
-  mrp: number | null;
-  price: number;
-  purchasePrice: number | null;
-  totalPrice: number;
-};
-
-type BillingStoreType = {
-  billingId: string | null;
+type BillingStore = {
+  billingId: string | null; // sales.id | estimates.id
   setBillingId: (newId: string | null) => void;
+  billingType: TransactionType;
+  setBillingType: (type: TransactionType) => void;
   transactionNo: number | null;
   setTransactionNo: (newTransactionNo: number | null) => void;
+  billingDate: Date;
+  setBillingDate: (newDate: Date) => void;
   customerId: string | null;
   setCustomerId: (id: string | null) => void;
   customerName: string;
@@ -29,33 +18,9 @@ type BillingStoreType = {
   setCustomerContact: (newCustomerContact: string | null) => void;
   isNewCustomer: boolean;
   setIsNewCustomer: (value: boolean) => void;
-  billingDate: Date;
-  setBillingDate: (newDate: Date) => void;
-  lineItems: LineItemsType[] | [];
-  setLineItems: (itemsArray: LineItemsType[]) => void;
-  addEmptyLineItem: (type?: "button") => void;
-  addLineItem: (index: number, newItem: ProductsType) => void;
-  updateLineItems: (id: string, field: string, value: string | number) => void;
-  deleteLineItem: (id: string) => void;
-  reset: () => void;
 };
 
-function initialLineItem() {
-  return {
-    id: uuidv4(),
-    productId: "",
-    name: "",
-    weight: "",
-    unit: "",
-    quantity: 0,
-    mrp: 0,
-    price: 0,
-    purchasePrice: null,
-    totalPrice: 0
-  };
-}
-
-export const useBillingStore = create<BillingStoreType>((set) => ({
+export const useBillingStore = create<BillingStore>((set) => ({
   billingId: null, // sales.id || estimates.id
   setBillingId: (newId) =>
     set(() => ({
@@ -64,6 +29,12 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
 
   transactionNo: null,
   setTransactionNo: (newTransactionNo) => set(() => ({ transactionNo: newTransactionNo })),
+
+  billingType: TRANSACTION_TYPE.SALE,
+  setBillingType: (type: TransactionType) =>
+    set(() => ({
+      billingType: type
+    })),
 
   customerId: null,
   setCustomerId: (id) =>
@@ -77,7 +48,7 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
   customerContact: "",
   setCustomerContact: (newCustomerContact) => set({ customerContact: newCustomerContact }),
 
-  isNewCustomer: false,
+  isNewCustomer: true,
   setIsNewCustomer: (value) =>
     set(() => ({
       isNewCustomer: value
@@ -87,157 +58,5 @@ export const useBillingStore = create<BillingStoreType>((set) => ({
   setBillingDate: (newDate) =>
     set(() => ({
       billingDate: newDate
-    })),
-
-  lineItems: [initialLineItem()],
-
-  setLineItems: (itemsArray) =>
-    set(() => {
-      if (!itemsArray || itemsArray.length === 0) {
-        return {
-          lineItems: [initialLineItem()]
-        };
-      }
-
-      return {
-        lineItems: itemsArray.map((item) => ({
-          id: uuidv4(),
-          productId: item.productId,
-          name: item.name,
-          weight: item.weight,
-          unit: item.unit,
-          quantity: item.quantity,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          totalPrice: item.quantity * item.price
-        }))
-      };
-    }),
-
-  // add empty row
-  addEmptyLineItem: (type) =>
-    set((state) => {
-      const length = state.lineItems.length;
-      if (type !== "button" && state.lineItems[length - 1].name === "") {
-        return state;
-      }
-      return {
-        lineItems: [...state.lineItems, initialLineItem()]
-      };
-    }),
-
-  // add new item on selection
-  addLineItem: (index, newItem) =>
-    set((state) => {
-      /**
-       * always create a new array to update the existing state array, coz react/zustand does
-       * shallow comparison hence the array reference remains the same, so creating new array creates new reference
-       * where react/zustand notices change
-       */
-      const currLineItems = [...state.lineItems];
-
-      // existing line item at index
-      const oldItem = currLineItems[index];
-      const totalQuantity = oldItem.quantity > 1 ? oldItem.quantity : 1;
-
-      const productName = () => {
-        let name = newItem.name;
-
-        // weight && mrp && weight+unit does not equal to ignoredWeights
-        if (
-          newItem.weight !== null &&
-          newItem.mrp &&
-          !ignoredWeight.some((w) => `${newItem.weight}${newItem.unit}` === w)
-        ) {
-          name += ` ${newItem.weight}${newItem.unit}`;
-          if (newItem.mrp) {
-            name += ` ${newItem.mrp}Rs`;
-          }
-        }
-
-        // weight && mrp && weight+unit equal to ignoredWeights
-        if (
-          newItem.weight !== null &&
-          newItem.mrp &&
-          ignoredWeight.some((w) => `${newItem.weight}${newItem.unit}` === w)
-        ) {
-          if (newItem.mrp) {
-            name += ` ${newItem.mrp}Rs`;
-          }
-        }
-
-        // weight = null && mrp
-        if (newItem.weight === null && newItem.mrp) {
-          name += ` ${newItem.mrp}Rs`;
-        }
-
-        // weight && mrp = null
-        if (newItem.weight !== null && !newItem.mrp) {
-          name += ` ${newItem.weight}${newItem.unit}`;
-        }
-
-        return name;
-      };
-
-      const updatedItem = {
-        ...newItem,
-        id: uuidv4(),
-        name: productName(),
-        productId: newItem.id,
-        quantity: oldItem.quantity > 1 ? oldItem.quantity : 1,
-        totalPrice: parseFloat((totalQuantity * newItem.price).toFixed(2))
-      };
-
-      currLineItems[index] = { ...updatedItem };
-
-      return {
-        lineItems: currLineItems
-      };
-    }),
-
-  // update on field change
-  updateLineItems: (id, field, value) =>
-    set((state) => {
-      const updatedLineItems = state.lineItems.map((item: LineItemsType) => {
-        if (id !== item.id) return item;
-
-        const updatedItem = {
-          ...item,
-          [field]: field === "quantity" || field === "price" ? Number(value) : value
-        };
-
-        if (["quantity", "price"].includes(field)) {
-          return {
-            ...updatedItem,
-            totalPrice: parseFloat((updatedItem.quantity * updatedItem.price).toFixed(2))
-          };
-        }
-        return updatedItem;
-      });
-      return {
-        lineItems: updatedLineItems
-      };
-    }),
-
-  // delete a row
-  deleteLineItem: (id) =>
-    set((state) => {
-      const updatedLineItems = state.lineItems.filter((item) => item.id !== id);
-      return {
-        lineItems: updatedLineItems
-      };
-    }),
-
-  reset: () =>
-    set(() => ({
-      billingId: null,
-      transactionNo: null,
-      customerId: null,
-      customerName: "",
-      customerContact: null,
-      isNewCustomer: false,
-      billingDate: new Date(),
-      lineItems: [initialLineItem()]
     }))
 }));

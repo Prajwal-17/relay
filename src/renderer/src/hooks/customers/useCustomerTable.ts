@@ -1,10 +1,8 @@
 import {
-  DASHBOARD_TYPE,
   TRANSACTION_TYPE,
-  type EstimateType,
+  type CustomerTransaction,
   type PageNo,
   type PaginatedApiResponse,
-  type SalesType,
   type TransactionType
 } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -12,22 +10,41 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
 import toast from "react-hot-toast";
 
-export type UnifiedTransaction = {
-  id: string;
-  transactionNo: number;
-  type: "sale" | "estimate";
-  customerId: string;
-  grandTotal: number;
-  totalQuantity: number;
-  isPaid: boolean;
-  createdAt?: string;
-};
-
-const fetchTransactions = async (customerId: string, type: TransactionType, pageNo: PageNo) => {
+const fetchTransactions = async (
+  type: TransactionType,
+  customerId: string,
+  pageNo: PageNo,
+  pageSize: number
+) => {
   try {
-    const response = await window.customersApi.getAllTransactionsById(customerId, type, pageNo);
-    if (response.status === "success") {
-      return response;
+    let response;
+    if (type === TRANSACTION_TYPE.SALE) {
+      response = await fetch(
+        `http://localhost:3000/api/sales?customerId=${customerId}&pageNo=${pageNo}&pageSize=${pageSize}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json"
+          }
+        }
+      );
+    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
+      response = await fetch(
+        `http://localhost:3000/api/estimates?customerId=${customerId}&pageNo=${pageNo}&pageSize=${pageSize}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-type": "application/json"
+          }
+        }
+      );
+    } else {
+      throw new Error("Invalid Transaction Type");
+    }
+    const data = await response.json();
+
+    if (data.status === "success") {
+      return data;
     }
     throw new Error(response.error.message);
   } catch (error) {
@@ -50,11 +67,11 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
   } = useInfiniteQuery({
     queryKey: [customerId, type],
     queryFn: ({ pageParam = 1 }) => {
-      return fetchTransactions(customerId, type, pageParam);
+      return fetchTransactions(type, customerId, pageParam, 20);
     },
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
-    getNextPageParam: (lastPage: PaginatedApiResponse<SalesType[] | EstimateType[]>) => {
+    getNextPageParam: (lastPage: PaginatedApiResponse<CustomerTransaction[]>) => {
       return lastPage.status === "success" ? (lastPage.nextPageNo ?? null) : null;
     },
     enabled: !!customerId && !!type
@@ -67,48 +84,8 @@ export const useCustomerTable = (customerId: string, type: TransactionType) => {
   }, [isError, error]);
 
   const transactionData = useMemo(() => {
-    return (
-      data?.pages.flatMap((page): UnifiedTransaction[] => {
-        if (page.status !== "success" || !page.data) {
-          return [];
-        }
-
-        if (type === TRANSACTION_TYPE.SALES) {
-          const saleData = page.data as SalesType[];
-          return saleData
-            ? saleData.map((sale) => ({
-                id: sale.id,
-                transactionNo: sale.invoiceNo,
-                type: "sale",
-                customerId: sale.customerId ?? "",
-                grandTotal: sale.grandTotal ? sale.grandTotal : 0,
-                totalQuantity: sale.totalQuantity ?? 0,
-                isPaid: sale.isPaid,
-                createdAt: sale.createdAt
-              }))
-            : [];
-        }
-
-        if (type === DASHBOARD_TYPE.ESTIMATES) {
-          const estimateData = page.data as EstimateType[];
-          return estimateData
-            ? estimateData.map((estimate) => ({
-                id: estimate.id,
-                transactionNo: estimate.estimateNo,
-                type: "estimate",
-                customerId: estimate.customerId ?? "",
-                grandTotal: estimate.grandTotal ? estimate.grandTotal : 0,
-                totalQuantity: estimate.totalQuantity ?? 0,
-                isPaid: estimate.isPaid,
-                createdAt: estimate.createdAt
-              }))
-            : [];
-        }
-
-        return [];
-      }) ?? []
-    );
-  }, [data, type]);
+    return data?.pages.flatMap((page) => (page.status === "success" ? page.data : [])) ?? [];
+  }, [data]);
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? transactionData.length + 1 : transactionData.length,

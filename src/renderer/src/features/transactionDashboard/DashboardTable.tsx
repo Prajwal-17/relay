@@ -1,7 +1,7 @@
 import { useDashboard } from "@/hooks/dashboard/useDashboard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
 import { useViewModalStore } from "@/store/viewModalStore";
-import type { DashboardType } from "@shared/types";
+import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import { useParams } from "react-router-dom";
 import DashboardTableRow from "./DashboardTableRow";
@@ -33,7 +33,13 @@ export const DashboardTable = () => {
             <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 px-4 py-2 text-base font-semibold">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer Name</div>
-              <div className="col-span-2 flex items-center">Invoice No</div>
+              <div className="col-span-2 flex items-center">
+                {type === DASHBOARD_TYPE.SALES
+                  ? "Invoice No"
+                  : type === DASHBOARD_TYPE.ESTIMATES
+                    ? "Estimate No"
+                    : "Transaction No"}
+              </div>
               <div className="col-span-2 flex items-center">Amount</div>
               <div className="col-span-1 flex items-center justify-start">Status</div>
               <div className="col-span-2 flex items-center justify-center">Actions</div>

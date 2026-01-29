@@ -1,35 +1,34 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ignoredWeight } from "@/constants";
-import useProductSearch from "@/hooks/products/useProductSearch";
-import { PRODUCTSEARCH_TYPE, useProductSearchV2 } from "@/hooks/products/useProductSearchV2";
-import { useBillingStore } from "@/store/billingStore";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { formatToRupees } from "@shared/utils/utils";
 import { Edit, Package, Search } from "lucide-react";
 
-const SearchDropdown = ({ idx }: { idx: number }) => {
+const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
-  const addLineItem = useBillingStore((state) => state.addLineItem);
-  const addEmptyLineItem = useBillingStore((state) => state.addEmptyLineItem);
-  const searchRow = useSearchDropdownStore((state) => state.searchRow);
+  const addLineItem = useLineItemsStore((state) => state.addLineItem);
+  const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
+  const activeRowId = useSearchDropdownStore((state) => state.activeRowId);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
-  const { dropdownRef } = useProductSearch();
-  const { searchResults, parentRef, rowVirtualizer, hasNextPage, virtualItems } =
-    useProductSearchV2(PRODUCTSEARCH_TYPE.BILLINGPAGE);
+  const { dropdownRef, searchResults, parentRef, rowVirtualizer, hasNextPage, virtualItems } =
+    useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
   return (
     <>
       <div ref={dropdownRef}>
-        {isDropdownOpen && searchRow === idx + 1 && (
+        {isDropdownOpen && activeRowId === rowId && (
           <div
             ref={parentRef}
-            className="bg-background border-border absolute top-full left-[10%] z-50 max-h-96 w-[60%] overflow-y-auto rounded-lg border py-1 shadow-xl"
+            className="bg-background border-border absolute top-full left-[10%] z-30 max-h-96 w-[60%] overflow-y-auto rounded-lg border py-1 shadow-xl"
           >
             {searchResults.length === 0 ? (
               <div className="text-muted-foreground p-16 text-center">
@@ -63,13 +62,13 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                             <div
                               className="group hover:border-primary hover:bg-accent flex items-center gap-4 border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer"
                               onClick={() => {
-                                addLineItem(idx, product);
+                                addLineItem(rowId, product);
                                 setIsDropdownOpen();
                                 addEmptyLineItem();
                               }}
                               onMouseDown={(e) => e.preventDefault()}
                             >
-                              <div className="border-border flex h-8 w-8 items-center justify-center rounded-lg border bg-gradient-to-br from-blue-50 to-blue-100">
+                              <div className="border-border flex h-8 w-8 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
                                 <Package className="h-5 w-5 text-blue-600" />
                               </div>
 
@@ -97,14 +96,14 @@ const SearchDropdown = ({ idx }: { idx: number }) => {
                                           variant="outline"
                                           className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                         >
-                                          MRP ₹{product.mrp}
+                                          MRP ₹{formatToRupees(product.mrp)}
                                         </Badge>
                                       )}
                                     </div>
                                   </div>
                                   <div className="shrink-0 text-right">
                                     <span className="text-success text-xl font-bold">
-                                      ₹ {product.price}
+                                      ₹ {formatToRupees(product.price)}
                                     </span>
                                   </div>
                                 </div>
