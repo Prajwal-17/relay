@@ -1,5 +1,11 @@
 import { useDashboardStore } from "@/store/dashboardStore";
-import { SortOption, TRANSACTION_TYPE, type ApiResponse, type SortType } from "@shared/types";
+import {
+  SortOption,
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type SortType,
+  type TransactionType
+} from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -7,7 +13,7 @@ import { useParams } from "react-router-dom";
 import { useDateRangePicker } from "./useDateRangePicker";
 
 export type MutationVariables = {
-  type: string;
+  type: TransactionType;
   id: string;
 };
 
@@ -44,11 +50,17 @@ const handleDelete = async ({ type, id }: MutationVariables) => {
 const handleConvert = async ({ type, id }: MutationVariables) => {
   try {
     if (type === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.convertSaletoEstimate(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.convertEstimateToSale(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Something went wrong");
     }

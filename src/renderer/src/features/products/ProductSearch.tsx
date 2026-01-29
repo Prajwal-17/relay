@@ -35,15 +35,17 @@ export default function ProductSearch() {
                 className="bg-muted/30 h-16 rounded-lg pl-12 text-xl! font-medium shadow-sm"
               />
               {productsSearchParam && (
-                <X
+                <div
+                  className="hover:bg-accent absolute top-1/2 right-4 -translate-y-1/2 transform cursor-pointer rounded-sm p-1"
                   onClick={() => {
                     setProductsSearchParam("");
                     if (inputRef.current) {
                       inputRef.current.focus();
                     }
                   }}
-                  className="hover:bg-accent absolute top-1/2 right-4 -translate-y-1/2 transform cursor-pointer rounded-sm"
-                />
+                >
+                  <X className="transition-colors" />
+                </div>
               )}
             </div>
 

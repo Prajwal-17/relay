@@ -4,21 +4,23 @@ import {
   UPDATE_QTY_ACTION,
   type ApiResponse,
   type DashboardType,
-  type EstimateItem,
-  type SaleItem,
+  type UnifiedTransactionItem,
   type UpdateQtyAction
 } from "@shared/types";
+import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Check, Minus, Plus } from "lucide-react";
 import { useCallback } from "react";
 
 export const ItemRow = ({
+  id,
   item,
   index,
   type,
   updateQtyMutation
 }: {
-  item: SaleItem | EstimateItem;
+  id: string;
+  item: UnifiedTransactionItem;
   index: number;
   type: DashboardType;
   updateQtyMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
@@ -31,11 +33,12 @@ export const ItemRow = ({
     (action: UpdateQtyAction) => {
       updateQtyMutation.mutate({
         type: type,
-        id: item.id,
+        id: id,
+        itemId: item.id,
         action: action
       });
     },
-    [updateQtyMutation, item.id, type]
+    [updateQtyMutation, item.id, type, id]
   );
 
   if (item.checkedQty === item.quantity) {
@@ -55,8 +58,10 @@ export const ItemRow = ({
           {item.name}
         </td>
         <td className="text-foreground px-3 py-2 text-center">{item.quantity}</td>
-        <td className="text-foreground px-3 py-2 text-right">₹{item.price}</td>
-        <td className="text-foreground px-3 py-2 text-right font-medium">₹{item.totalPrice}</td>
+        <td className="text-foreground px-3 py-2 text-right">₹{formatToRupees(item.price)}</td>
+        <td className="text-foreground px-3 py-2 text-right font-medium">
+          ₹{formatToRupees(item.totalPrice)}
+        </td>
         <td className="px-3 py-2 text-center">
           <button
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.SET)}

@@ -1,8 +1,14 @@
 import { PRODUCT_FILTER, type Product, type ProductFilterType } from "@shared/types";
 import { create } from "zustand";
 
-export type ProductsFormType = Omit<Product, "price" | "id"> & {
+export type ProductsFormType = Omit<
+  Product,
+  "id" | "price" | "productSnapshot" | "totalQuantitySold" | "mrp" | "purchasePrice"
+> & {
+  mrp: string | null;
   price: string;
+  purchasePrice: string | null;
+  isDeleted: boolean;
 };
 
 type ProductsStoreType = {
@@ -26,7 +32,7 @@ type ProductsStoreType = {
   setErrors: (errObj: Record<string, string>) => void;
 };
 
-function initialFormData() {
+function initialFormData(): ProductsFormType {
   return {
     name: "",
     weight: null,
@@ -34,8 +40,8 @@ function initialFormData() {
     mrp: null,
     price: "",
     purchasePrice: null,
-    totalQuantitySold: 0,
-    isDisabled: false
+    isDisabled: false,
+    isDeleted: false
   };
 }
 
@@ -86,17 +92,10 @@ export const useProductsStore = create<ProductsStoreType>((set) => ({
 
   formDataState: initialFormData(),
   setFormDataState: (data) =>
-    set((state) => {
-      if (Object.keys(data).length === 0) {
-        return {
-          formDataState: initialFormData()
-        };
-      }
-
-      return {
-        formDataState: { ...state.formDataState, ...data }
-      };
-    }),
+    set((state) => ({
+      formDataState:
+        Object.keys(data).length === 0 ? initialFormData() : { ...state.formDataState, ...data }
+    })),
 
   dirtyFields: {},
   setDirtyFields: (data) =>

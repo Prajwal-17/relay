@@ -31,22 +31,10 @@ const searchProduct = async (params: ProductSearchParams) => {
         whereClause = and(ne(products.isDeleted, true), ne(products.isDisabled, true))!;
     }
 
-    const cleanedQuery = params.query
-      .replace(/\d+\s*(rs?|₹)/gi, "")
-      .replace(/\d+\s*(g|kg|ml|l|pc|none)/gi, "")
-      .replace(/\b(g|kg|ml|l|pc|none)\b/gi, "")
-      .trim();
-
-    const searchTerms = cleanedQuery
-      .trim()
-      .toLowerCase()
-      .split(" ")
-      .filter((term) => term.length > 0);
-
     const offset = (params.pageNo - 1) * params.pageSize;
 
     const searchResult = await productRepository.searchProducts({
-      searchTerms,
+      searchTerm: params.query,
       whereClause,
       limit: params.pageSize,
       offset

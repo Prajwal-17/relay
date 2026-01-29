@@ -1,10 +1,15 @@
-import type {
-  ApiResponse,
-  CreateCustomerPayload,
-  Customer,
-  UpdateProductPayload
+import {
+  TRANSACTION_TYPE,
+  type ApiResponse,
+  type CreateCustomerPayload,
+  type Customer,
+  type CustomerTransaction,
+  type Estimate,
+  type PaginatedApiResponse,
+  type UpdateProductPayload
 } from "../../../shared/types";
 import { customersRepository } from "./customers.repository";
+import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
 
 const findById = async (id: string): Promise<ApiResponse<Customer>> => {
   try {
@@ -47,6 +52,96 @@ const getCustomers = async (searchTerm: string): Promise<ApiResponse<Customer[]>
       status: "error",
       error: {
         message: (error as Error).message ?? "Something went wrong while fetching customers"
+      }
+    };
+  }
+};
+
+const getDefaultCustomer = async (): Promise<ApiResponse<Customer>> => {
+  try {
+    const customerResult = await customersRepository.getDefaultCustomer();
+
+    if (!customerResult) {
+      return {
+        status: "error",
+        error: {
+          message: "Could not find DEFAULT customer"
+        }
+      };
+    }
+
+    return {
+      status: "success",
+      data: customerResult
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while fetching customer"
+      }
+    };
+  }
+};
+
+const getSalesByCustomerId = async (
+  params: SalesByCustomerParams
+): Promise<PaginatedApiResponse<CustomerTransaction[] | []>> => {
+  try {
+    const sales = await customersRepository.getSalesByCustomerId(params);
+
+    const nextPageNo = sales.length === 20 ? params.pageNo + 1 : null;
+
+    return {
+      status: "success",
+      nextPageNo: nextPageNo,
+      data:
+        sales.length > 0
+          ? sales.map((s) => ({
+              type: TRANSACTION_TYPE.SALE,
+              transactionNo: s.invoiceNo,
+              ...s
+            }))
+          : []
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong"
+      }
+    };
+  }
+};
+
+const getEstimatesByCustomerId = async (
+  params: EstimatesByCustomerParams
+): Promise<PaginatedApiResponse<Estimate[] | []>> => {
+  try {
+    const estimates = await customersRepository.getEstimatesByCustomerId(params);
+
+    const nextPageNo = estimates.length === 20 ? params.pageNo + 1 : null;
+
+    return {
+      status: "success",
+      nextPageNo: nextPageNo,
+      data:
+        estimates.length > 0
+          ? estimates.map((e) => ({
+              type: TRANSACTION_TYPE.SALE,
+              transactionNo: e.estimateNo,
+              ...e
+            }))
+          : []
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong"
       }
     };
   }
@@ -144,6 +239,9 @@ const deleteCustomerById = async (id: string): Promise<ApiResponse<string>> => {
 export const customersService = {
   findById,
   getCustomers,
+  getDefaultCustomer,
+  getSalesByCustomerId,
+  getEstimatesByCustomerId,
   createCustomer,
   updateCustomerById,
   deleteCustomerById

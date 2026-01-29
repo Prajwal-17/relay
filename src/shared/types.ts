@@ -1,7 +1,11 @@
 import type z from "zod";
 import type { createCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
-import type { txnPayloadSchema } from "./schemas/transaction.schema";
+import type {
+  lineItemSchema,
+  payloadDataSchema,
+  txnPayloadSchema
+} from "./schemas/transaction.schema";
 
 export type UsersType = {
   id: string;
@@ -34,6 +38,11 @@ export type Product = {
   createdAt?: string;
 };
 
+export type ProductWithDeletion = Product & {
+  isDeleted?: boolean;
+  deletedAt?: string | null;
+};
+
 export type ProductHistory = {
   id: string;
   name: string;
@@ -64,7 +73,6 @@ export type UnifiedTransaction = {
 
 export type UnifiedTransactionItem = {
   id: string;
-  parentId: string;
   productId: string | null;
   name: string;
   productSnapshot: string;
@@ -228,6 +236,8 @@ export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
 
 export type TxnPayload = z.infer<typeof txnPayloadSchema>;
+export type TxnPayloadData = z.infer<typeof payloadDataSchema>;
+export type LineItemSchema = z.infer<typeof lineItemSchema>;
 
 export type FilteredGoogleContactsType = {
   id: number;
@@ -347,17 +357,28 @@ export const BATCH_CHECK_ACTION = {
 
 export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
 
-export interface DashboardApi {
-  getMetricsSummary: () => Promise<ApiResponse<MetricsSummary>>;
-  getChartMetrics: (timePeriod: TimePeriodType) => Promise<ApiResponse<ChartDataType[]>>;
-  getRecentTransactions: (
-    type: TransactionType
-  ) => Promise<
-    ApiResponse<(Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []>
-  >;
-  getTopProducts: () => Promise<ApiResponse<TopProductDataPoint[]>>;
-}
+export type UpdateResponseItem = UnifiedTransactionItem & {
+  rowId: string;
+};
+
+export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
+  items: UpdateResponseItem[];
+};
+
+export type UpdateEstimateResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
+  items: UpdateResponseItem[];
+};
+
+export const BILLSTATUS = {
+  IDLE: "idle",
+  SAVING: "saving",
+  SAVED: "saved",
+  UNSAVED: "unsaved",
+  ERROR: "error"
+} as const;
+
+export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
 export interface ShareApi {
-  saveAsPDF: (transactionId: string, type: "sales" | "estimates") => Promise<ApiResponse<string>>;
+  saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
 }

@@ -2,24 +2,19 @@ import {
   DASHBOARD_TYPE,
   type ApiResponse,
   type BatchCheckAction,
-  type Customer,
   type DashboardType,
-  type Estimate,
-  type EstimateItem,
-  type Sale,
-  type SaleItem,
+  type UnifiedTransctionWithItems,
   type UpdateQtyAction
 } from "@shared/types";
+import { formatToRupees, IndianRupees } from "@shared/utils/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 
-type SaleObject = Sale & { customer: Customer; items: SaleItem[] };
-type EstimateObject = Estimate & { customer: Customer; items: EstimateItem[] };
-type UnifiedType = SaleObject | EstimateObject;
 export type MutationVariables = {
   type: DashboardType;
   id: string;
+  itemId: string;
   action: UpdateQtyAction;
 };
 
@@ -29,43 +24,48 @@ type BatchUpdateMutationVariables = {
   action: BatchCheckAction;
 };
 
-export type UnifiedTransaction = {
-  id: string;
-  transactionNo: number;
-  type: "sale" | "estimate";
-  customerName: string;
-  customerId: string;
-  grandTotal: number;
-  totalQuantity: number;
-  isPaid: boolean;
-  items: SaleItem[] | EstimateItem[];
-  createdAt?: string;
-  updatedAt?: string;
-};
-
 const fetchTransaction = async (type: DashboardType, id: string) => {
   try {
     if (type === DASHBOARD_TYPE.SALES) {
-      const response = await window.salesApi.getTransactionById(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
+        method: "GET"
+      });
+      const data = await response.json();
+      return data;
     } else if (type === DASHBOARD_TYPE.ESTIMATES) {
-      const response = await window.estimatesApi.getTransactionById(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
+        method: "GET"
+      });
+      const data = await response.json();
+      return data;
     }
-    throw new Error("Invalid dashboard type");
   } catch (error) {
     throw new Error((error as Error).message);
   }
 };
 
-const handleUpdateQty = async ({ type, id, action }) => {
+const handleUpdateQty = async ({ type, id, itemId, action }) => {
   try {
     if (type === DASHBOARD_TYPE.SALES) {
-      const response = await window.salesApi.registerSaleItemQty(id, action);
-      return response;
+      const response = await fetch(
+        `http://localhost:3000/api/sales/${id}/items/${itemId}/checked-qty`,
+        {
+          method: "POST",
+          body: JSON.stringify({ action: action })
+        }
+      );
+      const data = await response.json();
+      return data;
     } else if (type === DASHBOARD_TYPE.ESTIMATES) {
-      const response = await window.estimatesApi.registerEstimateItemQty(id, action);
-      return response;
+      const response = await fetch(
+        `http://localhost:3000/api/estimates/${id}/items/${itemId}/checked-qty`,
+        {
+          method: "POST",
+          body: JSON.stringify({ action: action })
+        }
+      );
+      const data = await response.json();
+      return data;
     }
     throw new Error("Invalid dashboard transaction type");
   } catch (error) {
@@ -76,11 +76,25 @@ const handleUpdateQty = async ({ type, id, action }) => {
 const handleBatchUpdateQty = async ({ type, id, action }) => {
   try {
     if (type === DASHBOARD_TYPE.SALES) {
-      const response = await window.salesApi.markAllSaleItemsChecked(id, action);
-      return response;
+      const response = await fetch(
+        `http://localhost:3000/api/sales/${id}/items/checked-qty/batch`,
+        {
+          method: "POST",
+          body: JSON.stringify({ action: action })
+        }
+      );
+      const data = await response.json();
+      return data;
     } else if (type === DASHBOARD_TYPE.ESTIMATES) {
-      const response = await window.estimatesApi.markAllEstimateItemsChecked(id, action);
-      return response;
+      const response = await fetch(
+        `http://localhost:3000/api/estimates/${id}/items/checked-qty/batch`,
+        {
+          method: "POST",
+          body: JSON.stringify({ action: action })
+        }
+      );
+      const data = await response.json();
+      return data;
     }
     throw new Error("Invalid dashboard transaction type");
   } catch (error) {
@@ -93,7 +107,7 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
   const { data, isError, error } = useQuery({
     queryKey: [type, id],
     queryFn: () => fetchTransaction(type, id),
-    select: (response: ApiResponse<UnifiedType>) => {
+    select: (response: ApiResponse<UnifiedTransctionWithItems>) => {
       if (response.status === "success") {
         return response.data;
       }
@@ -102,7 +116,7 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
   });
 
   const updateQtyMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
-    mutationFn: ({ type, id, action }) => handleUpdateQty({ type, id, action }),
+    mutationFn: ({ type, id, itemId, action }) => handleUpdateQty({ type, id, itemId, action }),
     onSuccess: (response) => {
       if (response.status === "success") {
         queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
@@ -133,49 +147,14 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
     }
   }, [isError, error]);
 
-  const transactionData = useMemo((): UnifiedTransaction | undefined => {
-    if (!data) return;
-
-    if (type === DASHBOARD_TYPE.SALES) {
-      const sale = data as SaleObject;
-      return {
-        id: sale.id,
-        transactionNo: sale.invoiceNo,
-        type: "sale",
-        customerName: sale.customer.name,
-        customerId: sale.customer.id,
-        grandTotal: sale.grandTotal ?? 0,
-        totalQuantity: sale.totalQuantity ?? 0,
-        isPaid: sale.isPaid,
-        items: sale.items,
-        createdAt: sale.createdAt,
-        updatedAt: sale.updatedAt
-      };
-    }
-
-    if (type === DASHBOARD_TYPE.ESTIMATES) {
-      const estimate = data as EstimateObject;
-      return {
-        id: estimate.id,
-        transactionNo: estimate.estimateNo,
-        type: "estimate",
-        customerName: estimate.customer.name,
-        customerId: estimate.customer.id,
-        grandTotal: estimate.grandTotal ?? 0,
-        totalQuantity: estimate.totalQuantity ?? 0,
-        isPaid: estimate.isPaid,
-        items: estimate.items,
-        createdAt: estimate.createdAt,
-        updatedAt: estimate.updatedAt
-      };
-    }
-    return;
-  }, [data, type]);
-
-  const calcTotalAmount =
+  const total =
     data?.items.reduce((sum, currentItem) => {
       return sum + Number(currentItem.totalPrice || 0);
-    }, 0) ?? 0;
+    }, 0) || 0;
 
-  return { data: transactionData, calcTotalAmount, updateQtyMutation, batchUpdateQtyMutation };
+  const subtotal = IndianRupees.format(formatToRupees(total));
+
+  const grandTotal = IndianRupees.format(Math.round(formatToRupees(total)));
+
+  return { data, subtotal, grandTotal, updateQtyMutation, batchUpdateQtyMutation };
 };

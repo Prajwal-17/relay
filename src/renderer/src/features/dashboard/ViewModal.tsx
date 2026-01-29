@@ -7,24 +7,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useViewModal } from "@/hooks/dashboard/useViewModal";
 import { useViewModalStore } from "@/store/viewModalStore";
-import {
-  BATCH_CHECK_ACTION,
-  DASHBOARD_TYPE,
-  type DashboardType,
-  type EstimateItem,
-  type SaleItem
-} from "@shared/types";
+import { BATCH_CHECK_ACTION, type DashboardType } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { IndianRupees } from "@shared/utils/utils";
 import { CheckCheck, ChevronDown, X } from "lucide-react";
 import { ItemRow } from "./ItemRow";
 
 export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => {
-  const { data, calcTotalAmount, updateQtyMutation, batchUpdateQtyMutation } = useViewModal({
+  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
+
+  const { data, subtotal, grandTotal, updateQtyMutation, batchUpdateQtyMutation } = useViewModal({
     type,
     id
   });
-  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
 
   return (
     <>
@@ -56,7 +50,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                     <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">
                       Customer
                     </p>
-                    <p className="text-foreground font-medium">{data.customerName}</p>
+                    <p className="text-foreground font-medium">{data.customer.name}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">
@@ -110,11 +104,8 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                       {data.items.map((item, index: number) => (
                         <ItemRow
                           key={item.id}
-                          item={
-                            type === DASHBOARD_TYPE.SALES
-                              ? (item as SaleItem)
-                              : (item as EstimateItem)
-                          }
+                          id={id}
+                          item={item}
                           index={index + 1}
                           type={type}
                           updateQtyMutation={updateQtyMutation}
@@ -132,15 +123,11 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                   <div className="flex items-center gap-8 text-right">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="text-muted-foreground text-lg">Subtotal:</span>
-                      <span className="text-foreground text-lg font-semibold">
-                        {IndianRupees.format(calcTotalAmount)}
-                      </span>
+                      <span className="text-foreground text-lg font-semibold">{subtotal}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-xl font-medium">Total:</span>
-                      <span className="text-foreground text-3xl font-bold">
-                        {IndianRupees.format(Math.round(calcTotalAmount))}
-                      </span>
+                      <span className="text-foreground text-3xl font-bold">{grandTotal}</span>
                     </div>
                   </div>
                 </div>
@@ -168,7 +155,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                         onClick={() =>
                           batchUpdateQtyMutation.mutate({
                             type,
-                            id: data.id,
+                            id: id,
                             action: BATCH_CHECK_ACTION.MARK_ALL
                           })
                         }

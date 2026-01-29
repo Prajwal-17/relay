@@ -82,10 +82,11 @@ const LineItemRow = memo(
             <div className="border-border bg-background relative flex h-full w-full items-center rounded-lg border font-bold shadow-xs">
               <button
                 onClick={() => {
-                  const currentQty = parseFloat(item.quantity || "0");
+                  const currentQty = Number(item.quantity || "0");
                   if (currentQty >= 0) {
                     const newQuantity = currentQty + 1;
-                    updateLineItem(item.rowId, "quantity", newQuantity.toString());
+                    const fixedQuantity = parseFloat(newQuantity.toFixed(2)); // handle floating errors
+                    updateLineItem(item.rowId, "quantity", fixedQuantity.toString());
                   }
                 }}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
@@ -111,13 +112,14 @@ const LineItemRow = memo(
                 placeholder="0"
               />
               <button
-                disabled={parseFloat(item.quantity || "0") <= 0}
+                disabled={parseFloat(item.quantity || "0") <= 1}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
-                  const currentQty = parseFloat(item.quantity || "0");
+                  const currentQty = Number(item.quantity || "0");
                   if (currentQty >= 1) {
                     const newQuantity = currentQty - 1;
-                    updateLineItem(item.rowId, "quantity", newQuantity.toString());
+                    const fixedQuantity = parseFloat(newQuantity.toFixed(2)); // handle floating errors
+                    updateLineItem(item.rowId, "quantity", fixedQuantity.toString());
                   }
                 }}
               >
@@ -181,7 +183,7 @@ const LineItemRow = memo(
             <>
               <div className="col-span-2 flex items-center justify-center py-1">
                 <span className="text-base font-semibold whitespace-nowrap">
-                  {item.checkedQty}/{item.quantity}
+                  {item.checkedQty}/{item.quantity || "0"}
                 </span>
               </div>
               <div className="col-span-2 flex items-center justify-center gap-1 py-1">

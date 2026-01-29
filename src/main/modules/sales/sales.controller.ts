@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { txnPayloadSchema } from "../../../shared/schemas/transaction.schema";
-import { filterSalesParamsSchema, getSalesByCustomerSchema } from "./sales.schema";
+import { filterSalesParamsSchema } from "./sales.schema";
 import { salesService } from "./sales.service";
 
 export const salesController = new Hono();
@@ -74,32 +74,6 @@ salesController.get("/", async (c) => {
   }
 });
 
-// get Sales wrt to customer.id
-salesController.get("/", async (c) => {
-  try {
-    const rawParams = {
-      customerId: c.req.query("customerId"),
-      pageNo: c.req.query("pageNo"),
-      pageSize: c.req.query("pageSize")
-    };
-
-    const parseResult = getSalesByCustomerSchema.safeParse(rawParams);
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.issues[0].message;
-      return c.json({ status: "error", error: { message: errorMessage } }, 400);
-    }
-
-    const result = await salesService.getSalesByCustomerId(parseResult.data);
-
-    const status = result.status === "success" ? 200 : 400;
-    return c.json(result, status);
-  } catch (error) {
-    console.log(error);
-    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
-  }
-});
-
 // create new Sale
 salesController.post("/create", async (c) => {
   try {
@@ -112,7 +86,30 @@ salesController.post("/create", async (c) => {
       return c.json({ status: "error", error: { message: errorMessage } }, 400);
     }
 
-    const result = await salesService.createSale(payload);
+    const result = await salesService.createSale(payload.data);
+
+    const status = result.status === "success" ? 200 : 400;
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// update an existing sale
+salesController.post("/:id/edit", async (c) => {
+  try {
+    const id = c.req.param("id");
+    const payload = await c.req.json();
+
+    const parseResult = txnPayloadSchema.safeParse(payload);
+
+    if (!parseResult.success) {
+      const errorMessage = parseResult.error.issues[0].message;
+      return c.json({ status: "error", error: { message: errorMessage } }, 400);
+    }
+
+    const result = await salesService.updateSale(id, payload.data);
 
     const status = result.status === "success" ? 200 : 400;
     return c.json(result, status);
@@ -132,6 +129,46 @@ salesController.post("/:id/convert", async (c) => {
     }
 
     const result = await salesService.convertSaleToEstimate(id);
+    const status = result.status === "success" ? 200 : 400;
+
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// update checked-qty of a sale item - action "inc", "dec", "set"
+salesController.post("/:id/items/:itemId/checked-qty", async (c) => {
+  try {
+    const itemId = c.req.param("itemId");
+    const { action } = await c.req.json();
+
+    if (!itemId) {
+      return c.json({ status: "error", error: { message: "Id does not exist" } }, 400);
+    }
+
+    const result = await salesService.updateCheckedQtyService(itemId, action);
+    const status = result.status === "success" ? 200 : 400;
+
+    return c.json(result, status);
+  } catch (error) {
+    console.log(error);
+    return c.json({ status: "error", error: { message: "Something went wrong" } }, 400);
+  }
+});
+
+// batch update checked-qty of a sale
+salesController.post("/:id/items/checked-qty/batch", async (c) => {
+  try {
+    const id = c.req.param("id");
+    const { action } = await c.req.json();
+
+    if (!id) {
+      return c.json({ status: "error", error: { message: "Id does not exist" } }, 400);
+    }
+
+    const result = await salesService.batchCheckItemsService(id, action);
     const status = result.status === "success" ? 200 : 400;
 
     return c.json(result, status);

@@ -1,7 +1,13 @@
-import { and, count, desc, eq, gte, lte, sql, type SQL, sum } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, notInArray, sql, sum, type SQL } from "drizzle-orm";
+import {
+  BATCH_CHECK_ACTION,
+  UPDATE_QTY_ACTION,
+  type BatchCheckAction,
+  type UpdateQtyAction
+} from "../../../shared/types";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
-import type { FilterSalesParams, SalesByCustomerParams } from "./sales.types";
+import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
   return await db.query.sales.findFirst({
@@ -10,17 +16,6 @@ const getSaleById = async (id: string) => {
       customer: true,
       saleItems: true
     }
-  });
-};
-
-const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
-  const offset = (params.pageNo - 1) * params.pageSize;
-
-  return await db.query.sales.findMany({
-    where: eq(sales.customerId, params.customerId),
-    orderBy: desc(sales.createdAt),
-    limit: 20,
-    offset: offset
   });
 };
 
@@ -62,13 +57,13 @@ const filterSalesByDate = async (
   };
 };
 
-const createSale = async (customerId, payload) => {
+const createSale = async (payload: CreateSaleParams) => {
   return db.transaction((tx) => {
     const newSale = tx
       .insert(sales)
       .values({
         invoiceNo: Number(payload.transactionNo),
-        customerId: customerId,
+        customerId: payload.customerId,
         grandTotal: payload.grandTotal,
         totalQuantity: payload.totalQuantity,
         isPaid: payload.isPaid,
@@ -104,7 +99,7 @@ const createSale = async (customerId, payload) => {
         })
         .run();
 
-      if (products.id) {
+      if (item.productId) {
         tx.update(products)
           .set({
             totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
@@ -114,7 +109,112 @@ const createSale = async (customerId, payload) => {
       }
     }
 
-    return "Successfully created Sale";
+    return newSale.id;
+    // return "Successfully created Sale";
+  });
+};
+
+const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
+  return db.transaction((tx) => {
+    // update sale
+    tx.update(sales)
+      .set({
+        customerId: payload.customerId,
+        grandTotal: payload.grandTotal,
+        isPaid: payload.isPaid,
+        totalQuantity: payload.totalQuantity,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ','now'))`,
+        createdAt: payload.createdAt
+      })
+      .where(eq(sales.id, saleId))
+      .run();
+
+    const resultItems: any = [];
+
+    const quantitySoldAdjustments = new Map<string, number>();
+
+    const existingSaleItems = tx.select().from(saleItems).where(eq(saleItems.saleId, saleId)).all();
+
+    for (const saleItem of existingSaleItems) {
+      if (saleItem.productId) {
+        const current = quantitySoldAdjustments.get(saleItem.productId) || 0;
+        quantitySoldAdjustments.set(saleItem.productId, current - saleItem.quantity);
+      }
+    }
+
+    for (const item of payload.items) {
+      if (item.productId) {
+        const current = quantitySoldAdjustments.get(item.productId) || 0;
+        quantitySoldAdjustments.set(item.productId, current + item.quantity);
+      }
+    }
+
+    for (const [productId, netChange] of quantitySoldAdjustments) {
+      if (netChange !== 0) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${netChange}`
+          })
+          .where(eq(products.id, productId))
+          .run();
+      }
+    }
+
+    for (const item of payload.items) {
+      const values = {
+        saleId: saleId,
+        productId: item.productId,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        purchasePrice: item.purchasePrice,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+        checkedQty: item.checkedQty
+      };
+
+      let dbItem;
+
+      if (item.id) {
+        // update sale item
+        dbItem = tx
+          .update(saleItems)
+          .set(values)
+          .where(eq(saleItems.id, item.id))
+          .returning()
+          .get();
+      } else {
+        // insert new
+        dbItem = tx.insert(saleItems).values(values).returning().get();
+      }
+
+      // merge DB result with FE rowId
+      resultItems.push({
+        ...item, // retain FE props
+        ...dbItem, // overwrite with DB props (id)
+        rowId: item.rowId // force keep the specific rowId
+      });
+    }
+
+    const keptItemIds = resultItems.map((item) => item.id);
+
+    // delete items NOT in the payload
+    if (keptItemIds.length > 0) {
+      tx.delete(saleItems)
+        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
+        .run();
+    } else {
+      // delete all items if item array is empty
+      tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
+    }
+
+    return {
+      ...payload,
+      items: resultItems
+    };
   });
 };
 
@@ -137,10 +237,6 @@ const deleteSaleById = async (id: string) => {
           .where(eq(products.id, item.productId))
           .run();
       }
-    }
-
-    if (items.length === 0) {
-      throw new Error("Sale Items does not exist");
     }
 
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
@@ -215,12 +311,76 @@ const convertSaleToEstimate = async (id: string) => {
   });
 };
 
+const updateCheckedQty = async (saleItemId: string, action: UpdateQtyAction) => {
+  let updatedQty: number | undefined;
+
+  db.transaction((tx) => {
+    const item = tx.select().from(saleItems).where(eq(saleItems.id, saleItemId)).get();
+    if (!item) {
+      throw new Error("Sale Item not found");
+    }
+    updatedQty = item.checkedQty ?? 0;
+    const totalQty = item.quantity;
+    const remainder = parseFloat((totalQty % 1).toFixed(2));
+    if (action === UPDATE_QTY_ACTION.SET) {
+      updatedQty = item.checkedQty === item.quantity ? 0 : item.quantity;
+    } else if (action === UPDATE_QTY_ACTION.INCREMENT) {
+      const nextQty = updatedQty + 1;
+      if (nextQty > totalQty) {
+        const remainderQty = updatedQty + remainder;
+        if (remainderQty <= totalQty) {
+          updatedQty = remainderQty;
+        } else {
+          updatedQty = totalQty;
+        }
+      } else {
+        updatedQty = nextQty;
+      }
+    } else if (action === UPDATE_QTY_ACTION.DECREMENT) {
+      const nextQty = updatedQty - 1;
+      const remainderVal = parseFloat((updatedQty % 1).toFixed(2));
+      if (remainderVal !== 0 && updatedQty === totalQty) {
+        updatedQty = Math.floor(updatedQty);
+      } else {
+        updatedQty = Math.max(0, nextQty);
+      }
+    }
+    updatedQty = Math.round(updatedQty * 100) / 100;
+    tx.update(saleItems)
+      .set({
+        checkedQty: updatedQty
+      })
+      .where(eq(saleItems.id, saleItemId))
+      .run();
+  });
+
+  if (updatedQty === undefined) {
+    throw new Error("Update failed unexpectedly");
+  }
+
+  return updatedQty;
+};
+
+const batchCheckItems = async (saleId: string, action: BatchCheckAction) => {
+  const setCheckedQty = action === BATCH_CHECK_ACTION.MARK_ALL ? sql`${saleItems.quantity}` : 0;
+
+  return db
+    .update(saleItems)
+    .set({
+      checkedQty: setCheckedQty
+    })
+    .where(eq(saleItems.saleId, saleId))
+    .run();
+};
+
 export const salesRepository = {
   getSaleById,
-  getSalesByCustomerId,
   getLatestInvoiceNo,
   filterSalesByDate,
   createSale,
+  updateSale,
   convertSaleToEstimate,
+  updateCheckedQty,
+  batchCheckItems,
   deleteSaleById
 };

@@ -16,8 +16,11 @@ import RecentTransactionsTableRow from "./RecentTransactionsTableRow";
 
 const fetchRecentTransactions = async (type: TransactionType) => {
   try {
-    const response = await window.dashboardApi.getRecentTransactions(type);
-    return response;
+    const response = await fetch(
+      `http://localhost:3000/api/dashboard/recent-transactions/${type}?limit=5`
+    );
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error((error as Error).message);
   }
@@ -85,7 +88,7 @@ export function RecentActivitiesTable() {
                 {data.map((transaction, index) => (
                   <div key={transaction.id || index}>
                     <RecentTransactionsTableRow
-                      pathname={type}
+                      type={type}
                       transaction={transaction}
                       deleteMutation={deleteMutation}
                       convertMutation={convertMutation}

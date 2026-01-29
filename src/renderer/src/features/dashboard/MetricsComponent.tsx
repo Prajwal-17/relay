@@ -9,8 +9,9 @@ import { StatCard } from "./StatCard";
 
 const fetchMetrics = async () => {
   try {
-    const response = await window.dashboardApi.getMetricsSummary();
-    return response;
+    const response = await fetch("http://localhost:3000/api/dashboard/summary");
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error((error as Error).message);
   }

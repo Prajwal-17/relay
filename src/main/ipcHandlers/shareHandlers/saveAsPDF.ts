@@ -74,14 +74,14 @@ export function saveAsPDF() {
         doc.text("Bangalore 560073", marginX, 33);
         doc.text("+91 9945029729", marginX, 38);
 
-        const transactionType = type.charAt(0).toUpperCase() + type.slice(1, -1);
+        const transactionType = type.charAt(0).toUpperCase() + type.slice(1);
         doc.setFont("helvetica", "bold");
         doc.text(transactionType, pageWidth - marginX, 20, {
           align: "right"
         });
         doc.setFont("helvetica", "normal");
         doc.text(
-          `${type === "sales" ? "Invoice #:" : "Estimate #:"} ${billingNo}`,
+          `${type === "sale" ? "Invoice #:" : "Estimate #:"} ${billingNo}`,
           pageWidth - marginX,
           28,
           { align: "right" }

@@ -4,86 +4,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DEFAULT_HOUR } from "@/constants";
-import useTransactionState from "@/hooks/useTransactionState";
-import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { useBillingStore } from "@/store/billingStore";
 import { useSidebarStore } from "@/store/sidebarStore";
-import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
+import { type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
-import { useQuery } from "@tanstack/react-query";
-import { Check, PanelLeftOpen, X } from "lucide-react";
-import { useEffect, useState, type ChangeEvent } from "react";
-import toast from "react-hot-toast";
+import { PanelLeftOpen } from "lucide-react";
+import { useState, type ChangeEvent } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
-const getLatestTransactionNo = async (type: TransactionType) => {
-  try {
-    let reqResponse;
-    if (type === TRANSACTION_TYPE.SALE) {
-      const response = await fetch("http://localhost:3000/api/sales/next-number", {
-        method: "GET"
-      });
-      reqResponse = await response.json();
-    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await fetch("http://localhost:3000/api/estimates/next-number", {
-        method: "GET"
-      });
-      reqResponse = await response.json();
-    } else {
-      throw new Error("Transaction Type is undefined");
-    }
-    if (reqResponse.status === "success") {
-      return reqResponse;
-    }
-    throw new Error(reqResponse.error.message);
-  } catch (error) {
-    console.log(error);
-    throw new Error((error as Error).message);
-  }
-};
-
 const BillingHeader = () => {
-  const {
-    transactionNo,
-    setTransactionNo,
-    customerContact,
-    setCustomerContact,
-    isNewCustomer,
-    billingDate,
-    setBillingDate
-  } = useTransactionState();
+  const transactionNo = useBillingStore((state) => state.transactionNo);
+  const billingDate = useBillingStore((state) => state.billingDate);
+  const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
   const [open, setOpen] = useState(false);
-  const [tempTransactionNo, setTempTransactionNo] = useState<number | null>(transactionNo);
-  const [editInvoice, setEditInvoice] = useState<boolean>(false);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
-  const isDropdownOpen = useSearchDropdownStore((state) => state.isDropdownOpen);
 
-  const { type, id } = useParams<{ type: TransactionType; id?: string }>();
-  const formattedType = type?.slice(0, -1) as TransactionType;
-
-  const { data, isFetched, isError, error } = useQuery({
-    queryKey: [formattedType, "getTransactionNo"],
-    // null assertion - type cannot be null here
-    queryFn: () => getLatestTransactionNo(formattedType),
-    enabled:
-      !id &&
-      (formattedType === TRANSACTION_TYPE.SALE || formattedType === TRANSACTION_TYPE.ESTIMATE)
-  });
-
-  useEffect(() => {
-    if (!isFetched && !data) {
-      return;
-    }
-    setTransactionNo(data.data);
-  }, [data, setTransactionNo, isFetched]);
-
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
+  const { type } = useParams<{ type: TransactionType; id?: string }>();
 
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === "") return;
@@ -146,35 +85,7 @@ const BillingHeader = () => {
             <div className="flex items-center justify-center gap-2 py-2">
               <span className="text-muted-foreground text-lg font-medium">Invoice Number</span>
               <span className="text-bold text-foreground text-3xl font-semibold">#</span>
-              {editInvoice ? (
-                <>
-                  <Input
-                    type="number"
-                    className="text-primary w-24 px-1 py-1 text-center text-xl! font-extrabold"
-                    value={Number(tempTransactionNo)}
-                    onChange={(e) => setTempTransactionNo(Number(e.target.value))}
-                  />
-                  <Check
-                    onClick={() => {
-                      setEditInvoice(false);
-                      setTransactionNo(tempTransactionNo);
-                    }}
-                    className="cursor-pointer rounded-md p-1 text-green-600 hover:bg-neutral-200"
-                    size={30}
-                  />
-                  <X
-                    className="cursor-pointer rounded-md p-1 text-red-500 hover:bg-neutral-200"
-                    onClick={() => {
-                      setTempTransactionNo(transactionNo);
-                      setEditInvoice(false);
-                    }}
-                    size={30}
-                  />
-                </>
-              ) : (
-                <span className="text-foreground text-3xl font-extrabold">{transactionNo}</span>
-              )}
-              {/*<SquarePen size={20} onClick={() => setEditInvoice(true)} />*/}
+              <span className="text-foreground text-3xl font-extrabold">{transactionNo}</span>
             </div>
           </div>
           <div className="flex items-center gap-5">
@@ -216,33 +127,7 @@ const BillingHeader = () => {
             </div>
           </div>
         </div>
-        <div className="flex max-w-4xl flex-col justify-between">
-          <div className="flex w-full flex-1 items-center gap-4">
-            <CustomerNameInput />
-            <div className="w-full">
-              <label htmlFor="customer-contact" className="text-foreground text-lg font-medium">
-                Customer Phone Number
-              </label>
-
-              <div className="relative mt-1">
-                <div className="border-r-border border-border bg-secondary/80 pointer-events-none absolute inset-y-0 left-0 flex items-center rounded-l-md border px-3">
-                  <span className="text-muted-foreground text-lg">+91</span>
-                </div>
-
-                <Input
-                  id="customer-contact"
-                  className="py-6 pl-16 text-lg! font-medium focus:border-none"
-                  placeholder="Contact Number"
-                  value={customerContact ?? ""}
-                  onChange={(e) => setCustomerContact(e.target.value)}
-                />
-              </div>
-            </div>
-          </div>
-          <span className="bg-success text-success-foreground my-1 self-start rounded-md px-2 font-medium">
-            {isNewCustomer && !isDropdownOpen ? "New Customer" : null}
-          </span>
-        </div>
+        <CustomerNameInput />
       </div>
     </>
   );

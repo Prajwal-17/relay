@@ -6,11 +6,17 @@ import type { MutationVariables } from "./dashboard/useDashboard";
 const handleDelete = async ({ type, id }: MutationVariables) => {
   try {
     if (type === TRANSACTION_TYPE.SALE) {
-      const response = await window.salesApi.deleteSale(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+      return data;
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await window.estimatesApi.deleteEstimate(id);
-      return response;
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
+        method: "DELETE"
+      });
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Something went wrong");
     }
@@ -21,12 +27,18 @@ const handleDelete = async ({ type, id }: MutationVariables) => {
 
 const handleConvert = async ({ type, id }: MutationVariables) => {
   try {
-    if (type === "sale") {
-      const response = await window.salesApi.convertSaletoEstimate(id);
-      return response;
-    } else if (type === "estimate") {
-      const response = await window.estimatesApi.convertEstimateToSale(id);
-      return response;
+    if (type === TRANSACTION_TYPE.SALE) {
+      const response = await fetch(`http://localhost:3000/api/sales/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
+    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
+      const response = await fetch(`http://localhost:3000/api/estimates/${id}/convert`, {
+        method: "POST"
+      });
+      const data = await response.json();
+      return data;
     } else {
       throw new Error("Something went wrong");
     }
@@ -34,6 +46,7 @@ const handleConvert = async ({ type, id }: MutationVariables) => {
     throw new Error((error as Error).message);
   }
 };
+
 export const useHomeDashboard = ({ type }: { type: string }) => {
   const queryClient = useQueryClient();
 

@@ -1,12 +1,11 @@
-import type { Product, UnifiedTransactionItem } from "@shared/types";
+import { filterValidLineItems } from "@/utils";
+import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
 import { formatToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
-import { useBillingStore } from "./billingStore";
 
 export type LineItem = {
-  id: string | null; // saleItem.id || estimateItem.id
-  parentId: string; // sale.id || estimate.id,
+  id: string | null; // saleItem.id | estimateItem.id
   rowId: string;
   productId: string | null;
   name: string;
@@ -27,17 +26,20 @@ type LineItemsStore = {
   setIsCountControlsVisible: () => void;
   lineItems: LineItem[] | [];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
+  originalLineItems: LineItem[] | [];
+  setOriginalLineItems: () => void;
   addEmptyLineItem: (type?: "button") => void;
   addLineItem: (rowId: string, newItem: Product) => void;
   updateLineItem: (id: string, field: keyof LineItem, value: string | number) => void;
+  updateInternalIds: (responseItems: UpdateResponseItem[]) => void;
   deleteLineItem: (id: string) => void;
   setAllChecked: (checked: boolean) => void;
+  reset: () => void;
 };
 
 function initialLineItem() {
   const lineItem: LineItem = {
     id: null,
-    parentId: useBillingStore.getState().billingId ?? "",
     rowId: uuidv4(),
     productId: null,
     name: "",
@@ -54,6 +56,31 @@ function initialLineItem() {
   };
 
   return lineItem;
+}
+
+function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
+  if (!itemsArray || itemsArray.length === 0) {
+    return [initialLineItem()];
+  }
+
+  const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
+    id: item.id,
+    rowId: uuidv4(),
+    productId: item.productId,
+    name: item.name,
+    productSnapshot: item.productSnapshot,
+    weight: item.weight,
+    unit: item.unit,
+    mrp: item.mrp,
+    price: item.price ? formatToRupees(Number(item.price)).toString() : "",
+    purchasePrice: item.purchasePrice,
+    quantity: item.quantity.toString(),
+    totalPrice: item.totalPrice,
+    checkedQty: item.checkedQty,
+    isInventoryItem: item.productId ? true : false
+  }));
+
+  return [...lineItemsArray, initialLineItem()];
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {
@@ -78,35 +105,16 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
   lineItems: [initialLineItem()],
 
   setLineItems: (itemsArray) =>
-    set(() => {
-      if (!itemsArray || itemsArray.length === 0) {
-        return {
-          lineItems: [initialLineItem()]
-        };
-      }
+    set(() => ({
+      lineItems: normalizeLineItems(itemsArray)
+    })),
 
-      const lineItemsArray: LineItem[] = itemsArray.map((item) => ({
-        id: item.id,
-        parentId: item.parentId,
-        rowId: uuidv4(),
-        productId: item.productId,
-        name: item.name,
-        productSnapshot: item.productSnapshot,
-        weight: item.weight,
-        unit: item.unit,
-        mrp: item.mrp,
-        price: item.price ? formatToRupees(Number(item.price)).toString() : "",
-        purchasePrice: item.purchasePrice,
-        quantity: item.quantity.toString(),
-        totalPrice: item.totalPrice,
-        checkedQty: item.checkedQty,
-        isInventoryItem: item.productId ? true : false
-      }));
-
-      return {
-        lineItems: lineItemsArray
-      };
-    }),
+  // recently saved result from DB
+  originalLineItems: [],
+  setOriginalLineItems: () =>
+    set((state) => ({
+      originalLineItems: state.lineItems
+    })),
 
   // add empty row
   addEmptyLineItem: (type) =>
@@ -141,7 +149,6 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
 
       const updatedItem: LineItem = {
         id: null,
-        parentId: useBillingStore.getState().billingId ?? "",
         rowId: uuidv4(),
         productId: newItem.id,
         name: newItem.name,
@@ -170,16 +177,33 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       const updatedLineItems = state.lineItems.map((item: LineItem) => {
         if (rowId !== item.rowId) return item;
 
+        let updatedItem = item;
         let finalValue: any;
+        let isInventoryItem: boolean = item.isInventoryItem;
         if (field === "price" || field === "quantity") {
           finalValue = value;
+          isInventoryItem = true;
         } else {
           finalValue = value;
         }
 
+        if (field === "productSnapshot") {
+          updatedItem = {
+            ...item,
+            productId: null,
+            name: "",
+            weight: null,
+            unit: null,
+            mrp: null,
+            purchasePrice: null
+          };
+          isInventoryItem = false;
+        }
+
         const draftItem = {
-          ...item,
-          [field]: finalValue
+          ...updatedItem,
+          [field]: finalValue,
+          isInventoryItem
         };
 
         if (["quantity", "price"].includes(field)) {
@@ -193,10 +217,40 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
       };
     }),
 
+  /**
+   * Update Internal Id's of LineItems array & update original LineItems
+   */
+  updateInternalIds: (responseItems) =>
+    set((state) => {
+      const updatedLineItems = state.lineItems.map((lineItem: LineItem) => {
+        const current = responseItems.find((item) => item.rowId === lineItem.rowId);
+
+        if (!current) return lineItem;
+        if (current.id === lineItem.id) {
+          return lineItem;
+        }
+
+        return {
+          ...lineItem,
+          id: current?.id
+        };
+      });
+
+      return {
+        lineItems: updatedLineItems,
+        originalLineItems: filterValidLineItems(updatedLineItems)
+      };
+    }),
+
   // delete a row
   deleteLineItem: (id) =>
     set((state) => {
       const updatedLineItems = state.lineItems.filter((item) => item.rowId !== id);
+      if (updatedLineItems.length === 0) {
+        return {
+          lineItems: [initialLineItem()]
+        };
+      }
       return {
         lineItems: updatedLineItems
       };
@@ -208,5 +262,12 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
         ...item,
         checkedQty: checked ? parseFloat(item.quantity || "0") : 0
       }))
+    })),
+
+  reset: () =>
+    set(() => ({
+      isCountColumnVisible: false,
+      lineItems: [initialLineItem()],
+      originalLineItems: []
     }))
 }));

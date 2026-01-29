@@ -1,21 +1,21 @@
 import { asc, desc, type SQL } from "drizzle-orm";
 import {
+  BATCH_CHECK_ACTION,
   SortOption,
   TRANSACTION_TYPE,
   type ApiResponse,
-  type Customer,
-  type CustomerTransaction,
+  type BatchCheckAction,
   type PaginatedApiResponse,
   type TransactionListResponse,
-  type TxnPayload,
+  type TxnPayloadData,
   type UnifiedTransactionItem,
-  type UnifiedTransctionWithItems
+  type UnifiedTransctionWithItems,
+  type UpdateQtyAction,
+  type UpdateSaleResponse
 } from "../../../shared/types";
-import { CustomerRole } from "../../db/enum";
 import { sales } from "../../db/schema";
-import { customersRepository } from "../customers/customers.repository";
 import { salesRepository } from "./sales.repository";
-import type { FilterSalesParams, SalesByCustomerParams } from "./sales.types";
+import type { FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
   try {
@@ -30,10 +30,10 @@ const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWit
       };
     }
 
-    const items: UnifiedTransactionItem[] = sale.saleItems.map((item) => ({
-      ...item,
-      parentId: item.saleId,
-      checkedQty: item.checkedQty ?? 0
+    // eslint-disable-next-line
+    const items: UnifiedTransactionItem[] = sale.saleItems.map(({ saleId, ...rest }) => ({
+      ...rest,
+      checkedQty: rest.checkedQty ?? 0
     }));
 
     return {
@@ -57,37 +57,6 @@ const getSaleById = async (id: string): Promise<ApiResponse<UnifiedTransctionWit
       status: "error",
       error: {
         message: (error as Error).message ?? "Something went wrong while fetching Sale"
-      }
-    };
-  }
-};
-
-const getSalesByCustomerId = async (
-  params: SalesByCustomerParams
-): Promise<PaginatedApiResponse<CustomerTransaction[] | []>> => {
-  try {
-    const sales = await salesRepository.getSalesByCustomerId(params);
-
-    const nextPageNo = sales.length === 20 ? params.pageNo + 1 : null;
-
-    return {
-      status: "success",
-      nextPageNo: nextPageNo,
-      data:
-        sales.length > 0
-          ? sales.map((s) => ({
-              type: TRANSACTION_TYPE.SALE,
-              transactionNo: s.invoiceNo,
-              ...s
-            }))
-          : []
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
       }
     };
   }
@@ -187,34 +156,8 @@ const filterSalesByDate = async (
   }
 };
 
-const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => {
+const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: string }>> => {
   try {
-    // customer validation
-    let customer: Customer | undefined;
-    if (!payload.customerName || payload.customerName.trim() === "") {
-      const [defaultCustomer] = await customersRepository.getCustomers("DEFAULT");
-      customer = defaultCustomer;
-    } else if (payload.customerId && payload.customerName) {
-      const existingCustomer = await customersRepository.findById(payload.customerId);
-      customer = existingCustomer;
-    } else if (!payload.customerId && payload.customerName) {
-      const [existingCustomer] = await customersRepository.getCustomers(payload.customerName);
-
-      if (existingCustomer) {
-        customer = existingCustomer;
-      } else {
-        const newCustomer = await customersRepository.createCustomer({
-          name: payload.customerName,
-          contact: payload.customerContact ?? null,
-          customerType: CustomerRole.CASH
-        });
-        customer = newCustomer;
-      }
-    }
-
-    if (!customer) {
-      throw new Error("Something went wrong.Could not find customer.");
-    }
     const finalItems = payload.items.map((item) => {
       const rawTotal = item.price * item.quantity;
       return {
@@ -238,11 +181,13 @@ const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => 
       totalQuantity: totalQuantity
     };
 
-    const newSale = await salesRepository.createSale(customer.id, finalPayload);
+    const newSale = await salesRepository.createSale(finalPayload);
 
     return {
       status: "success",
-      data: newSale
+      data: {
+        id: newSale
+      }
     };
   } catch (error) {
     console.log(error);
@@ -250,6 +195,60 @@ const createSale = async (payload: TxnPayload): Promise<ApiResponse<string>> => 
       status: "error",
       error: {
         message: (error as Error).message ?? "Something went wrong while creating sale"
+      }
+    };
+  }
+};
+
+const updateSale = async (
+  id: string,
+  payload: TxnPayloadData
+): Promise<ApiResponse<UpdateSaleResponse>> => {
+  try {
+    const finalItems = payload.items.map((item) => {
+      const rawTotal = item.price * item.quantity;
+      return {
+        ...item,
+        totalPrice: Math.round(rawTotal)
+      };
+    });
+
+    const total =
+      finalItems.length > 0
+        ? finalItems.reduce((sum, currentItem) => {
+            return sum + Number(currentItem.totalPrice || 0);
+          }, 0)
+        : 0;
+
+    const totalQuantity =
+      finalItems.length > 0
+        ? finalItems.reduce((sum, currentItem) => {
+            return sum + (Number(currentItem.quantity) || 0);
+          }, 0)
+        : 0;
+
+    const finalPayload: UpdateSaleParams = {
+      ...payload,
+      items: finalItems,
+      grandTotal: total,
+      totalQuantity: totalQuantity
+    };
+
+    const result = await salesRepository.updateSale(id, finalPayload);
+
+    return {
+      status: "success",
+      data: {
+        id,
+        type: TRANSACTION_TYPE.SALE,
+        ...result
+      }
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while updating sale"
       }
     };
   }
@@ -272,6 +271,54 @@ const convertSaleToEstimate = async (id: string): Promise<ApiResponse<string>> =
       status: "success",
       data: `Successfully converted Sale To Estimate having id:${id}`
     };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong"
+      }
+    };
+  }
+};
+
+const updateCheckedQtyService = async (
+  saleItemId: string,
+  action: UpdateQtyAction
+): Promise<ApiResponse<string>> => {
+  try {
+    await salesRepository.updateCheckedQty(saleItemId, action);
+    return {
+      status: "success",
+      data: "Successfully updated checkedQty"
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      status: "error",
+      error: {
+        message: (error as Error).message ?? "Something went wrong while updating checkedQty"
+      }
+    };
+  }
+};
+
+const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
+  try {
+    const result = await salesRepository.batchCheckItems(id, action);
+    if (result.changes > 0) {
+      return {
+        status: "success",
+        data: {
+          isAllChecked: action === BATCH_CHECK_ACTION.MARK_ALL
+        },
+        message:
+          action === BATCH_CHECK_ACTION.MARK_ALL
+            ? "All items have been marked as checked."
+            : "All items have been unchecked."
+      };
+    }
+    throw new Error("No Sale Items were updated");
   } catch (error) {
     console.log(error);
     return {
@@ -313,10 +360,12 @@ const deleteSaleById = async (id: string): Promise<ApiResponse<string>> => {
 
 export const salesService = {
   getSaleById,
-  getSalesByCustomerId,
   getNextInvoiceNo,
   filterSalesByDate,
   createSale,
+  updateSale,
   convertSaleToEstimate,
+  updateCheckedQtyService,
+  batchCheckItemsService,
   deleteSaleById
 };

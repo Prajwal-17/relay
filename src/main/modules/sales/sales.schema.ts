@@ -1,12 +1,6 @@
 import z from "zod";
 import { SortOption } from "../../../shared/types";
 
-export const getSalesByCustomerSchema = z.object({
-  customerId: z.string(),
-  pageNo: z.coerce.number().min(1).positive().default(1),
-  pageSize: z.coerce.number().positive().max(100).default(20)
-});
-
 export const filterSalesParamsSchema = z.object({
   from: z.iso
     .datetime()

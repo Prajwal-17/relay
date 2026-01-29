@@ -5,10 +5,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import useTransactionState from "@/hooks/useTransactionState";
-import type { LineItem } from "@/store/lineItemsStore";
+import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
-import { useEffect } from "react";
 import LineItemRow from "./LineItemRow";
 
 export type ItemType = {
@@ -21,18 +19,16 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const {
-    isCountColumnVisible,
-    setIsCountControlsVisible,
-    lineItems,
-    addEmptyLineItem,
-    setLineItems,
-    setAllChecked
-  } = useTransactionState();
+  const isCountColumnVisible = useLineItemsStore((state) => state.isCountColumnVisible);
+  const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
+  const lineItems = useLineItemsStore((state) => state.lineItems);
+  const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
+  // const setLineItems = useLineItemsStore((state) => state.setLineItems);
+  const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
 
-  useEffect(() => {
-    setLineItems([]);
-  }, [setLineItems]);
+  // useEffect(() => {
+  //   setLineItems([]);
+  // }, [setLineItems]);
 
   return (
     <>
@@ -89,7 +85,7 @@ const LineItemsTable = () => {
               />
             ))}
 
-            <div className="flex justify-between px-4 py-2">
+            <div className="flex items-center justify-between px-4 py-2">
               <Button
                 className="hover:bg-primary/80 ml-28 h-full w-30 cursor-pointer text-lg font-medium"
                 onClick={() => addEmptyLineItem("button")}
@@ -97,9 +93,55 @@ const LineItemsTable = () => {
                 Add Row
               </Button>
 
+              <div className="border-border bg-background text-muted-foreground ml-auto flex items-center gap-6 rounded-lg border px-4 py-1 text-base font-medium shadow-sm">
+                <div className="flex items-center gap-2">
+                  <span>Total Items:</span>
+                  <span className="text-foreground text-lg font-bold">
+                    {lineItems.filter((item) => item.productSnapshot.trim() !== "").length}
+                  </span>
+                </div>
+                <div className="bg-border h-4 w-px" />
+                <div className="flex items-center gap-2">
+                  <span>Total Qty:</span>
+                  <span className="text-foreground text-lg font-bold">
+                    {lineItems.reduce((acc, item) => acc + (parseFloat(item.quantity) || 0), 0)}
+                  </span>
+                </div>
+                <div className="bg-border h-4 w-px" />
+                <div className="flex items-center gap-2">
+                  <span>Status:</span>
+                  {(() => {
+                    const totalQty = lineItems.reduce(
+                      (acc, item) => acc + (parseFloat(item.quantity) || 0),
+                      0
+                    );
+                    const totalChecked = lineItems.reduce((acc, item) => acc + item.checkedQty, 0);
+                    const allChecked = totalQty > 0 && totalChecked === totalQty;
+
+                    if (allChecked) {
+                      return (
+                        <div className="text-success flex items-center gap-1 font-bold">
+                          <CheckCheck className="size-5" />
+                          <span>All Checked</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <span
+                        className={`text-lg font-bold ${
+                          totalChecked > 0 ? "text-warning" : "text-foreground"
+                        }`}
+                      >
+                        {totalChecked} / {totalQty}
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="lg" className="cursor-pointer text-lg">
+                  <Button variant="outline" size="lg" className="ml-4 cursor-pointer text-lg">
                     Actions
                     <ChevronDown className="ml-2 h-4 w-4" />
                   </Button>

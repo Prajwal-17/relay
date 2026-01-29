@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { formatToPaisa } from "../../shared/utils/utils";
+import { generateProductSnapshot } from "../utils/product.utils";
 import { products } from "./schema";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
@@ -19,6 +20,7 @@ async function main() {
       await db.insert(products).values({
         id: uuidv4(),
         name: product.name,
+        productSnapshot: generateProductSnapshot(product),
         weight: product.weight === "nil" ? null : product.weight,
         unit: product.unit,
         mrp: formatToPaisa(Number(product.mrp)),
