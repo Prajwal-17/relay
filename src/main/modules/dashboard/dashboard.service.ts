@@ -11,7 +11,7 @@ import {
   type TopProductDataPoint,
   type TransactionType
 } from "../../../shared/types";
-import { formatToRupees } from "../../../shared/utils/utils";
+import { convertToRupees } from "../../../shared/utils/utils";
 import { dashboardRepository } from "./dashboard.repository";
 import {
   dayNames,
@@ -58,14 +58,14 @@ const getMetricsSummary = async (): Promise<ApiResponse<MetricsSummary>> => {
         estimates: result.estimateCount
       },
       sales: {
-        today: formatToRupees(result.todaySaleRevenue),
-        yesterday: formatToRupees(result.yesterdaySaleRevenue),
+        today: convertToRupees(result.todaySaleRevenue),
+        yesterday: convertToRupees(result.yesterdaySaleRevenue),
         changePercent: Number(saleChangePercent.toFixed(2)),
         trend: saleTrend
       },
       estimates: {
-        today: formatToRupees(result.todayEstimateRevenue),
-        yesterday: formatToRupees(result.yesterdayEstimateRevenue),
+        today: convertToRupees(result.todayEstimateRevenue),
+        yesterday: convertToRupees(result.yesterdayEstimateRevenue),
         changePercent: Number(estimateChangePercent.toFixed(2)),
         trend: estimateTrend
       }
@@ -134,7 +134,7 @@ const getRecentTransactions = async (
                 ...r,
                 transactionNo: r.invoiceNo,
                 customerName: r.customer.name,
-                grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
+                grandTotal: r.grandTotal
               }))
             : []
       };
@@ -149,7 +149,7 @@ const getRecentTransactions = async (
                 ...r,
                 transactionNo: r.estimateNo,
                 customerName: r.customer.name,
-                grandTotal: r.grandTotal && formatToRupees(r.grandTotal)
+                grandTotal: r.grandTotal
               }))
             : []
       };
@@ -188,8 +188,8 @@ const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> =>
 
     chartData.push({
       label: formattedDate,
-      sales: formatToRupees(sale.total) ?? 0,
-      estimates: formatToRupees(estimate?.total as number) ?? 0
+      sales: convertToRupees(sale.total) ?? 0,
+      estimates: convertToRupees(estimate?.total as number) ?? 0
     });
   }
 
@@ -213,8 +213,8 @@ const getSalesEstimatesRevenueByMonth = async (): Promise<ChartDataType[]> => {
     const monthIndex = index + 1;
     return {
       label: month,
-      sales: formatToRupees(salesMap[monthIndex]) || 0,
-      estimates: formatToRupees(estimatesMap[monthIndex]) || 0
+      sales: convertToRupees(salesMap[monthIndex]) || 0,
+      estimates: convertToRupees(estimatesMap[monthIndex]) || 0
     };
   });
 
@@ -240,8 +240,8 @@ const getSalesEstimatesRevenueByLast7Days = async (): Promise<ChartDataType[]> =
 
     chartData.push({
       label: formattedDate,
-      sales: formatToRupees(sale.total) ?? 0,
-      estimates: formatToRupees(estimate?.total as number) ?? 0
+      sales: convertToRupees(sale.total) ?? 0,
+      estimates: convertToRupees(estimate?.total as number) ?? 0
     });
   }
 

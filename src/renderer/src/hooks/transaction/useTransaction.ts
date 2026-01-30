@@ -1,5 +1,5 @@
 import { useLineItemsStore } from "@/store/lineItemsStore";
-import { formatToRupees, IndianRupees } from "@shared/utils/utils";
+import { formatToRupees } from "@shared/utils/utils";
 
 const useTransaction = () => {
   const lineItems = useLineItemsStore((state) => state.lineItems);
@@ -8,8 +8,8 @@ const useTransaction = () => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
 
-  const subtotal = IndianRupees.format(formatToRupees(total));
-  const grandTotal = IndianRupees.format(Math.round(formatToRupees(total)));
+  const subtotal = formatToRupees(total);
+  const grandTotal = formatToRupees(Math.round(total));
 
   const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
     return sum + (Number(currentItem.quantity) || 0);

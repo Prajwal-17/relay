@@ -5,7 +5,7 @@ import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProduc
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { formatToRupees } from "@shared/utils/utils";
+import { convertToRupees } from "@shared/utils/utils";
 import { Edit, Package, Search } from "lucide-react";
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
@@ -95,14 +95,14 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                         variant="outline"
                                         className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                       >
-                                        MRP ₹{formatToRupees(product.mrp)}
+                                        MRP ₹{convertToRupees(product.mrp, { asString: true })}
                                       </Badge>
                                     )}
                                   </div>
                                 </div>
                                 <div className="shrink-0 text-right">
                                   <span className="text-success text-xl font-bold">
-                                    ₹ {formatToRupees(product.price)}
+                                    ₹ {convertToRupees(product.price, { asString: true })}
                                   </span>
                                 </div>
                               </div>
@@ -120,10 +120,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   name: product.name,
                                   weight: product.weight,
                                   unit: product.unit,
-                                  mrp: product.mrp ? formatToRupees(product.mrp).toString() : null,
-                                  price: formatToRupees(product.price).toString(),
+                                  mrp: product.mrp
+                                    ? convertToRupees(product.mrp, { asString: true })
+                                    : null,
+                                  price: convertToRupees(product.price, { asString: true }),
                                   purchasePrice: product.purchasePrice
-                                    ? formatToRupees(product.purchasePrice).toString()
+                                    ? convertToRupees(product.purchasePrice, { asString: true })
                                     : null,
                                   isDisabled: product.isDisabled,
                                   isDeleted: product.isDeleted

@@ -5,7 +5,7 @@ import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees, IndianRupees } from "@shared/utils/utils";
+import { convertToRupees, formatToRupees } from "@shared/utils/utils";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
@@ -94,7 +94,7 @@ export default function ProductResults() {
                                     variant="outline"
                                     className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
                                   >
-                                    MRP ₹{formatToRupees(product.mrp)}
+                                    MRP ₹{convertToRupees(product.mrp, { asString: true })}
                                   </Badge>
                                 )}
                               </div>
@@ -106,7 +106,8 @@ export default function ProductResults() {
                                   <>
                                     <span className="text-muted-foreground">•</span>
                                     <p className="text-foreground mt-1 text-base font-semibold">
-                                      Purchase Price ₹{formatToRupees(product.purchasePrice)}
+                                      Purchase Price ₹
+                                      {convertToRupees(product.purchasePrice, { asString: true })}
                                     </p>
                                   </>
                                 )}
@@ -115,7 +116,7 @@ export default function ProductResults() {
                             <div className="text-right">
                               <div className="flex items-center gap-2">
                                 <span className="text-2xl font-bold">
-                                  {IndianRupees.format(formatToRupees(product.price))}
+                                  {formatToRupees(product.price)}
                                 </span>
                               </div>
                             </div>
@@ -149,11 +150,11 @@ export default function ProductResults() {
                                     weight: product.weight,
                                     unit: product.unit,
                                     mrp: product.mrp
-                                      ? formatToRupees(product.mrp).toString()
+                                      ? convertToRupees(product.mrp, { asString: true })
                                       : null,
-                                    price: formatToRupees(product.price).toString(),
+                                    price: convertToRupees(product.price, { asString: true }),
                                     purchasePrice: product.purchasePrice
-                                      ? formatToRupees(product.purchasePrice).toString()
+                                      ? convertToRupees(product.purchasePrice, { asString: true })
                                       : null,
                                     isDisabled: product.isDisabled,
                                     isDeleted: product.isDeleted

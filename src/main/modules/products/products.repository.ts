@@ -4,7 +4,7 @@ import type {
   ProductWithDeletion,
   UpdateProductPayload
 } from "../../../shared/types";
-import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
+import { convertToPaisa, convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
 import { generateProductSnapshot } from "../../utils/product.utils";
@@ -81,13 +81,13 @@ const createProduct = async (payload: CreateProductPayload) => {
           name: payload.name,
           weight: payload.weight ?? null,
           unit: payload.unit ?? null,
-          mrp: payload.mrp ? formatToRupees(payload.mrp) : null
+          mrp: payload.mrp ? convertToRupees(payload.mrp) : null
         }),
         weight: payload.weight ?? null,
         unit: payload.unit ?? null,
-        mrp: payload.mrp != null ? formatToPaisa(payload.mrp) : null,
-        price: formatToPaisa(payload.price),
-        purchasePrice: payload.purchasePrice != null ? formatToPaisa(payload.purchasePrice) : null
+        mrp: payload.mrp != null ? convertToPaisa(payload.mrp) : null,
+        price: convertToPaisa(payload.price),
+        purchasePrice: payload.purchasePrice != null ? convertToPaisa(payload.purchasePrice) : null
       })
       .returning()
       .get();

@@ -3,7 +3,7 @@ import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { UPDATE_QTY_ACTION } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { convertToRupees } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -159,7 +159,7 @@ const LineItemRow = memo(
                 <IndianRupee size={18} />
               </span>
               <div className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed">
-                {item.totalPrice ? formatToRupees(item.totalPrice) : "0"}
+                {item.totalPrice ? convertToRupees(item.totalPrice, { asString: true }) : "0"}
               </div>
             </div>
           </div>

@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
 import type { ApiResponse, UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees, IndianRupees } from "@shared/utils/utils";
+import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   Download,
@@ -112,9 +112,7 @@ const DashboardTableRow = ({
             # {transaction.transactionNo}
           </div>
           <div className="col-span-2 flex items-center font-semibold">
-            {transaction.grandTotal
-              ? IndianRupees.format(formatToRupees(transaction.grandTotal))
-              : "-"}
+            {transaction.grandTotal ? formatToRupees(transaction.grandTotal) : "-"}
           </div>
           <div className="col-span-1 flex items-center justify-start">
             {transaction.isPaid ? (

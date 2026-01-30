@@ -5,8 +5,6 @@ export const formatINR = new Intl.NumberFormat("en-IN", {
 });
 
 // function overloading
-export function convertToRupees(valueInPaisa: number, asString?: false): number;
-export function convertToRupees(valueInPaisa: number, asString: true): string;
 export function convertToRupees(valueInPaisa: number, options: { asString: true }): string;
 export function convertToRupees(valueInPaisa: number, options: { asString: false }): number;
 export function convertToRupees(valueInPaisa: number, options?: { asString?: boolean }): number;
@@ -26,8 +24,6 @@ export function convertToRupees(
 }
 
 // function overloading
-export function convertToPaisa(valueInRupees: number, asString?: false): number;
-export function convertToPaisa(valueInRupees: number, asString: true): string;
 export function convertToPaisa(valueInRupees: number, options: { asString: true }): string;
 export function convertToPaisa(valueInRupees: number, options: { asString: false }): number;
 export function convertToPaisa(valueInRupees: number, options?: { asString?: boolean }): number;

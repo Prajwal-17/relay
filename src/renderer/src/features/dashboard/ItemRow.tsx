@@ -58,9 +58,9 @@ export const ItemRow = ({
           {item.name}
         </td>
         <td className="text-foreground px-3 py-2 text-center">{item.quantity}</td>
-        <td className="text-foreground px-3 py-2 text-right">₹{formatToRupees(item.price)}</td>
+        <td className="text-foreground px-3 py-2 text-right">{formatToRupees(item.price)}</td>
         <td className="text-foreground px-3 py-2 text-right font-medium">
-          ₹{formatToRupees(item.totalPrice)}
+          {formatToRupees(item.totalPrice)}
         </td>
         <td className="px-3 py-2 text-center">
           <button
