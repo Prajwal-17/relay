@@ -104,8 +104,8 @@ const LineItemRow = memo(
                 className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
                 onChange={(e) => {
                   const val = e.target.value;
-                  // allow numbers and one decimal point
-                  if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                  // allow only number and three decimal points
+                  if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
                     updateLineItem(item.rowId, "quantity", val);
                   }
                 }}
@@ -144,8 +144,8 @@ const LineItemRow = memo(
                 placeholder="0"
                 onChange={(e) => {
                   const val = e.target.value;
-                  // allow numbers and one decimal point
-                  if (val === "" || /^[0-9]*\.?[0-9]*$/.test(val)) {
+                  // allow only number and two decimal points
+                  if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
                     updateLineItem(item.rowId, "price", val);
                   }
                 }}
