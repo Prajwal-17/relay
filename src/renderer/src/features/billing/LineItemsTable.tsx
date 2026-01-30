@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
+import { fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { CheckCheck, ChevronDown, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import LineItemRow from "./LineItemRow";
 
@@ -104,17 +105,25 @@ const LineItemsTable = () => {
                 <div className="flex items-center gap-2">
                   <span>Total Qty:</span>
                   <span className="text-foreground text-lg font-bold">
-                    {lineItems.reduce((acc, item) => acc + (parseFloat(item.quantity) || 0), 0)}
+                    {fromMilliUnits(
+                      lineItems.reduce(
+                        (acc, item) => acc + toMilliUnits(parseFloat(item.quantity) || 0),
+                        0
+                      )
+                    )}
                   </span>
                 </div>
                 <div className="bg-border h-4 w-px" />
                 <div className="flex items-center gap-2">
                   <span>Status:</span>
                   {(() => {
-                    const totalQty = lineItems.reduce(
-                      (acc, item) => acc + (parseFloat(item.quantity) || 0),
-                      0
+                    const totalQty = fromMilliUnits(
+                      lineItems.reduce(
+                        (acc, item) => acc + toMilliUnits(parseFloat(item.quantity) || 0),
+                        0
+                      )
                     );
+
                     const totalChecked = lineItems.reduce((acc, item) => acc + item.checkedQty, 0);
                     const allChecked = totalQty > 0 && totalChecked === totalQty;
 

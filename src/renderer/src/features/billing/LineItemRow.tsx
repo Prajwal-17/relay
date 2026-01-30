@@ -3,7 +3,7 @@ import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { UPDATE_QTY_ACTION } from "@shared/types";
-import { convertToRupees } from "@shared/utils/utils";
+import { convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -82,11 +82,10 @@ const LineItemRow = memo(
             <div className="border-border bg-background relative flex h-full w-full items-center rounded-lg border font-bold shadow-xs">
               <button
                 onClick={() => {
-                  const currentQty = Number(item.quantity || "0");
+                  const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 0) {
-                    const newQuantity = currentQty + 1;
-                    const fixedQuantity = parseFloat(newQuantity.toFixed(2)); // handle floating errors
-                    updateLineItem(item.rowId, "quantity", fixedQuantity.toString());
+                    const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
+                    updateLineItem(item.rowId, "quantity", newQty.toString());
                   }
                 }}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
@@ -115,11 +114,10 @@ const LineItemRow = memo(
                 disabled={parseFloat(item.quantity || "0") <= 1}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
-                  const currentQty = Number(item.quantity || "0");
+                  const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 1) {
-                    const newQuantity = currentQty - 1;
-                    const fixedQuantity = parseFloat(newQuantity.toFixed(2)); // handle floating errors
-                    updateLineItem(item.rowId, "quantity", fixedQuantity.toString());
+                    const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
+                    updateLineItem(item.rowId, "quantity", newQty.toString());
                   }
                 }}
               >

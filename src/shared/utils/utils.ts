@@ -49,3 +49,16 @@ export function formatToRupees(valueInPaisa: number): string {
   const rupees = convertToRupees(valueInPaisa);
   return formatINR.format(rupees);
 }
+
+const MILLI_MULTIPLIER = 1000;
+
+export function toMilliUnits(value: number | string): number {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num) || !Number.isFinite(num)) return 0;
+  return Math.round(num * MILLI_MULTIPLIER);
+}
+
+export function fromMilliUnits(milliValue: number): number {
+  if (typeof milliValue !== "number" || isNaN(milliValue)) return 0;
+  return milliValue / MILLI_MULTIPLIER;
+}
