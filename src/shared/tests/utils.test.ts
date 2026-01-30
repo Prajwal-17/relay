@@ -94,4 +94,18 @@ describe("Currency Utils", () => {
       expect(formatToRupees(Infinity)).toBe("N/A");
     });
   });
+
+  describe("Options Object Support", () => {
+    it("convertToRupees supports options object", () => {
+      expect(convertToRupees(234, { asString: false })).toBe(2.34);
+      expect(convertToRupees(234, { asString: true })).toBe("2.34");
+      expect(convertToRupees(0, { asString: true })).toBe("0");
+    });
+
+    it("convertToPaisa supports options object", () => {
+      expect(convertToPaisa(2.34, { asString: false })).toBe(234);
+      expect(convertToPaisa(2.34, { asString: true })).toBe("234");
+      expect(convertToPaisa(0, { asString: true })).toBe("0");
+    });
+  });
 });

@@ -7,8 +7,17 @@ export const formatINR = new Intl.NumberFormat("en-IN", {
 // function overloading
 export function convertToRupees(valueInPaisa: number, asString?: false): number;
 export function convertToRupees(valueInPaisa: number, asString: true): string;
+export function convertToRupees(valueInPaisa: number, options: { asString: true }): string;
+export function convertToRupees(valueInPaisa: number, options: { asString: false }): number;
+export function convertToRupees(valueInPaisa: number, options?: { asString?: boolean }): number;
 
-export function convertToRupees(valueInPaisa: number, asString: boolean = false): number | string {
+export function convertToRupees(
+  valueInPaisa: number,
+  optionsOrAsString: boolean | { asString?: boolean } = false
+): number | string {
+  const asString =
+    typeof optionsOrAsString === "boolean" ? optionsOrAsString : optionsOrAsString?.asString;
+
   if (typeof valueInPaisa !== "number" || isNaN(valueInPaisa)) {
     return asString ? "0" : 0;
   }
@@ -19,8 +28,17 @@ export function convertToRupees(valueInPaisa: number, asString: boolean = false)
 // function overloading
 export function convertToPaisa(valueInRupees: number, asString?: false): number;
 export function convertToPaisa(valueInRupees: number, asString: true): string;
+export function convertToPaisa(valueInRupees: number, options: { asString: true }): string;
+export function convertToPaisa(valueInRupees: number, options: { asString: false }): number;
+export function convertToPaisa(valueInRupees: number, options?: { asString?: boolean }): number;
 
-export function convertToPaisa(valueInRupees: number, asString: boolean = false): number | string {
+export function convertToPaisa(
+  valueInRupees: number,
+  optionsOrAsString: boolean | { asString?: boolean } = false
+): number | string {
+  const asString =
+    typeof optionsOrAsString === "boolean" ? optionsOrAsString : optionsOrAsString?.asString;
+
   if (typeof valueInRupees !== "number" || isNaN(valueInRupees)) {
     return asString ? "0" : 0;
   }
