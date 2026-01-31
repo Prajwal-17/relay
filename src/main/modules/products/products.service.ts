@@ -6,7 +6,7 @@ import {
   type ProductHistory,
   type UpdateProductPayload
 } from "../../../shared/types";
-import { formatToPaisa, formatToRupees } from "../../../shared/utils/utils";
+import { convertToPaisa, convertToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { generateProductSnapshot } from "../../utils/product.utils";
 import { productRepository } from "./products.repository";
@@ -98,7 +98,7 @@ const updateProduct = async (
         if (value === null) {
           updatedFields[field] = null;
         } else {
-          updatedFields[field] = formatToPaisa(value);
+          updatedFields[field] = convertToPaisa(value);
         }
       } else {
         updatedFields[field] = value;
@@ -120,7 +120,7 @@ const updateProduct = async (
       name: updatedProduct.name,
       weight: updatedProduct.weight,
       unit: updatedProduct.unit,
-      mrp: updatedProduct.mrp ? formatToRupees(updatedProduct.mrp) : null
+      mrp: updatedProduct.mrp ? convertToRupees(updatedProduct.mrp) : null
     });
 
     // update productSnapshot

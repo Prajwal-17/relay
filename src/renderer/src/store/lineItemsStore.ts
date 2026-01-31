@@ -1,6 +1,6 @@
 import { filterValidLineItems } from "@/utils";
 import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { convertToRupees } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
@@ -72,7 +72,7 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     weight: item.weight,
     unit: item.unit,
     mrp: item.mrp,
-    price: item.price ? formatToRupees(Number(item.price)).toString() : "",
+    price: item.price ? convertToRupees(Number(item.price)).toString() : "",
     purchasePrice: item.purchasePrice,
     quantity: item.quantity.toString(),
     totalPrice: item.totalPrice,
@@ -156,7 +156,7 @@ export const useLineItemsStore = create<LineItemsStore>((set) => ({
         weight: newItem.weight,
         unit: newItem.unit,
         mrp: newItem.mrp,
-        price: newItem.price ? formatToRupees(newItem.price).toString() : "",
+        price: newItem.price ? convertToRupees(newItem.price).toString() : "",
         purchasePrice: newItem.purchasePrice,
         quantity: oldItemQuantity.toString(),
         totalPrice: parseFloat((oldItemQuantity * newItem.price).toFixed(2)),

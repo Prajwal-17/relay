@@ -26,7 +26,7 @@ import {
   type UnifiedTransaction
 } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { IndianRupees } from "@shared/utils/utils";
+import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
@@ -84,7 +84,7 @@ const RecentTransactionsTableRow = ({
           # {transaction.transactionNo}
         </div>
         <div className="col-span-2 flex items-center font-semibold">
-          {transaction.grandTotal ? IndianRupees.format(transaction.grandTotal) : "-"}
+          {transaction.grandTotal ? formatToRupees(transaction.grandTotal) : "-"}
         </div>
         <div className="col-span-2 flex items-center">
           {transaction.isPaid ? (

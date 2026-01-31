@@ -7,7 +7,7 @@ import os from "os";
 import path from "path";
 import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "../../../shared/types";
 import { formatDateStrToISTDateStr } from "../../../shared/utils/dateUtils";
-import { formatToRupees, IndianRupees } from "../../../shared/utils/utils";
+import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates, sales } from "../../db/schema";
 
@@ -102,8 +102,8 @@ export function saveAsPDF() {
               idx + 1,
               item.name,
               item.quantity,
-              formatToRupees(item.price),
-              formatToRupees(item.totalPrice)
+              convertToRupees(item.price),
+              convertToRupees(item.totalPrice)
             ];
           });
         } else if (type === TRANSACTION_TYPE.ESTIMATE) {
@@ -112,8 +112,8 @@ export function saveAsPDF() {
               idx + 1,
               item.name,
               item.quantity,
-              formatToRupees(item.price),
-              formatToRupees(item.totalPrice)
+              convertToRupees(item.price),
+              convertToRupees(item.totalPrice)
             ];
           });
         } else {
@@ -134,30 +134,33 @@ export function saveAsPDF() {
         // The 'finalY' property for positioning the footer
         const finalY = (doc as any).lastAutoTable.finalY;
 
-        let calcTotalAmount;
+        let total;
         if (type === TRANSACTION_TYPE.SALE) {
-          calcTotalAmount = transaction.saleItems.reduce((sum, currentItem) => {
-            return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
+          total = transaction.saleItems.reduce((sum, currentItem) => {
+            return sum + Number(currentItem.totalPrice || 0);
           }, 0);
         } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-          calcTotalAmount = transaction.estimateItems.reduce((sum, currentItem) => {
-            return sum + Number(formatToRupees(currentItem.totalPrice) || 0);
+          total = transaction.estimateItems.reduce((sum, currentItem) => {
+            return sum + Number(currentItem.totalPrice || 0);
           }, 0);
         } else {
           throw new Error("Something went wrong while generating Pdf");
         }
 
-        const subtotal = IndianRupees.format(calcTotalAmount);
-        const total = IndianRupees.format(Math.round(calcTotalAmount));
+        const subtotal = convertToRupees(total).toFixed(2);
+        const grandTotal = Math.round(convertToRupees(total)).toFixed(2);
+
+        const valueX = pageWidth - marginX;
+        const labelX = valueX - 60;
 
         doc.setFontSize(12);
-        doc.text("Subtotal:", pageWidth - marginX - 30, finalY + 15, { align: "right" });
-        doc.text(`Rs. ${subtotal.slice(1)}`, pageWidth - marginX, finalY + 15, { align: "right" });
+        doc.text("Subtotal:", labelX, finalY + 15, { align: "right" });
+        doc.text(`Rs. ${subtotal}`, valueX, finalY + 15, { align: "right" });
 
         doc.setFontSize(14);
         doc.setFont("helvetica", "bold");
-        doc.text("Total:", pageWidth - marginX - 30, finalY + 24, { align: "right" });
-        doc.text(`Rs. ${total.slice(1)}`, pageWidth - marginX, finalY + 24, { align: "right" });
+        doc.text("Total:", labelX, finalY + 24, { align: "right" });
+        doc.text(`Rs. ${grandTotal}`, valueX, finalY + 24, { align: "right" });
 
         doc.setFontSize(8);
         doc.setFont("helvetica", "italic");

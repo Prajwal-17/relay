@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { IndianRupees } from "@shared/utils/utils";
+import { formatToRupees } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useEffect } from "react";
@@ -50,7 +50,7 @@ export const MetricsComponent = () => {
           data && (
             <MetricCard
               label="Today's Sales"
-              value={IndianRupees.format(data.sales.today)}
+              value={formatToRupees(data.sales.today)}
               href="/dashboard/sales"
               changePercent={data.sales.changePercent}
               trend={data.sales.trend}
@@ -68,7 +68,7 @@ export const MetricsComponent = () => {
           data && (
             <MetricCard
               label="Today's Estimates"
-              value={IndianRupees.format(data.estimates.today)}
+              value={formatToRupees(data.estimates.today)}
               href="/dashboard/estimates"
               changePercent={data.estimates.changePercent}
               trend={data.estimates.trend}

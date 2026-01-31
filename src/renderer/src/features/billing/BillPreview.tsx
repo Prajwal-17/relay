@@ -4,7 +4,7 @@ import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees } from "@shared/utils/utils";
+import { convertToRupees } from "@shared/utils/utils";
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -101,7 +101,7 @@ const BillPreview = () => {
                   </div>
                   <div className="col-span-2 text-right tracking-tight">{item.price}</div>
                   <div className="col-span-2 text-right tracking-tight">
-                    {formatToRupees(item.totalPrice).toFixed(2)}
+                    {convertToRupees(item.totalPrice)}
                   </div>
                 </div>
               );

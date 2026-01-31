@@ -5,7 +5,7 @@ import {
   type TransactionType,
   type UpdateQtyAction
 } from "@shared/types";
-import { formatToPaisa } from "@shared/utils/utils";
+import { convertToPaisa } from "@shared/utils/utils";
 
 type NormalizedLineItem = Omit<LineItem, "price" | "quantity"> & {
   price: number;
@@ -81,7 +81,7 @@ export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] 
 
   return filteredLineitems.map((item) => ({
     ...item,
-    price: formatToPaisa(parseFloat(item.price || "0")),
+    price: convertToPaisa(parseFloat(item.price || "0")),
     quantity: parseFloat(item.quantity || "0")
   }));
 }
@@ -98,7 +98,7 @@ export function normalizeOriginalLineItems(lineItems: LineItem[]) {
 
   return filteredLineitems.map((item) => ({
     ...item,
-    price: formatToPaisa(parseFloat(item.price || "0")),
+    price: convertToPaisa(parseFloat(item.price || "0")),
     quantity: parseFloat(item.quantity || "0")
   }));
 }
