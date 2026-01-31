@@ -1,28 +1,13 @@
 import type { Calendar } from "@/components/ui/calendar";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { useEffect, useState } from "react";
-import type { DateRange } from "react-day-picker";
-
-const getInitialDate = (): DateRange => {
-  const storedDate = localStorage.getItem("daterange");
-  if (storedDate) {
-    const parsed = JSON.parse(storedDate);
-    return { from: new Date(parsed.from), to: new Date(parsed.to) };
-  }
-
-  // Default to today
-  const from = new Date();
-  const to = new Date();
-  from.setHours(0, 0, 0, 0);
-  to.setHours(0, 0, 0, 0);
-  return { from, to };
-};
 
 export const useDateRangePicker = () => {
   const [open, setOpen] = useState(false);
   const date = useDashboardStore((state) => state.date);
   const setDate = useDashboardStore((state) => state.setDate);
-  const [tempDate, setTempDate] = useState<DateRange | undefined>(getInitialDate);
+  const tempDate = useDashboardStore((state) => state.tempDate);
+  const setTempDate = useDashboardStore((state) => state.setTempDate);
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);

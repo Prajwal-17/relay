@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { CustomerRole } from "./enum";
 
@@ -77,7 +77,7 @@ export const sales = sqliteTable("sales", {
     .references(() => customers.id)
     .notNull(),
   grandTotal: integer("grand_total", { mode: "number" }),
-  totalQuantity: real("total_quantity"),
+  totalQuantity: integer("total_quantity", { mode: "number" }),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
@@ -122,7 +122,7 @@ export const estimates = sqliteTable("estimates", {
     .references(() => customers.id)
     .notNull(),
   grandTotal: integer("grand_total", { mode: "number" }),
-  totalQuantity: real("total_quantity"),
+  totalQuantity: integer("total_quantity", { mode: "number" }),
   isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)

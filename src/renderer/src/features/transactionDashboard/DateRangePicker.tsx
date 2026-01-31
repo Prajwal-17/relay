@@ -10,8 +10,6 @@ export const DateRangePicker = () => {
     open,
     setOpen,
     date,
-    tempDate,
-    setTempDate,
     dropdown,
     selectedPreset,
     setSelectedPreset,
@@ -19,7 +17,9 @@ export const DateRangePicker = () => {
     formatters,
     handleApplyDateRange,
     handleCancel,
-    handleOnDateSelect
+    handleOnDateSelect,
+    tempDate,
+    setTempDate
   } = useDateRangePicker();
 
   return (

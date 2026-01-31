@@ -33,9 +33,7 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
           <Button
             size="lg"
             onClick={() => {
-              isSales
-                ? navigate("/billing/sales/create/new")
-                : navigate("/billing/estimates/create/new");
+              isSales ? navigate("/billing/sales/create") : navigate("/billing/estimates/create");
             }}
             className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
           >

@@ -5,7 +5,7 @@ import {
   type TransactionType,
   type UpdateQtyAction
 } from "@shared/types";
-import { convertToPaisa } from "@shared/utils/utils";
+import { convertToPaisa, toMilliUnits } from "@shared/utils/utils";
 
 type NormalizedLineItem = Omit<LineItem, "price" | "quantity"> & {
   price: number;
@@ -18,7 +18,7 @@ export const updateCheckedQuantity = (
   checkedQty: number
 ) => {
   let updatedQty = checkedQty ?? 0;
-  const remainder = +(totalQty % 1).toFixed(2);
+  const remainder = +(totalQty % 1).toFixed(3);
 
   if (action === UPDATE_QTY_ACTION.INCREMENT) {
     const nextQty = updatedQty + 1;
@@ -33,7 +33,7 @@ export const updateCheckedQuantity = (
 
   if (action === UPDATE_QTY_ACTION.DECREMENT) {
     const nextQty = updatedQty - 1;
-    const currentFrac = +(updatedQty % 1).toFixed(2);
+    const currentFrac = +(updatedQty % 1).toFixed(3);
 
     if (currentFrac !== 0 && updatedQty === totalQty) {
       updatedQty = Math.floor(updatedQty);
@@ -82,7 +82,7 @@ export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] 
   return filteredLineitems.map((item) => ({
     ...item,
     price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: parseFloat(item.quantity || "0")
+    quantity: toMilliUnits(item.quantity)
   }));
 }
 
@@ -99,7 +99,7 @@ export function normalizeOriginalLineItems(lineItems: LineItem[]) {
   return filteredLineitems.map((item) => ({
     ...item,
     price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: parseFloat(item.quantity || "0")
+    quantity: toMilliUnits(item.quantity)
   }));
 }
 

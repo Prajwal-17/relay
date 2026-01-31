@@ -1,6 +1,6 @@
 import { filterValidLineItems } from "@/utils";
 import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
-import { convertToRupees } from "@shared/utils/utils";
+import { convertToPaisa, convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
@@ -74,7 +74,7 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     mrp: item.mrp,
     price: item.price ? convertToRupees(Number(item.price)).toString() : "",
     purchasePrice: item.purchasePrice,
-    quantity: item.quantity.toString(),
+    quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
     checkedQty: item.checkedQty,
     isInventoryItem: item.productId ? true : false
@@ -84,10 +84,11 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {
-  const priceVal = parseFloat(item.price) || 0;
-  const qtyVal = parseFloat(item.quantity) || 0;
-  const rawTotal = priceVal * qtyVal;
-  const totalPrice = Math.round(rawTotal * 100);
+  const priceInRupees = parseFloat(item.price) || 0;
+  const qtyInUnits = parseFloat(item.quantity) || 0;
+  const priceInPaisa = convertToPaisa(priceInRupees);
+  const qtyInMilli = toMilliUnits(qtyInUnits);
+  const totalPrice = Math.round((priceInPaisa * qtyInMilli) / 1000);
   return {
     ...item,
     totalPrice: totalPrice
