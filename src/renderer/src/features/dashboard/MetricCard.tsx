@@ -27,7 +27,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
   const handleLink = async () => {
     const fromDate = new Date();
     const toDate = new Date();
-    fromDate.setDate(fromDate.getDate() - 1);
+    fromDate.setDate(fromDate.getDate());
     fromDate.setHours(0, 0, 0, 0);
     toDate.setHours(23, 59, 59, 999);
     const parsedDate = JSON.stringify({ from: fromDate, to: toDate });

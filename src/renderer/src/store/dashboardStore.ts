@@ -5,6 +5,8 @@ import { create } from "zustand";
 type DashboardStoreType = {
   date: DateRange | undefined;
   setDate: (value: DateRange | undefined) => void;
+  tempDate: DateRange | undefined;
+  setTempDate: (value: DateRange | undefined) => void;
   sortBy: SortType;
   setSortBy: (sortValue: SortType) => void;
 };
@@ -29,6 +31,12 @@ export const useDashboardStore = create<DashboardStoreType>((set) => ({
   setDate: (value) =>
     set(() => ({
       date: value
+    })),
+
+  tempDate: getInitialDate(),
+  setTempDate: (value) =>
+    set(() => ({
+      tempDate: value
     })),
 
   sortBy: SortOption.DATE_NEWEST_FIRST,

@@ -22,7 +22,8 @@ export const useDateRangePicker = () => {
   const [open, setOpen] = useState(false);
   const date = useDashboardStore((state) => state.date);
   const setDate = useDashboardStore((state) => state.setDate);
-  const [tempDate, setTempDate] = useState<DateRange | undefined>(getInitialDate);
+  const tempDate = useDashboardStore((state) => state.tempDate);
+  const setTempDate = useDashboardStore((state) => state.setTempDate);
   const dropdown: React.ComponentProps<typeof Calendar>["captionLayout"] = "dropdown";
 
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
