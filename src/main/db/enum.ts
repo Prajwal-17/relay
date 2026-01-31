@@ -3,8 +3,3 @@ export enum CustomerRole {
   ACCOUNT = "account",
   HOTEL = "hotel"
 }
-
-export enum DraftType {
-  SALE = "sale",
-  ESTIMATE = "estimate"
-}

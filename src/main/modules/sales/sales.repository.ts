@@ -5,8 +5,10 @@ import {
   type BatchCheckAction,
   type UpdateQtyAction
 } from "../../../shared/types";
+import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
+import { updateCheckedQuantityUtil } from "../../utils/product.utils";
 import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
@@ -311,54 +313,37 @@ const convertSaleToEstimate = async (id: string) => {
   });
 };
 
+// TODO: refactor logic & create utility func (Temporary solution)
 const updateCheckedQty = async (saleItemId: string, action: UpdateQtyAction) => {
-  let updatedQty: number | undefined;
-
   db.transaction((tx) => {
     const item = tx.select().from(saleItems).where(eq(saleItems.id, saleItemId)).get();
     if (!item) {
       throw new Error("Sale Item not found");
     }
-    updatedQty = item.checkedQty ?? 0;
-    const totalQty = item.quantity;
-    const remainder = parseFloat((totalQty % 1).toFixed(2));
+
     if (action === UPDATE_QTY_ACTION.SET) {
-      updatedQty = item.checkedQty === item.quantity ? 0 : item.quantity;
-    } else if (action === UPDATE_QTY_ACTION.INCREMENT) {
-      const nextQty = updatedQty + 1;
-      if (nextQty > totalQty) {
-        const remainderQty = updatedQty + remainder;
-        if (remainderQty <= totalQty) {
-          updatedQty = remainderQty;
-        } else {
-          updatedQty = totalQty;
-        }
-      } else {
-        updatedQty = nextQty;
-      }
-    } else if (action === UPDATE_QTY_ACTION.DECREMENT) {
-      const nextQty = updatedQty - 1;
-      const remainderVal = parseFloat((updatedQty % 1).toFixed(2));
-      if (remainderVal !== 0 && updatedQty === totalQty) {
-        updatedQty = Math.floor(updatedQty);
-      } else {
-        updatedQty = Math.max(0, nextQty);
-      }
+      tx.update(saleItems)
+        .set({
+          checkedQty: item.quantity === item.checkedQty ? 0 : item.quantity
+        })
+        .where(eq(saleItems.id, saleItemId))
+        .run();
+      return;
     }
-    updatedQty = Math.round(updatedQty * 100) / 100;
+
+    const updatedQty = updateCheckedQuantityUtil(
+      action,
+      fromMilliUnits(item.quantity),
+      fromMilliUnits(item.checkedQty ?? 0)
+    );
+
     tx.update(saleItems)
       .set({
-        checkedQty: updatedQty
+        checkedQty: toMilliUnits(updatedQty)
       })
       .where(eq(saleItems.id, saleItemId))
       .run();
   });
-
-  if (updatedQty === undefined) {
-    throw new Error("Update failed unexpectedly");
-  }
-
-  return updatedQty;
 };
 
 const batchCheckItems = async (saleId: string, action: BatchCheckAction) => {

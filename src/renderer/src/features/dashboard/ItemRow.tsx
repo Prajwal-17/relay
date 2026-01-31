@@ -7,7 +7,7 @@ import {
   type UnifiedTransactionItem,
   type UpdateQtyAction
 } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Check, Minus, Plus } from "lucide-react";
 import { useCallback } from "react";
@@ -57,7 +57,7 @@ export const ItemRow = ({
         >
           {item.name}
         </td>
-        <td className="text-foreground px-3 py-2 text-center">{item.quantity}</td>
+        <td className="text-foreground px-3 py-2 text-center">{fromMilliUnits(item.quantity)}</td>
         <td className="text-foreground px-3 py-2 text-right">{formatToRupees(item.price)}</td>
         <td className="text-foreground px-3 py-2 text-right font-medium">
           {formatToRupees(item.totalPrice)}
@@ -76,7 +76,7 @@ export const ItemRow = ({
         </td>
 
         <td className="text-foreground px-2 py-2 text-center font-semibold">
-          {item.checkedQty}/{item.quantity}
+          {fromMilliUnits(item.checkedQty)}/ {fromMilliUnits(item.quantity)}
         </td>
 
         <td className="px-3 py-2 text-center">

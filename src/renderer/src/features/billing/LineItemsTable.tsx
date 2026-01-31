@@ -119,7 +119,9 @@ const LineItemsTable = () => {
                       )
                     );
 
-                    const totalChecked = lineItems.reduce((acc, item) => acc + item.checkedQty, 0);
+                    const totalChecked = fromMilliUnits(
+                      lineItems.reduce((acc, item) => acc + toMilliUnits(item.checkedQty), 0)
+                    );
                     const allChecked = totalQty > 0 && totalChecked === totalQty;
 
                     if (allChecked) {
