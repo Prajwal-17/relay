@@ -24,12 +24,7 @@ const LineItemsTable = () => {
   const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
-  // const setLineItems = useLineItemsStore((state) => state.setLineItems);
   const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
-
-  // useEffect(() => {
-  //   setLineItems([]);
-  // }, [setLineItems]);
 
   return (
     <>

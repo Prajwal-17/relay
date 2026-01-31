@@ -159,10 +159,10 @@ const filterSalesByDate = async (
 const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: string }>> => {
   try {
     const finalItems = payload.items.map((item) => {
-      const rawTotal = item.price * item.quantity;
+      const total = Math.round((item.price * item.quantity) / 1000);
       return {
         ...item,
-        totalPrice: Math.round(rawTotal)
+        totalPrice: total
       };
     });
 
@@ -171,7 +171,7 @@ const createSale = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: st
     }, 0);
 
     const totalQuantity = finalItems.reduce((sum, currentItem) => {
-      return sum + (Number(currentItem.quantity) || 0);
+      return sum + currentItem.quantity;
     }, 0);
 
     const finalPayload = {
@@ -206,26 +206,20 @@ const updateSale = async (
 ): Promise<ApiResponse<UpdateSaleResponse>> => {
   try {
     const finalItems = payload.items.map((item) => {
-      const rawTotal = item.price * item.quantity;
+      const total = Math.round((item.price * item.quantity) / 1000);
       return {
         ...item,
-        totalPrice: Math.round(rawTotal)
+        totalPrice: total
       };
     });
 
-    const total =
-      finalItems.length > 0
-        ? finalItems.reduce((sum, currentItem) => {
-            return sum + Number(currentItem.totalPrice || 0);
-          }, 0)
-        : 0;
+    const total = finalItems.reduce((sum, currentItem) => {
+      return sum + Number(currentItem.totalPrice || 0);
+    }, 0);
 
-    const totalQuantity =
-      finalItems.length > 0
-        ? finalItems.reduce((sum, currentItem) => {
-            return sum + (Number(currentItem.quantity) || 0);
-          }, 0)
-        : 0;
+    const totalQuantity = finalItems.reduce((sum, currentItem) => {
+      return sum + currentItem.quantity;
+    }, 0);
 
     const finalPayload: UpdateSaleParams = {
       ...payload,

@@ -1,6 +1,6 @@
 import { filterValidLineItems } from "@/utils";
 import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
-import { convertToPaisa, convertToRupees, toMilliUnits } from "@shared/utils/utils";
+import { convertToPaisa, convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 
@@ -74,7 +74,7 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     mrp: item.mrp,
     price: item.price ? convertToRupees(Number(item.price)).toString() : "",
     purchasePrice: item.purchasePrice,
-    quantity: item.quantity.toString(),
+    quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
     checkedQty: item.checkedQty,
     isInventoryItem: item.productId ? true : false
