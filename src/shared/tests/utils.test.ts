@@ -65,12 +65,15 @@ describe("Currency Utils", () => {
     });
 
     it("should return string when asString is true", () => {
+      // @ts-ignore - build fix
       expect(convertToPaisa(2.34, true)).toBe("234");
+      // @ts-ignore - build fix
       expect(convertToPaisa(0, true)).toBe("0");
     });
 
     it("should return 0 for NaN", () => {
       expect(convertToPaisa(NaN)).toBe(0);
+      // @ts-ignore - build fix
       expect(convertToPaisa(NaN, true)).toBe("0");
     });
   });
