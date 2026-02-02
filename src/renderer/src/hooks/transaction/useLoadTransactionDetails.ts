@@ -44,7 +44,6 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   const setBillingDate = useBillingStore((state) => state.setBillingDate);
   const setOriginalBillingDate = useBillingStore((state) => state.setOriginalBillingDate);
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
-  const setOriginalCustomerId = useBillingStore((state) => state.setOriginalCustomerId);
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
 
   // Line items store setters
@@ -82,7 +81,6 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
       setBillingDate(new Date(data.createdAt as string));
       setOriginalBillingDate(new Date(data.createdAt as string));
       setCustomerId(data.customerId);
-      setOriginalCustomerId(data.customerId);
       setCustomerName(data.customer.name);
       setLineItems(data.items);
       setOriginalLineItems();
@@ -96,7 +94,6 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
     setBillingDate,
     setOriginalBillingDate,
     setCustomerId,
-    setOriginalCustomerId,
     setCustomerName,
     setLineItems,
     setOriginalLineItems

@@ -17,7 +17,6 @@ const useTransactionPayload = () => {
   const billingDate = useBillingStore((state) => state.billingDate);
   const originalBillingDate = useBillingStore((state) => state.originalBillingDate);
   const customerId = useBillingStore((state) => state.customerId);
-  const originalCustomerId = useBillingStore((state) => state.originalCustomerId);
   const lineItems = useLineItemsStore((state) => state.lineItems);
   const originalLineItems = useLineItemsStore((state) => state.originalLineItems);
 
@@ -47,7 +46,7 @@ const useTransactionPayload = () => {
 
   const isDirty = useMemo(() => {
     const isLineItemsDirty = !deepEqual(originalCleaned, currentCleaned);
-    const isCustomerDirty = debouncedState.customerId !== originalCustomerId;
+    const isCustomerDirty = debouncedState.customerId !== customerId;
     const isBillingDateDirty =
       debouncedState.billingDate instanceof Date && originalBillingDate instanceof Date
         ? debouncedState.billingDate.getTime() !== originalBillingDate.getTime()
@@ -57,8 +56,8 @@ const useTransactionPayload = () => {
   }, [
     originalCleaned,
     currentCleaned,
+    customerId,
     debouncedState.customerId,
-    originalCustomerId,
     debouncedState.billingDate,
     originalBillingDate
   ]);

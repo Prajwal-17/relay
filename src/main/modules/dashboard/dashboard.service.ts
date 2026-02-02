@@ -58,14 +58,14 @@ const getMetricsSummary = async (): Promise<ApiResponse<MetricsSummary>> => {
         estimates: result.estimateCount
       },
       sales: {
-        today: convertToRupees(result.todaySaleRevenue),
-        yesterday: convertToRupees(result.yesterdaySaleRevenue),
+        today: result.todaySaleRevenue,
+        yesterday: result.yesterdaySaleRevenue,
         changePercent: Number(saleChangePercent.toFixed(2)),
         trend: saleTrend
       },
       estimates: {
-        today: convertToRupees(result.todayEstimateRevenue),
-        yesterday: convertToRupees(result.yesterdayEstimateRevenue),
+        today: result.todayEstimateRevenue,
+        yesterday: result.yesterdayEstimateRevenue,
         changePercent: Number(estimateChangePercent.toFixed(2)),
         trend: estimateTrend
       }

@@ -19,7 +19,6 @@ export const CustomerNameInput = () => {
   const setCustomerId = useBillingStore((state) => state.setCustomerId);
   const customerName = useBillingStore((state) => state.customerName);
   const setCustomerName = useBillingStore((state) => state.setCustomerName);
-  const setIsNewCustomer = useBillingStore((state) => state.setIsNewCustomer);
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -58,7 +57,6 @@ export const CustomerNameInput = () => {
   const handleSelectCustomer = (customer: Customer) => {
     setCustomerId(customer.id);
     setCustomerName(customer.name);
-    setIsNewCustomer(false);
     setOpen(false);
   };
 
@@ -77,7 +75,6 @@ export const CustomerNameInput = () => {
       if (data.status === "success" && data.data) {
         setCustomerId(data.data.id);
         setCustomerName(data.data.name);
-        setIsNewCustomer(false);
         setOpen(false);
         toast.success(`Created and selected customer: ${data.data.name}`);
       } else {

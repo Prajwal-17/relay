@@ -275,7 +275,7 @@ const convertSaleToEstimate = async (id: string) => {
         customerId: sale.customerId,
         grandTotal: sale.grandTotal,
         totalQuantity: sale.totalQuantity,
-        isPaid: false
+        isPaid: true
       })
       .returning({ id: estimates.id })
       .get();

@@ -5,7 +5,7 @@ import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees, formatToRupees } from "@shared/utils/utils";
+import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import { Edit, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
@@ -100,7 +100,7 @@ export default function ProductResults() {
                               </div>
                               <div className="flex items-center gap-3">
                                 <p className="text-muted-foreground mt-1 text-base font-medium">
-                                  {product.totalQuantitySold?.toFixed(2) ?? "null"} sold
+                                  {fromMilliUnits(product.totalQuantitySold ?? 0)} sold
                                 </p>
                                 {product.purchasePrice && (
                                   <>

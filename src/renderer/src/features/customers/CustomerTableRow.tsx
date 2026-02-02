@@ -26,7 +26,7 @@ import {
   type TransactionType
 } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees } from "@shared/utils/utils";
+import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, LoaderCircle, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
@@ -92,7 +92,7 @@ const CustomerTableRow = ({
             # {transaction.transactionNo}
           </div>
           <div className="col-span-2 flex items-center font-semibold">
-            {transaction.grandTotal && convertToRupees(transaction.grandTotal)}
+            {transaction.grandTotal ? formatToRupees(transaction.grandTotal) : "-"}
           </div>
           <div className="col-span-2 flex items-center">
             {transaction.isPaid ? (

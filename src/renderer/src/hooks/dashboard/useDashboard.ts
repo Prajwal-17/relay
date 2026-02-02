@@ -31,7 +31,7 @@ const handleDelete = async ({ type, id }: MutationVariables) => {
       throw new Error(data.error.message);
     } else if (type === TRANSACTION_TYPE.ESTIMATE) {
       const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
-        method: "POST"
+        method: "DELETE"
       });
       const data = await response.json();
 
