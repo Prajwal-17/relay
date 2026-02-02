@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useCustomers from "@/hooks/customers/useCustomers";
-import { Download, LoaderCircle, Plus, Search } from "lucide-react";
+import { Download, LoaderCircle, Plus, Search, X } from "lucide-react";
 import { CustomerDialog } from "./CustomerDialog";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 
@@ -70,8 +70,16 @@ export const CustomerSidebar = () => {
               placeholder="Search customers..."
               value={customerSearch}
               onChange={(e) => setCustomerSearch(e.target.value)}
-              className="h-14 pl-10 text-lg!"
+              className="h-14 pl-10 pr-10 text-lg!"
             />
+            {customerSearch && (
+              <div
+                className="hover:bg-accent absolute top-1/2 right-3 -translate-y-1/2 transform cursor-pointer rounded-sm p-1"
+                onClick={() => setCustomerSearch("")}
+              >
+                <X className="h-4 w-4 transition-colors" />
+              </div>
+            )}
           </div>
         </div>
 

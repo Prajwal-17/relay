@@ -32,7 +32,7 @@ export default function ProductSearch() {
                 placeholder="Search products by name"
                 value={productsSearchParam}
                 onChange={(e) => setProductsSearchParam(e.target.value)}
-                className="bg-muted/30 h-16 rounded-lg pl-12 text-xl! font-medium shadow-sm"
+                className="bg-muted/30 h-16 rounded-lg pr-12 pl-12 text-xl! font-medium shadow-sm"
               />
               {productsSearchParam && (
                 <div
