@@ -76,7 +76,7 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     purchasePrice: item.purchasePrice,
     quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
-    checkedQty: item.checkedQty,
+    checkedQty: fromMilliUnits(item.checkedQty),
     isInventoryItem: item.productId ? true : false
   }));
 

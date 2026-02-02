@@ -82,7 +82,8 @@ export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] 
   return filteredLineitems.map((item) => ({
     ...item,
     price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: toMilliUnits(item.quantity)
+    quantity: toMilliUnits(item.quantity),
+    checkedQty: toMilliUnits(item.checkedQty)
   }));
 }
 
@@ -99,7 +100,8 @@ export function normalizeOriginalLineItems(lineItems: LineItem[]) {
   return filteredLineitems.map((item) => ({
     ...item,
     price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: toMilliUnits(item.quantity)
+    quantity: toMilliUnits(item.quantity),
+    checkedQty: toMilliUnits(item.checkedQty)
   }));
 }
 
