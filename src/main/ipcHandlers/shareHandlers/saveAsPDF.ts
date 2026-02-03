@@ -7,7 +7,7 @@ import os from "os";
 import path from "path";
 import { TRANSACTION_TYPE, type ApiResponse, type TransactionType } from "../../../shared/types";
 import { formatDateStrToISTDateStr } from "../../../shared/utils/dateUtils";
-import { convertToRupees } from "../../../shared/utils/utils";
+import { convertToRupees, fromMilliUnits } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimates, sales } from "../../db/schema";
 
@@ -90,9 +90,14 @@ export function saveAsPDF() {
           align: "right"
         });
 
+        if (type === TRANSACTION_TYPE.SALE) {
+          doc.text("GSTIN : 29BHBPR8333N2ZM", marginX, 43);
+        }
+
         // horizontal separator
+        const separatorY = type === TRANSACTION_TYPE.SALE ? 50 : 45;
         doc.setLineWidth(0.1);
-        doc.line(marginX, 45, pageWidth - marginX, 45);
+        doc.line(marginX, separatorY, pageWidth - marginX, separatorY);
 
         // table
         let tableData;
@@ -100,8 +105,8 @@ export function saveAsPDF() {
           tableData = await transaction.saleItems.map((item, idx) => {
             return [
               idx + 1,
-              item.name,
-              item.quantity,
+              item.productSnapshot,
+              fromMilliUnits(item.quantity),
               convertToRupees(item.price),
               convertToRupees(item.totalPrice)
             ];
@@ -110,8 +115,8 @@ export function saveAsPDF() {
           tableData = await transaction.estimateItems.map((item, idx) => {
             return [
               idx + 1,
-              item.name,
-              item.quantity,
+              item.productSnapshot,
+              fromMilliUnits(item.quantity),
               convertToRupees(item.price),
               convertToRupees(item.totalPrice)
             ];
@@ -121,7 +126,7 @@ export function saveAsPDF() {
         }
 
         autoTable(doc, {
-          startY: 50,
+          startY: separatorY + 5,
           head: [["#", "Item Name", "Qty", "Unit Price", "Total"]],
           body: tableData,
           theme: "grid",
