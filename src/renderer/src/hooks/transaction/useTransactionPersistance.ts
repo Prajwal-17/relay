@@ -173,20 +173,21 @@ const useTransactionPersistance = () => {
     }
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (saveMutation.isPending || isDirty) {
-        e.preventDefault();
-        toast.error("Bill is not Saved. Do not Refresh");
-      }
-    };
+  // FIX: This part is triggering infinite save loop and not able to close app
+  // useEffect(() => {
+  //   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+  //     if (saveMutation.isPending || isDirty) {
+  //       e.preventDefault();
+  //       toast.error("Bill is not Saved. Do not Refresh");
+  //     }
+  //   };
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
 
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [saveMutation.isPending, isDirty]);
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [saveMutation.isPending, isDirty]);
 
   return {
     status,

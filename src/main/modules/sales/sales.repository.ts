@@ -81,10 +81,6 @@ const createSale = async (payload: CreateSaleParams) => {
     }
 
     for (const item of payload.items) {
-      if (!item.name) {
-        throw new Error("Item name field cannot be empty");
-      }
-
       tx.insert(saleItems)
         .values({
           saleId: newSale.id,
