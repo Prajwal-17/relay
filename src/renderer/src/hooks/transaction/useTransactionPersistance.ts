@@ -152,6 +152,7 @@ const useTransactionPersistance = () => {
             toast.error("Nothing to print");
           } else {
             await handlePrint();
+            navigate(`/dashboard/${billingType}s`);
           }
         } else if (action === "saveAsPDF") {
           if (!billingId) {
