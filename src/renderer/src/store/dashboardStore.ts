@@ -1,6 +1,7 @@
 import { SortOption, type SortType } from "@shared/types";
 import type { DateRange } from "react-day-picker";
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 type DashboardStoreType = {
   date: DateRange | undefined;
@@ -26,25 +27,42 @@ const getInitialDate = (): DateRange => {
   return { from, to };
 };
 
-export const useDashboardStore = create<DashboardStoreType>((set) => ({
-  date: getInitialDate(),
-  setDate: (value) =>
-    set(() => ({
-      date: value
-    })),
+export const useDashboardStore = create<DashboardStoreType>()(
+  devtools(
+    (set) => ({
+      date: getInitialDate(),
+      setDate: (value) =>
+        set(
+          () => ({
+            date: value
+          }),
+          false,
+          "dashboard/setDate"
+        ),
 
-  tempDate: getInitialDate(),
-  setTempDate: (value) =>
-    set(() => ({
-      tempDate: value
-    })),
+      tempDate: getInitialDate(),
+      setTempDate: (value) =>
+        set(
+          () => ({
+            tempDate: value
+          }),
+          false,
+          "dashboard/setTempDate"
+        ),
 
-  sortBy: SortOption.DATE_NEWEST_FIRST,
-  setSortBy: (sortValue) =>
-    set(() => {
-      localStorage.setItem("sort-by", sortValue);
-      return {
-        sortBy: sortValue
-      };
-    })
-}));
+      sortBy: SortOption.DATE_NEWEST_FIRST,
+      setSortBy: (sortValue) =>
+        set(
+          () => {
+            localStorage.setItem("sort-by", sortValue);
+            return {
+              sortBy: sortValue
+            };
+          },
+          false,
+          "dashboard/setSortBy"
+        )
+    }),
+    { name: "dashboard-store" }
+  )
+);
