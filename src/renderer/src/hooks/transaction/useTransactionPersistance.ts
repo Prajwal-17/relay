@@ -46,10 +46,12 @@ const useTransactionPersistance = () => {
   const billingType = useBillingStore((state) => state.billingType);
   const billingId = useBillingStore((state) => state.billingId);
   const billingDate = useBillingStore((state) => state.billingDate);
+  const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
   const status = useBillingStore((state) => state.status);
   const setStatus = useBillingStore((state) => state.setStatus);
   const setBillingId = useBillingStore((state) => state.setBillingId);
+  const syncOriginals = useBillingStore((state) => state.syncOriginals);
   const updateInternalIds = useLineItemsStore((state) => state.updateInternalIds);
   const lineItems = useLineItemsStore((state) => state.lineItems);
 
@@ -72,8 +74,12 @@ const useTransactionPersistance = () => {
         window.history.replaceState(window.history.state, "", `#${newPath}`);
       }
 
+      // Sync original values to prevent infinite loop
+      syncOriginals();
+
       // update internal ids
       if (response.data?.items) {
+        setBillingDate(new Date(response.data.createdAt));
         updateInternalIds(response.data.items);
       }
     },
@@ -174,21 +180,20 @@ const useTransactionPersistance = () => {
     }
   };
 
-  // FIX: This part is triggering infinite save loop and not able to close app
-  // useEffect(() => {
-  //   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-  //     if (saveMutation.isPending || isDirty) {
-  //       e.preventDefault();
-  //       toast.error("Bill is not Saved. Do not Refresh");
-  //     }
-  //   };
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (saveMutation.isPending || isDirty) {
+        e.preventDefault();
+        e.returnValue = ""; // Chrome requires returnValue to be set
+      }
+    };
 
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [saveMutation.isPending, isDirty]);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [saveMutation.isPending, isDirty]);
 
   return {
     status,

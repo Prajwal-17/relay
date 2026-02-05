@@ -235,7 +235,8 @@ const updateSale = async (
       data: {
         id,
         type: TRANSACTION_TYPE.SALE,
-        ...result
+        ...result,
+        createdAt: result.createdAt
       }
     };
   } catch (error) {
