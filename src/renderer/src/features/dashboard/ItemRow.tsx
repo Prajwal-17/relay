@@ -55,7 +55,7 @@ export const ItemRow = ({
         <td
           className={`text-foreground w-sm truncate px-3 py-2 text-left font-semibold ${item.quantity === item.checkedQty ? "line-through" : ""} `}
         >
-          {item.name}
+          {item.productSnapshot}
         </td>
         <td className="text-foreground px-3 py-2 text-center">{fromMilliUnits(item.quantity)}</td>
         <td className="text-foreground px-3 py-2 text-right">{formatToRupees(item.price)}</td>
