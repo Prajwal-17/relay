@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { logger } from "./middleware/logger";
 import { customersController } from "./modules/customers/customers.controller";
 import { dashboardController } from "./modules/dashboard/dashboard.controller";
 import { estimatesController } from "./modules/estimates/estimates.controller";
@@ -8,6 +9,8 @@ import { productsController } from "./modules/products/products.controller";
 import { salesController } from "./modules/sales/sales.controller";
 
 const app = new Hono();
+
+app.use(logger);
 
 app.use("/*", cors());
 app.route("/api/dashboard", dashboardController);
