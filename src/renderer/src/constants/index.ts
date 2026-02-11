@@ -16,7 +16,7 @@ export const PRODUCTS_LIMIT = 20;
 export const ignoredWeight = ["", "1ml", "1g", "none", "1pc", "1kg"];
 
 // Products Page
-export const PRODUCTS_SEARCH_DELAY = 300;
+export const PRODUCTS_SEARCH_DELAY = 400;
 export const PRODUCTS_SEARCH_PAGE_SIZE = 20;
 
 export const weights = [
