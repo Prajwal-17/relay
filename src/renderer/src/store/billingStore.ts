@@ -1,5 +1,6 @@
 import { BILLSTATUS, TRANSACTION_TYPE, type BillStatus, type TransactionType } from "@shared/types";
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 type BillingStore = {
   billingId: string | null; // sales.id | estimates.id
@@ -26,73 +27,117 @@ type BillingStore = {
   reset: () => void;
 };
 
-export const useBillingStore = create<BillingStore>((set) => ({
-  billingId: null, // sales.id || estimates.id
-  setBillingId: (newId) =>
-    set(() => ({
-      billingId: newId
-    })),
+export const useBillingStore = create<BillingStore>()(
+  devtools(
+    (set) => ({
+      billingId: null, // sales.id || estimates.id
+      setBillingId: (newId) =>
+        set(
+          () => ({
+            billingId: newId
+          }),
+          false,
+          "billing/setBillingId"
+        ),
 
-  transactionNo: null,
-  setTransactionNo: (newTransactionNo) => set(() => ({ transactionNo: newTransactionNo })),
-
-  billingType: TRANSACTION_TYPE.SALE,
-  setBillingType: (type: TransactionType) =>
-    set(() => ({
-      billingType: type
-    })),
-
-  customerId: null,
-  setCustomerId: (id) =>
-    set(() => ({
-      customerId: id
-    })),
-
-  customerName: "",
-  setCustomerName: (newCustomerName) => set(() => ({ customerName: newCustomerName })),
-
-  billingDate: new Date(),
-  setBillingDate: (newDate) =>
-    set(() => ({
-      billingDate: newDate
-    })),
-
-  originalBillingDate: new Date(),
-  setOriginalBillingDate: (newDate) =>
-    set(() => ({
-      originalBillingDate: newDate
-    })),
-
-  isNewCustomer: true,
-  setIsNewCustomer: (isNew) => set(() => ({ isNewCustomer: isNew })),
-
-  originalCustomerId: null,
-  setOriginalCustomerId: (id: string | null) =>
-    set(() => ({
-      originalCustomerId: id
-    })),
-  syncOriginals: () =>
-    set((state) => ({
-      originalBillingDate: state.billingDate,
-      originalCustomerId: state.customerId
-    })),
-
-  status: BILLSTATUS.IDLE,
-  setStatus: (newStatus) =>
-    set(() => ({
-      status: newStatus
-    })),
-
-  reset: () =>
-    set(() => ({
-      billingId: null,
       transactionNo: null,
-      billingDate: new Date(),
-      originalBillingDate: new Date(),
+      setTransactionNo: (newTransactionNo) =>
+        set(() => ({ transactionNo: newTransactionNo }), false, "billing/setTransactionNo"),
+
+      billingType: TRANSACTION_TYPE.SALE,
+      setBillingType: (type: TransactionType) =>
+        set(
+          () => ({
+            billingType: type
+          }),
+          false,
+          "billing/setBillingType"
+        ),
+
       customerId: null,
-      originalCustomerId: null,
+      setCustomerId: (id) =>
+        set(
+          () => ({
+            customerId: id
+          }),
+          false,
+          "billing/setCustomerId"
+        ),
+
       customerName: "",
+      setCustomerName: (newCustomerName) =>
+        set(() => ({ customerName: newCustomerName }), false, "billing/setCustomerName"),
+
+      billingDate: new Date(),
+      setBillingDate: (newDate) =>
+        set(
+          () => ({
+            billingDate: newDate
+          }),
+          false,
+          "billing/setBillingDate"
+        ),
+
+      originalBillingDate: new Date(),
+      setOriginalBillingDate: (newDate) =>
+        set(
+          () => ({
+            originalBillingDate: newDate
+          }),
+          false,
+          "billing/setOriginalBillingDate"
+        ),
+
       isNewCustomer: true,
-      status: BILLSTATUS.IDLE
-    }))
-}));
+      setIsNewCustomer: (isNew) =>
+        set(() => ({ isNewCustomer: isNew }), false, "billing/setIsNewCustomer"),
+
+      originalCustomerId: null,
+      setOriginalCustomerId: (id: string | null) =>
+        set(
+          () => ({
+            originalCustomerId: id
+          }),
+          false,
+          "billing/setOriginalCustomerId"
+        ),
+      syncOriginals: () =>
+        set(
+          (state) => ({
+            originalBillingDate: state.billingDate,
+            originalCustomerId: state.customerId
+          }),
+          false,
+          "billing/syncOriginals"
+        ),
+
+      status: BILLSTATUS.IDLE,
+      setStatus: (newStatus) =>
+        set(
+          () => ({
+            status: newStatus
+          }),
+          false,
+          "billing/setStatus"
+        ),
+
+      reset: () =>
+        set(
+          () => ({
+            billingId: null,
+            transactionNo: null,
+            billingDate: new Date(),
+            originalBillingDate: new Date(),
+            customerId: null,
+            originalCustomerId: null,
+            customerName: "",
+            isNewCustomer: true,
+            status: BILLSTATUS.IDLE
+          }),
+          false,
+          "billing/reset"
+        )
+    }),
+    { name: "billing-store" }
+  )
+);
