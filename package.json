@@ -1,5 +1,6 @@
 {
   "name": "pos",
+  "productName": "QuickCart",
   "version": "4.1.6",
   "description": "A billing software for creating and managing invoices and customer accounts.",
   "main": "./out/main/index.js",
@@ -117,29 +118,10 @@
     "typescript": "^5.8.3",
     "vitest": "^4.0.16"
   },
-  "build": {
-    "appId": "pos.quickcart",
-    "productName": "QuickCart",
-    "win": {
-      "target": "nsis"
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "artifactName": "${productName}-${version}.${ext}"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Prajwal-17",
-        "repo": "pos"
-      }
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild"
     ]
-  },
-  "linux": {
-    "target": [
-      "AppImage"
-    ],
-    "category": "Office"
   }
 }

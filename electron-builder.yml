@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: Quickcart
+appId: com.quickcart.app
+productName: QuickCart
 directories:
   buildResources: build
 files:
@@ -12,23 +12,36 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: Quickcart
+  executableName: ${productName}
 nsis:
   artifactName: ${productName}-${version}.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  notarize: false
+dmg:
+  artifactName: ${productName}-${version}.${ext}
 linux:
   target:
     - AppImage
     - deb
-  artifactName: ${productName}
-  maintainer: prajwalkreddy17@gmail.com
+  maintainer: Prajwal - prajwalkreddy17@gmail.com
   category: Office
 appImage:
   artifactName: ${productName}-${version}.${ext}
-npmRebuild: false
+deb:
+  artifactName: ${productName}-${version}.${ext}
+npmRebuild: true # rebuild native dependencies better-sqlite3
 publish:
   provider: github
-  owner: Prajwal-17
+  owner: prajwal-17
   repo: pos
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
