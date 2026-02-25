@@ -92,5 +92,5 @@ customersController.post(
 customersController.delete("/:id", validateRequest("param", idSchema), async (c) => {
   const { id } = c.req.valid("param");
   await customersService.deleteCustomerById(id);
-  return c.status(204);
+  return c.body(null, 204);
 });

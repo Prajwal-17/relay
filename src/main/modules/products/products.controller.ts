@@ -47,5 +47,5 @@ productsController.post(
 productsController.delete("/:id", validateRequest("param", idSchema), async (c) => {
   const { id } = c.req.valid("param");
   await productService.deleteProduct(id);
-  return c.status(204);
+  return c.body(null, 204);
 });
