@@ -1,9 +1,7 @@
 import { asc, desc, type SQL } from "drizzle-orm";
 import {
-  BATCH_CHECK_ACTION,
   SortOption,
   TRANSACTION_TYPE,
-  type ApiResponse,
   type BatchCheckAction,
   type PaginatedApiResponse,
   type TransactionListResponse,
@@ -14,344 +12,176 @@ import {
   type UpdateQtyAction
 } from "../../../shared/types";
 import { estimates } from "../../db/schema";
+import { AppError } from "../../utils/appError";
 import { estimatesRepository } from "./estimates.repository";
 import type { FilterEstimatesParams, UpdateEstimateParams } from "./estimates.types";
 
-const getEstimateById = async (id: string): Promise<ApiResponse<UnifiedTransctionWithItems>> => {
-  try {
-    const estimate = await estimatesRepository.getEstimateById(id);
-
-    if (!estimate) {
-      return {
-        status: "error",
-        error: {
-          message: `Estimate with id ${id} does not exist.`
-        }
-      };
-    }
-
-    const items: UnifiedTransactionItem[] = estimate.estimateItems.map(
-      // eslint-disable-next-line
-      ({ estimateId, ...rest }) => ({
-        ...rest,
-        checkedQty: rest.checkedQty ?? 0
-      })
-    );
-
-    return {
-      status: "success",
-      data: {
-        type: TRANSACTION_TYPE.ESTIMATE,
-        id: estimate.id,
-        transactionNo: estimate.estimateNo,
-        customerId: estimate.customerId,
-        customer: estimate.customer,
-        grandTotal: estimate.grandTotal,
-        totalQuantity: estimate.totalQuantity,
-        isPaid: estimate.isPaid,
-        items: items,
-        createdAt: estimate.createdAt,
-        updatedAt: estimate.updatedAt
-      }
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong while fetching estimate"
-      }
-    };
+const getEstimateById = async (id: string): Promise<UnifiedTransctionWithItems> => {
+  const estimate = await estimatesRepository.getEstimateById(id);
+  if (!estimate) {
+    throw new AppError(`Estimate with id:${id} does not exist`, 400);
   }
+  // eslint-disable-next-line
+  const items: UnifiedTransactionItem[] = estimate.estimateItems.map(({ estimateId, ...rest }) => ({
+    ...rest,
+    checkedQty: rest.checkedQty ?? 0
+  }));
+
+  return {
+    type: TRANSACTION_TYPE.ESTIMATE,
+    id: estimate.id,
+    transactionNo: estimate.estimateNo,
+    customerId: estimate.customerId,
+    customer: estimate.customer,
+    grandTotal: estimate.grandTotal,
+    totalQuantity: estimate.totalQuantity,
+    isPaid: estimate.isPaid,
+    items: items,
+    createdAt: estimate.createdAt,
+    updatedAt: estimate.updatedAt
+  };
 };
 
-const getNextEstimateNo = async (): Promise<ApiResponse<number>> => {
-  try {
-    const latestEstimateNo = await estimatesRepository.getLatestEstimateNo();
-    let nextEstimateNo = 1;
+const getNextEstimateNo = async (): Promise<{ nextEstimateNo: number }> => {
+  const latestEstimateNo = await estimatesRepository.getLatestEstimateNo();
+  let nextEstimateNo = 1;
 
-    if (latestEstimateNo) {
-      nextEstimateNo = latestEstimateNo.estimateNo + 1;
-    }
-
-    return {
-      status: "success",
-      data: nextEstimateNo
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
-      }
-    };
+  if (latestEstimateNo) {
+    nextEstimateNo = latestEstimateNo.estimateNo + 1;
   }
+
+  return {
+    nextEstimateNo: nextEstimateNo
+  };
 };
 
 const filterEstimateByDate = async (
   params: FilterEstimatesParams
 ): Promise<PaginatedApiResponse<TransactionListResponse>> => {
-  try {
-    let orderByClause: SQL;
-    switch (params.sortBy) {
-      case SortOption.DATE_NEWEST_FIRST:
-        orderByClause = desc(estimates.createdAt);
-        break;
-      case SortOption.DATE_OLDEST_FIRST:
-        orderByClause = asc(estimates.createdAt);
-        break;
-      case SortOption.HIGH_TO_LOW:
-        orderByClause = desc(estimates.grandTotal);
-        break;
-      case SortOption.LOW_TO_HIGH:
-        orderByClause = asc(estimates.grandTotal);
-        break;
-      default:
-        orderByClause = desc(estimates.createdAt);
-        break;
-    }
-
-    const options = {
-      from: params.from,
-      to: params.to,
-      orderByClause,
-      pageNo: params.pageNo,
-      pageSize: params.pageSize
-    };
-
-    const result = await estimatesRepository.filterEstimatesByDate(options);
-
-    const transactions = result.transactionsResult.map((txn) => {
-      return {
-        type: TRANSACTION_TYPE.ESTIMATE,
-        id: txn.id,
-        transactionNo: txn.estimateNo,
-        customerId: txn.customerId,
-        customerName: txn.customer.name,
-        grandTotal: txn.grandTotal,
-        totalQuantity: txn.totalQuantity,
-        isPaid: txn.isPaid,
-        updatedAt: txn.updatedAt,
-        createdAt: txn.createdAt
-      };
-    });
-
-    const nextpageNo = result.transactionsResult.length === 20 ? params.pageNo + 1 : null;
-
-    return {
-      status: "success",
-      nextPageNo: nextpageNo,
-      data: {
-        totalRevenue: result.summaryResult[0].totalRevenue,
-        totalTransactions: result.summaryResult[0].totalTransactions,
-        transactions
-      }
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
-      }
-    };
+  let orderByClause: SQL;
+  switch (params.sortBy) {
+    case SortOption.DATE_NEWEST_FIRST:
+      orderByClause = desc(estimates.createdAt);
+      break;
+    case SortOption.DATE_OLDEST_FIRST:
+      orderByClause = asc(estimates.createdAt);
+      break;
+    case SortOption.HIGH_TO_LOW:
+      orderByClause = desc(estimates.grandTotal);
+      break;
+    case SortOption.LOW_TO_HIGH:
+      orderByClause = asc(estimates.grandTotal);
+      break;
+    default:
+      orderByClause = desc(estimates.createdAt);
+      break;
   }
+
+  const options = {
+    from: params.from,
+    to: params.to,
+    orderByClause,
+    pageNo: params.pageNo,
+    pageSize: params.pageSize
+  };
+
+  const result = await estimatesRepository.filterEstimatesByDate(options);
+
+  const transactions = result.transactionsResult.map((txn) => {
+    return {
+      type: TRANSACTION_TYPE.ESTIMATE,
+      id: txn.id,
+      transactionNo: txn.estimateNo,
+      customerId: txn.customerId,
+      customerName: txn.customer.name,
+      grandTotal: txn.grandTotal,
+      totalQuantity: txn.totalQuantity,
+      isPaid: txn.isPaid,
+      updatedAt: txn.updatedAt,
+      createdAt: txn.createdAt
+    };
+  });
+
+  const nextpageNo = result.transactionsResult.length === 20 ? params.pageNo + 1 : null;
+
+  return {
+    nextPageNo: nextpageNo,
+    totalRevenue: result.summaryResult[0].totalRevenue,
+    totalTransactions: result.summaryResult[0].totalTransactions,
+    transactions
+  };
 };
 
-const createEstimate = async (payload: TxnPayloadData): Promise<ApiResponse<{ id: string }>> => {
-  try {
-    const finalItems = payload.items.map((item) => {
-      const total = Math.round((item.price * item.quantity) / 1000);
-      return {
-        ...item,
-        totalPrice: total
-      };
-    });
-
-    const total = finalItems.reduce((sum, currentItem) => {
-      return sum + Number(currentItem.totalPrice || 0);
-    }, 0);
-
-    const totalQuantity = finalItems.reduce((sum, currentItem) => {
-      return sum + currentItem.quantity;
-    }, 0);
-
-    const finalPayload = {
-      ...payload,
-      items: finalItems,
-      grandTotal: total,
-      totalQuantity: totalQuantity
-    };
-
-    const newEstimate = await estimatesRepository.createEstimate(finalPayload);
-
+const computeItemsAndTotals = (items: TxnPayloadData["items"]) => {
+  const finalItems = items.map((item) => {
+    const total = Math.round((item.price * item.quantity) / 1000);
     return {
-      status: "success",
-      data: {
-        id: newEstimate
-      }
+      ...item,
+      totalPrice: total
     };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong while creating estimate"
-      }
-    };
-  }
+  });
+
+  const grandTotal = finalItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
+  const totalQuantity = finalItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  return { finalItems, grandTotal, totalQuantity };
+};
+
+const createEstimate = async (payload: TxnPayloadData): Promise<{ id: string }> => {
+  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
+
+  const finalPayload = {
+    ...payload,
+    items: finalItems,
+    grandTotal,
+    totalQuantity
+  };
+
+  const newEstimateId = await estimatesRepository.createEstimate(finalPayload);
+
+  return { id: newEstimateId };
 };
 
 const updateEstimate = async (
   id: string,
   payload: TxnPayloadData
-): Promise<ApiResponse<UpdateEstimateResponse>> => {
-  try {
-    const finalItems = payload.items.map((item) => {
-      const total = Math.round((item.price * item.quantity) / 1000);
-      return {
-        ...item,
-        totalPrice: total
-      };
-    });
+): Promise<UpdateEstimateResponse> => {
+  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
 
-    const total = finalItems.reduce((sum, currentItem) => {
-      return sum + Number(currentItem.totalPrice || 0);
-    }, 0);
+  const finalPayload: UpdateEstimateParams = {
+    ...payload,
+    items: finalItems,
+    grandTotal,
+    totalQuantity
+  };
 
-    const totalQuantity = finalItems.reduce((sum, currentItem) => {
-      return sum + currentItem.quantity;
-    }, 0);
+  const result = await estimatesRepository.updateEstimate(id, finalPayload);
 
-    const finalPayload: UpdateEstimateParams = {
-      ...payload,
-      items: finalItems,
-      grandTotal: total,
-      totalQuantity: totalQuantity
-    };
-
-    const result = await estimatesRepository.updateEstimate(id, finalPayload);
-
-    return {
-      status: "success",
-      data: {
-        id,
-        type: TRANSACTION_TYPE.ESTIMATE,
-        ...result
-      }
-    };
-  } catch (error) {
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong while updating estimate"
-      }
-    };
-  }
+  return {
+    id,
+    type: TRANSACTION_TYPE.ESTIMATE,
+    ...result,
+    createdAt: result.createdAt
+  };
 };
 
-const convertEstimateToSale = async (id: string): Promise<ApiResponse<string>> => {
-  try {
-    const result = await estimatesRepository.convertEstimateToSale(id);
-
-    if (result.changes === 0) {
-      return {
-        status: "error",
-        error: {
-          message: `Could not convert Estimate To Sale having id: ${id}`
-        }
-      };
-    }
-
-    return {
-      status: "success",
-      data: `Successfully converted Estimate To Sale having id:${id}`
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
-      }
-    };
-  }
+const convertEstimateToSale = async (id: string): Promise<{ id: string }> => {
+  const result = await estimatesRepository.convertEstimateToSale(id);
+  return {
+    id: result.id
+  };
 };
 
-const updateCheckedQtyService = async (
-  estimateItemId: string,
-  action: UpdateQtyAction
-): Promise<ApiResponse<string>> => {
-  try {
-    await estimatesRepository.updateCheckedQty(estimateItemId, action);
-    return {
-      status: "success",
-      data: "Successfully updated checkedQty"
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong while updating checkedQty"
-      }
-    };
-  }
+const updateCheckedQtyService = async (estimateItemId: string, action: UpdateQtyAction) => {
+  await estimatesRepository.updateCheckedQty(estimateItemId, action);
 };
 
 const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
-  try {
-    const result = await estimatesRepository.batchCheckItems(id, action);
-    if (result.changes > 0) {
-      return {
-        status: "success",
-        data: {
-          isAllChecked: action === BATCH_CHECK_ACTION.MARK_ALL
-        },
-        message:
-          action === BATCH_CHECK_ACTION.MARK_ALL
-            ? "All items have been marked as checked."
-            : "All items have been unchecked."
-      };
-    }
-    throw new Error("No Estimate Items were updated");
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
-      }
-    };
-  }
+  await estimatesRepository.batchCheckItems(id, action);
 };
 
-const deleteEstimateById = async (id: string): Promise<ApiResponse<string>> => {
-  try {
-    const result = await estimatesRepository.deleteEstimateById(id);
-
-    if (result.changes === 0) {
-      return {
-        status: "error",
-        error: {
-          message: `Could not delete Estimate with id: ${id}`
-        }
-      };
-    }
-
-    return {
-      status: "success",
-      data: `Successfully deleted Estimate with id:${id}`
-    };
-  } catch (error) {
-    console.log(error);
-    return {
-      status: "error",
-      error: {
-        message: (error as Error).message ?? "Something went wrong"
-      }
-    };
-  }
+const deleteEstimateById = async (id: string) => {
+  await estimatesRepository.deleteEstimateById(id);
 };
 
 export const estimatesService = {

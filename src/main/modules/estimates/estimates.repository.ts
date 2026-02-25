@@ -8,6 +8,7 @@ import {
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
+import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
 import type {
   CreateEstimateParams,
@@ -81,14 +82,10 @@ const createEstimate = async (payload: CreateEstimateParams) => {
       .get();
 
     if (!newEstimate || !newEstimate.id) {
-      throw new Error("Failed to Create Estimate");
+      throw new AppError("Failed to Create Estimate", 500);
     }
 
     for (const item of payload.items) {
-      if (!item.name) {
-        throw new Error("Item name field cannot be empty");
-      }
-
       tx.insert(estimateItems)
         .values({
           estimateId: newEstimate.id,
@@ -116,7 +113,6 @@ const createEstimate = async (payload: CreateEstimateParams) => {
     }
 
     return newEstimate.id;
-    // return "Successfully created Estimate";
   });
 };
 
@@ -235,7 +231,7 @@ const deleteEstimateById = async (id: string) => {
     const existingEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
 
     if (!existingEstimate) {
-      throw new Error(`Estimate with id:${id} does not exists`);
+      throw new AppError(`Estimate with id:${id} does not exists`, 400);
     }
 
     const items = tx.select().from(estimateItems).where(eq(estimateItems.estimateId, id)).all();
@@ -253,7 +249,7 @@ const deleteEstimateById = async (id: string) => {
 
     const result = tx.delete(estimates).where(eq(estimates.id, id)).run();
     if (result.changes === 0) {
-      throw new Error("Failed to delete Estimate record");
+      throw new AppError("Failed to delete Estimate record", 400);
     }
     return result;
   });
@@ -264,7 +260,7 @@ const convertEstimateToSale = async (id: string) => {
     const estimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
 
     if (!estimate) {
-      throw new Error(`Estimate with id:${id} does not exist`);
+      throw new AppError(`Estimate with id:${id} does not exist`, 400);
     }
 
     const currentEstimateItems = tx
@@ -290,7 +286,7 @@ const convertEstimateToSale = async (id: string) => {
       .get();
 
     if (!newSale) {
-      throw new Error("Could not convert Estimate to Sale");
+      throw new AppError("Could not convert Estimate to Sale", 500);
     }
 
     currentEstimateItems.forEach((i) => {
@@ -315,10 +311,10 @@ const convertEstimateToSale = async (id: string) => {
     const result = tx.delete(estimates).where(eq(estimates.id, id)).run();
 
     if (result.changes === 0) {
-      throw new Error("Could not convert Estimate to Sale");
+      throw new AppError("Could not convert Estimate to Sale", 400);
     }
 
-    return result;
+    return newSale;
   });
 };
 
@@ -327,7 +323,7 @@ const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction)
   db.transaction((tx) => {
     const item = tx.select().from(estimateItems).where(eq(estimateItems.id, estimateItemId)).get();
     if (!item) {
-      throw new Error("Estimate Item not found");
+      throw new AppError("Estimate Item not found", 400);
     }
 
     if (action === UPDATE_QTY_ACTION.SET) {
