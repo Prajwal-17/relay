@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server";
+import { SqliteError } from "better-sqlite3";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
@@ -26,6 +27,18 @@ app.onError((err, c) => {
         error: { message: err.message }
       },
       err.status
+    );
+  }
+
+  if (err instanceof SqliteError) {
+    return c.json(
+      {
+        error: {
+          code: err.code,
+          message: err.message
+        }
+      },
+      400
     );
   }
 
