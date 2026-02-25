@@ -8,7 +8,6 @@ export const validateRequest = <Target extends keyof ValidationTargets, T extend
 ) => {
   return zValidator(target, schema, (result, c) => {
     if (!result.success) {
-      console.log(result.error);
       const errors = result.error.issues.map((err) => ({
         field: err.path.join("."),
         message: err.message

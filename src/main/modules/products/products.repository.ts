@@ -1,12 +1,13 @@
 import { and, eq, like, sql } from "drizzle-orm";
 import type {
   CreateProductPayload,
-  ProductWithDeletion,
+  ProductSearchItemDTO,
   UpdateProductPayload
 } from "../../../shared/types";
 import { convertToPaisa, convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
+import { AppError } from "../../utils/appError";
 import { generateProductSnapshot } from "../../utils/product.utils";
 import type { ProductSearchQuery } from "./products.types";
 
@@ -15,7 +16,7 @@ const findById = async (id: string) => {
 };
 
 const searchProducts = async (params: ProductSearchQuery) => {
-  let searchResult: ProductWithDeletion[] | [];
+  let searchResult: ProductSearchItemDTO[] | [];
 
   if (params.searchTerm === "") {
     searchResult = await db
@@ -92,7 +93,7 @@ const createProduct = async (payload: CreateProductPayload) => {
       .returning()
       .get();
 
-    if (!product) throw new Error("Could not create new product");
+    if (!product) throw new AppError("Could not create new product", 500);
 
     tx.insert(productHistory)
       .values({
@@ -139,7 +140,13 @@ const deleteProductById = async (productId: string) => {
   const inEstimates = await db.query.estimateItems.findFirst({
     where: eq(estimateItems.productId, productId)
   });
-  if (inSales || inEstimates) throw new Error("IN_USE");
+
+  if (inSales || inEstimates) {
+    throw new AppError(
+      "Cannot delete product. It is already used in existing sales or estimates.",
+      400
+    );
+  }
 
   const result = db
     .update(products)

@@ -1,6 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { HTTPException } from "hono/http-exception";
 import { logger, loggerInstance } from "./middleware/logger";
 import { customersController } from "./modules/customers/customers.controller";
 import { dashboardController } from "./modules/dashboard/dashboard.controller";
@@ -18,6 +19,15 @@ app.use("/*", cors());
 app.onError((err, c) => {
   console.error(`[Error]: ${c.req.method} ${c.req.url}:`);
   loggerInstance.error(err);
+
+  if (err instanceof HTTPException) {
+    return c.json(
+      {
+        error: { message: err.message }
+      },
+      err.status
+    );
+  }
 
   if (err instanceof AppError) {
     return c.json(
