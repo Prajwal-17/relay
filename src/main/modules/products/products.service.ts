@@ -7,7 +7,7 @@ import {
   type ProductSearchItemDTO,
   type UpdateProductPayload
 } from "../../../shared/types";
-import { convertToPaisa, convertToRupees } from "../../../shared/utils/utils";
+import { convertToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { generateProductSnapshot } from "../../utils/product.utils";
@@ -63,8 +63,6 @@ const updateProduct = async (
   productId: string,
   payload: Partial<UpdateProductPayload>
 ): Promise<{ id: string; name: string }> => {
-  const currencyFields = ["price", "purchasePrice", "mrp"] as const;
-
   const existingProduct = await productRepository.findById(productId);
 
   if (!existingProduct) {
@@ -78,15 +76,7 @@ const updateProduct = async (
       continue;
     }
 
-    if (currencyFields.includes(field as any)) {
-      if (value === null) {
-        updatedFields[field] = null;
-      } else {
-        updatedFields[field] = convertToPaisa(value);
-      }
-    } else {
-      updatedFields[field] = value;
-    }
+    updatedFields[field] = value;
   }
 
   // disabled state
@@ -132,6 +122,7 @@ const updateProduct = async (
       productId: updatedProduct.id
     };
 
+    const currencyFields = ["price", "purchasePrice", "mrp"] as const;
     currencyFields.forEach((field) => {
       if (existingProduct[field] !== updatedProduct[field]) {
         historyObj[`old${cap(field)}`] = existingProduct[field];

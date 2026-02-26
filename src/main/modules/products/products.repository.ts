@@ -4,7 +4,7 @@ import type {
   ProductSearchItemDTO,
   UpdateProductPayload
 } from "../../../shared/types";
-import { convertToPaisa, convertToRupees } from "../../../shared/utils/utils";
+import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
 import { AppError } from "../../utils/appError";
@@ -86,9 +86,9 @@ const createProduct = async (payload: CreateProductPayload) => {
         }),
         weight: payload.weight ?? null,
         unit: payload.unit ?? null,
-        mrp: payload.mrp != null ? convertToPaisa(payload.mrp) : null,
-        price: convertToPaisa(payload.price),
-        purchasePrice: payload.purchasePrice != null ? convertToPaisa(payload.purchasePrice) : null
+        mrp: payload.mrp ?? null,
+        price: payload.price,
+        purchasePrice: payload.purchasePrice ?? null
       })
       .returning()
       .get();

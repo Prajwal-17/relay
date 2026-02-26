@@ -6,6 +6,7 @@ import {
   updateProductSchema
 } from "@shared/schemas/products.schema";
 import type { CreateProductPayload, UpdateProductPayload } from "@shared/types";
+import { convertToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -76,6 +77,18 @@ export const useProductDialog = () => {
     }
   };
 
+  const CURRENCY_FIELDS = ["price", "purchasePrice", "mrp"];
+
+  const convertCurrencyFieldsToPaisa = (data) => {
+    const converted = { ...data };
+    for (const [key, value] of Object.entries(data)) {
+      if (CURRENCY_FIELDS.includes(key) && typeof value === "number") {
+        converted[key] = convertToPaisa(value);
+      }
+    }
+    return converted;
+  };
+
   const productMutation = useMutation({
     mutationFn: async ({
       action,
@@ -95,7 +108,7 @@ export const useProductDialog = () => {
         if (!productId) {
           throw new Error("Product Id does not exist");
         }
-        return apiClient.post(`/api/products/${productId}`, payload);
+        return apiClient.patch(`/api/products/${productId}`, payload);
       }
     },
     onSuccess: (_response, variables) => {
@@ -134,15 +147,17 @@ export const useProductDialog = () => {
       return;
     }
 
+    const payloadInPaisa = convertCurrencyFieldsToPaisa(parseResult.data);
+
     if (action === "add") {
-      productMutation.mutate({ action, payload: parseResult.data });
+      productMutation.mutate({ action, payload: payloadInPaisa as CreateProductPayload });
       return;
     }
-    productMutation.mutate({ action, payload: parseResult.data });
+    productMutation.mutate({ action, payload: payloadInPaisa as UpdateProductPayload });
   };
 
   const deleteProductMutation = useMutation<null, Error, string>({
-    mutationFn: (productId: string) => apiClient.delete(`/api/products/${productId}`),
+    mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
       setErrors({});

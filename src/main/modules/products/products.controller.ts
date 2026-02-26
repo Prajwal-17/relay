@@ -31,7 +31,7 @@ productsController.post("/", validateRequest("json", createProductSchema), async
 });
 
 // update Product
-productsController.post(
+productsController.patch(
   "/:id",
   validateRequest("param", idSchema),
   validateRequest("json", dirtyFieldsProductSchema),
@@ -43,8 +43,8 @@ productsController.post(
   }
 );
 
-// delete product
-productsController.delete("/:id", validateRequest("param", idSchema), async (c) => {
+// delete product (soft delete)
+productsController.post("/:id/delete", validateRequest("param", idSchema), async (c) => {
   const { id } = c.req.valid("param");
   await productService.deleteProduct(id);
   return c.body(null, 204);
