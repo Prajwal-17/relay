@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
-import type { ApiResponse, UnifiedTransaction } from "@shared/types";
+import type { UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -50,8 +50,8 @@ const DashboardTableRow = ({
   transaction: Omit<UnifiedTransaction, "customer"> & { customerName: string };
   isLoaderRow: boolean;
   hasNextPage: boolean;
-  deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
-  convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+  deleteMutation: UseMutationResult<null, Error, MutationVariables>;
+  convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
   setIsViewModalOpen: (value: boolean) => void;
   setTransactionId: (id: string) => void;
 }) => {

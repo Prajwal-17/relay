@@ -42,7 +42,7 @@ const getEstimateById = async (id: string): Promise<UnifiedTransctionWithItems> 
   };
 };
 
-const getNextEstimateNo = async (): Promise<{ nextEstimateNo: number }> => {
+const getNextEstimateNo = async (): Promise<{ nextNo: number }> => {
   const latestEstimateNo = await estimatesRepository.getLatestEstimateNo();
   let nextEstimateNo = 1;
 
@@ -51,7 +51,7 @@ const getNextEstimateNo = async (): Promise<{ nextEstimateNo: number }> => {
   }
 
   return {
-    nextEstimateNo: nextEstimateNo
+    nextNo: nextEstimateNo
   };
 };
 

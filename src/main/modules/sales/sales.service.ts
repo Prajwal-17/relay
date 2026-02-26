@@ -42,7 +42,7 @@ const getSaleById = async (id: string): Promise<UnifiedTransctionWithItems> => {
   };
 };
 
-const getNextInvoiceNo = async (): Promise<{ nextInvoiceNo: number }> => {
+const getNextInvoiceNo = async (): Promise<{ nextNo: number }> => {
   const latestInvoice = await salesRepository.getLatestInvoiceNo();
   let nextInvoiceNo = 1;
 
@@ -51,7 +51,7 @@ const getNextInvoiceNo = async (): Promise<{ nextInvoiceNo: number }> => {
   }
 
   return {
-    nextInvoiceNo: nextInvoiceNo
+    nextNo: nextInvoiceNo
   };
 };
 

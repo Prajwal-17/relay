@@ -98,10 +98,8 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     const product1 = await productRepository.findById(initialData.product1.id);
     const product2 = await productRepository.findById(initialData.product2.id);
 
-    if (result.status === "success") {
-      expect(result.data.items[0].rowId).toBe(rowId1);
-      expect(result.data.items[1].rowId).toBe(rowId2);
-    }
+    expect(result.items[0].rowId).toBe(rowId1);
+    expect(result.items[1].rowId).toBe(rowId2);
     expect(item1?.mrp).toBe(8000);
     expect(item1?.price).toBe(7000);
     expect(item1?.purchasePrice).toBe(6500);
@@ -170,10 +168,8 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     const product1 = await productRepository.findById(initialData.product1.id);
     const product2 = await productRepository.findById(initialData.product2.id);
 
-    if (result.status === "success") {
-      expect(result.data.items[0].rowId).toBe(rowId1);
-      expect(result.data.items[1].rowId).toBe(rowId2);
-    }
+    expect(result.items[0].rowId).toBe(rowId1);
+    expect(result.items[1].rowId).toBe(rowId2);
 
     expect(item1?.productId).toBe(null);
     expect(item1?.name).toBe("Test Product 1");
@@ -247,11 +243,9 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     const product1 = await productRepository.findById(initialData.product1.id);
     const product2 = await productRepository.findById(initialData.product2.id);
 
-    if (result.status === "success") {
-      expect(result.data.items[0].rowId).toBe(rowId1);
-      expect(result.data.items[1].rowId).toBe(rowId2);
-      expect(result.data.items[2].rowId).toBe(rowId3);
-    }
+    expect(result.items[0].rowId).toBe(rowId1);
+    expect(result.items[1].rowId).toBe(rowId2);
+    expect(result.items[2].rowId).toBe(rowId3);
 
     expect(item3?.id).toBeTruthy();
     expect(item3?.saleId).toBe(initialData.sale.id);
@@ -331,9 +325,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     const product1 = await productRepository.findById(initialData.product1.id);
     const product2 = await productRepository.findById(initialData.product2.id);
 
-    if (result.status === "success") {
-      expect(result.data.items[0].rowId).toBe(rowId1);
-    }
+    expect(result.items[0].rowId).toBe(rowId1);
 
     expect(sale?.totalQuantity).toBe(6);
     expect(sale?.grandTotal).toBe(40800);
