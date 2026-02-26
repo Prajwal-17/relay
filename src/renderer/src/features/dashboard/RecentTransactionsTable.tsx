@@ -1,44 +1,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHomeDashboard } from "@/hooks/useHomeDashboard";
-import {
-  TRANSACTION_TYPE,
-  type ApiResponse,
-  type Estimate,
-  type Sale,
-  type TransactionType
-} from "@shared/types";
+import { apiClient } from "@/lib/apiClient";
+import { TRANSACTION_TYPE, type RecentTransactions, type TransactionType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import RecentTransactionsTableRow from "./RecentTransactionsTableRow";
 
-const fetchRecentTransactions = async (type: TransactionType) => {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/dashboard/recent-transactions/${type}?limit=5`
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
 export function RecentActivitiesTable() {
   const [type, setType] = useState<TransactionType>(TRANSACTION_TYPE.SALE);
   const { deleteMutation, convertMutation } = useHomeDashboard({ type });
 
   const { data, status, isError, error } = useQuery({
     queryKey: [type],
-    queryFn: () => fetchRecentTransactions(type),
-    select: (
-      response: ApiResponse<
-        (Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []
-      >
-    ) => {
-      return response.status === "success" ? response.data : null;
-    }
+    queryFn: () =>
+      apiClient.get<RecentTransactions | []>(`/api/dashboard/recent-transactions/${type}`, {
+        limit: 5
+      })
   });
 
   useEffect(() => {

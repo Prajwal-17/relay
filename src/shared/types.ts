@@ -331,6 +331,10 @@ export type TopProductDataPoint = {
   sharePercent: number;
 };
 
+export type RecentTransactions =
+  | (Sale & { customerName: string })[]
+  | (Estimate & { customerName: string })[];
+
 export const UPDATE_QTY_ACTION = {
   SET: "set",
   INCREMENT: "inc",

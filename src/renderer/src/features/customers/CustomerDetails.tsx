@@ -13,29 +13,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import useCustomers from "@/hooks/customers/useCustomers";
+import { apiClient } from "@/lib/apiClient";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
 import { Label } from "@radix-ui/react-label";
-import type { ApiResponse } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
-
-const handleDelete = async (customerId: string) => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
-      method: "DELETE"
-    });
-    const data = await response.json();
-    if (data.status === "success") {
-      return data;
-    }
-    throw new Error(data.error.message);
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
 
 export const CustomerDetails = () => {
   const queryClient = useQueryClient();
@@ -51,17 +36,13 @@ export const CustomerDetails = () => {
     setCustomerSearch
   } = useCustomers();
 
-  const mutation = useMutation<ApiResponse<string>, Error, string>({
-    mutationFn: (customerId: string) => handleDelete(customerId),
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        setSelectedCustomer(null);
-        setCustomerSearch("");
-        queryClient.invalidateQueries({ queryKey: ["customers", customerSearch] });
-        toast.success(response.data);
-      } else if (response.status === "error") {
-        toast.error(response.error.message);
-      }
+  const mutation = useMutation({
+    mutationFn: (customerId: string) => apiClient.delete(`/api/customers/${customerId}`),
+    onSuccess: () => {
+      setSelectedCustomer(null);
+      setCustomerSearch("");
+      queryClient.invalidateQueries({ queryKey: ["customers", customerSearch] });
+      toast.success("Successfully deleted customer");
     },
     onError: (error) => {
       toast.error(error.message);

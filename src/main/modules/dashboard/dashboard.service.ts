@@ -3,9 +3,8 @@ import {
   TRANSACTION_TYPE,
   TREND_OPTION,
   type ChartDataType,
-  type Estimate,
   type MetricsSummary,
-  type Sale,
+  type RecentTransactions,
   type TimePeriodType,
   type TopProductDataPoint,
   type TransactionType
@@ -86,9 +85,7 @@ const getTopProducts = async (): Promise<TopProductDataPoint[]> => {
   }));
 };
 
-const getRecentTransactions = async (
-  type: TransactionType
-): Promise<(Sale & { customerName: string })[] | (Estimate & { customerName: string })[] | []> => {
+const getRecentTransactions = async (type: TransactionType): Promise<RecentTransactions | []> => {
   if (type === TRANSACTION_TYPE.SALE) {
     const result = await dashboardRepository.getRecentSales(5);
 

@@ -9,52 +9,13 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import useCustomers from "@/hooks/customers/useCustomers";
+import { apiClient } from "@/lib/apiClient";
 import { Label } from "@radix-ui/react-label";
 import { createCustomerSchema, updateCustomerSchema } from "@shared/schemas/customers.schema";
-import type { CreateCustomerPayload, UpdateCustomerPayload } from "@shared/types";
+import type { CreateCustomerPayload, Customer, UpdateCustomerPayload } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import z from "zod";
-
-const addCustomer = async (payload: CreateCustomerPayload) => {
-  try {
-    const response = await fetch("http://localhost:3000/api/customers", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    if (data.status === "success") {
-      return data;
-    }
-    throw new Error(data.error.message);
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
-
-const updateCustomer = async (payload: UpdateCustomerPayload, customerId: string) => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    if (data.status === "success") {
-      return data;
-    }
-    throw new Error(data.error.message);
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
 
 export const CustomerDialog = () => {
   const queryClient = useQueryClient();
@@ -83,28 +44,24 @@ export const CustomerDialog = () => {
           payload: UpdateCustomerPayload;
         }) => {
       if (action == "add") {
-        return addCustomer(payload);
+        return apiClient.post<Customer>("/api/customers", payload);
       } else {
         if (!selectedCustomer?.id) {
           throw new Error("Customer Id does not exist");
         }
-        return updateCustomer(payload, selectedCustomer.id);
+        return apiClient.post<Customer>(`/api/customers/${selectedCustomer.id}`, payload);
       }
     },
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        setOpenCustomerDialog();
-        setFormData({});
-        setSelectedCustomer(response.data);
-        queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
-        toast.success(
-          typeof response.data === "string"
-            ? response.data
-            : (response.message ?? "Customer updated Successfully")
-        );
-      } else if (response.status === "error") {
-        toast.error(response.error.message);
-      }
+    onSuccess: (response, variables) => {
+      setOpenCustomerDialog();
+      setFormData({});
+      setSelectedCustomer(response);
+      queryClient.invalidateQueries({ queryKey: ["customers"], exact: false });
+      toast.success(
+        variables.action === "add"
+          ? "Successfully created Customer"
+          : "Successfully updated Customer"
+      );
     },
     onError: (error) => {
       toast.error(error.message);
@@ -146,6 +103,7 @@ export const CustomerDialog = () => {
       ...formData,
       [field]: value
     });
+    console.log(result);
 
     if (!result.success) {
       const formatted = z.flattenError(result.error);
@@ -189,7 +147,13 @@ export const CustomerDialog = () => {
           <Input
             id="contact"
             value={formData.contact ?? ""}
-            onChange={(e) => handleInputChange("contact", e.target.value)}
+            onChange={(e) => {
+              if (e.target.value === "") {
+                handleInputChange("contact", null);
+              } else {
+                handleInputChange("contact", e.target.value);
+              }
+            }}
             placeholder="Enter contact information"
             className="h-12 text-lg!"
           />
