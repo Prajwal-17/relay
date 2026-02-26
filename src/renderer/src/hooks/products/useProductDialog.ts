@@ -1,57 +1,15 @@
+import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import {
   createProductSchema,
   dirtyFieldsProductSchema,
   updateProductSchema
 } from "@shared/schemas/products.schema";
-import type { ApiResponse, CreateProductPayload, UpdateProductPayload } from "@shared/types";
+import type { CreateProductPayload, UpdateProductPayload } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import z from "zod";
-
-const handleDelete = async (productId: string) => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json"
-      }
-    });
-    return await response.json();
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
-const addProduct = async (payload: CreateProductPayload) => {
-  try {
-    const response = await fetch("http://localhost:3000/api/products", {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-    return await response.json();
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
-
-const updateProduct = async (productId: string, updatedPayload: UpdateProductPayload) => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/products/${productId}`, {
-      method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
-      body: JSON.stringify(updatedPayload)
-    });
-    return await response.json();
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
 
 export const useProductDialog = () => {
   const filterType = useProductsStore((state) => state.filterType);
@@ -132,26 +90,24 @@ export const useProductDialog = () => {
           payload: UpdateProductPayload;
         }) => {
       if (action === "add") {
-        return addProduct(payload);
+        return apiClient.post("/api/products", payload);
       } else {
         if (!productId) {
           throw new Error("Product Id does not exist");
         }
-        return updateProduct(productId, payload);
+        return apiClient.post(`/api/products/${productId}`, payload);
       }
     },
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
-        setErrors({});
-        setProductId(null);
-        setFormDataState({});
-        setDirtyFields({});
-        setOpenProductDialog();
-        toast.success(response.data);
-      } else if (response.status === "error") {
-        toast.error(response.error.message);
-      }
+    onSuccess: (_response, variables) => {
+      queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
+      setErrors({});
+      setProductId(null);
+      setFormDataState({});
+      setDirtyFields({});
+      setOpenProductDialog();
+      toast.success(
+        variables.action === "add" ? "Successfully created product" : "Successfully updated product"
+      );
     },
     onError: (error) => {
       toast.error(error.message);
@@ -185,18 +141,14 @@ export const useProductDialog = () => {
     productMutation.mutate({ action, payload: parseResult.data });
   };
 
-  const deleteProductMutation = useMutation<ApiResponse<string>, Error, string>({
-    mutationFn: (productId: string) => handleDelete(productId),
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
-        setErrors({});
-        setFormDataState({});
-        setOpenProductDialog();
-        toast.success(response.data);
-      } else if (response.status === "error") {
-        toast.error(response.error.message);
-      }
+  const deleteProductMutation = useMutation<null, Error, string>({
+    mutationFn: (productId: string) => apiClient.delete(`/api/products/${productId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
+      setErrors({});
+      setFormDataState({});
+      setOpenProductDialog();
+      toast.success("Successfully deleted product");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -218,7 +170,6 @@ export const useProductDialog = () => {
     dirtyFields,
     handleInputChange,
     handleSubmit,
-    handleDelete,
     productMutation
   };
 };

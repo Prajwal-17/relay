@@ -1,11 +1,8 @@
 import { PRODUCTS_SEARCH_DELAY, PRODUCTS_SEARCH_PAGE_SIZE } from "@/constants";
+import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import {
-  type PaginatedApiResponse,
-  type ProductFilterType,
-  type ProductWithDeletion
-} from "@shared/types";
+import { type PaginatedApiResponse, type ProductSearchItemDTO } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
@@ -18,28 +15,6 @@ export const PRODUCTSEARCH_TYPE = {
 } as const;
 
 type ProductSearchType = (typeof PRODUCTSEARCH_TYPE)[keyof typeof PRODUCTSEARCH_TYPE];
-
-export const fetchProducts = async (
-  query: string,
-  pageNo: number,
-  pageSize: number,
-  filterType: ProductFilterType
-) => {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/products/search?query=${encodeURIComponent(query)}&pageNo=${pageNo}&pageSize=${pageSize}&filterType=${filterType}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json"
-        }
-      }
-    );
-    return await response.json();
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
 
 export const useProductSearch = (type: ProductSearchType) => {
   const parentRef = useRef<HTMLDivElement>(null);
@@ -93,26 +68,26 @@ export const useProductSearch = (type: ProductSearchType) => {
     ],
     queryFn: ({ pageParam = 1 }) => {
       if (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE) {
-        return fetchProducts(
-          productsDebouncedValue,
-          pageParam,
-          PRODUCTS_SEARCH_PAGE_SIZE,
-          filterType
-        );
+        return apiClient.get("/api/products/search", {
+          query: productsDebouncedValue,
+          pageNo: pageParam,
+          pageSize: PRODUCTS_SEARCH_PAGE_SIZE,
+          filterType: filterType
+        });
       } else if (type === PRODUCTSEARCH_TYPE.BILLINGPAGE) {
-        return fetchProducts(
-          dropdownDebouncedValue,
-          pageParam,
-          PRODUCTS_SEARCH_PAGE_SIZE,
-          filterType
-        );
+        return apiClient.get("/api/products/search", {
+          query: dropdownDebouncedValue,
+          pageNo: pageParam,
+          pageSize: PRODUCTS_SEARCH_PAGE_SIZE,
+          filterType: filterType
+        });
       }
       throw new Error("Something went wrong");
     },
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
-    getNextPageParam: (lastPage: PaginatedApiResponse<ProductWithDeletion[] | []>) => {
-      return lastPage.status === "success" ? (lastPage.nextPageNo ?? null) : null;
+    getNextPageParam: (lastPage: PaginatedApiResponse<{ data: ProductSearchItemDTO[] | [] }>) => {
+      return lastPage.nextPageNo ?? null;
     }
   });
 
@@ -123,7 +98,7 @@ export const useProductSearch = (type: ProductSearchType) => {
   }, [isError, error]);
 
   const searchResults = useMemo(() => {
-    return data?.pages.flatMap((page) => (page.status === "success" ? page.data : [])) ?? [];
+    return data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
   }, [data]);
 
   /**
