@@ -24,7 +24,7 @@ import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, LoaderCircle, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const CustomerTableRow = ({
@@ -43,6 +43,8 @@ const CustomerTableRow = ({
   convertMutation: UseMutationResult<null, Error, MutationVariables>;
 }) => {
   const navigate = useNavigate();
+  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
+
   const handleView = useCallback(() => {
     type === TRANSACTION_TYPE.SALE
       ? navigate(`/billing/sales/${transaction.id}/edit`)
@@ -142,42 +144,39 @@ const CustomerTableRow = ({
               </AlertDialogContent>
             </AlertDialog>
 
+            <AlertDialog open={isConvertDialogOpen} onOpenChange={setIsConvertDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-base">
+                    This will permanently convert the transaction.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    onClick={onConvert}
+                    disabled={convertMutation.isPending}
+                  >
+                    {convertMutation.isPending ? "Converting..." : "Convert"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <DropdownMenu>
               <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
                 <MoreVertical />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-40" align="end">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      className="cursor-pointer"
-                    >
-                      <RefreshCcw className="mr-1 h-4 w-4 cursor-pointer" />
-                      <span className="text-lg">Convert</span>
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-lg">
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-base">
-                        This will permanently convert the transaction.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
-                        onClick={onConvert}
-                        disabled={convertMutation.isPending}
-                      >
-                        {convertMutation.isPending ? "Converting..." : "Convert"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <DropdownMenuItem
+                  onSelect={() => setIsConvertDialogOpen(true)}
+                  className="cursor-pointer"
+                >
+                  <RefreshCcw className="mr-1 h-4 w-4 cursor-pointer" />
+                  <span className="text-lg">Convert</span>
+                </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
 
