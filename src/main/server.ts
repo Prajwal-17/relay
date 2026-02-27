@@ -67,7 +67,7 @@ app.route("/api/customers", customersController);
 app.route("/api/sales", salesController);
 app.route("/api/estimates", estimatesController);
 export function startServer() {
-  const port = 3000;
+  const port = 4722;
   console.log("Starting Hono server");
 
   const server = serve({

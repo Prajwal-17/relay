@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4722";
 
 function buildURL(path: string, params?: Record<string, string | number | undefined>): string {
   const url = new URL(path, BASE_URL);
