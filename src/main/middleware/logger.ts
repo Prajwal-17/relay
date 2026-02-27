@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import pino from "pino";
 
-const loggerInstance = pino({
+export const loggerInstance = pino({
   level: "info",
   transport: {
     target: "pino-pretty",

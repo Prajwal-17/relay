@@ -12,6 +12,6 @@ export const useReceiptRefStore = create<ReceiptRefStoreType>()(
       receiptRef: null,
       setReceiptRef: (ref) => set({ receiptRef: ref }, false, "receiptRef/setReceiptRef")
     }),
-    { name: "receipt-ref-store" }
+    { name: `(Do not open)Receipt-ref-store` } // crashes redux devtools when selected
   )
 );

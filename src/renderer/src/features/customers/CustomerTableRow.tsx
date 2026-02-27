@@ -19,12 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/customers/useCustomers";
-import {
-  TRANSACTION_TYPE,
-  type ApiResponse,
-  type CustomerTransaction,
-  type TransactionType
-} from "@shared/types";
+import { TRANSACTION_TYPE, type CustomerTransaction, type TransactionType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -44,8 +39,8 @@ const CustomerTableRow = ({
   transaction: CustomerTransaction;
   isLoaderRow: boolean;
   hasNextPage: boolean;
-  deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
-  convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+  deleteMutation: UseMutationResult<null, Error, MutationVariables>;
+  convertMutation: UseMutationResult<null, Error, MutationVariables>;
 }) => {
   const navigate = useNavigate();
   const handleView = useCallback(() => {

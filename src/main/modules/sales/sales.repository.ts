@@ -8,6 +8,7 @@ import {
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
+import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
 import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
 
@@ -77,7 +78,7 @@ const createSale = async (payload: CreateSaleParams) => {
       .get();
 
     if (!newSale || !newSale.id) {
-      throw new Error("Failed to Create Sale");
+      throw new AppError("Failed to Create Sale", 500);
     }
 
     for (const item of payload.items) {
@@ -221,7 +222,7 @@ const deleteSaleById = async (id: string) => {
     const existingSale = tx.select().from(sales).where(eq(sales.id, id)).get();
 
     if (!existingSale) {
-      throw new Error(`Sale with id:${id} does not exists`);
+      throw new AppError(`Sale with id:${id} does not exists`, 400);
     }
 
     const items = tx.select().from(saleItems).where(eq(saleItems.saleId, id)).all();
@@ -239,7 +240,7 @@ const deleteSaleById = async (id: string) => {
 
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
     if (result.changes === 0) {
-      throw new Error("Failed to delete sale record");
+      throw new AppError("Failed to delete sale record", 400);
     }
     return result;
   });
@@ -250,7 +251,7 @@ const convertSaleToEstimate = async (id: string) => {
     const sale = tx.select().from(sales).where(eq(sales.id, id)).get();
 
     if (!sale) {
-      throw new Error(`Sale with id:${id} does not exist`);
+      throw new AppError(`Sale with id:${id} does not exist`, 400);
     }
 
     const currentSaleItems = tx.select().from(saleItems).where(eq(saleItems.saleId, id)).all(); // Returns SaleItems[]
@@ -277,7 +278,7 @@ const convertSaleToEstimate = async (id: string) => {
       .get();
 
     if (!newEstimate) {
-      throw new Error("Could not convert Sale to Estimate");
+      throw new AppError("Could not convert Sale to Estimate", 500);
     }
 
     currentSaleItems.forEach((i) => {
@@ -302,10 +303,10 @@ const convertSaleToEstimate = async (id: string) => {
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
 
     if (result.changes === 0) {
-      throw new Error("Could not convert Sale to Estimate");
+      throw new AppError("Could not convert Sale to Estimate", 400);
     }
 
-    return result;
+    return newEstimate;
   });
 };
 
@@ -314,7 +315,7 @@ const updateCheckedQty = async (saleItemId: string, action: UpdateQtyAction) => 
   db.transaction((tx) => {
     const item = tx.select().from(saleItems).where(eq(saleItems.id, saleItemId)).get();
     if (!item) {
-      throw new Error("Sale Item not found");
+      throw new AppError("Sale Item not found", 400);
     }
 
     if (action === UPDATE_QTY_ACTION.SET) {

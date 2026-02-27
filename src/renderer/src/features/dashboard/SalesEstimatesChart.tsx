@@ -8,7 +8,8 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { timePeriodOptions } from "@/constants";
-import { TIME_PERIOD, type TimePeriodType } from "@shared/types";
+import { apiClient } from "@/lib/apiClient";
+import { TIME_PERIOD, type ChartDataType, type TimePeriodType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { ChartColumnIncreasing } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -26,27 +27,15 @@ const chartConfig = {
   }
 };
 
-const fetchChartMetrics = async (timePeriod: TimePeriodType) => {
-  try {
-    const response = await fetch(
-      `http://localhost:3000/api/dashboard/sales-vs-estimates?timePeriod=${timePeriod}`
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
-
 export function SalesEstimateChart() {
   const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.LAST_7_DAYS);
 
   const { data, isError, error, isSuccess } = useQuery({
     queryKey: [timePeriod],
-    queryFn: () => fetchChartMetrics(timePeriod),
-    select: (response) => {
-      return response.status === "success" ? response.data : null;
-    }
+    queryFn: () =>
+      apiClient.get<ChartDataType[]>("/api/dashboard/sales-vs-estimates", {
+        timePeriod: timePeriod
+      })
   });
 
   useEffect(() => {
