@@ -25,7 +25,7 @@ if (!gotTheLock) {
   app.whenReady().then(() => {
     electronApp.setAppUserModelId("com.electron");
     setupIpcHandlers();
-    startServer();
+    await startServer();
     createWindow();
 
     app.on("activate", function () {
