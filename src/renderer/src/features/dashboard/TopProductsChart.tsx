@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { apiClient } from "@/lib/apiClient";
+import type { TopProductDataPoint } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo } from "react";
@@ -14,16 +16,6 @@ const COLORS = [
   "hsl(350, 30%, 65%)" // Dusty Rose
 ];
 
-const fetchTopProducts = async () => {
-  try {
-    const response = await fetch("http://localhost:3000/api/dashboard/top-products");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
-
 const chartConfig = {
   value: {
     label: "Top Products"
@@ -33,10 +25,7 @@ const chartConfig = {
 export const TopProductsChart = () => {
   const { data, error, isError, isLoading } = useQuery({
     queryKey: ["getTopProducts"],
-    queryFn: fetchTopProducts,
-    select: (response) => {
-      return response.status === "success" ? response.data : [];
-    }
+    queryFn: () => apiClient.get<TopProductDataPoint[]>("/api/dashboard/top-products")
   });
 
   useEffect(() => {

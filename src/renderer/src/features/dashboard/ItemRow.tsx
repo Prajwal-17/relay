@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import type { MutationVariables } from "@/hooks/dashboard/useViewModal";
 import {
   UPDATE_QTY_ACTION,
-  type ApiResponse,
   type DashboardType,
   type UnifiedTransactionItem,
   type UpdateQtyAction
@@ -23,7 +22,7 @@ export const ItemRow = ({
   item: UnifiedTransactionItem;
   index: number;
   type: DashboardType;
-  updateQtyMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+  updateQtyMutation: UseMutationResult<null, Error, MutationVariables>;
 }) => {
   const checked = item.quantity === item.checkedQty;
 

@@ -2,6 +2,7 @@ import { desc, eq, like } from "drizzle-orm";
 import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
 import { db } from "../../db/db";
 import { customers, estimates, sales } from "../../db/schema";
+import { AppError } from "../../utils/appError";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
 
 const findById = async (id: string) => {
@@ -77,10 +78,6 @@ const updateById = async (customerId: string, payload: Partial<UpdateCustomerPay
     .get();
 };
 
-const deleteById = async (id: string) => {
-  return await db.delete(customers).where(eq(customers.id, id));
-};
-
 const hasExistingTransactions = async (customerId: string) => {
   return db.transaction((tx) => {
     const existingSales = tx
@@ -101,6 +98,17 @@ const hasExistingTransactions = async (customerId: string) => {
   });
 };
 
+const deleteById = async (id: string) => {
+  const transactionsExist = await hasExistingTransactions(id);
+
+  if (transactionsExist > 0) {
+    throw new AppError("Cannot delete customer with existing sales or estimates.", 400);
+  }
+
+  const result = await db.delete(customers).where(eq(customers.id, id));
+  return result.changes;
+};
+
 export const customersRepository = {
   findById,
   getCustomers,
@@ -109,6 +117,5 @@ export const customersRepository = {
   getEstimatesByCustomerId,
   createCustomer,
   updateById,
-  deleteById,
-  hasExistingTransactions
+  deleteById
 };

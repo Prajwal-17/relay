@@ -1,9 +1,15 @@
+import { apiClient } from "@/lib/apiClient";
 import { useBillingStore } from "@/store/billingStore";
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { buildTransactionPayload, normalizeOriginalLineItems } from "@/utils";
 import { txnPayloadSchema } from "@shared/schemas/transaction.schema";
-import { BILLSTATUS, TRANSACTION_TYPE, type TransactionType } from "@shared/types";
+import {
+  BILLSTATUS,
+  type TransactionType,
+  type UpdateEstimateResponse,
+  type UpdateSaleResponse
+} from "@shared/types";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -11,31 +17,10 @@ import { useNavigate } from "react-router-dom";
 import { useReactToPrint } from "react-to-print";
 import useTransactionPayload from "./useTransactionPayload";
 
-const saveTransactionApi = async ({
-  id,
-  type,
-  payload
-}: {
-  id: string | null;
+export type MutationVariables = {
   type: TransactionType;
+  id: string | null;
   payload: any;
-}) => {
-  const resource = type === TRANSACTION_TYPE.SALE ? "sales" : "estimates";
-  const url = id
-    ? `http://localhost:3000/api/${resource}/${id}/edit`
-    : `http://localhost:3000/api/${resource}/create`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: { "Content-type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-  if (data.status !== "success") {
-    throw new Error(data.error?.message || "Failed to save");
-  }
-  return data;
 };
 
 const useTransactionPersistance = () => {
@@ -62,25 +47,35 @@ const useTransactionPersistance = () => {
   // autosave payload
   const { isDirty, payload: debouncedPayload } = useTransactionPayload();
 
-  const saveMutation = useMutation({
-    mutationFn: saveTransactionApi,
+  const saveMutation = useMutation<
+    { id: string } | UpdateSaleResponse | UpdateEstimateResponse,
+    Error,
+    MutationVariables
+  >({
+    mutationFn: ({ type, id, payload }) => {
+      if (id) {
+        return apiClient.post<UpdateSaleResponse>(`/api/${type}s/${id}/edit`, payload);
+      } else {
+        return apiClient.post<{ id: string }>(`/api/${type}s/create`, payload);
+      }
+    },
     onMutate: () => setStatus(BILLSTATUS.SAVING),
     onSuccess: (response, variables) => {
       setStatus(BILLSTATUS.SAVED);
 
-      if (!variables.id && response.data?.id) {
-        setBillingId(response.data.id);
-        const newPath = `/billing/${variables.type}s/${response.data.id}/edit`;
+      if (!variables.id && response.id) {
+        setBillingId(response.id);
+        const newPath = `/billing/${variables.type}s/${response.id}/edit`;
         window.history.replaceState(window.history.state, "", `#${newPath}`);
       }
 
       // Sync original values to prevent infinite loop
       syncOriginals();
 
-      // update internal ids
-      if (response.data?.items) {
-        setBillingDate(new Date(response.data.createdAt));
-        updateInternalIds(response.data.items);
+      // update internal ids (only present on update responses)
+      if ("items" in response && response.items) {
+        setBillingDate(new Date(response.createdAt!));
+        updateInternalIds(response.items);
       }
     },
     onError: (error) => {
@@ -104,8 +99,8 @@ const useTransactionPersistance = () => {
     const handler = setTimeout(() => {
       if (debouncedPayload) {
         saveMutation.mutate({
-          id: debouncedPayload.id,
           type: debouncedPayload.billingType,
+          id: debouncedPayload.id,
           payload: debouncedPayload.payload
         });
       }
@@ -129,7 +124,7 @@ const useTransactionPersistance = () => {
       transactionNo,
       customerId,
       items: normalizeOriginalLineItems(lineItems),
-      createdAt: billingDate ? billingDate.toISOString() : new Date(billingDate).toISOString()
+      createdAt: billingDate ? billingDate.toISOString() : new Date().toISOString()
     });
 
     if (!freshPayload) {
@@ -150,7 +145,7 @@ const useTransactionPersistance = () => {
         payload: freshPayload.payload
       });
 
-      if (response.status === "success") {
+      if (response) {
         toast.success("Saved Successfully");
 
         if (action === "save&print") {

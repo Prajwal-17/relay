@@ -38,7 +38,7 @@ export type Product = {
   createdAt?: string;
 };
 
-export type ProductWithDeletion = Product & {
+export type ProductSearchItemDTO = Product & {
   isDeleted?: boolean;
   deletedAt?: string | null;
 };
@@ -162,20 +162,9 @@ export type ApiResponse<T> =
       };
     };
 
-export type PaginatedApiResponse<T> =
-  | {
-      status: "success";
-      data: T;
-      nextPageNo: PageNo;
-      message?: string;
-    }
-  | {
-      status: "error";
-      error: {
-        message: string;
-        details?: any;
-      };
-    };
+export type PaginatedApiResponse<T> = {
+  nextPageNo: PageNo;
+} & T;
 
 export type SalePayload = {
   billingId: string | null;
@@ -341,6 +330,10 @@ export type TopProductDataPoint = {
   totalQuantitySold: number;
   sharePercent: number;
 };
+
+export type RecentTransactions =
+  | (Sale & { customerName: string })[]
+  | (Estimate & { customerName: string })[];
 
 export const UPDATE_QTY_ACTION = {
   SET: "set",

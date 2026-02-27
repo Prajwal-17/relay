@@ -8,8 +8,10 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useDebounce from "@/hooks/useDebounce";
+import { apiClient } from "@/lib/apiClient";
 import { useBillingStore } from "@/store/billingStore";
 import type { Customer } from "@shared/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -23,36 +25,45 @@ export const CustomerNameInput = () => {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
+  const {
+    data: customers = [],
+    isLoading,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ["customers", debouncedQuery],
+    queryFn: () =>
+      apiClient.get<Customer[]>("/api/customers", {
+        query: debouncedQuery
+      })
+  });
 
   useEffect(() => {
-    const searchCustomers = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `http://localhost:3000/api/customers?query=${debouncedQuery}`,
-          {
-            method: "GET"
-          }
-        );
-        const data = await response.json();
-        if (data.status === "success") {
-          setCustomers(data.data);
-        } else {
-          setCustomers([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch customers:", error);
-        toast.error("Failed to load customers");
-        setCustomers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (isError && error) {
+      toast.error("Failed to load customers");
+    }
+  }, [isError, error]);
 
-    searchCustomers();
-  }, [debouncedQuery]);
+  const createCustomerMutation = useMutation<Customer, Error, string>({
+    mutationFn: (name: string) =>
+      apiClient.post<Customer>("/api/customers", {
+        name,
+        contact: null,
+        customerType: "cash"
+      }),
+    onSuccess: (data) => {
+      setCustomerId(data.id);
+      setCustomerName(data.name);
+      setOpen(false);
+      toast.success(`Created and selected customer: ${data.name}`);
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Error creating customer");
+    }
+  });
 
   const handleSelectCustomer = (customer: Customer) => {
     setCustomerId(customer.id);
@@ -60,30 +71,9 @@ export const CustomerNameInput = () => {
     setOpen(false);
   };
 
-  const handleCreateCustomer = async () => {
+  const handleCreateCustomer = () => {
     if (!query) return;
-    try {
-      const response = await fetch("http://localhost:3000/api/customers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ name: query, contact: null, customerType: "cash" })
-      });
-      const data = await response.json();
-
-      if (data.status === "success" && data.data) {
-        setCustomerId(data.data.id);
-        setCustomerName(data.data.name);
-        setOpen(false);
-        toast.success(`Created and selected customer: ${data.data.name}`);
-      } else {
-        toast.error("Failed to create customer");
-      }
-    } catch (error) {
-      console.error("Error creating customer:", error);
-      toast.error("Error creating customer");
-    }
+    createCustomerMutation.mutate(query);
   };
 
   return (
@@ -109,11 +99,11 @@ export const CustomerNameInput = () => {
               onValueChange={setQuery}
             />
             <CommandList>
-              {loading && (
+              {isLoading && (
                 <div className="text-muted-foreground p-4 text-center text-sm">Loading...</div>
               )}
 
-              {!loading && customers.length > 0 && (
+              {!isLoading && customers.length > 0 && (
                 <CommandGroup heading="Existing Customers">
                   {customers.map((customer) => (
                     <CommandItem
@@ -135,14 +125,15 @@ export const CustomerNameInput = () => {
                 </CommandGroup>
               )}
 
-              {!loading && query && (
+              {!isLoading && query && (
                 <div className="mt-2 border-t p-2 pt-2">
                   <Button
                     onClick={handleCreateCustomer}
+                    disabled={createCustomerMutation.isPending}
                     className="w-full justify-center text-lg font-medium"
                   >
                     <Plus className="mr-2 h-5 w-5" />
-                    Create &quot;{query}&quot;
+                    {createCustomerMutation.isPending ? "Creating..." : `Create "${query}"`}
                   </Button>
                 </div>
               )}

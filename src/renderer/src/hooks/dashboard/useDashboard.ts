@@ -1,11 +1,7 @@
+import { apiClient } from "@/lib/apiClient";
 import { useDashboardStore } from "@/store/dashboardStore";
-import {
-  SortOption,
-  TRANSACTION_TYPE,
-  type ApiResponse,
-  type SortType,
-  type TransactionType
-} from "@shared/types";
+import { toSentenceCase } from "@/utils";
+import { SortOption, TRANSACTION_TYPE, type SortType, type TransactionType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -15,58 +11,6 @@ import { useDateRangePicker } from "./useDateRangePicker";
 export type MutationVariables = {
   type: TransactionType;
   id: string;
-};
-
-const handleDelete = async ({ type, id }: MutationVariables) => {
-  try {
-    if (type === TRANSACTION_TYPE.SALE) {
-      const response = await fetch(`http://localhost:3000/api/sales/${id}`, {
-        method: "DELETE"
-      });
-      const data = await response.json();
-
-      if (data.status === "success") {
-        return data;
-      }
-      throw new Error(data.error.message);
-    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await fetch(`http://localhost:3000/api/estimates/${id}`, {
-        method: "DELETE"
-      });
-      const data = await response.json();
-
-      if (data.status === "success") {
-        return data;
-      }
-      throw new Error(data.error.message);
-    } else {
-      throw new Error("Something went wrong");
-    }
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
-
-const handleConvert = async ({ type, id }: MutationVariables) => {
-  try {
-    if (type === TRANSACTION_TYPE.SALE) {
-      const response = await fetch(`http://localhost:3000/api/sales/${id}/convert`, {
-        method: "POST"
-      });
-      const data = await response.json();
-      return data;
-    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await fetch(`http://localhost:3000/api/estimates/${id}/convert`, {
-        method: "POST"
-      });
-      const data = await response.json();
-      return data;
-    } else {
-      throw new Error("Something went wrong");
-    }
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
 };
 
 export const useDashboard = () => {
@@ -87,26 +31,24 @@ export const useDashboard = () => {
     setSortBy(sortByValue as SortType);
   }, [setSortBy]);
 
-  const deleteMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
-    mutationFn: ({ type, id }) => handleDelete({ type, id }),
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
-        toast.success(response.data);
-      }
+  const deleteMutation = useMutation<null, Error, MutationVariables>({
+    mutationFn: ({ type, id }) => apiClient.delete(`/api/${type}s/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+      toast.success("Successfully deleted Sale");
     },
     onError: (error) => {
       toast.error(error.message);
     }
   });
 
-  const convertMutation = useMutation<ApiResponse<string>, Error, MutationVariables>({
-    mutationFn: ({ type, id }) => handleConvert({ type, id }),
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
-        toast.success(response.data);
-      }
+  const convertMutation = useMutation<{ id: string }, Error, MutationVariables>({
+    mutationFn: ({ type, id }) => apiClient.post(`/api/${type}s/${id}/convert`),
+    onSuccess: (_response, variables) => {
+      queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+      toast.success(
+        `Successfully Converted ${toSentenceCase(variables.type)} to ${variables.type === TRANSACTION_TYPE.SALE ? "Estimate" : "Sale"} `
+      );
     },
     onError: (error) => {
       toast.error(error.message);

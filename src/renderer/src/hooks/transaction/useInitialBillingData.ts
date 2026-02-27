@@ -1,50 +1,9 @@
+import { apiClient } from "@/lib/apiClient";
 import { useBillingStore } from "@/store/billingStore";
 import { TRANSACTION_TYPE, type Customer, type TransactionType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-
-const getLatestTransactionNo = async (type: TransactionType) => {
-  try {
-    let reqResponse;
-    if (type === TRANSACTION_TYPE.SALE) {
-      const response = await fetch("http://localhost:3000/api/sales/next-number", {
-        method: "GET"
-      });
-      reqResponse = await response.json();
-    } else if (type === TRANSACTION_TYPE.ESTIMATE) {
-      const response = await fetch("http://localhost:3000/api/estimates/next-number", {
-        method: "GET"
-      });
-      reqResponse = await response.json();
-    } else {
-      throw new Error("Transaction Type is undefined");
-    }
-    if (reqResponse.status === "success") {
-      return reqResponse;
-    }
-    throw new Error(reqResponse.error.message);
-  } catch (error) {
-    console.log(error);
-    throw new Error((error as Error).message);
-  }
-};
-
-const getDefaultCustomer = async (): Promise<Customer> => {
-  try {
-    const response = await fetch("http://localhost:3000/api/customers/default", {
-      method: "GET"
-    });
-    const data = await response.json();
-    if (data.status === "success") {
-      return data.data;
-    }
-    throw new Error(data.error?.message || "Failed to fetch default customer");
-  } catch (error) {
-    console.log(error);
-    throw new Error((error as Error).message);
-  }
-};
 
 const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
   const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
@@ -62,7 +21,7 @@ const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
     error: transactionError
   } = useQuery({
     queryKey: [formattedType, "getTransactionNo"],
-    queryFn: () => getLatestTransactionNo(formattedType),
+    queryFn: () => apiClient.get<{ nextNo: number }>(`/api/${formattedType}s/next-number`),
     enabled: shouldFetch
   });
 
@@ -73,7 +32,7 @@ const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
     error: customerError
   } = useQuery({
     queryKey: ["defaultCustomer"],
-    queryFn: getDefaultCustomer,
+    queryFn: () => apiClient.get<Customer>("/api/customers/default"),
     enabled: shouldFetch
   });
 
@@ -81,7 +40,7 @@ const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
     if (!isTransactionFetched || !transactionData) {
       return;
     }
-    setTransactionNo(transactionData.data);
+    setTransactionNo(transactionData.nextNo);
   }, [transactionData, setTransactionNo, isTransactionFetched]);
 
   useEffect(() => {
