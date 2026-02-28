@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ViewModal } from "@/features/dashboard/ViewModal";
 import useCustomers from "@/hooks/customers/useCustomers";
@@ -26,27 +26,27 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
   return (
     <>
       <Card className="gap-2 px-0 py-3">
-        <CardHeader className="w-full max-w-sm">
+        <div className="px-4 pb-2">
           <Tabs
             value={filterType}
             onValueChange={(value) => setFilterType(value as TransactionType)}
           >
-            <TabsList className="grid w-full grid-cols-2 rounded-lg bg-slate-100 p-1">
+            <TabsList className="bg-accent grid h-auto w-full max-w-sm grid-cols-2 rounded-lg p-1">
               <TabsTrigger
                 value={TRANSACTION_TYPE.SALE}
-                className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="data-[state=active]:bg-background data-[state=active]:text-foreground cursor-pointer text-base font-semibold data-[state=active]:shadow-sm"
               >
                 Sales
               </TabsTrigger>
               <TabsTrigger
                 value={TRANSACTION_TYPE.ESTIMATE}
-                className="cursor-pointer data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm"
+                className="data-[state=active]:bg-background data-[state=active]:text-foreground cursor-pointer text-base font-semibold data-[state=active]:shadow-sm"
               >
                 Estimates
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        </CardHeader>
+        </div>
         <CardContent>
           {status === "pending" ? (
             <div className="my-8 flex flex-1 justify-center gap-3">
