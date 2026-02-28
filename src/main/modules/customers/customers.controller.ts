@@ -30,6 +30,12 @@ customersController.get("/:id", validateRequest("param", idSchema), async (c) =>
   return c.json(result, 200);
 });
 
+customersController.get("/:id/summary", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await customersService.getCustomerSummary(id);
+  return c.json(result, 200);
+});
+
 // createCustomer
 customersController.post("/", validateRequest("json", createCustomerSchema), async (c) => {
   const payload = c.req.valid("json");

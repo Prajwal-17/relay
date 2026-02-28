@@ -2,6 +2,7 @@ import {
   TRANSACTION_TYPE,
   type CreateCustomerPayload,
   type Customer,
+  type CustomerSummary,
   type CustomerTransaction,
   type Estimate,
   type PaginatedApiResponse,
@@ -76,6 +77,11 @@ const getEstimatesByCustomerId = async (
   };
 };
 
+const getCustomerSummary = async (id: string): Promise<CustomerSummary> => {
+  const result = await customersRepository.getCustomerSummary(id);
+  return result;
+};
+
 const createCustomer = async (payload: CreateCustomerPayload): Promise<Customer> => {
   const customer = await customersRepository.createCustomer(payload);
 
@@ -118,6 +124,7 @@ export const customersService = {
   getDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,
+  getCustomerSummary,
   createCustomer,
   updateCustomerById,
   deleteCustomerById

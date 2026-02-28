@@ -166,6 +166,14 @@ export type PaginatedApiResponse<T> = {
   nextPageNo: PageNo;
 } & T;
 
+export type CustomerSummary = {
+  salesCount: number;
+  estimatesCount: number;
+  salesTotal: number;
+  estimatesTotal: number;
+  average: number;
+};
+
 export type SalePayload = {
   billingId: string | null;
   invoiceNo: number;

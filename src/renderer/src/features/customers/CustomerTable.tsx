@@ -25,7 +25,7 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
 
   return (
     <>
-      <Card className="gap-2 px-0 py-3">
+      <Card className="flex h-full w-full flex-col gap-2 px-0 py-3">
         <div className="px-4 pb-2">
           <Tabs
             value={filterType}
@@ -47,14 +47,14 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
             </TabsList>
           </Tabs>
         </div>
-        <CardContent>
+        <CardContent className="flex h-full flex-col">
           {status === "pending" ? (
-            <div className="my-8 flex flex-1 justify-center gap-3">
+            <div className="my-8 flex flex-1 items-center justify-center gap-3">
               <span className="text-muted-foreground text-lg font-semibold">Loading</span>
               <LoaderCircle className="text-primary animate-spin" size={24} />
             </div>
           ) : (
-            <div className="border-border/60 rounded-lg border shadow-md">
+            <div className="border-border/60 flex h-full flex-col rounded-lg border shadow-md">
               <div className="bg-muted text-muted-foreground grid grid-cols-9 gap-2 px-4 py-2 text-base font-semibold">
                 <div className="col-span-2 flex items-center">Date</div>
                 <div className="col-span-2 flex items-center">Transaction No</div>
@@ -66,7 +66,7 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
               {transactionData.length > 0 ? (
                 <div
                   ref={parentRef}
-                  className="max-h-[47vh] overflow-x-hidden overflow-y-auto scroll-smooth"
+                  className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto scroll-smooth"
                 >
                   <div
                     style={{

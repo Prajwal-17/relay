@@ -11,12 +11,14 @@ export const CustomerLayout = () => {
     <>
       <div className="bg-background flex flex-1">
         <CustomerSidebar />
-        <div className="bg-background flex-1 p-3">
+        <div className="bg-background flex flex-1 flex-col overflow-hidden p-4">
           {selectedCustomer ? (
-            <>
+            <div className="flex h-full flex-col overflow-hidden">
               <CustomerDetails />
-              <CustomerTable customerId={selectedCustomer.id} />
-            </>
+              <div className="flex min-h-0 flex-1">
+                <CustomerTable customerId={selectedCustomer.id} />
+              </div>
+            </div>
           ) : (
             <div className="text-muted-foreground flex h-full items-center justify-center">
               <div className="text-center">
