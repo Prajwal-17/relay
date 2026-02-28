@@ -16,3 +16,7 @@ export const actionSchema = z.object({
 export const batchActionSchema = z.object({
   action: z.enum(BATCH_CHECK_ACTION)
 });
+
+export const statusSchema = z.object({
+  isPaid: z.boolean()
+});

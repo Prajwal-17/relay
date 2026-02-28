@@ -13,6 +13,12 @@ export type MutationVariables = {
   id: string;
 };
 
+export type StatusMutationVariables = {
+  type: TransactionType;
+  id: string;
+  isPaid: boolean;
+};
+
 export const useDashboard = () => {
   const { type } = useParams();
   const { date } = useDateRangePicker();
@@ -55,10 +61,23 @@ export const useDashboard = () => {
     }
   });
 
+  const txnStatusMutation = useMutation<{ message: string }, Error, StatusMutationVariables>({
+    mutationFn: ({ type, id, isPaid }) =>
+      apiClient.patch(`/api/${type}s/${id}`, { isPaid: isPaid }),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+      toast.success(response.message);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
   return {
     sortBy,
     setSortBy,
     deleteMutation,
-    convertMutation
+    convertMutation,
+    txnStatusMutation
   };
 };

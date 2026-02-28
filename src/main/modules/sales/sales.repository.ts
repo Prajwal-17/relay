@@ -355,6 +355,16 @@ const batchCheckItems = async (saleId: string, action: BatchCheckAction) => {
     .run();
 };
 
+const updateSaleStatus = async (id: string, isPaid: boolean) => {
+  return db
+    .update(sales)
+    .set({
+      isPaid: isPaid
+    })
+    .where(and(eq(sales.id, id), eq(sales.isPaid, !isPaid)))
+    .run();
+};
+
 export const salesRepository = {
   getSaleById,
   getLatestInvoiceNo,
@@ -364,5 +374,6 @@ export const salesRepository = {
   convertSaleToEstimate,
   updateCheckedQty,
   batchCheckItems,
-  deleteSaleById
+  deleteSaleById,
+  updateSaleStatus
 };

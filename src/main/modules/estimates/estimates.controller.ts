@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { txnPayloadSchema } from "../../../shared/schemas/transaction.schema";
 import { validateRequest } from "../../middleware/validation";
-import { actionSchema, batchActionSchema, idSchema, itemIdSchema } from "../../zod";
+import { actionSchema, batchActionSchema, idSchema, itemIdSchema, statusSchema } from "../../zod";
 import { filterEstimatesParamsSchema } from "./estimates.schema";
 import { estimatesService } from "./estimates.service";
 
@@ -77,6 +77,18 @@ estimatesController.post(
     const { action } = c.req.valid("json");
     await estimatesService.batchCheckItemsService(id, action);
     return c.body(null, 204);
+  }
+);
+
+estimatesController.patch(
+  "/:id",
+  validateRequest("param", idSchema),
+  validateRequest("json", statusSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { isPaid } = c.req.valid("json");
+    const result = await estimatesService.updateEstimateStatus(id, isPaid);
+    return c.json(result, 200);
   }
 );
 
