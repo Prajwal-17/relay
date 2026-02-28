@@ -11,6 +11,12 @@ export type MutationVariables = {
   id: string;
 };
 
+export type StatusMutationVariables = {
+  type: TransactionType;
+  id: string;
+  isPaid: boolean;
+};
+
 const useCustomers = () => {
   const selectedCustomer = useCustomerStore((state) => state.selectedCustomer);
   const setSelectedCustomer = useCustomerStore((state) => state.setSelectedCustomer);
@@ -75,6 +81,21 @@ const useCustomers = () => {
     }
   });
 
+  const txnStatusMutation = useMutation<{ message: string }, Error, StatusMutationVariables>({
+    mutationFn: ({ type, id, isPaid }) =>
+      apiClient.patch(`/api/${type}s/${id}`, { isPaid: isPaid }),
+    onSuccess: (response) => {
+      queryClient.invalidateQueries({
+        queryKey: [selectedCustomer?.id],
+        exact: false
+      });
+      toast.success(response.message);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
   return {
     selectedCustomer,
     setSelectedCustomer,
@@ -93,7 +114,8 @@ const useCustomers = () => {
     errors,
     setErrors,
     deleteMutation,
-    convertMutation
+    convertMutation,
+    txnStatusMutation
   };
 };
 

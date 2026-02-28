@@ -24,7 +24,7 @@ export const DashboardCard = () => {
             defaultValue={sortBy}
             onValueChange={(value: SortType) => setSortBy(value)}
           >
-            <SelectTrigger className="text-foreground h-11! w-[220px] cursor-pointer text-base font-semibold">
+            <SelectTrigger className="text-foreground h-11! w-55 cursor-pointer text-base font-semibold">
               <SelectValue placeholder="Date (Newest First)" />
             </SelectTrigger>
             <SelectContent>

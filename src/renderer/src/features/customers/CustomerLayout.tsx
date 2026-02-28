@@ -11,7 +11,7 @@ export const CustomerLayout = () => {
     <>
       <div className="bg-background flex flex-1">
         <CustomerSidebar />
-        <div className="bg-background flex-1 p-6">
+        <div className="bg-background flex-1 p-3">
           {selectedCustomer ? (
             <>
               <CustomerDetails />

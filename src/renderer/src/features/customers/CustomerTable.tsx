@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ViewModal } from "@/features/dashboard/ViewModal";
 import useCustomers from "@/hooks/customers/useCustomers";
 import { useCustomerTable } from "@/hooks/customers/useCustomerTable";
+import { useViewModalStore } from "@/store/viewModalStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import { useState } from "react";
@@ -9,16 +11,21 @@ import CustomerTableRow from "./CustomerTableRow";
 
 export const CustomerTable = ({ customerId }: { customerId: string }) => {
   const [filterType, setFilterType] = useState<TransactionType>(TRANSACTION_TYPE.SALE);
-  const { deleteMutation, convertMutation } = useCustomers();
+  const { deleteMutation, convertMutation, txnStatusMutation } = useCustomers();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData } = useCustomerTable(
     customerId,
     filterType
   );
+  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
+  const setTransactionId = useViewModalStore((state) => state.setTransactionId);
+  const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
+  const transactionId = useViewModalStore((state) => state.transactionId);
+
   const virtualItems = rowVirtualizer.getVirtualItems();
 
   return (
     <>
-      <Card className="gap-2 px-0 py-4">
+      <Card className="gap-2 px-0 py-3">
         <CardHeader className="w-full max-w-sm">
           <Tabs
             value={filterType}
@@ -48,16 +55,19 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
             </div>
           ) : (
             <div className="border-border/60 rounded-lg border shadow-md">
-              <div className="bg-muted text-muted-foreground grid grid-cols-9 gap-4 px-4 py-2 text-base font-semibold">
+              <div className="bg-muted text-muted-foreground grid grid-cols-9 gap-2 px-4 py-2 text-base font-semibold">
                 <div className="col-span-2 flex items-center">Date</div>
                 <div className="col-span-2 flex items-center">Transaction No</div>
                 <div className="col-span-2 flex items-center">Amount</div>
-                <div className="col-span-2 flex items-center">Status</div>
-                <div className="col-span-1 flex items-center">Actions</div>
+                <div className="col-span-1 flex items-center">Status</div>
+                <div className="col-span-2 flex items-center justify-end">Actions</div>
               </div>
 
               {transactionData.length > 0 ? (
-                <div ref={parentRef} className="max-h-[47vh] overflow-auto scroll-smooth">
+                <div
+                  ref={parentRef}
+                  className="max-h-[47vh] overflow-x-hidden overflow-y-auto scroll-smooth"
+                >
                   <div
                     style={{
                       height: `${rowVirtualizer.getTotalSize()}px`,
@@ -88,7 +98,10 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
                               isLoaderRow={isLoaderRow}
                               deleteMutation={deleteMutation}
                               convertMutation={convertMutation}
+                              txnStatusMutation={txnStatusMutation}
                               hasNextPage={hasNextPage}
+                              setIsViewModalOpen={setIsViewModalOpen}
+                              setTransactionId={setTransactionId}
                             />
                           </div>
                         );
@@ -106,6 +119,8 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
           )}
         </CardContent>
       </Card>
+
+      {isViewModalOpen && transactionId && <ViewModal type={`${filterType}s`} id={transactionId} />}
     </>
   );
 };
