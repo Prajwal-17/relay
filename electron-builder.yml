@@ -1,5 +1,5 @@
-appId: com.quickcart.app
-productName: QuickCart
+appId: com.electron.app
+productName: Quickcart
 directories:
   buildResources: build
 files:
@@ -12,11 +12,11 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: "${productName}"
+  executableName: Quickcart
 nsis:
-  artifactName: "${productName}-${version}.${ext}"
-  # shortcutName: ${productName}
-  # uninstallDisplayName: ${productName}
+  artifactName: ${productName}-${version}.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 # mac:
 #   entitlementsInherit: build/entitlements.mac.plist
@@ -32,16 +32,17 @@ linux:
   target:
     - AppImage
     - deb
-  maintainer: Prajwal - prajwalkreddy17@gmail.com
+  artifactName: ${productName}
+  maintainer: prajwalkreddy17@gmail.com
   category: Office
 appImage:
-  artifactName: "${productName}-${version}.${ext}"
+  artifactName: ${productName}-${version}.${ext}
 deb:
-  artifactName: "${productName}-${version}.${ext}"
-npmRebuild: true # rebuild native dependencies better-sqlite3
+  artifactName: ${productName}-${version}.${ext}
+npmRebuild: false
 publish:
   provider: github
-  owner: prajwal-17
+  owner: Prajwal-17
   repo: pos
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
