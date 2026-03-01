@@ -12,22 +12,22 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: ${productName}
+  executableName: "${productName}"
 nsis:
-  artifactName: ${productName}-${version}.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
+  artifactName: "${productName}-${version}.${ext}"
+  # shortcutName: ${productName}
+  # uninstallDisplayName: ${productName}
   createDesktopShortcut: always
-mac:
-  entitlementsInherit: build/entitlements.mac.plist
-  extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-  notarize: false
-dmg:
-  artifactName: ${productName}-${version}.${ext}
+# mac:
+#   entitlementsInherit: build/entitlements.mac.plist
+#   extendInfo:
+#     - NSCameraUsageDescription: Application requests access to the device's camera.
+#     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+#     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+#     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+#   notarize: false
+# dmg:
+#   artifactName: "${productName}-${version}.${ext}"
 linux:
   target:
     - AppImage
@@ -35,9 +35,9 @@ linux:
   maintainer: Prajwal - prajwalkreddy17@gmail.com
   category: Office
 appImage:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: "${productName}-${version}.${ext}"
 deb:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: "${productName}-${version}.${ext}"
 npmRebuild: true # rebuild native dependencies better-sqlite3
 publish:
   provider: github
