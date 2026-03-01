@@ -68,7 +68,8 @@ const LineItemRow = memo(
             <input
               value={item.productSnapshot}
               className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
-              onClick={() => {
+              onClick={(e) => {
+                setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
                 setIsDropdownOpen();
               }}

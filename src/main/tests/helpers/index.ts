@@ -88,7 +88,7 @@ export async function seedSaleItem(
     purchasePrice: params.purchasePrice ?? 0,
     weight: params.weight ?? "",
     unit: params.unit ?? "",
-    quantity: params.quantity ?? 1,
+    quantity: params.quantity ?? 1000,
     totalPrice: params.totalPrice ?? 0,
     checkedQty: params.checkedQty ?? 0
   };
@@ -108,7 +108,7 @@ export async function seedInitialData(db: DB) {
     mrp: 7200,
     price: 6800,
     purchasePrice: 6000,
-    totalQuantitySold: 30
+    totalQuantitySold: 30000
   });
 
   const product2 = await seedProduct(db, {
@@ -119,14 +119,14 @@ export async function seedInitialData(db: DB) {
     mrp: 8500,
     price: 8000,
     purchasePrice: 6800,
-    totalQuantitySold: 20
+    totalQuantitySold: 20000
   });
 
   const sale = await seedSale(db, {
     invoiceNo: 1,
     customerId: customer.id,
     grandTotal: 87600,
-    totalQuantity: 12,
+    totalQuantity: 12000,
     isPaid: true
   });
 
@@ -140,7 +140,7 @@ export async function seedInitialData(db: DB) {
     purchasePrice: 6000,
     weight: "1",
     unit: "Litre",
-    quantity: 7,
+    quantity: 7000,
     totalPrice: 47600,
     checkedQty: 7
   });
@@ -155,7 +155,7 @@ export async function seedInitialData(db: DB) {
     purchasePrice: 6800,
     weight: "800",
     unit: "g",
-    quantity: 5,
+    quantity: 5000,
     totalPrice: 40000,
     checkedQty: 5
   });
@@ -170,7 +170,7 @@ export async function seedInitialData(db: DB) {
     purchasePrice: 1100,
     weight: "70",
     unit: "g",
-    quantity: 45,
+    quantity: 45000,
     totalPrice: 58500,
     checkedQty: 45
   });

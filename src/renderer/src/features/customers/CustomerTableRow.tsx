@@ -187,6 +187,27 @@ const CustomerTableRow = ({
               </AlertDialogContent>
             </AlertDialog>
 
+            <AlertDialog open={isConvertDialogOpen} onOpenChange={setIsConvertDialogOpen}>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-base">
+                    This will permanently convert the transaction.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    onClick={onConvert}
+                    disabled={convertMutation.isPending}
+                  >
+                    {convertMutation.isPending ? "Converting..." : "Convert"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <DropdownMenu>
               <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5">
                 <MoreVertical />
