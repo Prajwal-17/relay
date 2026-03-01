@@ -6,8 +6,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,12 +17,14 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
+import type { MutationVariables, StatusMutationVariables } from "@/hooks/dashboard/useDashboard";
 import type { UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
+  CircleCheckBig,
+  CircleOff,
   Download,
   Edit,
   Eye,
@@ -33,7 +34,7 @@ import {
   RefreshCcw,
   Trash2
 } from "lucide-react";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const DashboardTableRow = ({
@@ -43,6 +44,7 @@ const DashboardTableRow = ({
   hasNextPage,
   deleteMutation,
   convertMutation,
+  txnStatusMutation,
   setIsViewModalOpen,
   setTransactionId
 }: {
@@ -52,10 +54,14 @@ const DashboardTableRow = ({
   hasNextPage: boolean;
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
+  txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
   setIsViewModalOpen: (value: boolean) => void;
   setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
+  const [activeDialog, setActiveDialog] = useState<"status" | "convert" | "delete" | "idle">(
+    "idle"
+  );
 
   const handleView = useCallback(() => {
     setIsViewModalOpen(true);
@@ -75,6 +81,14 @@ const DashboardTableRow = ({
   const onConvert = useCallback(() => {
     convertMutation.mutate({ type: transaction.type, id: transaction.id });
   }, [convertMutation, transaction.type, transaction.id]);
+
+  const handleStatus = useCallback(() => {
+    txnStatusMutation.mutate({
+      type: transaction.type,
+      id: transaction.id,
+      isPaid: !transaction.isPaid
+    });
+  }, [txnStatusMutation, transaction.type, transaction.id, transaction.isPaid]);
 
   return (
     <div>
@@ -148,18 +162,19 @@ const DashboardTableRow = ({
               </TooltipContent>
             </Tooltip>
 
-            <AlertDialog>
-              <Tooltip>
-                <AlertDialogTrigger asChild>
-                  <TooltipTrigger className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2">
-                    <Trash2 size={20} />
-                  </TooltipTrigger>
-                </AlertDialogTrigger>
-                <TooltipContent>
-                  <p className="text-base">Delete</p>
-                </TooltipContent>
-              </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                onClick={() => setActiveDialog("delete")}
+                className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2"
+              >
+                <Trash2 size={20} />
+              </TooltipTrigger>
+            </Tooltip>
 
+            <AlertDialog
+              open={activeDialog === "delete"}
+              onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
+            >
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
@@ -183,44 +198,32 @@ const DashboardTableRow = ({
               <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
                 <MoreVertical />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40" align="end">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <DropdownMenuItem
-                      onSelect={(e) => e.preventDefault()}
-                      className="cursor-pointer"
-                    >
-                      <RefreshCcw className="mr-1 h-4 w-4 cursor-pointer" />
-                      <span className="text-lg">Convert</span>
-                    </DropdownMenuItem>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-lg">
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription className="text-base">
-                        This will permanently convert the transaction.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
-                        onClick={onConvert}
-                        disabled={convertMutation.isPending}
-                      >
-                        {convertMutation.isPending
-                          ? "Converting..."
-                          : pathname === "sales"
-                            ? "Convert to Estimate"
-                            : pathname === "estimates"
-                              ? "Convert to Sale"
-                              : ""}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+              <DropdownMenuContent className="w-55" align="end">
+                <DropdownMenuItem
+                  onSelect={() => handleStatus()}
+                  className="cursor-pointer"
+                  disabled={txnStatusMutation.isPending}
+                >
+                  {transaction.isPaid ? (
+                    <>
+                      <CircleOff className="mr-1 h-4 w-4" />
+                      <span className="text-lg">Mark as unpaid</span>
+                    </>
+                  ) : (
+                    <>
+                      <CircleCheckBig className="mr-1 h-4 w-4" />
+                      <span className="text-lg">Mark as paid</span>
+                    </>
+                  )}
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onSelect={() => setActiveDialog("convert")}
+                  className="cursor-pointer"
+                >
+                  <RefreshCcw className="mr-1 h-4 w-4" />
+                  <span className="text-lg">Convert</span>
+                </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
 
@@ -234,6 +237,66 @@ const DashboardTableRow = ({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            <AlertDialog
+              open={activeDialog === "convert"}
+              onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-base">
+                    This will permanently convert the transaction.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    onClick={onConvert}
+                    disabled={convertMutation.isPending}
+                  >
+                    {convertMutation.isPending
+                      ? "Converting..."
+                      : pathname === "sales"
+                        ? "Convert to Estimate"
+                        : pathname === "estimates"
+                          ? "Convert to Sale"
+                          : ""}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog
+              open={activeDialog === "status"}
+              onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-base">
+                    This will permanently convert the transaction.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    onClick={onConvert}
+                    disabled={convertMutation.isPending}
+                  >
+                    {convertMutation.isPending
+                      ? "Converting..."
+                      : pathname === "sales"
+                        ? "Convert to Estimate"
+                        : pathname === "estimates"
+                          ? "Convert to Sale"
+                          : ""}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       )}

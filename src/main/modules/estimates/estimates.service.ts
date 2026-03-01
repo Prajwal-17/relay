@@ -180,6 +180,19 @@ const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
   await estimatesRepository.batchCheckItems(id, action);
 };
 
+const updateEstimateStatus = async (id: string, isPaid: boolean): Promise<{ message: string }> => {
+  const result = await estimatesRepository.updateEstimateStatus(id, isPaid);
+  if (result.changes > 0) {
+    return {
+      message: isPaid ? "Estimate marked as paid" : "Estimate marked as unpaid"
+    };
+  } else {
+    return {
+      message: isPaid ? "Estimate already marked as paid" : "Estimate already marked as unpaid"
+    };
+  }
+};
+
 const deleteEstimateById = async (id: string) => {
   await estimatesRepository.deleteEstimateById(id);
 };
@@ -193,5 +206,6 @@ export const estimatesService = {
   convertEstimateToSale,
   updateCheckedQtyService,
   batchCheckItemsService,
+  updateEstimateStatus,
   deleteEstimateById
 };
