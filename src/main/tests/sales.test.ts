@@ -65,14 +65,14 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
           purchasePrice: 6500,
           weight: "1",
           unit: "Litre",
-          quantity: 5,
+          quantity: 5000,
           checkedQty: 5,
           isInventoryItem: false
         },
         {
           ...initialData.saleItem2,
           rowId: rowId2,
-          quantity: 4,
+          quantity: 4000,
           checkedQty: 4,
           isInventoryItem: false
         }
@@ -104,13 +104,13 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item1?.price).toBe(7000);
     expect(item1?.purchasePrice).toBe(6500);
     expect(item1?.totalPrice).toBe(35000);
-    expect(item1?.quantity).toBe(5);
+    expect(item1?.quantity).toBe(5000);
     expect(item1?.checkedQty).toBe(5);
 
     expect(item2?.checkedQty).toBe(4);
 
-    expect(product1?.totalQuantitySold).toBe(35); // 30 + 5(replace 7)
-    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4(replace 5)
+    expect(product1?.totalQuantitySold).toBe(35000); // 30 + 5(replace 7)
+    expect(product2?.totalQuantitySold).toBe(24000); // 20 + 4(replace 5)
 
     expect(allSaleitems.length).toBe(2);
   });
@@ -135,14 +135,14 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
           purchasePrice: 11000,
           weight: "2",
           unit: "Kg",
-          quantity: 6,
+          quantity: 6000,
           checkedQty: 3,
           isInventoryItem: false
         },
         {
           ...initialData.saleItem2,
           rowId: rowId2,
-          quantity: 4,
+          quantity: 4000,
           checkedQty: 4,
           isInventoryItem: false
         }
@@ -178,13 +178,13 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item1?.price).toBe(12000);
     expect(item1?.purchasePrice).toBe(11000);
     expect(item1?.totalPrice).toBe(72000);
-    expect(item1?.quantity).toBe(6);
+    expect(item1?.quantity).toBe(6000);
     expect(item1?.checkedQty).toBe(3);
 
     expect(item2?.checkedQty).toBe(4);
 
-    expect(product1?.totalQuantitySold).toBe(30); // 30 + productId=null
-    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4(replace 5)
+    expect(product1?.totalQuantitySold).toBe(30000); // 30 + productId=null
+    expect(product2?.totalQuantitySold).toBe(24000); // 20 + 4(replace 5)
 
     expect(allSaleitems.length).toBe(2);
   });
@@ -201,14 +201,14 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem1,
           rowId: rowId1,
-          quantity: 6,
+          quantity: 6000,
           checkedQty: 3,
           isInventoryItem: false
         },
         {
           ...initialData.saleItem2,
           rowId: rowId2,
-          quantity: 4,
+          quantity: 4000,
           checkedQty: 4,
           isInventoryItem: false
         },
@@ -223,7 +223,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
           purchasePrice: 6000,
           weight: "1",
           unit: "Litre",
-          quantity: 22,
+          quantity: 22000,
           checkedQty: 16,
           isInventoryItem: false
         }
@@ -255,11 +255,11 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(item3?.price).toBe(7200);
     expect(item3?.purchasePrice).toBe(6000);
     expect(item3?.totalPrice).toBe(158400);
-    expect(item3?.quantity).toBe(22);
+    expect(item3?.quantity).toBe(22000);
     expect(item3?.checkedQty).toBe(16);
 
-    expect(product1?.totalQuantitySold).toBe(58); // 30 + 6 + 22
-    expect(product2?.totalQuantitySold).toBe(24); // 20 + 4
+    expect(product1?.totalQuantitySold).toBe(58000); // 30 + 6 + 22
+    expect(product2?.totalQuantitySold).toBe(24000); // 20 + 4
 
     expect(allSaleitems.length).toBe(3);
   });
@@ -287,8 +287,8 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
     expect(sale?.totalQuantity).toBe(0);
     expect(sale?.grandTotal).toBe(0);
 
-    expect(product1?.totalQuantitySold).toBe(30); // 37 - 7
-    expect(product2?.totalQuantitySold).toBe(20); // 25 - 5
+    expect(product1?.totalQuantitySold).toBe(30000); // 37 - 7
+    expect(product2?.totalQuantitySold).toBe(20000); // 25 - 5
 
     expect(allSaleitems.length).toBe(0);
   });
@@ -305,7 +305,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
         {
           ...initialData.saleItem1,
           rowId: rowId1,
-          quantity: 6,
+          quantity: 6000,
           checkedQty: 3,
           isInventoryItem: false
         }
@@ -327,11 +327,11 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
 
     expect(result.items[0].rowId).toBe(rowId1);
 
-    expect(sale?.totalQuantity).toBe(6);
+    expect(sale?.totalQuantity).toBe(6000);
     expect(sale?.grandTotal).toBe(40800);
 
-    expect(product1?.totalQuantitySold).toBe(36);
-    expect(product2?.totalQuantitySold).toBe(20);
+    expect(product1?.totalQuantitySold).toBe(36000);
+    expect(product2?.totalQuantitySold).toBe(20000);
 
     expect(allSaleitems.length).toBe(1);
   });
