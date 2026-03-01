@@ -1,7 +1,7 @@
 {
   "name": "quickcart",
   "productName": "QuickCart",
-  "version": "4.1.6",
+  "version": "4.7.0",
   "description": "A billing software for creating and managing invoices and customer accounts.",
   "author": "Prajwal prajwalkreddy17@gmail.com",
   "main": "./out/main/index.js",

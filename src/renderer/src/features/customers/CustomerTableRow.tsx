@@ -58,6 +58,7 @@ const CustomerTableRow = ({
   setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
+  const [isConvertDialogOpen, setIsConvertDialogOpen] = useState(false);
   const [activeDialog, setActiveDialog] = useState<"status" | "convert" | "delete" | "idle">(
     "idle"
   );
