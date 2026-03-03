@@ -23,7 +23,7 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(() => {
-    electronApp.setAppUserModelId("com.electron");
+    electronApp.setAppUserModelId("com.quickcart.electron");
     setupIpcHandlers();
     startServer();
     createWindow();
