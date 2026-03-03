@@ -19,29 +19,20 @@
   src: url("./assets/fonts/roboto/Roboto-Font.ttf") format("truetype");
 }
 
-@font-face {
-  font-family: "Geist";
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./assets/fonts/geist/Geist.ttf") format("truetype");
-}
-
 :root {
   --font-sans: "Inter", sans-serif;
-  --font-geist: "Geist", sans-serif;
   --font-serif: Merriweather, serif;
   --font-roboto: "Roboto", sans-serif;
 
   --background: oklch(0.9942 0.0034 247.8575);
   --background-secondary: oklch(95.46% 0.004 264.37);
-  --foreground: oklch(0.2795 0.0368 260.0310);
+  --foreground: oklch(0.2795 0.0368 260.031);
 
-  --card: oklch(1.0000 0 0);
-  --card-foreground: oklch(0.2795 0.0368 260.0310);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2795 0.0368 260.031);
 
-  --popover: oklch(1.0000 0 0);
-  --popover-foreground: oklch(0.2795 0.0368 260.0310);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2795 0.0368 260.031);
 
   --primary: oklch(87.67% 0.165 90.15);
   --primary-foreground: oklch(0% 0 0);
@@ -52,18 +43,18 @@
   --accent: oklch(0.9519 0.0013 106.4244);
   --accent-foreground: oklch(0.3729 0.0306 259.7328);
 
-  --muted: oklch(0.9670 0.0029 264.5419);
-  --muted-foreground: oklch(0.5510 0.0234 264.3637);
+  --muted: oklch(0.967 0.0029 264.5419);
+  --muted-foreground: oklch(0.551 0.0234 264.3637);
 
   --destructive: oklch(64.69% 0.238 29.23);
   --destructive-foreground: oklch(100% 0 0);
 
-  --border: oklch(87.1% 0.006 286.286);
+  --border: oklch(82% 0.006 286.286);
   --borderprimary: oklch(0.8475 0.173193 89.8358);
   --input: oklch(0.8717 0.0093 258.3382);
 
   --sidebar: oklch(95.46% 0.004 264.37);
-  --sidebar-foreground: oklch(0.2795 0.0368 260.0310);
+  --sidebar-foreground: oklch(0.2795 0.0368 260.031);
   --sidebar-primary: oklch(0.5854 0.2041 277.1173);
   --sidebar-primary-foreground: oklch(0.9519 0.0013 106.4244);
   --sidebar-accent: oklch(0.9519 0.0013 106.4244);
@@ -82,11 +73,11 @@
   --shadow-color: hsl(0 0% 0%);
   --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
   --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 1px 2px -2px hsl(0 0% 0% / 0.10);
-  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 2px 4px -2px hsl(0 0% 0% / 0.10);
-  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 4px 6px -2px hsl(0 0% 0% / 0.10);
-  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.10), 0px 8px 10px -2px hsl(0 0% 0% / 0.10);
+  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
+  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
+  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 4px 6px -2px hsl(0 0% 0% / 0.1);
+  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
@@ -94,7 +85,6 @@
 
 @theme inline {
   --font-sans: var(--font-sans);
-  --font-geist: var(--font-geist);
   --font-serif: var(--font-serif);
   --font-roboto: var(--font-roboto);
 
@@ -152,7 +142,6 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
-
 @layer base {
   /* Default Scroll Styles */
   ::-webkit-scrollbar {
@@ -170,7 +159,7 @@
   }
 
   * {
-    @apply border-border outline-ring/50 font-geist;
+    @apply border-border outline-ring/50 font-sans;
     /*https://github.com/tailwindlabs/tailwindcss/discussions/7429#discussioncomment-4779939*/
     /*Disable increment/decrement button on input*/
     input[type="number"].appearance-none::-webkit-inner-spin-button,
@@ -187,8 +176,8 @@
   }
   @media print {
     @page {
-      size: auto;   /* let printer use roll */
-      margin: 0mm;  /* remove browser default margins */
+      size: auto; /* let printer use roll */
+      margin: 0mm; /* remove browser default margins */
     }
 
     body {

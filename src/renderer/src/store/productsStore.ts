@@ -1,5 +1,6 @@
 import { PRODUCT_FILTER, type Product, type ProductFilterType } from "@shared/types";
 import { create } from "zustand";
+import { devtools } from "zustand/middleware";
 
 export type ProductsFormType = Omit<
   Product,
@@ -45,75 +46,118 @@ function initialFormData(): ProductsFormType {
   };
 }
 
-export const useProductsStore = create<ProductsStoreType>((set) => ({
-  filterType: PRODUCT_FILTER.ACTIVE,
-  setFilterType: (newType) =>
-    set(() => ({
-      filterType: newType
-    })),
+export const useProductsStore = create<ProductsStoreType>()(
+  devtools(
+    (set) => ({
+      filterType: PRODUCT_FILTER.ACTIVE,
+      setFilterType: (newType) =>
+        set(
+          () => ({
+            filterType: newType
+          }),
+          false,
+          "products/setFilterType"
+        ),
 
-  openProductDialog: false,
-  setOpenProductDialog: () =>
-    set((state) => ({
-      openProductDialog: !state.openProductDialog
-    })),
+      openProductDialog: false,
+      setOpenProductDialog: () =>
+        set(
+          (state) => ({
+            openProductDialog: !state.openProductDialog
+          }),
+          false,
+          "products/setOpenProductDialog"
+        ),
 
-  actionType: "add",
-  setActionType: (action) =>
-    set(() => ({
-      actionType: action
-    })),
+      actionType: "add",
+      setActionType: (action) =>
+        set(
+          () => ({
+            actionType: action
+          }),
+          false,
+          "products/setActionType"
+        ),
 
-  searchParam: "",
-  setSearchParam: (param) =>
-    set(() => ({
-      searchParam: param
-    })),
+      searchParam: "",
+      setSearchParam: (param) =>
+        set(
+          () => ({
+            searchParam: param
+          }),
+          false,
+          "products/setSearchParam"
+        ),
 
-  searchResult: [],
-  setSearchResult: (mode, newResult) =>
-    set((state) => {
-      if (mode === "append") {
-        return {
-          searchResult: [...state.searchResult, ...newResult]
-        };
-      } else {
-        return {
-          searchResult: newResult
-        };
-      }
+      searchResult: [],
+      setSearchResult: (mode, newResult) =>
+        set(
+          (state) => {
+            if (mode === "append") {
+              return {
+                searchResult: [...state.searchResult, ...newResult]
+              };
+            } else {
+              return {
+                searchResult: newResult
+              };
+            }
+          },
+          false,
+          "products/setSearchResult"
+        ),
+
+      productId: null,
+      setProductId: (id) =>
+        set(
+          () => ({
+            productId: id
+          }),
+          false,
+          "products/setProductId"
+        ),
+
+      formDataState: initialFormData(),
+      setFormDataState: (data) =>
+        set(
+          (state) => ({
+            formDataState:
+              Object.keys(data).length === 0
+                ? initialFormData()
+                : { ...state.formDataState, ...data }
+          }),
+          false,
+          "products/setFormDataState"
+        ),
+
+      dirtyFields: {},
+      setDirtyFields: (data) =>
+        set(
+          (state) => {
+            if (Object.keys(data).length === 0) {
+              return {
+                dirtyFields: {}
+              };
+            }
+
+            return {
+              dirtyFields: { ...state.dirtyFields, ...data }
+            };
+          },
+          false,
+          "products/setDirtyFields"
+        ),
+
+      errors: {},
+      setErrors: (errObj) =>
+        set(
+          () => ({
+            errors: { ...errObj }
+          }),
+          false,
+          "products/setErrors"
+        )
     }),
-
-  productId: null,
-  setProductId: (id) =>
-    set(() => ({
-      productId: id
-    })),
-
-  formDataState: initialFormData(),
-  setFormDataState: (data) =>
-    set((state) => ({
-      formDataState:
-        Object.keys(data).length === 0 ? initialFormData() : { ...state.formDataState, ...data }
-    })),
-
-  dirtyFields: {},
-  setDirtyFields: (data) =>
-    set((state) => {
-      if (Object.keys(data).length === 0) {
-        return {
-          dirtyFields: {}
-        };
-      }
-
-      return {
-        dirtyFields: { ...state.dirtyFields, ...data }
-      };
-    }),
-
-  errors: {},
-  setErrors: (errObj) =>
-    set(() => ({
-      errors: { ...errObj }
-    }))
-}));
+    { name: "products-store" }
+  )
+);

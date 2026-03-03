@@ -19,12 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
-import {
-  TRANSACTION_TYPE,
-  type ApiResponse,
-  type TransactionType,
-  type UnifiedTransaction
-} from "@shared/types";
+import { TRANSACTION_TYPE, type TransactionType, type UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -40,8 +35,8 @@ const RecentTransactionsTableRow = ({
 }: {
   type: TransactionType;
   transaction: UnifiedTransaction;
-  deleteMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
-  convertMutation: UseMutationResult<ApiResponse<string>, Error, MutationVariables>;
+  deleteMutation: UseMutationResult<null, Error, MutationVariables>;
+  convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
 }) => {
   const navigate = useNavigate();
   const handleEdit = useCallback(() => {

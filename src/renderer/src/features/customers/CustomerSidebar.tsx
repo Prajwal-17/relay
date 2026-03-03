@@ -4,10 +4,12 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import useCustomers from "@/hooks/customers/useCustomers";
 import { Download, LoaderCircle, Plus, Search, X } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { CustomerDialog } from "./CustomerDialog";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
 
 export const CustomerSidebar = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const {
     selectedCustomer,
     setSelectedCustomer,
@@ -20,6 +22,12 @@ export const CustomerSidebar = () => {
     customers,
     customerStatus
   } = useCustomers();
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   return (
     <>
@@ -67,10 +75,11 @@ export const CustomerSidebar = () => {
           <div className="relative">
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
+              ref={inputRef}
               placeholder="Search customers..."
               value={customerSearch}
               onChange={(e) => setCustomerSearch(e.target.value)}
-              className="h-14 pl-10 pr-10 text-lg!"
+              className="h-14 pr-10 pl-10 text-lg!"
             />
             {customerSearch && (
               <div

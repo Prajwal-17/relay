@@ -11,31 +11,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import useCustomers from "@/hooks/customers/useCustomers";
+import { apiClient } from "@/lib/apiClient";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
-import { Label } from "@radix-ui/react-label";
-import type { ApiResponse } from "@shared/types";
-import { formatDateStr } from "@shared/utils/dateUtils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { CustomerSummaryCard } from "./CustomerSummaryCard";
 import { getCustomerTypeColor } from "./CustomerTypeColor";
-
-const handleDelete = async (customerId: string) => {
-  try {
-    const response = await fetch(`http://localhost:3000/api/customers/${customerId}`, {
-      method: "DELETE"
-    });
-    const data = await response.json();
-    if (data.status === "success") {
-      return data;
-    }
-    throw new Error(data.error.message);
-  } catch (error) {
-    throw new Error((error as Error).message ?? "Something went wrong");
-  }
-};
 
 export const CustomerDetails = () => {
   const queryClient = useQueryClient();
@@ -51,17 +35,13 @@ export const CustomerDetails = () => {
     setCustomerSearch
   } = useCustomers();
 
-  const mutation = useMutation<ApiResponse<string>, Error, string>({
-    mutationFn: (customerId: string) => handleDelete(customerId),
-    onSuccess: (response) => {
-      if (response.status === "success") {
-        setSelectedCustomer(null);
-        setCustomerSearch("");
-        queryClient.invalidateQueries({ queryKey: ["customers", customerSearch] });
-        toast.success(response.data);
-      } else if (response.status === "error") {
-        toast.error(response.error.message);
-      }
+  const mutation = useMutation({
+    mutationFn: (customerId: string) => apiClient.delete(`/api/customers/${customerId}`),
+    onSuccess: () => {
+      setSelectedCustomer(null);
+      setCustomerSearch("");
+      queryClient.invalidateQueries({ queryKey: ["customers", customerSearch] });
+      toast.success("Successfully deleted customer");
     },
     onError: (error) => {
       toast.error(error.message);
@@ -73,9 +53,26 @@ export const CustomerDetails = () => {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{selectedCustomer.name}</h1>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold">{selectedCustomer.name}</h1>
+            {selectedCustomer.customerType && (
+              <Badge
+                className={`px-3 py-1 text-sm ${getCustomerTypeColor(selectedCustomer.customerType)}`}
+              >
+                {selectedCustomer.customerType}
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground text-lg">Customer Details</p>
+          {selectedCustomer.contact && (
+            <div className="mt-1">
+              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
+                Contact
+              </Label>
+              <p className="mt-2 text-lg">{selectedCustomer.contact}</p>
+            </div>
+          )}
         </div>
         <div className="flex gap-3">
           <Dialog
@@ -136,51 +133,7 @@ export const CustomerDetails = () => {
         </div>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl">Customer Information</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-            <div>
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Name
-              </Label>
-              <p className="mt-2 text-lg font-medium">{selectedCustomer.name}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Contact
-              </Label>
-              <p className="mt-2 text-lg">{selectedCustomer.contact}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Type
-              </Label>
-              <div className="mt-2">
-                <Badge
-                  className={`px-3 py-1 text-sm ${getCustomerTypeColor(selectedCustomer.customerType)}`}
-                >
-                  {selectedCustomer.customerType}
-                </Badge>
-              </div>
-            </div>
-            <div>
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Created
-              </Label>
-              <p className="mt-2 text-lg">{formatDateStr(selectedCustomer.createdAt)}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Updated
-              </Label>
-              <p className="mt-2 text-lg">{formatDateStr(selectedCustomer.updatedAt)}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <CustomerSummaryCard customer={selectedCustomer} />
     </>
   );
 };

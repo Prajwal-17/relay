@@ -1,4 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { apiClient } from "@/lib/apiClient";
+import type { MetricsSummary } from "@shared/types";
 import { formatToRupees } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
@@ -7,28 +9,10 @@ import toast from "react-hot-toast";
 import { MetricCard } from "./MetricCard";
 import { StatCard } from "./StatCard";
 
-const fetchMetrics = async () => {
-  try {
-    const response = await fetch("http://localhost:3000/api/dashboard/summary");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error((error as Error).message);
-  }
-};
-
 export const MetricsComponent = () => {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["metrics-summary"],
-    queryFn: fetchMetrics,
-    select: (response) => {
-      if (response.status === "success") {
-        return response.data;
-      } else if (response.status === "error") {
-        throw new Error(response.error.message);
-      }
-      throw new Error("Something went wrong");
-    }
+    queryFn: () => apiClient.get<MetricsSummary>("api/dashboard/summary")
   });
 
   useEffect(() => {

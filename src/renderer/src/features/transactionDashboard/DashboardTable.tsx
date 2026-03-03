@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import DashboardTableRow from "./DashboardTableRow";
 
 export const DashboardTable = () => {
-  const { deleteMutation, convertMutation } = useDashboard();
+  const { deleteMutation, convertMutation, txnStatusMutation } = useDashboard();
   const { type } = useParams();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
     useInfiniteScroll(type as DashboardType);
@@ -77,6 +77,7 @@ export const DashboardTable = () => {
                             isLoaderRow={isLoaderRow}
                             deleteMutation={deleteMutation}
                             convertMutation={convertMutation}
+                            txnStatusMutation={txnStatusMutation}
                             hasNextPage={hasNextPage}
                             setIsViewModalOpen={setIsViewModalOpen}
                             setTransactionId={setTransactionId}
