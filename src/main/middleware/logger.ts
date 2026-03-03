@@ -1,18 +1,30 @@
 import { createMiddleware } from "hono/factory";
 import pino from "pino";
 
-export const loggerInstance = pino({
-  level: "info",
-  transport: {
-    target: "pino-pretty",
-    options: {
-      colorize: true,
-      translateTime: "SYS:standard",
-      ignore: "pid,hostname,reqId",
-      messageFormat: "{msg}"
-    }
+const isPackaged = (() => {
+  try {
+    // ubuntu build fix
+    // eslint-disable-next-line
+    return require("electron").app.isPackaged;
+  } catch {
+    return false;
   }
-});
+})();
+
+export const loggerInstance = isPackaged
+  ? pino({ level: "info" })
+  : pino({
+      level: "info",
+      transport: {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "SYS:standard",
+          ignore: "pid,hostname,reqId",
+          messageFormat: "{msg}"
+        }
+      }
+    });
 
 export const logger = createMiddleware(async (c, next) => {
   const start = Date.now();

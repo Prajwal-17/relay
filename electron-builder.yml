@@ -14,9 +14,9 @@ asarUnpack:
 win:
   executableName: QuickCart
 nsis:
-  artifactName: ${productName}-${version}.${ext}
-  shortcutName: ${productName}
-  uninstallDisplayName: ${productName}
+  artifactName: "${productName}-${version}.${ext}"
+  shortcutName: "${productName}"
+  uninstallDisplayName: "${productName}"
   createDesktopShortcut: always
 # mac:
 #   entitlementsInherit: build/entitlements.mac.plist
@@ -35,9 +35,9 @@ linux:
   maintainer: prajwalkreddy17@gmail.com
   category: Office
 appImage:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: "${productName}-${version}.${ext}"
 deb:
-  artifactName: ${productName}-${version}.${ext}
+  artifactName: "${productName}-${version}.${ext}"
 npmRebuild: false
 publish:
   provider: github
