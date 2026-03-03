@@ -10,7 +10,7 @@ export const BillingSaveStatus = () => {
   return (
     <div
       className={cn(
-        "border-border bg-background flex items-center gap-2 rounded-t-xl border-x border-t px-4 py-2 text-sm font-medium transition-colors duration-300",
+        "border-border bg-background flex items-center gap-2 rounded-t-xl px-4 py-2 text-sm font-medium transition-colors duration-300",
         currentStatus === "saving" && "text-blue-600 dark:text-blue-400",
         currentStatus === "saved" && "text-green-600 dark:text-green-400",
         currentStatus === "unsaved" && "text-amber-600 dark:text-amber-400",

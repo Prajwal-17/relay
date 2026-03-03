@@ -17,7 +17,7 @@ export const SummaryFooter = () => {
 
   return (
     <footer>
-      <div className="bg-background relative mx-5 my-1 flex items-center justify-end gap-4 rounded-xl px-4 py-3 md:gap-6">
+      <div className="bg-background relative mx-5 flex items-center justify-end gap-4 rounded-xl px-4 py-2 md:gap-6">
         <div className="absolute top-0 right-1 -translate-y-full">
           <BillingSaveStatus />
         </div>

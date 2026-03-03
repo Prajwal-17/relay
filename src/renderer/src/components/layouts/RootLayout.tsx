@@ -6,7 +6,7 @@ const RootLayout = () => {
     <>
       <div className="relative mx-auto flex h-screen min-h-screen w-full">
         <Sidebar />
-        <div className="my-3 flex-1 overflow-y-auto rounded-xl shadow-lg">
+        <div className="my-2 flex-1 overflow-y-auto rounded-xl shadow-lg">
           <Outlet />
         </div>
       </div>
