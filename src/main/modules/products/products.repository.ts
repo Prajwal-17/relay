@@ -4,6 +4,7 @@ import type {
   ProductSearchItemDTO,
   UpdateProductPayload
 } from "../../../shared/types";
+import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
 import { AppError } from "../../utils/appError";
@@ -81,7 +82,7 @@ const createProduct = async (payload: CreateProductPayload) => {
           name: payload.name,
           weight: payload.weight ?? null,
           unit: payload.unit ?? null,
-          mrp: payload.mrp ? payload.mrp : null
+          mrp: payload.mrp ? convertToRupees(payload.mrp) : null
         }),
         weight: payload.weight ?? null,
         unit: payload.unit ?? null,
