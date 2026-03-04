@@ -1,12 +1,15 @@
 import { electronApp, is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
-import { app, BrowserWindow, screen } from "electron";
+import { app, BrowserWindow } from "electron";
 import { join } from "node:path";
 import { startServer } from "./server";
 import { setupIpcHandlers } from "./setupIpcHandlers";
 import { setupMenu } from "./setupMenu";
 
 dotenv.config();
+
+app.commandLine.appendSwitch("high-dpi-support", "1");
+app.commandLine.appendSwitch("force-device-scale-factor", "1");
 
 let mainWindow: BrowserWindow;
 const gotTheLock = app.requestSingleInstanceLock();
@@ -35,14 +38,12 @@ if (!gotTheLock) {
 }
 
 function createWindow(): void {
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const zoomLevel = width <= 1388 ? 0.75 : 1.0;
-
   mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
+    minWidth: 1024,
+    minHeight: 768,
     webPreferences: {
-      zoomFactor: zoomLevel,
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
@@ -67,12 +68,6 @@ function createWindow(): void {
         ? mainWindow.webContents.closeDevTools()
         : mainWindow.webContents.openDevTools({ mode: "right" });
     }
-  });
-
-  // force reset zoom
-  mainWindow.webContents.setZoomFactor(zoomLevel);
-  mainWindow.webContents.on("did-finish-load", () => {
-    mainWindow.webContents.setZoomFactor(zoomLevel);
   });
 
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
