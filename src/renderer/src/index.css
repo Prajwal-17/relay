@@ -199,8 +199,8 @@ body {
   zoom: 1;
 }
 
-@media screen and (max-width: 1388px) {
+/* @media screen and (max-width: 1388px) {
   body {
     zoom: 0.75;
   }
-}
+} */
