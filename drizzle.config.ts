@@ -6,9 +6,9 @@ const homedir = os.homedir();
 let dbUrl: string;
 
 if (process.platform === "linux") {
-  dbUrl = path.join(homedir, ".config", "pos", "pos.db");
+  dbUrl = path.join(homedir, ".config", "QuickCart", "pos.db");
 } else if (process.platform === "win32") {
-  dbUrl = path.join(homedir, "AppData", "Roaming", "pos", "pos.db");
+  dbUrl = path.join(homedir, "AppData", "Roaming", "QuickCart", "pos.db");
 } else {
   throw new Error("Unsupported platform");
 }
