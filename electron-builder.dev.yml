@@ -1,5 +1,5 @@
-appId: com.quickcart.app
-productName: QuickCart
+appId: com.quickcart-dev.app
+productName: QuickCart-Dev
 directories:
   buildResources: build
 files:
@@ -12,24 +12,14 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: QuickCart
+  executableName: QuickCart-Dev
 nsis:
   artifactName: "${productName}-${version}.${ext}"
   shortcutName: "${productName}"
   uninstallDisplayName: "${productName}"
   createDesktopShortcut: always
-# mac:
-#   entitlementsInherit: build/entitlements.mac.plist
-#   extendInfo:
-#     - NSCameraUsageDescription: Application requests access to the device's camera.
-#     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-#     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-#     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-#   notarize: false
-# dmg:
-#   artifactName: "${productName}-${version}.${ext}"
 linux:
-  executableName: quickcart
+  executableName: quickcart-dev
   target:
     - AppImage
     - deb

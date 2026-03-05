@@ -1,12 +1,18 @@
 import { electronApp, is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow } from "electron";
-import { join } from "node:path";
-import { startServer } from "./server";
-import { setupIpcHandlers } from "./setupIpcHandlers";
+import { join, resolve } from "node:path";
 import { setupMenu } from "./setupMenu";
 
 dotenv.config();
+
+if (app.isPackaged && import.meta.env?.VITE_BUILD_MODE === "dev") {
+  const devUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
+  app.setPath("userData", devUserData);
+} else if (!app.isPackaged) {
+  const localUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
+  app.setPath("userData", localUserData);
+}
 
 app.commandLine.appendSwitch("high-dpi-support", "1");
 app.commandLine.appendSwitch("force-device-scale-factor", "1");
@@ -25,8 +31,21 @@ if (!gotTheLock) {
     }
   });
 
-  app.whenReady().then(() => {
-    electronApp.setAppUserModelId("com.quickcart.electron");
+  app.whenReady().then(async () => {
+    electronApp.setAppUserModelId(
+      import.meta.env.VITE_BUILD_MODE === "dev"
+        ? "com.quickcart-dev.electron"
+        : "com.quickcart.electron"
+    );
+    /**
+     * have to load both modules at same time instead of one after other
+     * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
+     * this ensures the db path is valid & in exact location
+     */
+    const [{ startServer }, { setupIpcHandlers }] = await Promise.all([
+      import("./server"),
+      import("./setupIpcHandlers")
+    ]);
     setupIpcHandlers();
     startServer();
     createWindow();

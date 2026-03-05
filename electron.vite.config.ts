@@ -3,8 +3,14 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "electron-vite";
 import path from "path";
 
+// set build mode using cross-env
+const buildMode = process.env.BUILD_MODE ?? "prod";
+
 export default defineConfig({
   main: {
+    define: {
+      "import.meta.env.VITE_BUILD_MODE": JSON.stringify(buildMode)
+    },
     build: {
       externalizeDeps: {
         exclude: ["electron-updater"]

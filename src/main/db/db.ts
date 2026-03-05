@@ -11,10 +11,11 @@ dotenv.config();
 
 function getDbPath() {
   if (process.env.DATABASE_URL) {
-    console.log(process.env.DATABASE_URL);
-    return process.env.DATABASE_URL;
+    return process.env.DATABASE_URL; // using env var(:memory) to run tests
   }
 
+  // linux - /home/<user>/.config/<appName>/pos.db
+  // win - C:\Users\<user>\AppData\Roaming\<appName>\pos.db
   return path.join(app.getPath("userData"), "pos.db");
 }
 
