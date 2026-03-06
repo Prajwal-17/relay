@@ -1,4 +1,4 @@
-import { electronApp, is } from "@electron-toolkit/utils";
+import { is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
@@ -6,12 +6,20 @@ import { setupMenu } from "./setupMenu";
 
 dotenv.config();
 
-if (app.isPackaged && import.meta.env?.VITE_BUILD_MODE === "dev") {
+const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
+
+if (app.isPackaged && isDevBuild) {
   const devUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
   app.setPath("userData", devUserData);
 } else if (!app.isPackaged) {
   const localUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
   app.setPath("userData", localUserData);
+}
+
+if (isDevBuild) {
+  app.setName("QuickCart-Dev");
+} else {
+  app.setName("QuickCart");
 }
 
 app.commandLine.appendSwitch("high-dpi-support", "1");
@@ -32,11 +40,12 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(async () => {
-    electronApp.setAppUserModelId(
-      import.meta.env.VITE_BUILD_MODE === "dev"
-        ? "com.quickcart-dev.electron"
-        : "com.quickcart.electron"
-    );
+    if (process.platform === "win32") {
+      app.setAppUserModelId(
+        import.meta.env.VITE_BUILD_MODE === "dev" ? "com.quickcart-dev.app" : "com.quickcart.app"
+      );
+    }
+
     /**
      * have to load both modules at same time instead of one after other
      * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
