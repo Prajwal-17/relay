@@ -1,4 +1,5 @@
-import { Menu } from "electron";
+import { BrowserWindow, Menu } from "electron";
+import { store } from "./electronStore";
 import { checkForUpdates } from "./updater";
 
 // Menu setup examples
@@ -9,7 +10,46 @@ export function setupMenu() {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: "View",
-      submenu: [{ role: "reload" }, { role: "forceReload" }, { role: "toggleDevTools" }]
+      submenu: [
+        { role: "reload" },
+        { role: "forceReload" },
+        { role: "toggleDevTools" },
+        {
+          label: "Zoom In",
+          accelerator: "CmdorCtrl+=",
+          click: () => {
+            const win = BrowserWindow.getFocusedWindow();
+            if (!win) return;
+            const web = win.webContents;
+            const zoom = web.getZoomFactor();
+            store.set("zoomFactor", zoom + 0.1);
+            web.setZoomFactor(zoom + 0.1);
+          }
+        },
+        {
+          label: "Zoom Out",
+          accelerator: "CmdorCtrl+-",
+          click: () => {
+            const win = BrowserWindow.getFocusedWindow();
+            if (!win) return;
+            const web = win.webContents;
+            const zoom = web.getZoomFactor();
+            store.set("zoomFactor", zoom - 0.1);
+            web.setZoomFactor(zoom - 0.1);
+          }
+        },
+        {
+          label: "Reset",
+          accelerator: "CmdorCtrl+0",
+          click: () => {
+            const win = BrowserWindow.getFocusedWindow();
+            if (!win) return;
+            const web = win.webContents;
+            store.set("zoomFactor", 1);
+            web.setZoomFactor(1);
+          }
+        }
+      ]
     },
     { role: "window", submenu: [{ role: "minimize" }, { role: "close" }] },
     {

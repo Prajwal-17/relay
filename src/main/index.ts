@@ -2,6 +2,7 @@ import { is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
+import { store } from "./electronStore";
 import { setupMenu } from "./setupMenu";
 
 dotenv.config();
@@ -69,8 +70,6 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
-    minWidth: 1024,
-    minHeight: 768,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
@@ -79,11 +78,11 @@ function createWindow(): void {
     }
   });
 
-  mainWindow.on("ready-to-show", () => {
-    setTimeout(() => {
-      mainWindow.maximize();
-    }, 25);
+  mainWindow.once("ready-to-show", () => {
+    const zoomFactor = store.get("zoomFactor") as number;
+    mainWindow.webContents.setZoomFactor(zoomFactor);
     mainWindow.show();
+    mainWindow.maximize();
   });
 
   setupMenu();
