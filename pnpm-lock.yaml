@@ -59,21 +59,12 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@tailwindcss/vite':
-        specifier: ^4.1.11
-        version: 4.2.1(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0))
       '@tanstack/react-query':
         specifier: ^5.90.2
         version: 5.90.21(react@19.2.4)
-      '@tanstack/react-query-devtools':
-        specifier: ^5.90.2
-        version: 5.91.3(@tanstack/react-query@5.90.21(react@19.2.4))(react@19.2.4)
       '@tanstack/react-virtual':
         specifier: ^3.13.12
         version: 3.13.19(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@types/dotenv':
-        specifier: ^8.2.3
-        version: 8.2.3
       better-sqlite3:
         specifier: ^12.2.0
         version: 12.6.2
@@ -95,9 +86,6 @@ importers:
       drizzle-orm:
         specifier: ^0.44.3
         version: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2)
-      drizzle-seed:
-        specifier: ^0.3.1
-        version: 0.3.1(drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2))
       electron-store:
         specifier: ^8.2.0
         version: 8.2.0
@@ -164,9 +152,6 @@ importers:
       uuid:
         specifier: ^11.1.0
         version: 11.1.0
-      vite:
-        specifier: ^7.3.1
-        version: 7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)
       zod:
         specifier: ^4.1.8
         version: 4.3.6
@@ -189,12 +174,21 @@ importers:
       '@faker-js/faker':
         specifier: ^9.9.0
         version: 9.9.0
+      '@tailwindcss/vite':
+        specifier: ^4.1.11
+        version: 4.2.1(vite@7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0))
       '@tanstack/eslint-plugin-query':
         specifier: ^5.91.0
         version: 5.91.4(eslint@9.39.3(jiti@2.6.1))(typescript@5.9.3)
+      '@tanstack/react-query-devtools':
+        specifier: ^5.90.2
+        version: 5.91.3(@tanstack/react-query@5.90.21(react@19.2.4))(react@19.2.4)
       '@types/better-sqlite3':
         specifier: ^7.6.13
         version: 7.6.13
+      '@types/dotenv':
+        specifier: ^8.2.3
+        version: 8.2.3
       '@types/node':
         specifier: ^22.16.5
         version: 22.19.13
@@ -219,6 +213,9 @@ importers:
       drizzle-kit:
         specifier: ^0.31.4
         version: 0.31.9
+      drizzle-seed:
+        specifier: ^0.3.1
+        version: 0.3.1(drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2))
       electron:
         specifier: ^39.2.6
         version: 39.7.0
@@ -261,6 +258,9 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.9.3
+      vite:
+        specifier: ^7.3.1
+        version: 7.3.1(@types/node@22.19.13)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)
       vitest:
         specifier: ^4.0.16
         version: 4.0.18(@types/node@22.19.13)(@vitest/ui@4.0.18)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)
