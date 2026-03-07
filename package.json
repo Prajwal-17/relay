@@ -17,7 +17,7 @@
     "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
     "start": "electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
-    "dev": "pnpm run rebuild:electron && cross-env ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
+    "dev": "pnpm run rebuild:electron && cross-env BUILD_MODE=dev ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
     "dev:hono": "pnpm run rebuild:node && tsx src/main/standalone.ts",
     "dev:web": "vite serve -c vite.config.web.ts",
     "test": "pnpm run rebuild:node && vitest",

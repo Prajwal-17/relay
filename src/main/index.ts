@@ -2,20 +2,10 @@ import { is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
-import { store } from "./electronStore";
-import { setupMenu } from "./setupMenu";
 
 dotenv.config();
 
 const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
-
-if (app.isPackaged && isDevBuild) {
-  const devUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
-  app.setPath("userData", devUserData);
-} else if (!app.isPackaged) {
-  const localUserData = resolve(app.getPath("appData"), "QuickCart-Dev");
-  app.setPath("userData", localUserData);
-}
 
 if (isDevBuild) {
   app.setName("QuickCart-Dev");
@@ -23,13 +13,14 @@ if (isDevBuild) {
   app.setName("QuickCart");
 }
 
-app.commandLine.appendSwitch("high-dpi-support", "1");
-app.commandLine.appendSwitch("force-device-scale-factor", "1");
+if (!app.isPackaged || isDevBuild) {
+  app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
+}
 
 let mainWindow: BrowserWindow;
 const gotTheLock = app.requestSingleInstanceLock();
 
-// prevent creating multiple instance
+// prevent creating multiple instances
 if (!gotTheLock) {
   app.quit();
 } else {
@@ -48,6 +39,7 @@ if (!gotTheLock) {
     }
 
     /**
+     * All main-process modules that touch app.getPath() are lazy-imported here,
      * have to load both modules at same time instead of one after other
      * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
      * this ensures the db path is valid & in exact location
@@ -78,14 +70,16 @@ function createWindow(): void {
     }
   });
 
-  mainWindow.once("ready-to-show", () => {
+  mainWindow.once("ready-to-show", async () => {
+    // lazy import - electronStore must only load after app.setPath() has run
+    const { store } = await import("./electronStore");
     const zoomFactor = store.get("zoomFactor") as number;
     mainWindow.webContents.setZoomFactor(zoomFactor);
     mainWindow.show();
     mainWindow.maximize();
   });
 
-  setupMenu();
+  import("./setupMenu").then(({ setupMenu }) => setupMenu());
 
   // catch keyboard events
   // https://stackoverflow.com/a/75716165/25649886

@@ -33,6 +33,7 @@ const dbPath = getDbPath();
 fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
 const sqlite = new Database(dbPath);
+sqlite.pragma("journal_mode = WAL");
 
 // sqlite.pragma("foreign_keys = OFF");
 export const db = drizzle(sqlite, { schema, logger: false });
