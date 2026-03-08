@@ -74,20 +74,12 @@ export const useInfiniteScroll = (type: string) => {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage, transactionData.length, virtualItems]);
 
-  const totalRevenue = useMemo(() => {
-    return (
-      data?.pages.reduce((_sum, page) => {
-        return page.totalRevenue;
-      }, 0) ?? 0
-    );
-  }, [data]);
-
-  const totalTransactions = useMemo(() => {
-    return (
-      data?.pages.reduce((_sum, page) => {
-        return page.totalTransactions;
-      }, 0) ?? 0
-    );
+  const { totalRevenue, totalTransactions } = useMemo(() => {
+    const lastPage = data?.pages.at(-1);
+    return {
+      totalRevenue: lastPage?.totalRevenue,
+      totalTransactions: lastPage?.totalTransactions
+    };
   }, [data]);
 
   return {

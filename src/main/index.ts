@@ -1,17 +1,26 @@
-import { electronApp, is } from "@electron-toolkit/utils";
+import { is } from "@electron-toolkit/utils";
 import dotenv from "dotenv";
-import { app, BrowserWindow, screen } from "electron";
-import { join } from "node:path";
-import { startServer } from "./server";
-import { setupIpcHandlers } from "./setupIpcHandlers";
-import { setupMenu } from "./setupMenu";
+import { app, BrowserWindow } from "electron";
+import { join, resolve } from "node:path";
 
 dotenv.config();
+
+const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
+
+if (isDevBuild) {
+  app.setName("QuickCart-Dev");
+} else {
+  app.setName("QuickCart");
+}
+
+if (!app.isPackaged || isDevBuild) {
+  app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
+}
 
 let mainWindow: BrowserWindow;
 const gotTheLock = app.requestSingleInstanceLock();
 
-// prevent creating multiple instance
+// prevent creating multiple instances
 if (!gotTheLock) {
   app.quit();
 } else {
@@ -22,8 +31,23 @@ if (!gotTheLock) {
     }
   });
 
-  app.whenReady().then(() => {
-    electronApp.setAppUserModelId("com.quickcart.electron");
+  app.whenReady().then(async () => {
+    if (process.platform === "win32") {
+      app.setAppUserModelId(
+        import.meta.env.VITE_BUILD_MODE === "dev" ? "com.quickcart-dev.app" : "com.quickcart.app"
+      );
+    }
+
+    /**
+     * All main-process modules that touch app.getPath() are lazy-imported here,
+     * have to load both modules at same time instead of one after other
+     * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
+     * this ensures the db path is valid & in exact location
+     */
+    const [{ startServer }, { setupIpcHandlers }] = await Promise.all([
+      import("./server"),
+      import("./setupIpcHandlers")
+    ]);
     setupIpcHandlers();
     startServer();
     createWindow();
@@ -35,14 +59,10 @@ if (!gotTheLock) {
 }
 
 function createWindow(): void {
-  const { width } = screen.getPrimaryDisplay().workAreaSize;
-  const zoomLevel = width <= 1388 ? 0.75 : 1.0;
-
   mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
     webPreferences: {
-      zoomFactor: zoomLevel,
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
@@ -50,14 +70,16 @@ function createWindow(): void {
     }
   });
 
-  mainWindow.on("ready-to-show", () => {
-    setTimeout(() => {
-      mainWindow.maximize();
-    }, 25);
+  mainWindow.once("ready-to-show", async () => {
+    // lazy import - electronStore must only load after app.setPath() has run
+    const { store } = await import("./electronStore");
+    const zoomFactor = store.get("zoomFactor") as number;
+    mainWindow.webContents.setZoomFactor(zoomFactor);
     mainWindow.show();
+    mainWindow.maximize();
   });
 
-  setupMenu();
+  import("./setupMenu").then(({ setupMenu }) => setupMenu());
 
   // catch keyboard events
   // https://stackoverflow.com/a/75716165/25649886
@@ -67,12 +89,6 @@ function createWindow(): void {
         ? mainWindow.webContents.closeDevTools()
         : mainWindow.webContents.openDevTools({ mode: "right" });
     }
-  });
-
-  // force reset zoom
-  mainWindow.webContents.setZoomFactor(zoomLevel);
-  mainWindow.webContents.on("did-finish-load", () => {
-    mainWindow.webContents.setZoomFactor(zoomLevel);
   });
 
   if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {

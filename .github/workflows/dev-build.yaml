@@ -3,7 +3,7 @@ name: Development Build
 on:
   push:
     branches:
-      - fix/build
+      - dev
 
 jobs:
   build:
@@ -35,9 +35,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            pnpm run build:win
+            pnpm run build:win:dev
           else
-            pnpm run build:linux
+            pnpm run build:linux:dev
           fi
 
       - name: Get package version
