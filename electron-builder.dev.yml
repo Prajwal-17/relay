@@ -1,5 +1,7 @@
 appId: com.quickcart-dev.app
 productName: QuickCart-Dev
+extraMetadata:
+  name: quickcart-dev
 directories:
   buildResources: build
 files:

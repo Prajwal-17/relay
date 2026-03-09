@@ -13,6 +13,10 @@ if (isDevBuild) {
   app.setName("QuickCart");
 }
 
+if (process.platform === "win32") {
+  app.setAppUserModelId(isDevBuild ? "com.quickcart-dev.app" : "com.quickcart.app");
+}
+
 if (!app.isPackaged || isDevBuild) {
   app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
 }
@@ -32,12 +36,6 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(async () => {
-    if (process.platform === "win32") {
-      app.setAppUserModelId(
-        import.meta.env.VITE_BUILD_MODE === "dev" ? "com.quickcart-dev.app" : "com.quickcart.app"
-      );
-    }
-
     /**
      * All main-process modules that touch app.getPath() are lazy-imported here,
      * have to load both modules at same time instead of one after other
