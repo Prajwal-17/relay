@@ -4,7 +4,7 @@ import { defineConfig } from "electron-vite";
 import path from "path";
 
 // set build mode using cross-env
-const buildMode = process.env.BUILD_MODE ?? "prod";
+const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
 
 export default defineConfig({
   main: {
