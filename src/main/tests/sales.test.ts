@@ -1,5 +1,4 @@
 import Database from "better-sqlite3";
-import dotenv from "dotenv";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
@@ -11,8 +10,6 @@ import { customers, products, saleItems, sales } from "../db/schema";
 import { productRepository } from "../modules/products/products.repository";
 import { salesService } from "../modules/sales/sales.service";
 import { rowId1, rowId2, rowId3, seedInitialData, type DB } from "./helpers";
-
-dotenv.config();
 
 const mocks = vi.hoisted(() => {
   return {
@@ -34,7 +31,7 @@ describe("Update Sale Feat - AutoSave + Manual", () => {
   beforeEach(() => {
     sqlite = new Database(":memory:");
     const testDb = drizzle(sqlite, { schema });
-    const migrationsFolder = path.join(process.cwd(), process.env.MIGRATION_FOLDER!);
+    const migrationsFolder = path.join(process.cwd(), process.env.M_VITE_MIGRATION_FOLDER!);
     migrate(testDb, { migrationsFolder });
     mocks.db.instance = testDb;
     db = mocks.db.instance;

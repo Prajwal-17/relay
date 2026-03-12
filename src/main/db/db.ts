@@ -1,5 +1,4 @@
 import Database from "better-sqlite3";
-import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { app } from "electron";
@@ -7,11 +6,9 @@ import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
 
-dotenv.config();
-
 function getDbPath() {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL; // using env var(:memory) to run tests
+  if (process.env.M_VITE_DATABASE_URL) {
+    return process.env.M_VITE_DATABASE_URL; // using env var(:memory) to run tests
   }
 
   // linux - /home/<user>/.config/<appName>/pos.db
@@ -20,8 +17,8 @@ function getDbPath() {
 }
 
 function getMigrationsFolder() {
-  if (process.env.MIGRATION_FOLDER) {
-    return path.join(process.cwd(), process.env.MIGRATION_FOLDER);
+  if (process.env.M_VITE_MIGRATION_FOLDER) {
+    return path.join(process.cwd(), process.env.M_VITE_MIGRATION_FOLDER);
   }
 
   return app.isPackaged

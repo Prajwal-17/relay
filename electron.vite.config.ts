@@ -8,6 +8,7 @@ const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
 
 export default defineConfig({
   main: {
+    envPrefix: "M_VITE_",
     define: {
       "import.meta.env.VITE_BUILD_MODE": JSON.stringify(buildMode)
     },

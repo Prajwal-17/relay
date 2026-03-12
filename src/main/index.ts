@@ -1,9 +1,6 @@
 import { is } from "@electron-toolkit/utils";
-import dotenv from "dotenv";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
-
-dotenv.config();
 
 const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
 

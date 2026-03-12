@@ -67,7 +67,8 @@ app.route("/api/customers", customersController);
 app.route("/api/sales", salesController);
 app.route("/api/estimates", estimatesController);
 export function startServer() {
-  const port = 4722;
+  const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
+  const port = buildMode === "prod" ? 4722 : 4723;
   console.log("Starting Hono server");
 
   const server = serve({
