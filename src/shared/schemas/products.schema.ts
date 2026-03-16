@@ -1,7 +1,7 @@
 import z from "zod";
 import { ProductSchema } from "./base.schema";
 
-export const createProductSchema = ProductSchema.omit({
+export const productCoreSchema = ProductSchema.omit({
   id: true,
   totalQuantitySold: true,
   disabledAt: true,
@@ -10,8 +10,14 @@ export const createProductSchema = ProductSchema.omit({
   createdAt: true,
   updatedAt: true
 }).extend({
-  weight: z.union([z.string(), z.null()]).optional(),
-  unit: z.string().nullable().optional(),
+  weight: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() === "" ? null : val),
+    z.union([z.string(), z.null()]).optional()
+  ),
+  unit: z.preprocess(
+    (val) => (typeof val === "string" && (val.trim() === "" || val === "none") ? null : val),
+    z.string().nullable().optional()
+  ),
   mrp: z.preprocess(
     (val) => (val === "" ? null : val),
     z.coerce
@@ -37,6 +43,31 @@ export const createProductSchema = ProductSchema.omit({
   isDisabled: z.boolean().optional().default(false)
 });
 
+export const createProductSchema = productCoreSchema.superRefine((data, ctx) => {
+  const hasWeight = data.weight !== undefined && data.weight !== null && data.weight.trim() !== "";
+  const hasUnit =
+    data.unit !== undefined &&
+    data.unit !== null &&
+    data.unit.trim() !== "" &&
+    data.unit !== "none";
+
+  if (hasWeight && !hasUnit) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Unit is required when weight is provided",
+      path: ["unit"]
+    });
+  }
+
+  if (hasUnit && !hasWeight) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Weight is required when unit is selected",
+      path: ["weight"]
+    });
+  }
+});
+
 export const updateProductSchema = createProductSchema;
 
-export const dirtyFieldsProductSchema = updateProductSchema.partial();
+export const dirtyFieldsProductSchema = productCoreSchema.partial();

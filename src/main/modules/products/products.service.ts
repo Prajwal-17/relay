@@ -71,9 +71,12 @@ const updateProduct = async (
   const updatedFields = {};
 
   for (const field in payload) {
-    const value = payload[field];
+    let value = payload[field as keyof Partial<UpdateProductPayload>];
     if (value === undefined) {
       continue;
+    }
+    if (field === "unit" && value === "none") {
+      value = null;
     }
 
     updatedFields[field] = value;

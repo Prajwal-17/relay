@@ -1,10 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
-import {
-  createProductSchema,
-  dirtyFieldsProductSchema,
-  updateProductSchema
-} from "@shared/schemas/products.schema";
+import { dirtyFieldsProductSchema, updateProductSchema } from "@shared/schemas/products.schema";
 import type { CreateProductPayload, UpdateProductPayload } from "@shared/types";
 import { convertToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -50,29 +46,51 @@ export const useProductDialog = () => {
   }, [actionType, setProductId, setFormDataState, setDirtyFields, setErrors]);
 
   const handleInputChange = (field: string, value: any) => {
-    setFormDataState({
-      [field]: value
-    });
+    const updates: Record<string, any> = { [field]: value };
+
+    if (field === "unit" && (value === "none" || value === "")) {
+      updates.weight = "";
+    } else if (field === "weight" && (value === "" || value === null)) {
+      updates.unit = "none";
+    }
+
+    setFormDataState(updates);
 
     if (actionType === "billing-page-edit" || actionType === "edit") {
-      setDirtyFields({
-        [field]: value
-      });
+      setDirtyFields(updates);
     }
 
     const result = updateProductSchema.safeParse({
       ...formDataState,
-      [field]: value
+      ...updates
     });
 
     const errorRecord = { ...errors };
 
     if (!result.success) {
       const formatted = z.flattenError(result.error);
-      errorRecord[field] = formatted.fieldErrors[field]?.[0];
+
+      if (formatted.fieldErrors[field]) {
+        errorRecord[field] = formatted.fieldErrors[field]?.[0];
+      } else {
+        delete errorRecord[field];
+      }
+
+      if (field === "weight" || field === "unit") {
+        if (formatted.fieldErrors.unit) errorRecord.unit = formatted.fieldErrors.unit[0];
+        else delete errorRecord.unit;
+
+        if (formatted.fieldErrors.weight) errorRecord.weight = formatted.fieldErrors.weight[0];
+        else delete errorRecord.weight;
+      }
+
       setErrors(errorRecord);
     } else {
       delete errorRecord[field];
+      if (field === "weight" || field === "unit") {
+        delete errorRecord.unit;
+        delete errorRecord.weight;
+      }
       setErrors(errorRecord);
     }
   };
@@ -128,23 +146,35 @@ export const useProductDialog = () => {
   });
 
   const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
-    let parseResult;
+    const fullFormValidation = updateProductSchema.safeParse(formDataState);
 
-    if (action === "add") {
-      parseResult = createProductSchema.safeParse(formDataState);
-    } else {
-      parseResult = dirtyFieldsProductSchema.safeParse(dirtyFields);
-    }
-
-    if (!parseResult.success) {
-      const formatted = z.flattenError(parseResult.error);
-      const errorRecord = { ...errors };
+    if (!fullFormValidation.success) {
+      const formatted = z.flattenError(fullFormValidation.error);
+      const errorRecord: Record<string, any> = {};
 
       for (const field in formatted.fieldErrors) {
         errorRecord[field] = formatted.fieldErrors[field]?.[0];
       }
       setErrors(errorRecord);
       return;
+    }
+
+    let parseResult;
+
+    if (action === "add") {
+      parseResult = fullFormValidation;
+    } else {
+      parseResult = dirtyFieldsProductSchema.safeParse(dirtyFields);
+      if (!parseResult.success) {
+        const formatted = z.flattenError(parseResult.error);
+        const errorRecord: Record<string, any> = {};
+
+        for (const field in formatted.fieldErrors) {
+          errorRecord[field] = formatted.fieldErrors[field]?.[0];
+        }
+        setErrors(errorRecord);
+        return;
+      }
     }
 
     const payloadInPaisa = convertCurrencyFieldsToPaisa(parseResult.data);

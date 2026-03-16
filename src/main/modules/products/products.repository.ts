@@ -73,6 +73,8 @@ const searchProducts = async (params: ProductSearchQuery) => {
 };
 
 const createProduct = async (payload: CreateProductPayload) => {
+  const normalizedUnit = payload.unit === "none" ? null : payload.unit;
+
   return db.transaction((tx) => {
     const product = tx
       .insert(products)
@@ -81,11 +83,11 @@ const createProduct = async (payload: CreateProductPayload) => {
         productSnapshot: generateProductSnapshot({
           name: payload.name,
           weight: payload.weight ?? null,
-          unit: payload.unit ?? null,
+          unit: normalizedUnit ?? null,
           mrp: payload.mrp ? convertToRupees(payload.mrp) : null
         }),
         weight: payload.weight ?? null,
-        unit: payload.unit ?? null,
+        unit: normalizedUnit ?? null,
         mrp: payload.mrp ?? null,
         price: payload.price,
         purchasePrice: payload.purchasePrice ?? null
