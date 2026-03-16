@@ -25,8 +25,8 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
 
   return (
     <>
-      <Card className="flex h-full w-full flex-col gap-2 px-0 py-3">
-        <div className="px-4 pb-2">
+      <Card className="flex h-full w-full flex-col gap-2 px-0 py-2">
+        <div className="shrink-0 px-4 pb-1">
           <Tabs
             value={filterType}
             onValueChange={(value) => setFilterType(value as TransactionType)}
@@ -47,14 +47,14 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
             </TabsList>
           </Tabs>
         </div>
-        <CardContent className="flex h-full flex-col">
+        <CardContent className="flex min-h-0 flex-1 flex-col px-4">
           {status === "pending" ? (
             <div className="my-8 flex flex-1 items-center justify-center gap-3">
               <span className="text-muted-foreground text-lg font-semibold">Loading</span>
               <LoaderCircle className="text-primary animate-spin" size={24} />
             </div>
           ) : (
-            <div className="border-border/60 flex h-full flex-col rounded-lg border shadow-md">
+            <div className="border-border/60 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-md">
               <div className="bg-muted text-muted-foreground grid grid-cols-9 gap-2 px-4 py-2 text-base font-semibold">
                 <div className="col-span-2 flex items-center">Date</div>
                 <div className="col-span-2 flex items-center">Transaction No</div>
@@ -72,7 +72,8 @@ export const CustomerTable = ({ customerId }: { customerId: string }) => {
                     style={{
                       height: `${rowVirtualizer.getTotalSize()}px`,
                       width: "100%",
-                      position: "relative"
+                      position: "relative",
+                      marginBottom: "16px"
                     }}
                   >
                     <div

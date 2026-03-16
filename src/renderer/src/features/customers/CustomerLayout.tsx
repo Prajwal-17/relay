@@ -11,7 +11,7 @@ export const CustomerLayout = () => {
     <>
       <div className="bg-background flex flex-1">
         <CustomerSidebar />
-        <div className="bg-background flex flex-1 flex-col overflow-hidden p-4">
+        <div className="bg-background flex flex-1 flex-col overflow-hidden px-4 py-2">
           {selectedCustomer ? (
             <div className="flex h-full flex-col overflow-hidden">
               <CustomerDetails />
