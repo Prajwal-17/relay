@@ -19,6 +19,8 @@ const BillingHeader = () => {
   const setBillingDate = useBillingStore((state) => state.setBillingDate);
 
   const [open, setOpen] = useState(false);
+  const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
+  const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
 
@@ -73,8 +75,9 @@ const BillingHeader = () => {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => {
-                  setIsSidebarOpen(true);
-                  setIsSidebarPinned(true);
+                  const nextPinnedState = !(isSidebarOpen && isSidebarPinned);
+                  setIsSidebarPinned(nextPinnedState);
+                  setIsSidebarOpen(nextPinnedState);
                 }}
                 className="border-border text-foreground hover:bg-accent cursor-pointer rounded-lg border px-2 py-2 shadow-lg"
               >

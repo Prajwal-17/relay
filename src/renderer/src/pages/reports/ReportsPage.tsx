@@ -1,10 +1,8 @@
 const ReportsPage = () => {
   return (
-    <>
-      <div className="flex min-h-screen items-center justify-center text-3xl font-bold">
-        Reports Page
-      </div>
-    </>
+    <div className="bg-background flex h-full min-h-full items-center justify-center px-6 py-6 text-3xl font-bold">
+      Reports Page
+    </div>
   );
 };
 

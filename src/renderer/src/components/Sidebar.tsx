@@ -1,14 +1,23 @@
 import { navLinks } from "@/constants/Navlinks";
+import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebarStore";
-import { Building2, FileText, ShoppingCart, X } from "lucide-react";
+import { Building2, FileText, ShoppingCart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button } from "./ui/button";
 
-export const Sidebar = () => {
-  const location = useLocation();
-  const pathname = location.pathname;
+const MIN_SIDEBAR_WIDTH = 220;
+const MAX_SIDEBAR_WIDTH = 400;
+const DEFAULT_SIDEBAR_WIDTH = 288;
+const SIDEBAR_WIDTH_STORAGE_KEY = "quickcart-sidebar-width";
+
+type SidebarProps = {
+  variant?: "docked" | "overlay";
+};
+
+export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
+  const { pathname } = useLocation();
   const { id } = useParams();
   const billingPages = [
     "/billing/sales/create",
@@ -17,22 +26,63 @@ export const Sidebar = () => {
     `/billing/estimates/${id}/edit`
   ];
   const isBillingPage = billingPages.includes(pathname);
-  const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const isOverlay = variant === "overlay";
+  const sidebarRef = useRef<HTMLElement | null>(null);
+  const isDraggingRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
+  const sidebarWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
+  const animationFrameRef = useRef<number | null>(null);
+  const suppressHoverOpenUntilRef = useRef(0);
+
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    if (typeof window === "undefined") {
+      return DEFAULT_SIDEBAR_WIDTH;
+    }
+
+    const storedWidth = window.localStorage.getItem(SIDEBAR_WIDTH_STORAGE_KEY);
+    const parsedWidth = storedWidth ? Number(storedWidth) : NaN;
+
+    if (Number.isFinite(parsedWidth)) {
+      return Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, parsedWidth));
+    }
+
+    return DEFAULT_SIDEBAR_WIDTH;
+  });
 
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
-  const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
+  const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
 
-  useEffect(() => {
-    if (isBillingPage) {
-      setIsSidebarOpen(false);
-    } else {
-      setIsSidebarOpen(true);
+  const applySidebarWidth = (width: number) => {
+    if (!sidebarRef.current) {
+      return;
     }
-  }, [isBillingPage, setIsSidebarOpen]);
+
+    sidebarRef.current.style.width = `${width}px`;
+    sidebarRef.current.style.minWidth = `${width}px`;
+    sidebarRef.current.style.maxWidth = `${width}px`;
+    sidebarRef.current.style.flexBasis = `${width}px`;
+  };
 
   useEffect(() => {
+    sidebarWidthRef.current = sidebarWidth;
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    applySidebarWidth(sidebarWidth);
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
+  }, [sidebarWidth]);
+
+  useEffect(() => {
+    if (!isBillingPage || !isOverlay) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
       if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
         setIsSidebarOpen(false);
@@ -40,116 +90,248 @@ export const Sidebar = () => {
       }
     };
 
-    if (isSidebarOpen && isBillingPage) {
+    if (isSidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
+
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen, isSidebarPinned, setIsSidebarOpen, setIsSidebarPinned, isBillingPage]);
+  }, [isBillingPage, isOverlay, isSidebarOpen, setIsSidebarOpen, setIsSidebarPinned]);
 
-  const handleMouseLeave = () => {
-    if (!isSidebarPinned && isBillingPage) {
-      setIsSidebarOpen(false);
-    }
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!isDraggingRef.current) {
+        return;
+      }
+
+      const nextWidth = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(
+          MIN_SIDEBAR_WIDTH,
+          dragStartWidthRef.current + event.clientX - dragStartXRef.current
+        )
+      );
+
+      sidebarWidthRef.current = nextWidth;
+
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
+      animationFrameRef.current = requestAnimationFrame(() => {
+        applySidebarWidth(nextWidth);
+      });
+    };
+
+    const handleMouseUp = () => {
+      if (!isDraggingRef.current) {
+        return;
+      }
+
+      isDraggingRef.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      setSidebarWidth(sidebarWidthRef.current);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, []);
+
+  const handleResizeStart = (event: ReactMouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    isDraggingRef.current = true;
+    dragStartXRef.current = event.clientX;
+    dragStartWidthRef.current = sidebarWidthRef.current;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
   };
 
-  return (
-    <>
-      {isBillingPage && (
-        <div
-          className="fixed top-0 left-0 z-30 h-full w-4"
-          onMouseEnter={() => setIsSidebarOpen(true)}
-        />
-      )}
+  const handleBillingShortcutClick = () => {
+    if (!isOverlay) {
+      return;
+    }
 
-      <AnimatePresence mode="wait">
-        {isSidebarOpen && (
+    suppressHoverOpenUntilRef.current = Date.now() + 350;
+    setIsSidebarPinned(false);
+    setIsSidebarOpen(false);
+  };
+
+  const handleBillingSidebarMouseLeave = () => {
+    if (!isOverlay || isSidebarPinned || isDraggingRef.current) {
+      return;
+    }
+
+    setIsSidebarOpen(false);
+  };
+
+  const shell = (
+    <aside
+      ref={sidebarRef}
+      onMouseLeave={handleBillingSidebarMouseLeave}
+      className={cn(
+        "bg-sidebar text-sidebar-foreground relative h-full shrink-0 overflow-hidden border-r border-r-black/8",
+        isOverlay ? "shadow-2xl" : ""
+      )}
+      style={{
+        width: sidebarWidth,
+        minWidth: sidebarWidth,
+        maxWidth: sidebarWidth,
+        flexBasis: sidebarWidth
+      }}
+    >
+      <div className="flex h-full flex-col">
+        <div className="flex h-[73px] items-center border-b px-4">
           <motion.div
-            initial={{ x: -250, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -250, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            ref={sidebarRef}
-            onMouseLeave={handleMouseLeave}
-            className={`bg-sidebar text-sidebar-foreground w-full max-w-xs px-4 py-4 ${isBillingPage ? "border-r-border fixed top-2 left-0 z-50 h-[calc(100vh-1rem)] rounded-r-xl border shadow-xl" : "relative h-full"}`}
+            initial={false}
+            whileHover={{ y: -1 }}
+            transition={{ duration: 0.16, ease: "easeInOut" }}
+            className="flex items-center gap-3"
           >
-            <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between">
-                <div className="flex w-full items-center justify-start gap-3">
-                  <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
-                    <Building2 className="text-sidebar-foreground h-7 w-7" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="font-sans text-2xl font-extrabold">SuperBill</span>
-                  </div>
-                </div>
-                {isBillingPage && (
-                  <button
-                    onClick={() => {
-                      setIsSidebarOpen(false);
-                      setIsSidebarPinned(false);
-                    }}
-                    className="hover:bg-secondary text-primary-foreground cursor-pointer rounded-lg p-2"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
-              </div>
-              <div className="mt-6 flex w-full flex-col gap-3">
-                <Link to="/billing/sales/create" className="w-full">
-                  <Button
-                    variant="default"
-                    size="lg"
-                    className="group bg-primary border-border text-primary-foreground hover:bg-primary/80 w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
-                  >
-                    <ShoppingCart className="size-5 transition-transform duration-300 group-hover:rotate-12" />
-                    <span>New Sale</span>
-                  </Button>
-                </Link>
-                <Link to="/billing/estimates/create" className="w-full">
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="group border-border hover:bg-accent hover:text-accent-foreground w-full cursor-pointer py-5 text-lg font-semibold shadow-sm transition-all hover:shadow-md"
-                  >
-                    <FileText className="size-5 transition-transform duration-300 group-hover:-rotate-12" />
-                    <span>New Estimate</span>
-                  </Button>
-                </Link>
-              </div>
-              <div className="mt-8 w-full flex-1 space-y-2">
-                {navLinks.map((item, idx) => {
-                  const isActive = location.pathname === item.href;
-                  return (
-                    <Link
-                      key={idx}
-                      to={item.href}
-                      className={`${isActive ? "bg-secondary font-semibold" : ""} hover:bg-secondary text-sidebar-foreground flex w-full items-center gap-3 rounded-lg px-3.5 py-1.5 transition-all`}
-                    >
-                      {item.icon}
-                      <span className="text-xl">{item.title}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-              <div className="border-border flex w-full items-center gap-3 rounded-lg border p-3">
-                <div className="bg-success/20 flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
-                  <span className="text-success text-sm font-semibold">MS</span>
-                </div>
-                <div className="flex min-w-0 flex-col">
-                  <span className="text-sidebar-foreground truncate text-sm font-semibold">
-                    Sri Manjunatheshwara Stores
-                  </span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    kumarkrwelcome@gmail.com
-                  </span>
-                </div>
-              </div>
+            <div className="bg-primary/15 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
+              <Building2 className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <span className="block truncate text-xl font-semibold">QuickCart</span>
+              <span className="text-muted-foreground block truncate text-sm">POS Workspace</span>
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+        </div>
+
+        <div className="flex flex-1 flex-col px-4 py-5 pb-24">
+          <div className="flex flex-col gap-3">
+            <Link
+              to="/billing/sales/create"
+              className="block w-full"
+              onClick={handleBillingShortcutClick}
+            >
+              <Button
+                variant="default"
+                size="lg"
+                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all hover:shadow-md"
+              >
+                <ShoppingCart className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:rotate-12" />
+                <span>New Sale</span>
+              </Button>
+            </Link>
+
+            <Link
+              to="/billing/estimates/create"
+              className="block w-full"
+              onClick={handleBillingShortcutClick}
+            >
+              <Button
+                variant="outline"
+                size="lg"
+                className="group h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all hover:shadow-md"
+              >
+                <FileText className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:-rotate-12" />
+                <span>New Estimate</span>
+              </Button>
+            </Link>
+          </div>
+
+          <nav className="mt-7 flex-1 space-y-2">
+            {navLinks.map((item) => {
+              const isActive = pathname === item.href;
+
+              return (
+                <motion.div
+                  key={item.href}
+                  whileHover={{ x: 2 }}
+                  whileTap={{ scale: 0.985 }}
+                  transition={{ duration: 0.14, ease: "easeOut" }}
+                >
+                  <Link
+                    to={item.href}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-xl px-4 py-1.5 text-lg font-medium transition-colors",
+                      isActive
+                        ? "bg-secondary text-sidebar-foreground font-semibold"
+                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <span className="shrink-0 [&_svg]:h-5 [&_svg]:w-5">{item.icon}</span>
+                    <span className="truncate">{item.title}</span>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </nav>
+        </div>
+
+        <div className="absolute bottom-0 left-0 w-full px-4 pb-4">
+          <motion.div
+            initial={false}
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="border-border bg-background/70 flex items-center gap-3 rounded-xl border p-3 backdrop-blur-sm"
+          >
+            <div className="bg-success/20 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+              MS
+            </div>
+            <div className="min-w-0">
+              <span className="block truncate text-sm font-semibold">
+                Sri Manjunatheshwara Stores
+              </span>
+              <span className="text-muted-foreground block truncate text-xs">
+                kumarkrwelcome@gmail.com
+              </span>
+            </div>
+          </motion.div>
+        </div>
+
+        <div
+          onMouseDown={handleResizeStart}
+          className="absolute top-0 right-0 h-full w-2 cursor-col-resize"
+        />
+      </div>
+    </aside>
   );
+
+  if (isOverlay) {
+    return (
+      <>
+        {!isSidebarOpen && (
+          <div
+            className="fixed inset-y-0 left-0 z-40 w-3"
+            onMouseEnter={() => {
+              if (Date.now() < suppressHoverOpenUntilRef.current) {
+                return;
+              }
+
+              setIsSidebarPinned(false);
+              setIsSidebarOpen(true);
+            }}
+          />
+        )}
+
+        <AnimatePresence initial={false}>
+          {isSidebarOpen && (
+            <motion.div
+              initial={{ x: -12, opacity: 0.995 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -10, opacity: 0.995 }}
+              transition={{ duration: 0.08, ease: "linear" }}
+              className="fixed inset-y-0 left-0 z-50"
+            >
+              {shell}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
+
+  return shell;
 };
