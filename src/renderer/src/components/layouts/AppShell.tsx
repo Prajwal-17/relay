@@ -65,11 +65,11 @@ const AppShell = () => {
         <AnimatePresence initial={false}>
           {isSidebarVisible && (
             <motion.div
-              initial={{ x: -24, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -24, opacity: 0 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="h-full shrink-0"
+              initial={{ width: 0, opacity: 0, x: -28 }}
+              animate={{ width: "auto", opacity: 1, x: 0 }}
+              exit={{ width: 0, opacity: 0, x: -28 }}
+              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
+              className="h-full shrink-0 transform-gpu origin-left overflow-hidden"
             >
               <Sidebar />
             </motion.div>
@@ -88,9 +88,9 @@ const AppShell = () => {
                   type="button"
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                   onClick={() => setIsSidebarVisible((current) => !current)}
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent/60 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors"
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent/60 inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-all duration-150 active:scale-[0.97]"
                 >
                   {isSidebarVisible ? (
                     <PanelLeftClose className="h-5 w-5" />

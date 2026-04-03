@@ -78,6 +78,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
   }, [sidebarWidth]);
 
+  // Ensure overlay mode starts closed
+  useEffect(() => {
+    if (isOverlay) {
+      setIsSidebarOpen(false);
+      setIsSidebarPinned(false);
+    }
+  }, [isOverlay, setIsSidebarOpen, setIsSidebarPinned]);
+
   useEffect(() => {
     if (!isBillingPage || !isOverlay) {
       return;
@@ -133,6 +141,11 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
       setSidebarWidth(sidebarWidthRef.current);
+
+      // If user let go of drag while mouse is outside sidebar, we might need to close it (for overlay mode)
+      if (isOverlay && !isSidebarPinned) {
+        // It's tricky to rely on mouseleave here since we've captured events, but let's assume if it's left open they can click outside to close
+      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -180,8 +193,8 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       ref={sidebarRef}
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
-        "bg-sidebar text-sidebar-foreground relative h-full shrink-0 overflow-hidden border-r border-r-black/8",
-        isOverlay ? "shadow-2xl" : ""
+        "bg-sidebar text-sidebar-foreground relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r border-r-black/8",
+        isOverlay ? "shadow-[20px_0_40px_rgba(0,0,0,0.1)]" : ""
       )}
       style={{
         width: sidebarWidth,
@@ -218,7 +231,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="default"
                 size="lg"
-                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all hover:shadow-md"
+                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
                 <ShoppingCart className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:rotate-12" />
                 <span>New Sale</span>
@@ -233,7 +246,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="group h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all hover:shadow-md"
+                className="group h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
                 <FileText className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:-rotate-12" />
                 <span>New Estimate</span>
@@ -248,21 +261,28 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               return (
                 <motion.div
                   key={item.href}
-                  whileHover={{ x: 2 }}
-                  whileTap={{ scale: 0.985 }}
-                  transition={{ duration: 0.14, ease: "easeOut" }}
+                  whileHover={{ x: 3 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
                 >
                   <Link
                     to={item.href}
+                    onClick={() => {
+                      if (isOverlay) {
+                        setIsSidebarOpen(false);
+                      }
+                    }}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-4 py-1.5 text-lg font-medium transition-colors",
+                      "flex w-full items-center gap-3 rounded-xl px-4 py-1.5 text-[1.05rem] font-medium transition-colors duration-150",
                       isActive
                         ? "bg-secondary text-sidebar-foreground font-semibold"
                         : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     )}
                   >
-                    <span className="shrink-0 [&_svg]:h-5 [&_svg]:w-5">{item.icon}</span>
-                    <span className="truncate">{item.title}</span>
+                    <span className="shrink-0 [&_svg]:h-[1.35rem] [&_svg]:w-[1.35rem]">
+                      {item.icon}
+                    </span>
+                    <span className="truncate text-lg">{item.title}</span>
                   </Link>
                 </motion.div>
               );
@@ -274,8 +294,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           <motion.div
             initial={false}
             whileHover={{ y: -2 }}
-            transition={{ duration: 0.16, ease: "easeOut" }}
-            className="border-border bg-background/70 flex items-center gap-3 rounded-xl border p-3 backdrop-blur-sm"
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            className="border-border bg-background/80 hover:bg-background/90 flex cursor-pointer items-center gap-3 rounded-xl border p-3 backdrop-blur-md transition-colors duration-200"
           >
             <div className="bg-success/20 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
               MS
@@ -293,8 +314,10 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
         <div
           onMouseDown={handleResizeStart}
-          className="absolute top-0 right-0 h-full w-2 cursor-col-resize"
-        />
+          className="group absolute top-0 right-0 z-50 flex h-full w-[6px] shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+        >
+          <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
+        </div>
       </div>
     </aside>
   );
@@ -304,7 +327,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       <>
         {!isSidebarOpen && (
           <div
-            className="fixed inset-y-0 left-0 z-40 w-3"
+            className="fixed inset-y-0 left-0 z-40 w-4 lg:w-6"
             onMouseEnter={() => {
               if (Date.now() < suppressHoverOpenUntilRef.current) {
                 return;
@@ -319,11 +342,12 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         <AnimatePresence initial={false}>
           {isSidebarOpen && (
             <motion.div
-              initial={{ x: -12, opacity: 0.995 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -10, opacity: 0.995 }}
-              transition={{ duration: 0.08, ease: "linear" }}
-              className="fixed inset-y-0 left-0 z-50"
+              initial={{ x: -28, opacity: 0.5, scale: 0.98 }}
+              animate={{ x: 0, opacity: 1, scale: 1 }}
+              exit={{ x: -28, opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              className="fixed inset-y-0 left-0 z-50 transform-gpu"
+              style={{ transformOrigin: "left center" }}
             >
               {shell}
             </motion.div>
