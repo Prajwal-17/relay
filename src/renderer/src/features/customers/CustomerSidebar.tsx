@@ -33,8 +33,6 @@ export const CustomerSidebar = () => {
     <>
       <div className="border-border bg-background flex h-full w-96 flex-col border-r">
         <div className="border-border border-b p-4">
-          <h2 className="mb-4 text-2xl font-semibold">Customers</h2>
-
           <div className="mb-4 flex gap-2">
             <Dialog
               open={openCustomerDialog}

@@ -159,6 +159,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
+    // eslint-disable-next-line
   }, []);
 
   const handleResizeStart = (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -204,7 +205,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex h-[73px] items-center border-b px-4">
+        <div className="flex h-18.25 items-center border-b px-4">
           <motion.div
             initial={false}
             whileHover={{ y: -1 }}
@@ -216,7 +217,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             </div>
             <div className="min-w-0">
               <span className="block truncate text-xl font-semibold">QuickCart</span>
-              <span className="text-muted-foreground block truncate text-sm">POS Workspace</span>
+              <span className="text-muted-foreground block truncate text-sm">Workspace</span>
             </div>
           </motion.div>
         </div>
@@ -233,7 +234,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                 size="lg"
                 className="group bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
-                <ShoppingCart className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:rotate-12" />
+                <ShoppingCart className="stroke-2.35 h-7 w-7 transition-transform duration-300 group-hover:rotate-12" />
                 <span>New Sale</span>
               </Button>
             </Link>
@@ -248,7 +249,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                 size="lg"
                 className="group h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
-                <FileText className="h-7 w-7 [stroke-width:2.35] transition-transform duration-300 group-hover:-rotate-12" />
+                <FileText className="stroke-2.35 h-7 w-7 transition-transform duration-300 group-hover:-rotate-12" />
                 <span>New Estimate</span>
               </Button>
             </Link>
@@ -314,7 +315,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
         <div
           onMouseDown={handleResizeStart}
-          className="group absolute top-0 right-0 z-50 flex h-full w-[6px] shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+          className="group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
         >
           <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
         </div>

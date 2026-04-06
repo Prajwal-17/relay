@@ -7,24 +7,18 @@ export default function ProductHeader() {
   const setActionType = useProductsStore((state) => state.setActionType);
 
   return (
-    <>
-      <div className="flex items-center justify-between">
-        <div className="space-y-2">
-          <h1 className="text-4xl font-bold">Products</h1>
-          <p className="text-muted-foreground text-lg">Manage product inventory and pricing</p>
-        </div>
-        <Button
-          onClick={() => {
-            setActionType("add");
-            setOpenProductDialog();
-          }}
-          size="lg"
-          className="bg-primary hover:bg-primary/80 text-primary-foreground h-12 gap-2 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:cursor-pointer hover:shadow-xl"
-        >
-          <Plus className="h-5 w-5" />
-          Add Product
-        </Button>
-      </div>
-    </>
+    <div className="flex items-center justify-end">
+      <Button
+        onClick={() => {
+          setActionType("add");
+          setOpenProductDialog();
+        }}
+        size="lg"
+        className="bg-primary hover:bg-primary/80 text-primary-foreground h-12 gap-2 px-6 py-3 text-base font-medium shadow-lg transition-all duration-200 hover:cursor-pointer hover:shadow-xl"
+      >
+        <Plus className="h-5 w-5" />
+        Add Product
+      </Button>
+    </div>
   );
 }

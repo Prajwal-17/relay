@@ -34,22 +34,6 @@ const getPageTitle = (pathname: string) => {
     return "Settings";
   }
 
-  if (matchPath("/billing/sales/create", pathname)) {
-    return "New Sale";
-  }
-
-  if (matchPath("/billing/estimates/create", pathname)) {
-    return "New Estimate";
-  }
-
-  if (matchPath("/billing/sales/:id/edit", pathname)) {
-    return "Edit Sale";
-  }
-
-  if (matchPath("/billing/estimates/:id/edit", pathname)) {
-    return "Edit Estimate";
-  }
-
   return "Workspace";
 };
 
@@ -69,7 +53,7 @@ const AppShell = () => {
               animate={{ width: "auto", opacity: 1, x: 0 }}
               exit={{ width: 0, opacity: 0, x: -28 }}
               transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-              className="h-full shrink-0 transform-gpu origin-left overflow-hidden"
+              className="origin-left·transform-gpu h-full shrink-0 overflow-hidden"
             >
               <Sidebar />
             </motion.div>
@@ -81,7 +65,7 @@ const AppShell = () => {
 
       <main className="flex min-w-0 flex-1 flex-col">
         {!isBillingPage && (
-          <header className="bg-background/95 flex h-[73px] items-center border-b px-6">
+          <header className="bg-background/95 flex h-18.25 items-center border-b px-6">
             <div className="flex w-full items-center justify-between gap-6">
               <div className="flex min-w-0 items-center gap-3">
                 <motion.button
@@ -100,16 +84,16 @@ const AppShell = () => {
                 </motion.button>
 
                 <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-xl font-semibold">{pageTitle}</h1>
+                  <h1 className="truncate text-2xl font-semibold">{pageTitle}</h1>
                 </div>
               </div>
 
-              <div className="relative ml-auto w-full max-w-sm">
-                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
+              <div className="relative ml-auto w-full max-w-md">
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4.5 w-4.5 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Search anything..."
-                  className="bg-muted/40 h-10 pl-9"
+                  className="bg-muted/40 h-12 pl-12 text-lg md:text-lg"
                 />
               </div>
             </div>
