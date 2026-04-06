@@ -1,4 +1,18 @@
 import { SortOption, TIME_PERIOD } from "@shared/types";
+import { BarChart3, Receipt, Users, Zap } from "lucide-react";
+
+export const PRODUCT_NAME = "QuickCart";
+
+// Onboarding
+export const ONBOARDING_STEPS = 5;
+export const ONBOARDING_FEATURES = [
+  { icon: Zap, text: "100% offline — no internet needed" },
+  { icon: BarChart3, text: "Track sales & reports" },
+  { icon: Users, text: "Manage customer ledgers" },
+  { icon: Receipt, text: "Create GST invoices in seconds" }
+];
+export const ONBOARDING_STEP_LABELS = ["Welcome", "Your Store", "Owner Info", "Location", "Ready!"];
+export const FEATURE_PILLS = ["Fast Billing", "GST Ready", "Works Offline", "Customer Ledger"];
 
 export const MAX_PRESET_COUNT = 40;
 
