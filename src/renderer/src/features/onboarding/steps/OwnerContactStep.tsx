@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useOnboardingStore } from "@/store/onboardingStore";
+import { ownerContactSchema } from "@shared/schemas/onboarding.schema";
 import { ArrowRight, User } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -11,24 +12,17 @@ export const OwnerContactStep = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.ownerName.trim()) {
-      newErrors.ownerName = "Owner name is required";
+    const result = ownerContactSchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0].toString()] = err.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
-
-    if (!formData.ownerPhone.trim()) {
-      newErrors.ownerPhone = "Phone number is required";
-    } else if (!/^[6-9]\d{9}$/.test(formData.ownerPhone.trim())) {
-      newErrors.ownerPhone = "Enter a valid 10-digit Indian mobile number";
-    }
-
-    if (formData.ownerEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.ownerEmail)) {
-      newErrors.ownerEmail = "Enter a valid email address";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleNext = () => {
@@ -46,21 +40,21 @@ export const OwnerContactStep = () => {
       type: "text"
     },
     {
-      id: "ownerPhone",
+      id: "phone",
       label: "Phone Number",
       required: true,
       placeholder: "e.g. 9876543210",
-      value: formData.ownerPhone,
-      onChange: (v: string) => setFormData({ ownerPhone: v }),
+      value: formData.phone,
+      onChange: (v: string) => setFormData({ phone: v }),
       type: "tel"
     },
     {
-      id: "ownerEmail",
+      id: "email",
       label: "Email Address",
       required: true,
       placeholder: "e.g. rahul@example.com",
-      value: formData.ownerEmail,
-      onChange: (v: string) => setFormData({ ownerEmail: v }),
+      value: formData.email,
+      onChange: (v: string) => setFormData({ email: v }),
       type: "email"
     }
   ];

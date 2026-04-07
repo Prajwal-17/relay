@@ -48,7 +48,7 @@ export function ProductDialog() {
           onKeyDownCapture={(e) => {
             if (productMutation.isPending) e.preventDefault();
           }}
-          className="flex h-full max-h-[85vh] w-full min-w-[900px] flex-col p-0"
+          className="flex h-full max-h-[85vh] w-full min-w-225 flex-col p-0"
         >
           <div className="flex h-full flex-col">
             <div className="p-6 pb-0">

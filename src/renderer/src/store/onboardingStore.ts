@@ -2,21 +2,18 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 export type OnboardingFormData = {
-  // Step 2 — Store Identity
   storeName: string;
 
-  // Step 3 — Owner & Contact
   ownerName: string;
-  ownerPhone: string;
-  ownerEmail: string;
+  phone: string;
+  email: string;
 
-  // Step 4 — Location & Compliance
   addressLine1: string;
   addressLine2: string;
   country: string;
-  countryCode: string;
+  countryCode?: string;
   state: string;
-  stateCode: string;
+  stateCode?: string;
   city: string;
   pincode: string;
   gstin: string;
@@ -25,12 +22,12 @@ export type OnboardingFormData = {
 const defaultFormData: OnboardingFormData = {
   storeName: "",
   ownerName: "",
-  ownerPhone: "",
-  ownerEmail: "",
+  phone: "",
+  email: "",
   addressLine1: "",
   addressLine2: "",
-  country: "",
-  countryCode: "",
+  country: "India",
+  countryCode: "IN",
   state: "",
   stateCode: "",
   city: "",

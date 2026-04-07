@@ -10,15 +10,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding";
 import { cn } from "@/lib/utils";
 import { useOnboardingStore } from "@/store/onboardingStore";
+import { locationSchema } from "@shared/schemas/onboarding.schema";
 import { City, State } from "country-state-city";
-import { ArrowRight, Check, ChevronsUpDown, MapPin } from "lucide-react";
+import { ArrowRight, Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 
 export const LocationStep = () => {
-  const { formData, setFormData, nextStep, prevStep } = useOnboardingStore();
+  const { formData, setFormData, prevStep } = useOnboardingStore();
+  const mutation = useCompleteOnboarding();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [stateOpen, setStateOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
@@ -37,30 +40,21 @@ export const LocationStep = () => {
   );
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.addressLine1.trim()) newErrors.addressLine1 = "Address Line 1 is required";
-    if (!formData.state) newErrors.state = "State is required";
-    if (!formData.city) newErrors.city = "City is required";
-    if (!formData.pincode.trim()) {
-      newErrors.pincode = "Pincode is required";
-    } else if (!/^\d{6}$/.test(formData.pincode.trim())) {
-      newErrors.pincode = "Enter a valid 6-digit pincode";
+    const result = locationSchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0].toString()] = err.message;
+      });
+      setErrors(newErrors);
+      return false;
     }
-
-    if (
-      formData.gstin.trim() &&
-      !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(formData.gstin.trim())
-    ) {
-      newErrors.gstin = "Enter a valid 15-character GSTIN";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    setErrors({});
+    return true;
   };
 
   const handleNext = () => {
-    if (validate()) nextStep();
+    if (validate()) mutation.mutate();
   };
 
   return (
@@ -332,11 +326,21 @@ export const LocationStep = () => {
         </Button>
         <Button
           onClick={handleNext}
+          disabled={mutation.isPending}
           size="lg"
           className="group shadow-primary/20 hover:shadow-primary/30 gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
         >
-          Finish Setup
-          <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          {mutation.isPending ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              Finish Setup
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </>
+          )}
         </Button>
       </div>
     </motion.div>

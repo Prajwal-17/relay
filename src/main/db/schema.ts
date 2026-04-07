@@ -3,6 +3,39 @@ import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { CustomerRole } from "./enum";
 
+export const appInstance = sqliteTable("app_instance", {
+  id: text("id").primaryKey(), // prevent multiple entries
+  os: text("os"),
+  installedAt: text("installed_at"),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
+export const storeProfile = sqliteTable("store_profile", {
+  id: text("id").primaryKey(), // prevent multiple entries
+  storeName: text("store_name").notNull(),
+  ownerName: text("owner_name").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  addressLine1: text("address_line1").notNull(),
+  addressLine2: text("address_line2"),
+  country: text("country").notNull(),
+  state: text("state").notNull(),
+  pincode: text("pincode").notNull(),
+  city: text("city").notNull(),
+  gstin: text("gstin"),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
 export const customers = sqliteTable("customers", {
   id: text("id")
     .primaryKey()

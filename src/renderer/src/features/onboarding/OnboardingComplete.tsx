@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
+import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import { ArrowRight, CheckCircle2, MapPin, Store, User } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2, MapPin, Store, User } from "lucide-react";
 import { motion } from "motion/react";
 
 export const OnboardingComplete = () => {
-  const { formData, completeOnboarding } = useOnboardingStore();
+  const formData = useOnboardingStore((state) => state.formData);
+  const completeOnboardingMutation = useCompleteOnboarding();
 
   const summaryItems = [
     {
@@ -15,7 +17,7 @@ export const OnboardingComplete = () => {
     {
       icon: User,
       label: "Owner",
-      value: `${formData.ownerName}${formData.ownerPhone ? ` · ${formData.ownerPhone}` : ""}`
+      value: `${formData.ownerName}${formData.phone ? ` · ${formData.phone}` : ""}`
     },
     {
       icon: MapPin,
@@ -31,7 +33,6 @@ export const OnboardingComplete = () => {
       transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
       className="flex flex-col items-center gap-8 text-center"
     >
-      {/* Animated checkmark */}
       <motion.div
         initial={{ scale: 0, rotate: -30 }}
         animate={{ scale: 1, rotate: 0 }}
@@ -41,7 +42,7 @@ export const OnboardingComplete = () => {
         <div className="bg-success/15 flex h-24 w-24 items-center justify-center rounded-full">
           <CheckCircle2 className="text-success h-14 w-14" strokeWidth={1.5} />
         </div>
-        {/* Ripple rings */}
+        {/* rings */}
         {[0, 1].map((i) => (
           <motion.div
             key={i}
@@ -59,7 +60,6 @@ export const OnboardingComplete = () => {
         ))}
       </motion.div>
 
-      {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -74,7 +74,6 @@ export const OnboardingComplete = () => {
         </p>
       </motion.div>
 
-      {/* Summary card */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -120,11 +119,21 @@ export const OnboardingComplete = () => {
       >
         <Button
           size="lg"
-          onClick={completeOnboarding}
-          className="group shadow-primary/30 hover:shadow-primary/40 w-full gap-2 rounded-xl py-6 text-base font-semibold shadow-lg transition-all duration-200 hover:shadow-xl"
+          onClick={() => completeOnboardingMutation.mutate()}
+          disabled={completeOnboardingMutation.isPending}
+          className="group shadow-primary/30 hover:shadow-primary/40 w-full gap-2 rounded-xl py-6 text-base font-semibold shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70"
         >
-          Start Using QuickCart
-          <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+          {completeOnboardingMutation.isPending ? (
+            <>
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Setting up your store...
+            </>
+          ) : (
+            <>
+              Start Using QuickCart
+              <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
+            </>
+          )}
         </Button>
       </motion.div>
     </motion.div>

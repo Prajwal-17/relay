@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import type { ValidationTargets } from "hono";
 import type { ZodType } from "zod";
 
+// ref - https://medium.com/@hustlehammer/hono-zod-an-unstoppable-force-83699c682fb4
 export const validateRequest = <Target extends keyof ValidationTargets, T extends ZodType>(
   target: Target,
   schema: T

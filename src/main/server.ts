@@ -7,6 +7,7 @@ import { logger, loggerInstance } from "./middleware/logger";
 import { customersController } from "./modules/customers/customers.controller";
 import { dashboardController } from "./modules/dashboard/dashboard.controller";
 import { estimatesController } from "./modules/estimates/estimates.controller";
+import { onboardingController } from "./modules/onboarding/onboarding.controller";
 import { productsController } from "./modules/products/products.controller";
 import { salesController } from "./modules/sales/sales.controller";
 import { AppError } from "./utils/appError";
@@ -61,6 +62,7 @@ app.onError((err, c) => {
   );
 });
 
+app.route("/api/onboarding", onboardingController);
 app.route("/api/dashboard", dashboardController);
 app.route("/api/products", productsController);
 app.route("/api/customers", customersController);
@@ -69,7 +71,7 @@ app.route("/api/estimates", estimatesController);
 export function startServer() {
   const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
   const port = buildMode === "prod" ? 4722 : 4723;
-  console.log("Starting Hono server");
+  console.log("Hono server running on port", port);
 
   const server = serve({
     fetch: app.fetch,

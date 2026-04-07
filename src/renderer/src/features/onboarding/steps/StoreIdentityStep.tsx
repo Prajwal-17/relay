@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useOnboardingStore } from "@/store/onboardingStore";
+import { storeIdentitySchema } from "@shared/schemas/onboarding.schema";
 import { ArrowRight, Store } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -11,10 +12,17 @@ export const StoreIdentityStep = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.storeName.trim()) newErrors.storeName = "Store name is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const result = storeIdentitySchema.safeParse(formData);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0].toString()] = err.message;
+      });
+      setErrors(newErrors);
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleNext = () => {
