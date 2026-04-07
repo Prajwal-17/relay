@@ -15,6 +15,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: QuickCart-Dev
+  icon: build/icon-dev.png
 nsis:
   artifactName: "${productName}-${version}.${ext}"
   shortcutName: "${productName}"
@@ -22,6 +23,7 @@ nsis:
   createDesktopShortcut: always
 linux:
   executableName: quickcart-dev
+  icon: build/icon-dev.png
   target:
     - AppImage
     - deb

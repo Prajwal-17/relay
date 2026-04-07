@@ -1,6 +1,6 @@
+import quickcartLogo from "@/assets/quickcart.svg";
 import { ONBOARDING_FEATURES, ONBOARDING_STEPS, PRODUCT_NAME } from "@/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import { ShoppingCart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { OnboardingComplete } from "./OnboardingComplete";
 import { OnboardingStepper } from "./OnboardingStepper";
@@ -36,9 +36,11 @@ export const OnboardingFlow = () => {
         <div className="bg-primary pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-20 blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-3.5">
-          <div className="bg-primary shadow-primary/40 flex h-12 w-12 items-center justify-center rounded-xl shadow-lg">
-            <ShoppingCart className="h-6 w-6 text-black" strokeWidth={2} />
-          </div>
+          <img
+            src={quickcartLogo}
+            alt={`${PRODUCT_NAME} logo`}
+            className="h-12 w-auto rounded-xl object-contain"
+          />
           <span className="text-2xl font-bold tracking-tight text-white">{PRODUCT_NAME}</span>
         </div>
 

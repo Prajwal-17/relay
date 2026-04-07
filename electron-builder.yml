@@ -13,6 +13,7 @@ asarUnpack:
   - resources/**
 win:
   executableName: QuickCart
+  icon: build/icon.png
 nsis:
   oneClick: true
   perMachine: false
@@ -33,6 +34,7 @@ nsis:
 #   artifactName: "${productName}-${version}.${ext}"
 linux:
   executableName: quickcart
+  icon: build/icon.png
   target:
     - AppImage
     - deb

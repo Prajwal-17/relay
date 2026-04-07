@@ -1,7 +1,8 @@
+import quickcartLogo from "@/assets/quickcart.svg";
 import { Button } from "@/components/ui/button";
 import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants";
 import { useOnboardingStore } from "@/store/onboardingStore";
-import { ArrowRight, ShoppingCart } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 
 export const WelcomeStep = () => {
@@ -15,22 +16,23 @@ export const WelcomeStep = () => {
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
       className="flex flex-col items-center justify-center gap-8 text-center"
     >
-      {/* logo */}
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
+        initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
-        className="relative"
+        transition={{ duration: 0.45, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+        className="flex justify-center"
       >
-        <div className="bg-primary shadow-primary/30 flex h-28 w-28 items-center justify-center rounded-3xl shadow-xl">
-          <ShoppingCart className="h-14 w-14 text-black" strokeWidth={1.8} />
-        </div>
+        <img
+          src={quickcartLogo}
+          alt={`${PRODUCT_NAME} logo`}
+          className="h-20 w-auto rounded-2xl object-contain sm:h-24"
+        />
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.4, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
         className="flex flex-col gap-3"
       >
         <h1 className="text-foreground text-5xl font-bold tracking-tight">
@@ -45,7 +47,7 @@ export const WelcomeStep = () => {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.4, delay: 0.25, ease: [0.23, 1, 0.32, 1] }}
         className="flex flex-wrap justify-center gap-2"
       >
         {FEATURE_PILLS.map((feat) => (
@@ -61,7 +63,7 @@ export const WelcomeStep = () => {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.4, ease: [0.23, 1, 0.32, 1] }}
+        transition={{ duration: 0.4, delay: 0.35, ease: [0.23, 1, 0.32, 1] }}
       >
         <Button
           size="lg"

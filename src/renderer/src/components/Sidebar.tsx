@@ -1,7 +1,8 @@
 import { navLinks } from "@/constants/Navlinks";
+import quickcartLogo from "@/assets/quickcart.svg";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebarStore";
-import { Building2, FileText, ShoppingCart } from "lucide-react";
+import { FileText, ShoppingCart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -212,8 +213,12 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             transition={{ duration: 0.16, ease: "easeInOut" }}
             className="flex items-center gap-3"
           >
-            <div className="bg-primary/15 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl">
-              <Building2 className="h-5 w-5" />
+            <div className="bg-primary/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl p-2">
+              <img
+                src={quickcartLogo}
+                alt="QuickCart logo"
+                className="h-full w-full object-contain"
+              />
             </div>
             <div className="min-w-0">
               <span className="block truncate text-xl font-semibold">QuickCart</span>
