@@ -59,11 +59,10 @@ export const CustomerSummaryCard = ({ customer }: Props) => {
   const totalTransactions = (summary?.salesCount ?? 0) + (summary?.estimatesCount ?? 0);
 
   return (
-    <Card className="mb-3 h-57.5 gap-0 rounded-xl px-5 py-4 shadow-sm">
-      <CardHeader className="p-0 pb-1">
+    <Card className="mb-2 h-49 gap-0 rounded-xl px-4 py-2 shadow-sm">
+      <CardHeader className="p-0">
         <div className="flex flex-col gap-0.5">
           <h2 className="text-foreground text-lg font-semibold">Customer Summary</h2>
-          <p className="text-muted-foreground text-sm">Financial overview and activity</p>
         </div>
       </CardHeader>
 

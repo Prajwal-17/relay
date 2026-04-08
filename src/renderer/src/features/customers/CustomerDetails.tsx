@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import useCustomers from "@/hooks/customers/useCustomers";
 import { apiClient } from "@/lib/apiClient";
 import { Dialog, DialogTrigger } from "@radix-ui/react-dialog";
@@ -52,7 +51,7 @@ export const CustomerDetails = () => {
 
   return (
     <>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{selectedCustomer.name}</h1>
@@ -64,13 +63,11 @@ export const CustomerDetails = () => {
               </Badge>
             )}
           </div>
-          <p className="text-muted-foreground text-lg">Customer Details</p>
           {selectedCustomer.contact && (
-            <div className="mt-1">
-              <Label className="text-muted-foreground text-sm font-medium tracking-wide uppercase">
-                Contact
-              </Label>
-              <p className="mt-2 text-lg">{selectedCustomer.contact}</p>
+            <div className="">
+              <p className="text-secondary-foreground text-base font-medium">
+                {selectedCustomer.contact}
+              </p>
             </div>
           )}
         </div>
