@@ -56,6 +56,7 @@ export const products = sqliteTable("products", {
     .primaryKey()
     .$defaultFn(() => uuidv4()),
   name: text("name").notNull(),
+  imageUrl: text("image_url"),
   productSnapshot: text("product_snapshot").notNull(),
   weight: text("weight"),
   unit: text("unit"),
@@ -67,6 +68,7 @@ export const products = sqliteTable("products", {
   disabledAt: text("disabled_at"),
   isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
   deletedAt: text("deleted_at"),
+  lastSoldAt: text("last_sold_at"),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
