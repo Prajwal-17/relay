@@ -23,6 +23,12 @@ productsController.get("/search", validateRequest("query", productSearchSchema),
   return c.json(result, 200);
 });
 
+productsController.get("/:id/history", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await productService.getHistoryEntriesById(id);
+  return c.json(result, 200);
+});
+
 // add product
 productsController.post("/", validateRequest("json", createProductSchema), async (c) => {
   const payload = c.req.valid("json");

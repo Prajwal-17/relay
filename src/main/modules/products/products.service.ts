@@ -142,6 +142,14 @@ const updateProduct = async (
   };
 };
 
+const getHistoryEntriesById = async (productId: string) => {
+  const entries = await productRepository.getHistoryEntriesById(productId);
+  return {
+    productId,
+    entries
+  };
+};
+
 const deleteProduct = async (productId: string) => {
   const changes = await productRepository.deleteProductById(productId);
   if (changes === 0) {
@@ -153,5 +161,6 @@ export const productService = {
   searchProduct,
   addProduct,
   updateProduct,
+  getHistoryEntriesById,
   deleteProduct
 };

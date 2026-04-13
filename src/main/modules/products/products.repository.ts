@@ -1,8 +1,8 @@
 import { and, eq, like, sql } from "drizzle-orm";
-import type {
-  CreateProductPayload,
-  ProductSearchItemDTO,
-  UpdateProductPayload
+import {
+  type CreateProductPayload,
+  type ProductSearchItemDTO,
+  type UpdateProductPayload
 } from "../../../shared/types";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -135,6 +135,22 @@ const insertHistory = async (historyObj: any) => {
   return db.insert(productHistory).values(historyObj).run();
 };
 
+const getHistoryEntriesById = async (productId: string) => {
+  return db
+    .select({
+      oldPrice: productHistory.oldPrice,
+      newPrice: productHistory.newPrice,
+      oldMrp: productHistory.oldMrp,
+      newMrp: productHistory.newMrp,
+      oldPurchasePrice: productHistory.oldPurchasePrice,
+      newPurchasePrice: productHistory.newPurchasePrice,
+      createdAt: productHistory.createdAt
+    })
+    .from(productHistory)
+    .where(eq(productHistory.productId, productId))
+    .all();
+};
+
 const deleteProductById = async (productId: string) => {
   const deletedAt = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
 
@@ -169,5 +185,6 @@ export const productRepository = {
   createProduct,
   updateById,
   insertHistory,
+  getHistoryEntriesById,
   deleteProductById
 };
