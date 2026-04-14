@@ -15,7 +15,7 @@
     "typecheck:node": "tsc --noemit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noemit -p tsconfig.web.json --composite false",
     "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
-    "start": "electron-vite preview",
+    "start": "ELECTRON_DISABLE_SANDBOX=1 electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
     "dev": "pnpm run rebuild:electron && cross-env VITE_BUILD_MODE=dev ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
     "dev:hono": "pnpm run rebuild:node && tsx src/main/standalone.ts",

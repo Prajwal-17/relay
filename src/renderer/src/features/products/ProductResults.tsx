@@ -41,9 +41,8 @@ export default function ProductResults() {
              *      creates full scrollable div without rendering all rows
              *  - 3rd div is for rendering virtual items -> this should be absolute and have transformY with value
              *      virtualItem.start for vertical virtualization
-             *      each visible items is placed from the virtualItems.start
              */
-            <div ref={parentRef} className="relative h-[620px] overflow-auto scroll-smooth">
+            <div ref={parentRef} className="relative h-155 overflow-auto scroll-smooth">
               <div
                 style={{
                   height: `${rowVirtualizer.getTotalSize()}px`,
