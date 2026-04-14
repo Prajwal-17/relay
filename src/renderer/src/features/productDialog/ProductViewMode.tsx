@@ -1,5 +1,6 @@
 import type { ProductsFormType } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
+import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import { Check, Copy, Package } from "lucide-react";
 import { motion } from "motion/react";
@@ -13,11 +14,17 @@ export const ProductViewMode = ({
   formData: ProductsFormType;
   productId: string | null;
 }) => {
-  const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "—";
+  const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "N/A";
   const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : null;
   const displayPurchasePrice = formData.purchasePrice
     ? formatToRupees(Number(formData.purchasePrice) * 100)
     : null;
+  const productSnapshot = generateProductSnapshot({
+    name: formData.name,
+    weight: formData.weight,
+    unit: formData.unit,
+    mrp: formData.mrp ? parseFloat(formData.mrp) : 0
+  });
 
   return (
     <motion.div
@@ -50,7 +57,7 @@ export const ProductViewMode = ({
       <div className="flex min-w-0 flex-1 flex-col gap-4">
         <div className="flex min-w-0 items-start justify-between gap-4">
           <h3 className="text-foreground truncate text-4xl font-extrabold tracking-tight">
-            {formData.name || "Untitled Product"}
+            {productSnapshot || "Untitled Product"}
           </h3>
         </div>
 
@@ -62,7 +69,7 @@ export const ProductViewMode = ({
               className="font-bold sm:col-span-2"
             />
             <DataBox
-              label="weight"
+              label="weight & unit"
               value={
                 formData.weight && formData.unit && formData.unit !== "none"
                   ? `${formData.weight}${formData.unit}`
@@ -134,7 +141,7 @@ export const InfoRow = ({ label, value }: { label: string; value: React.ReactNod
   return (
     <div className="flex items-baseline justify-between gap-4 py-2.5">
       <span className="text-muted-foreground shrink-0 text-base font-medium">{label}</span>
-      <span className="text-foreground wrap-break-words max-w-[60%] text-right text-sm font-semibold">
+      <span className="text-foreground wrap-break-words max-w-[60%] text-right text-base font-semibold">
         {value}
       </span>
     </div>

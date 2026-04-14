@@ -1,14 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS } from "@/constants";
 import type { ProductsFormType } from "@/store/productsStore";
-import { SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import { Package, Trash2, Upload } from "lucide-react";
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import { StatusIndicator } from "./StatusIndicator";
 
 export const ProductEditForm = ({
@@ -40,7 +46,7 @@ export const ProductEditForm = ({
       transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
       className="flex h-full flex-col"
     >
-      <div className="flex-1 overflow-y-auto pr-1">
+      <div className="flex-1 overflow-y-auto pr-1 pl-1">
         <div className="space-y-6">
           <div className="flex items-start justify-between gap-6">
             <div className="space-y-3">
@@ -269,6 +275,14 @@ export const ProductPreview = ({ formData }: { formData: ProductsFormType }) => 
       ? `${fromMilliUnits(formData.totalQuantitySold)} Units`
       : "—";
 
+  // to handle long product names
+  const nameSizeClass = useMemo(() => {
+    const len = formData.name?.length ?? 0;
+    if (len > 60) return "text-lg";
+    if (len > 35) return "text-xl";
+    return "text-3xl";
+  }, [formData.name]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="mb-6 flex items-center justify-between">
@@ -296,7 +310,10 @@ export const ProductPreview = ({ formData }: { formData: ProductsFormType }) => 
       </div>
 
       <div className="mb-6 text-center">
-        <h3 className="text-foreground truncate px-2 text-3xl font-extrabold tracking-tight">
+        <h3
+          className={`text-foreground px-2 font-extrabold tracking-tight ${nameSizeClass}`}
+          style={{ overflowWrap: "anywhere" }}
+        >
           {formData.name || (
             <span className="text-muted-foreground/60 italic">Untitled Product</span>
           )}
@@ -306,7 +323,7 @@ export const ProductPreview = ({ formData }: { formData: ProductsFormType }) => 
       <div className="grid grid-cols-2 gap-y-6 px-1 text-center">
         <div className="flex flex-col gap-1.5">
           <span className="text-muted-foreground text-[10px] font-bold tracking-widest uppercase">
-            Weight
+            Weight & Unit
           </span>
           <span className="text-foreground text-base font-semibold">{weightStr}</span>
         </div>

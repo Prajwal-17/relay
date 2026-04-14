@@ -7,10 +7,10 @@ import {
   type ProductSearchItemDTO,
   type UpdateProductPayload
 } from "../../../shared/types";
+import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { AppError } from "../../utils/appError";
-import { generateProductSnapshot } from "../../utils/product.utils";
 import { productRepository } from "./products.repository";
 import type { ProductSearchParams } from "./products.types";
 

@@ -174,7 +174,7 @@ export function ProductDialog() {
                       <ProductPreview formData={formDataState} />
                     </motion.div>
 
-                    <div className="flex min-h-0 flex-1 flex-col p-7">
+                    <div className="flex min-h-0 flex-1 flex-col p-6">
                       <ProductEditForm
                         formDataState={formDataState}
                         handleInputChange={handleInputChange}
@@ -197,15 +197,31 @@ export function ProductDialog() {
             </TabsContent>
 
             <TabsContent value="history" className="relative mt-0 min-h-0 flex-1 overflow-hidden">
-              <ProductHistoryTimeline productId={productId} />
+              {isAddMode ? (
+                <PlaceholderTab
+                  icon={<Clock className="h-8 w-8" />}
+                  title="No History Available"
+                  description="This product hasn't been created yet. Save it first to start tracking changes."
+                />
+              ) : (
+                <ProductHistoryTimeline productId={productId} />
+              )}
             </TabsContent>
 
             <TabsContent value="transactions" className="mt-0 min-h-0 flex-1">
-              <PlaceholderTab
-                icon={<ReceiptText className="h-8 w-8" />}
-                title="Transactions"
-                description="View all invoices where this product was sold — coming soon"
-              />
+              {isAddMode ? (
+                <PlaceholderTab
+                  icon={<ReceiptText className="h-8 w-8" />}
+                  title="No Transactions Yet"
+                  description="This product hasn't been created yet. Save it first to view transaction history."
+                />
+              ) : (
+                <PlaceholderTab
+                  icon={<ReceiptText className="h-8 w-8" />}
+                  title="Transactions"
+                  description="View all invoices where this product was sold — coming soon"
+                />
+              )}
             </TabsContent>
           </div>
         </Tabs>

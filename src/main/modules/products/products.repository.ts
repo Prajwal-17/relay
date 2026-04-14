@@ -4,11 +4,11 @@ import {
   type ProductSearchItemDTO,
   type UpdateProductPayload
 } from "../../../shared/types";
+import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
 import { AppError } from "../../utils/appError";
-import { generateProductSnapshot } from "../../utils/product.utils";
 import type { ProductSearchQuery } from "./products.types";
 
 const findById = async (id: string) => {
@@ -32,7 +32,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
         totalQuantitySold: products.totalQuantitySold,
         isDisabled: products.isDisabled,
         isDeleted: products.isDeleted,
-        deletedAt: products.deletedAt
+        deletedAt: products.deletedAt,
+        lastSoldAt: products.lastSoldAt,
+        updatedAt: products.updatedAt,
+        createdAt: products.createdAt
       })
       .from(products)
       .where(params.whereClause)
@@ -61,7 +64,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
       totalQuantitySold: products.totalQuantitySold,
       isDisabled: products.isDisabled,
       isDeleted: products.isDeleted,
-      deletedAt: products.deletedAt
+      deletedAt: products.deletedAt,
+      lastSoldAt: products.lastSoldAt,
+      updatedAt: products.updatedAt,
+      createdAt: products.createdAt
     })
     .from(products)
     .where(and(params.whereClause, like(products.productSnapshot, `%${params.searchTerm}%`)))
