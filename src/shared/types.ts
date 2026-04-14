@@ -25,6 +25,7 @@ export type Customer = {
 export type Product = {
   id: string;
   name: string;
+  imageUrl?: string | null;
   productSnapshot: string;
   weight: string | null;
   unit: string | null;
@@ -34,6 +35,7 @@ export type Product = {
   totalQuantitySold: number | null;
   isDisabled?: boolean;
   disabledAt?: string;
+  lastSoldAt?: string | null;
   updatedAt?: string;
   createdAt?: string;
 };

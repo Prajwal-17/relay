@@ -6,13 +6,14 @@ import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProduc
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Edit, LoaderCircle, Package, Search } from "lucide-react";
+import { Edit, Eye, LoaderCircle, Package, Search } from "lucide-react";
 
 export default function ProductResults() {
   const setProductId = useProductsStore((state) => state.setProductId);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
 
   const { searchResults, parentRef, rowVirtualizer, status, virtualItems, hasNextPage } =
     useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
@@ -138,17 +139,19 @@ export default function ProductResults() {
                             )}
                           </div>
                           {!product.isDeleted && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => {
                                   setActionType("edit");
+                                  setDialogMode("view");
                                   setProductId(product.id);
                                   setFormDataState({
                                     name: product.name,
                                     weight: product.weight,
                                     unit: product.unit,
+                                    imageUrl: product.imageUrl ?? null,
                                     mrp: product.mrp
                                       ? convertToRupees(product.mrp, { asString: true })
                                       : null,
@@ -157,11 +160,48 @@ export default function ProductResults() {
                                       ? convertToRupees(product.purchasePrice, { asString: true })
                                       : null,
                                     isDisabled: product.isDisabled,
-                                    isDeleted: product.isDeleted
+                                    isDeleted: product.isDeleted,
+                                    totalQuantitySold: product.totalQuantitySold,
+                                    lastSoldAt: product.lastSoldAt ?? null,
+                                    createdAt: product.createdAt,
+                                    updatedAt: product.updatedAt
                                   });
                                   setOpenProductDialog();
                                 }}
-                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-opacity group-hover:opacity-100"
+                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 w-9 cursor-pointer p-0 opacity-0 transition-all duration-160 ease-out group-hover:opacity-100 active:scale-[0.97]"
+                                title="View product"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setActionType("edit");
+                                  setDialogMode("edit");
+                                  setProductId(product.id);
+                                  setFormDataState({
+                                    name: product.name,
+                                    weight: product.weight,
+                                    unit: product.unit,
+                                    imageUrl: product.imageUrl ?? null,
+                                    mrp: product.mrp
+                                      ? convertToRupees(product.mrp, { asString: true })
+                                      : null,
+                                    price: convertToRupees(product.price, { asString: true }),
+                                    purchasePrice: product.purchasePrice
+                                      ? convertToRupees(product.purchasePrice, { asString: true })
+                                      : null,
+                                    isDisabled: product.isDisabled,
+                                    isDeleted: product.isDeleted,
+                                    totalQuantitySold: product.totalQuantitySold,
+                                    lastSoldAt: product.lastSoldAt ?? null,
+                                    createdAt: product.createdAt,
+                                    updatedAt: product.updatedAt
+                                  });
+                                  setOpenProductDialog();
+                                }}
+                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-all duration-160 ease-out group-hover:opacity-100 active:scale-[0.97]"
                               >
                                 <Edit className="mr-2 h-4 w-4" />
                                 Edit

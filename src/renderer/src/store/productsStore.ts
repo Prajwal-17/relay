@@ -10,6 +10,11 @@ export type ProductsFormType = Omit<
   price: string;
   purchasePrice: string | null;
   isDeleted: boolean;
+  imageUrl?: string | null;
+  lastSoldAt?: string | null;
+  totalQuantitySold?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type ProductsStoreType = {
@@ -17,6 +22,8 @@ type ProductsStoreType = {
   setFilterType: (newType: ProductFilterType) => void;
   openProductDialog: boolean;
   setOpenProductDialog: () => void;
+  dialogMode: "view" | "edit";
+  setDialogMode: (mode: "view" | "edit") => void;
   actionType: "add" | "edit" | "billing-page-edit";
   setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
   searchParam: string;
@@ -42,7 +49,12 @@ function initialFormData(): ProductsFormType {
     price: "",
     purchasePrice: null,
     isDisabled: false,
-    isDeleted: false
+    isDeleted: false,
+    imageUrl: null,
+    lastSoldAt: null,
+    totalQuantitySold: null,
+    createdAt: undefined,
+    updatedAt: undefined
   };
 }
 
@@ -67,6 +79,16 @@ export const useProductsStore = create<ProductsStoreType>()(
           }),
           false,
           "products/setOpenProductDialog"
+        ),
+
+      dialogMode: "edit" as "view" | "edit",
+      setDialogMode: (mode) =>
+        set(
+          () => ({
+            dialogMode: mode
+          }),
+          false,
+          "products/setDialogMode"
         ),
 
       actionType: "add",

@@ -74,6 +74,16 @@
   --onboarding-icon-dark: oklch(60% 0.165 90.15);
 
   --ring: oklch(77.55% 0.174 90.04);
+
+  /* Product Dialog - hierarchy colors */
+  --product-label: oklch(55% 0.02 264);
+  --product-value: oklch(28% 0.04 260);
+  --product-surface: oklch(97% 0.003 264);
+  --product-surface-hover: oklch(95% 0.005 264);
+  --product-divider: oklch(90% 0.005 264);
+  --product-badge-bg: oklch(94% 0.02 90);
+  --product-badge-text: oklch(45% 0.12 80);
+
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -147,6 +157,15 @@
   --color-onboarding-icon-dark: var(--onboarding-icon-dark);
 
   --color-ring: var(--ring);
+
+  --color-product-label: var(--product-label);
+  --color-product-value: var(--product-value);
+  --color-product-surface: var(--product-surface);
+  --color-product-surface-hover: var(--product-surface-hover);
+  --color-product-divider: var(--product-divider);
+  --color-product-badge-bg: var(--product-badge-bg);
+  --color-product-badge-text: var(--product-badge-text);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
