@@ -57,20 +57,46 @@ export function ProductDialog() {
         }}
         className="flex h-[92vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
       >
-        <div className="flex h-full flex-col">
-          <div className="border-border flex shrink-0 items-center justify-between border-b px-7 py-4">
-            <div>
-              <h2 className="text-foreground text-2xl font-bold tracking-tight">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col">
+          <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">
+            <div className="min-w-0 pr-2">
+              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                 {isAddMode ? "New Product" : formDataState.name || "Product Details"}
               </h2>
               {!isAddMode && (
-                <p className="text-muted-foreground mt-1 text-sm">
-                  {isViewMode ? "Viewing product details" : "Editing product"}
+                <p className="text-muted-foreground mt-0.5 truncate text-[0.8rem]">
+                  {isViewMode ? "Viewing details" : "Editing"}
                 </p>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex shrink-0 justify-center">
+              <TabsList className="bg-secondary/40 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] sm:w-fit">
+                <TabsTrigger
+                  value="info"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  Product Info
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  History
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  Transactions
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <div className="flex min-w-0 items-center justify-end gap-3 pl-2">
               {!isAddMode && (
                 <>
                   {isViewMode ? (
@@ -81,7 +107,7 @@ export function ProductDialog() {
                         className="border-border text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                       >
                         <Edit3 className="h-4 w-4" />
-                        Edit Product
+                        Edit
                       </Button>
                       <Button
                         variant="outline"
@@ -89,7 +115,7 @@ export function ProductDialog() {
                         className="border-destructive/30 text-destructive hover:bg-destructive/10 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                       >
                         <Trash2 className="h-4 w-4" />
-                        Delete
+                        <span className="hidden sm:inline">Delete</span>
                       </Button>
                     </>
                   ) : (
@@ -109,7 +135,7 @@ export function ProductDialog() {
               <Button
                 variant="ghost"
                 onClick={() => setOpenProductDialog()}
-                className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
               >
                 <X className="h-6! w-6!" />
               </Button>
@@ -127,37 +153,7 @@ export function ProductDialog() {
             </div>
           )}
 
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="flex h-full min-h-0 flex-col"
-          >
-            <div className="border-border/40 bg-card/30 flex shrink-0 justify-center border-b px-7 py-3 backdrop-blur-lg">
-              <TabsList className="bg-secondary/40 border-border/40 flex h-auto w-full max-w-xl gap-1 rounded-3xl border p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] sm:w-fit">
-                <TabsTrigger
-                  value="info"
-                  className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
-                >
-                  <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-5 w-5 transition-colors" />
-                  Product Info
-                </TabsTrigger>
-                <TabsTrigger
-                  value="history"
-                  className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
-                >
-                  <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-5 w-5 transition-colors" />
-                  Version History
-                </TabsTrigger>
-                <TabsTrigger
-                  value="transactions"
-                  className="text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
-                >
-                  <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-5 w-5 transition-colors" />
-                  Transactions
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
+          <div className="relative flex min-h-0 flex-1 flex-col">
             <TabsContent value="info" className="mt-0 min-h-0 flex-1">
               <AnimatePresence mode="wait">
                 {showEditForm ? (
@@ -211,8 +207,8 @@ export function ProductDialog() {
                 description="View all invoices where this product was sold — coming soon"
               />
             </TabsContent>
-          </Tabs>
-        </div>
+          </div>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
