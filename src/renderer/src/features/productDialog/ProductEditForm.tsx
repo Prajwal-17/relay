@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS } from "@/constants";
 import type { ProductsFormType } from "@/store/productsStore";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Package, Trash2, Upload } from "lucide-react";
+import { ImageOff, Trash2, Upload } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { StatusIndicator } from "./StatusIndicator";
@@ -304,7 +304,12 @@ export const ProductPreview = ({ formData }: { formData: ProductsFormType }) => 
               className="h-full w-full object-cover"
             />
           ) : (
-            <Package className="text-muted-foreground/30 h-24 w-24" />
+            <div className="flex flex-col items-center gap-2.5">
+              <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+              <span className="text-muted-foreground/40 text-xs font-medium tracking-wide">
+                No image available
+              </span>
+            </div>
           )}
         </div>
       </div>

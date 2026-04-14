@@ -55,7 +55,7 @@ export function ProductDialog() {
         onKeyDownCapture={(e) => {
           if (productMutation.isPending) e.preventDefault();
         }}
-        className="flex h-[92vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
+        className="flex h-[88vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
       >
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col">
           <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">

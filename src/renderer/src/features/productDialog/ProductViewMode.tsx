@@ -2,7 +2,7 @@ import type { ProductsFormType } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Check, Copy, Package } from "lucide-react";
+import { Check, Copy, ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
@@ -43,9 +43,11 @@ export const ProductViewMode = ({
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex flex-col items-center gap-3">
-              <Package className="text-muted-foreground/30 h-20 w-20" />
-              <span className="text-muted-foreground/50 text-sm font-medium">No Image</span>
+            <div className="flex flex-col items-center gap-2.5">
+              <ImageOff className="text-muted-foreground/40 h-12 w-12" strokeWidth={1.5} />
+              <span className="text-muted-foreground/70 text-sm font-medium tracking-wide">
+                No image available
+              </span>
             </div>
           )}
         </div>
@@ -54,35 +56,45 @@ export const ProductViewMode = ({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-5">
         <div className="flex min-w-0 items-start justify-between gap-4">
           <h3 className="text-foreground truncate text-4xl font-extrabold tracking-tight">
             {productSnapshot || "Untitled Product"}
           </h3>
         </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <DataBox
-              label="product name"
-              value={formData.name || "—"}
-              className="font-bold sm:col-span-2"
-            />
-            <DataBox
-              label="weight & unit"
-              value={
-                formData.weight && formData.unit && formData.unit !== "none"
-                  ? `${formData.weight}${formData.unit}`
-                  : "—"
-              }
-            />
-            <DataBox label="purchase price" value={displayPurchasePrice || "—"} />
-            <DataBox label="price" value={displayPrice} />
-            <DataBox label="mrp" value={displayMrp || "—"} />
-          </div>
+        <DataField
+          label="Product Name"
+          value={formData.name || "—"}
+          valueClassName="text-xl font-bold"
+          className="sm:col-span-2"
+        />
+
+        <div className="grid grid-cols-2 gap-x-8 gap-y-5 sm:grid-cols-3">
+          <DataField
+            label="Selling Price"
+            value={displayPrice}
+            valueClassName="text-2xl font-black tracking-tight"
+          />
+          <DataField
+            label="Purchase Price"
+            value={displayPurchasePrice || "—"}
+            valueClassName="text-lg font-bold"
+          />
+          <DataField label="MRP" value={displayMrp || "—"} valueClassName="text-lg font-bold" />
         </div>
 
-        <div className="bg-secondary/10 border-border/50 mt-3 rounded-2xl border px-5 py-2">
+        <DataField
+          label="Weight & Unit"
+          value={
+            formData.weight && formData.unit && formData.unit !== "none"
+              ? `${formData.weight} ${formData.unit}`
+              : "—"
+          }
+          valueClassName="text-lg font-semibold"
+        />
+
+        <div className="bg-secondary/10 border-border/50 mt-1 rounded-2xl border px-5 py-2">
           <div className="divide-border/50 divide-y">
             <InfoRow
               label="Total Qty Sold"
@@ -116,23 +128,25 @@ export const ProductViewMode = ({
   );
 };
 
-function DataBox({
+function DataField({
   label,
   value,
+  valueClassName = "text-lg font-semibold",
   className = ""
 }: {
   label: string;
   value: React.ReactNode;
+  valueClassName?: string;
   className?: string;
 }) {
   return (
-    <div className={`flex min-w-0 flex-col gap-2 ${className}`}>
-      <span className="text-muted-foreground ml-1 truncate text-[0.95rem] font-medium tracking-wide capitalize">
+    <div className={`flex min-w-0 flex-col gap-1 ${className}`}>
+      <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
         {label}
       </span>
-      <div className="bg-secondary/30 border-border/60 text-foreground flex min-h-13 w-full flex-wrap items-center rounded-2xl border px-5 py-2.5 text-lg font-semibold shadow-sm">
-        <span className="wrap-break-words min-w-0">{value}</span>
-      </div>
+      <span className={`text-foreground ${valueClassName}`} style={{ overflowWrap: "anywhere" }}>
+        {value}
+      </span>
     </div>
   );
 }
