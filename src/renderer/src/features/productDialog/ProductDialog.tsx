@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { DeleteConfirmation } from "./DeleteConformation";
 import { ProductEditForm, ProductPreview } from "./ProductEditForm";
+import { ProductHistoryTimeline } from "./ProductHistoryTimeline";
 import { ProductViewMode } from "./ProductViewMode";
 
 export function ProductDialog() {
@@ -199,12 +200,8 @@ export function ProductDialog() {
               </AnimatePresence>
             </TabsContent>
 
-            <TabsContent value="history" className="mt-0 min-h-0 flex-1">
-              <PlaceholderTab
-                icon={<Clock className="h-8 w-8" />}
-                title="Version History"
-                description="Track all changes made to this product — coming soon"
-              />
+            <TabsContent value="history" className="relative mt-0 min-h-0 flex-1 overflow-hidden">
+              <ProductHistoryTimeline productId={productId} />
             </TabsContent>
 
             <TabsContent value="transactions" className="mt-0 min-h-0 flex-1">

@@ -1,4 +1,4 @@
-import { and, eq, like, sql } from "drizzle-orm";
+import { and, desc, eq, like, sql } from "drizzle-orm";
 import {
   type CreateProductPayload,
   type ProductSearchItemDTO,
@@ -148,6 +148,7 @@ const getHistoryEntriesById = async (productId: string) => {
     })
     .from(productHistory)
     .where(eq(productHistory.productId, productId))
+    .orderBy(desc(productHistory.createdAt))
     .all();
 };
 
