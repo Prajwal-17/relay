@@ -30,8 +30,10 @@ export function ProductDialog() {
 
   const dialogMode = useProductsStore((state) => state.dialogMode);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
+  const initialTab = useProductsStore((state) => state.initialTab);
+  const setInitialTab = useProductsStore((state) => state.setInitialTab);
 
-  const [activeTab, setActiveTab] = useState("info");
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const isEditMode = dialogMode === "edit";
   const isViewMode = dialogMode === "view";
@@ -41,7 +43,13 @@ export function ProductDialog() {
   const showEditForm = isEditMode || isAddMode;
 
   return (
-    <Dialog open={openProductDialog} onOpenChange={setOpenProductDialog}>
+    <Dialog
+      open={openProductDialog}
+      onOpenChange={() => {
+        setInitialTab("info");
+        setOpenProductDialog();
+      }}
+    >
       <DialogContent
         showCloseButton={false}
         onOpenAutoFocus={(e) => {
@@ -57,7 +65,11 @@ export function ProductDialog() {
         }}
         className="flex h-[88vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
       >
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col">
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "info" | "history" | "transactions")}
+          className="flex h-full flex-col"
+        >
           <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">
             <div className="min-w-0 pr-2">
               <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
@@ -134,7 +146,10 @@ export function ProductDialog() {
 
               <Button
                 variant="ghost"
-                onClick={() => setOpenProductDialog()}
+                onClick={() => {
+                  setInitialTab("info");
+                  setOpenProductDialog();
+                }}
                 className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
               >
                 <X className="h-6! w-6!" />

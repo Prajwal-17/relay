@@ -39,6 +39,8 @@ type ProductsStoreType = {
   setOpenProductDialog: () => void;
   dialogMode: "view" | "edit";
   setDialogMode: (mode: "view" | "edit") => void;
+  initialTab: "info" | "history" | "transactions";
+  setInitialTab: (tab: "info" | "history" | "transactions") => void;
   actionType: "add" | "edit" | "billing-page-edit";
   setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
   // product dialog form
@@ -147,6 +149,16 @@ export const useProductsStore = create<ProductsStoreType>()(
           }),
           false,
           "products/setDialogMode"
+        ),
+
+      initialTab: "info" as "info" | "history" | "transactions",
+      setInitialTab: (tab) =>
+        set(
+          () => ({
+            initialTab: tab
+          }),
+          false,
+          "products/setInitialTab"
         ),
 
       actionType: "add",

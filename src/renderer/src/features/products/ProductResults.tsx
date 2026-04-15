@@ -1,22 +1,75 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
-import { formatDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Edit, Eye, LoaderCircle, Package, Search } from "lucide-react";
+import { LoaderCircle, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import ProductGridItem from "./ProductGridItem";
+import ProductListItem from "./ProductListItem";
+
+const GRID_CARD_MIN_WIDTH = 240;
+const GRID_CARD_GAP = 16;
+const GRID_ROW_HEIGHT = 320;
+const LIST_ROW_HEIGHT = 104;
 
 export default function ProductResults() {
-  const setProductId = useProductsStore((state) => state.setProductId);
-  const setActionType = useProductsStore((state) => state.setActionType);
-  const setFormDataState = useProductsStore((state) => state.setFormDataState);
-  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
-  const setDialogMode = useProductsStore((state) => state.setDialogMode);
+  const viewMode = useProductsStore((state) => state.viewMode);
 
   const { searchResults, parentRef, rowVirtualizer, status, virtualItems, hasNextPage } =
     useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
+
+  /**
+   * ResizeObserver — tracks the scroll container's width so we can calculate
+   * how many grid cards fit per row. The virtualizer needs this number in JS
+   * because it groups N products into each virtual row for grid mode.
+   */
+  const [containerWidth, setContainerWidth] = useState(0);
+  const observerRef = useRef<ResizeObserver | null>(null);
+
+  const scrollContainerRef = (node: HTMLDivElement | null) => {
+    // Wire up the virtualizer's scroll element ref
+    (parentRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+
+    // Clean up old observer
+    observerRef.current?.disconnect();
+
+    if (node) {
+      setContainerWidth(node.clientWidth);
+      observerRef.current = new ResizeObserver(([entry]) => {
+        setContainerWidth(entry.contentRect.width);
+      });
+      observerRef.current.observe(node);
+    }
+  };
+
+  // How many cards fit in one row? At least 1.
+  const gridColumns = Math.max(
+    1,
+    Math.floor((containerWidth + GRID_CARD_GAP) / (GRID_CARD_MIN_WIDTH + GRID_CARD_GAP))
+  );
+
+  // Total virtual rows for grid = ceil(products / columns)
+  const gridRowCount = Math.ceil(searchResults.length / gridColumns);
+
+  /**
+   * Sync virtualizer options when view mode, column count, or data changes.
+   * - List mode: 1 product per virtual row, ~104px height
+   * - Grid mode: `gridColumns` products per virtual row, ~320px height
+   */
+  useEffect(() => {
+    const isGrid = viewMode === "grid";
+    rowVirtualizer.setOptions({
+      ...rowVirtualizer.options,
+      estimateSize: () => (isGrid ? GRID_ROW_HEIGHT : LIST_ROW_HEIGHT),
+      count: isGrid
+        ? hasNextPage
+          ? gridRowCount + 1
+          : gridRowCount
+        : hasNextPage
+          ? searchResults.length + 1
+          : searchResults.length
+    });
+    rowVirtualizer.measure();
+  }, [viewMode, gridColumns, searchResults.length, hasNextPage, gridRowCount, rowVirtualizer]);
 
   return (
     <Card className="border-border bg-background border py-2 shadow-sm">
@@ -34,185 +87,106 @@ export default function ProductResults() {
               <p className="text-muted-foreground font-medium">Try adjusting your search</p>
             </div>
           ) : (
-            /**
-             * Virtualizer works using 3 divs
-             *  - Top div with fixed height overflow Provides scrolling viewport
-             *  - 2nd div with height-`rowVirtualizer.getTotalSize()`px
-             *      creates full scrollable div without rendering all rows
-             *  - 3rd div is for rendering virtual items -> this should be absolute and have transformY with value
-             *      virtualItem.start for vertical virtualization
-             */
-            <div ref={parentRef} className="relative h-155 overflow-auto scroll-smooth">
-              <div
-                style={{
-                  height: `${rowVirtualizer.getTotalSize()}px`,
-                  width: "100%",
-                  position: "relative"
-                }}
-              >
+            <div ref={scrollContainerRef} className="relative h-155 overflow-auto scroll-smooth">
+              {viewMode === "list" ? (
+                /**
+                 * LIST VIEW VIRTUALIZER
+                 *
+                 * Virtualizer works using 3 nested divs:
+                 *  1. Outer div (scroll container) — fixed height, overflow:auto — provides the scrollable viewport
+                 *  2. Spacer div — height = `rowVirtualizer.getTotalSize()` px
+                 *       Creates the full scrollable area without rendering every row
+                 *  3. Inner div — absolute positioned, translateY = first visible item's `start`
+                 *       Renders only the visible items, each positioned from virtualItem.start
+                 *
+                 * Each virtual row = 1 product.
+                 */
                 <div
-                  className="absolute top-0 left-0 w-full"
                   style={{
-                    transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    width: "100%",
+                    position: "relative"
                   }}
                 >
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const product = searchResults[virtualRow.index];
-                    if (!product) return null;
-                    return (
-                      <div
-                        key={virtualRow.key}
-                        ref={rowVirtualizer.measureElement}
-                        data-index={virtualRow.index}
-                      >
-                        <div className="group hover:bg-accent/70 flex items-center justify-between gap-4 px-6 py-3 transition-colors">
-                          <div className="border-border flex h-10 w-10 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
-                            <Package className="h-5 w-5 text-blue-600" />
-                          </div>
-                          <div className="flex flex-1 items-center gap-6">
-                            <div className="flex-1">
-                              <div className="flex gap-2">
-                                <h3
-                                  className={`text-xl font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : ""}`}
-                                >
-                                  {product.name}
-                                </h3>
-                                {product.weight !== null &&
-                                  ignoredWeight.some((w) =>
-                                    `${product.weight}+${product.unit}`.includes(w)
-                                  ) && (
-                                    <Badge
-                                      variant="outline"
-                                      className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
-                                    >
-                                      {product.weight}
-                                      {product.unit}
-                                    </Badge>
-                                  )}
-                                {product.mrp && (
-                                  <Badge
-                                    variant="outline"
-                                    className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
-                                  >
-                                    MRP ₹{convertToRupees(product.mrp, { asString: true })}
-                                  </Badge>
-                                )}
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <p className="text-muted-foreground mt-1 text-base font-medium">
-                                  {fromMilliUnits(product.totalQuantitySold ?? 0)} sold
-                                </p>
-                                {product.purchasePrice && (
-                                  <>
-                                    <span className="text-muted-foreground">•</span>
-                                    <p className="text-foreground mt-1 text-base font-semibold">
-                                      Purchase Price ₹
-                                      {convertToRupees(product.purchasePrice, { asString: true })}
-                                    </p>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div className="text-right">
-                              <div className="flex items-center gap-2">
-                                <span className="text-2xl font-bold">
-                                  {formatToRupees(product.price)}
-                                </span>
-                              </div>
-                            </div>
-                            {product.isDeleted ? (
-                              <div className="text-destructive bg-accent/80 rounded-lg px-2.5 py-1 text-sm font-semibold">
-                                Deleted on • {formatDateStr(product.deletedAt || undefined)}
-                              </div>
-                            ) : (
-                              <Badge
-                                variant={product.isDisabled ? "secondary" : "default"}
-                                className={
-                                  product.isDisabled
-                                    ? "text-secondary-foreground bg-secondary"
-                                    : "bg-success/20 text-success"
-                                }
-                              >
-                                {product.isDisabled ? "Inactive" : "Active"}
-                              </Badge>
-                            )}
-                          </div>
-                          {!product.isDeleted && (
-                            <div className="flex items-center gap-1.5">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setActionType("edit");
-                                  setDialogMode("view");
-                                  setProductId(product.id);
-                                  setFormDataState({
-                                    name: product.name,
-                                    weight: product.weight,
-                                    unit: product.unit,
-                                    imageUrl: product.imageUrl ?? null,
-                                    mrp: product.mrp
-                                      ? convertToRupees(product.mrp, { asString: true })
-                                      : null,
-                                    price: convertToRupees(product.price, { asString: true }),
-                                    purchasePrice: product.purchasePrice
-                                      ? convertToRupees(product.purchasePrice, { asString: true })
-                                      : null,
-                                    isDisabled: product.isDisabled,
-                                    isDeleted: product.isDeleted,
-                                    totalQuantitySold: product.totalQuantitySold,
-                                    lastSoldAt: product.lastSoldAt ?? null,
-                                    createdAt: product.createdAt,
-                                    updatedAt: product.updatedAt
-                                  });
-                                  setOpenProductDialog();
-                                }}
-                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 w-9 cursor-pointer p-0 opacity-0 transition-all duration-160 ease-out group-hover:opacity-100 active:scale-[0.97]"
-                                title="View product"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setActionType("edit");
-                                  setDialogMode("edit");
-                                  setProductId(product.id);
-                                  setFormDataState({
-                                    name: product.name,
-                                    weight: product.weight,
-                                    unit: product.unit,
-                                    imageUrl: product.imageUrl ?? null,
-                                    mrp: product.mrp
-                                      ? convertToRupees(product.mrp, { asString: true })
-                                      : null,
-                                    price: convertToRupees(product.price, { asString: true }),
-                                    purchasePrice: product.purchasePrice
-                                      ? convertToRupees(product.purchasePrice, { asString: true })
-                                      : null,
-                                    isDisabled: product.isDisabled,
-                                    isDeleted: product.isDeleted,
-                                    totalQuantitySold: product.totalQuantitySold,
-                                    lastSoldAt: product.lastSoldAt ?? null,
-                                    createdAt: product.createdAt,
-                                    updatedAt: product.updatedAt
-                                  });
-                                  setOpenProductDialog();
-                                }}
-                                className="text-muted-foreground bg-secondary/80 hover:text-foreground hover:bg-secondary h-9 cursor-pointer px-3 opacity-0 transition-all duration-160 ease-out group-hover:opacity-100 active:scale-[0.97]"
-                              >
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit
-                              </Button>
-                            </div>
-                          )}
+                  <div
+                    className="absolute top-0 left-0 w-full"
+                    style={{
+                      transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
+                    }}
+                  >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const product = searchResults[virtualRow.index];
+                      if (!product) return null;
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          ref={rowVirtualizer.measureElement}
+                          data-index={virtualRow.index}
+                        >
+                          <ProductListItem product={product} />
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /**
+                 * ── GRID VIEW VIRTUALIZER ──
+                 *
+                 * Same 3-div virtualizer structure as list, but each virtual row
+                 * contains `gridColumns` products laid out in a CSS grid.
+                 *
+                 * The virtualizer row index maps to a "grid row":
+                 *   - Row 0 → products[0..gridColumns-1]
+                 *   - Row 1 → products[gridColumns..2*gridColumns-1]
+                 *   - etc.
+                 *
+                 * The column count is calculated from the container width via
+                 * ResizeObserver so the grid stays responsive.
+                 */
+                <div
+                  style={{
+                    height: `${rowVirtualizer.getTotalSize()}px`,
+                    width: "100%",
+                    position: "relative"
+                  }}
+                >
+                  <div
+                    className="absolute top-0 left-0 w-full"
+                    style={{
+                      transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
+                    }}
+                  >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const startIndex = virtualRow.index * gridColumns;
+                      const rowProducts = searchResults.slice(startIndex, startIndex + gridColumns);
+
+                      if (rowProducts.length === 0) return null;
+
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          ref={rowVirtualizer.measureElement}
+                          data-index={virtualRow.index}
+                          className="px-4 pb-4"
+                        >
+                          <div
+                            className="grid"
+                            style={{
+                              gridTemplateColumns: `repeat(${gridColumns}, 1fr)`,
+                              gap: `${GRID_CARD_GAP}px`
+                            }}
+                          >
+                            {rowProducts.map((product) => (
+                              <ProductGridItem key={product.id} product={product} />
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               {!hasNextPage && searchResults.length > 0 && (
                 <div className="text-muted-foreground flex flex-col items-center py-10 text-center">
                   <div className="text-2xl font-medium">No more products</div>

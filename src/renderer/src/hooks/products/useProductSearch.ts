@@ -118,16 +118,17 @@ export const useProductSearch = (type: ProductSearchType) => {
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
+    const totalCount = rowVirtualizer.options.count;
 
     if (
       lastItem &&
-      lastItem.index >= searchResults.length - 1 &&
+      lastItem.index >= totalCount - 1 &&
       hasNextPage &&
       !isFetchingNextPage
     ) {
       fetchNextPage();
     }
-  }, [fetchNextPage, searchResults, hasNextPage, isFetchingNextPage, virtualItems]);
+  }, [fetchNextPage, searchResults, hasNextPage, isFetchingNextPage, virtualItems, rowVirtualizer.options.count]);
 
   return {
     productsSearchParam,
