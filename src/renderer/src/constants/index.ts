@@ -1,5 +1,14 @@
-import { SortOption, TIME_PERIOD } from "@shared/types";
-import { BarChart3, Receipt, Users, Zap } from "lucide-react";
+import { PRODUCT_FILTER, SortOption, TIME_PERIOD } from "@shared/types";
+import {
+  ArrowDownAZ,
+  ArrowUpAZ,
+  BarChart3,
+  Receipt,
+  TrendingDown,
+  TrendingUp,
+  Users,
+  Zap
+} from "lucide-react";
 
 export const PRODUCT_NAME = "QuickCart";
 
@@ -32,6 +41,18 @@ export const ignoredWeight = ["", "1ml", "1g", "none", "1pc", "1kg"];
 // Products Page
 export const PRODUCTS_SEARCH_DELAY = 400;
 export const PRODUCTS_SEARCH_PAGE_SIZE = 20;
+export const PRODUCT_SORT_OPTIONS = [
+  { value: "name_asc", label: "Name: A → Z", icon: ArrowDownAZ },
+  { value: "name_desc", label: "Name: Z → A", icon: ArrowUpAZ },
+  { value: "price_low_high", label: "Price: Low → High", icon: TrendingUp },
+  { value: "price_high_low", label: "Price: High → Low", icon: TrendingDown }
+] as const;
+export const PRODUCT_STATUS_OPTIONS = [
+  { value: PRODUCT_FILTER.ACTIVE, label: "Active" },
+  { value: PRODUCT_FILTER.INACTIVE, label: "Inactive" },
+  { value: PRODUCT_FILTER.ALL, label: "All" },
+  { value: PRODUCT_FILTER.DELETED, label: "Deleted" }
+] as const;
 
 export const weights = [
   {
