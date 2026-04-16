@@ -1,3 +1,4 @@
+// types used globally for both frontend & api service
 import type z from "zod";
 import type { createCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
