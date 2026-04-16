@@ -1,4 +1,5 @@
 import { useProductHistory } from "@/hooks/products/useProductHistory";
+import { useProductsStore } from "@/store/productsStore";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatToRupees } from "@shared/utils/utils";
 import { AlertCircle, ArrowRight, Clock, Clock3, Loader2 } from "lucide-react";
@@ -32,7 +33,8 @@ function DiffRow({
   );
 }
 
-export function ProductHistoryTimeline({ productId }: { productId: string | null | undefined }) {
+export function ProductHistoryTimeline() {
+  const productId = useProductsStore((state) => state.productId);
   const { data, isLoading, error } = useProductHistory(productId);
 
   if (!productId) {

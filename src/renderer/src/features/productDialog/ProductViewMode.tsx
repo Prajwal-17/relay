@@ -1,4 +1,3 @@
-import type { ProductsFormType } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
@@ -7,13 +6,11 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
 
-export const ProductViewMode = ({
-  formData,
-  productId
-}: {
-  formData: ProductsFormType;
-  productId: string | null;
-}) => {
+import { useProductsStore } from "@/store/productsStore";
+
+export const ProductViewMode = () => {
+  const formData = useProductsStore((state) => state.formDataState);
+  const productId = useProductsStore((state) => state.productId);
   const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "N/A";
   const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : null;
   const displayPurchasePrice = formData.purchasePrice

@@ -12,26 +12,17 @@ import { ProductHistoryTimeline } from "./ProductHistoryTimeline";
 import { ProductViewMode } from "./ProductViewMode";
 
 export function ProductDialog() {
-  const {
-    openProductDialog,
-    setOpenProductDialog,
-    actionType,
-    showDeleteConfirm,
-    setShowDeleteConfirm,
-    productId,
-    formDataState,
-    dirtyFields,
-    deleteProductMutation,
-    handleSubmit,
-    handleInputChange,
-    errors,
-    productMutation
-  } = useProductDialog();
+  const { showDeleteConfirm, setShowDeleteConfirm, deleteProductMutation, productMutation } =
+    useProductDialog();
 
+  const openProductDialog = useProductsStore((state) => state.openProductDialog);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const actionType = useProductsStore((state) => state.actionType);
   const dialogMode = useProductsStore((state) => state.dialogMode);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const initialTab = useProductsStore((state) => state.initialTab);
   const setInitialTab = useProductsStore((state) => state.setInitialTab);
+  const productName = useProductsStore((state) => state.formDataState.name);
 
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -73,7 +64,7 @@ export function ProductDialog() {
           <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">
             <div className="min-w-0 pr-2">
               <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                {isAddMode ? "New Product" : formDataState.name || "Product Details"}
+                {isAddMode ? "New Product" : productName || "Product Details"}
               </h2>
               {!isAddMode && (
                 <p className="text-muted-foreground mt-0.5 truncate text-[0.8rem]">
@@ -163,7 +154,6 @@ export function ProductDialog() {
                 showDeleteConfirm={showDeleteConfirm}
                 setShowDeleteConfirm={setShowDeleteConfirm}
                 deleteProductMutation={deleteProductMutation}
-                productId={productId}
               />
             </div>
           )}
@@ -186,26 +176,16 @@ export function ProductDialog() {
                       transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
                       className="border-border bg-secondary/30 hidden w-[35%] shrink-0 overflow-y-auto border-r p-7 md:block"
                     >
-                      <ProductPreview formData={formDataState} />
+                      <ProductPreview />
                     </motion.div>
 
                     <div className="flex min-h-0 flex-1 flex-col p-6">
-                      <ProductEditForm
-                        formDataState={formDataState}
-                        handleInputChange={handleInputChange}
-                        errors={errors}
-                        actionType={actionType}
-                        productMutation={productMutation}
-                        setOpenProductDialog={setOpenProductDialog}
-                        handleSubmit={handleSubmit}
-                        dirtyFields={dirtyFields}
-                        setDialogMode={setDialogMode}
-                      />
+                      <ProductEditForm />
                     </div>
                   </motion.div>
                 ) : (
                   <motion.div key="view" className="h-full overflow-y-auto px-7 py-6">
-                    <ProductViewMode formData={formDataState} productId={productId} />
+                    <ProductViewMode />
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -219,7 +199,7 @@ export function ProductDialog() {
                   description="This product hasn't been created yet. Save it first to start tracking changes."
                 />
               ) : (
-                <ProductHistoryTimeline productId={productId} />
+                <ProductHistoryTimeline />
               )}
             </TabsContent>
 

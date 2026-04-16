@@ -10,34 +10,23 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS } from "@/constants";
-import type { ProductsFormType } from "@/store/productsStore";
+import { useProductDialog } from "@/hooks/products/useProductDialog";
+import { useProductsStore } from "@/store/productsStore";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import { ImageOff, Trash2, Upload } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { StatusIndicator } from "./StatusIndicator";
 
-export const ProductEditForm = ({
-  formDataState,
-  handleInputChange,
-  errors,
-  actionType,
-  productMutation,
-  setOpenProductDialog,
-  handleSubmit,
-  dirtyFields,
-  setDialogMode
-}: {
-  formDataState: ProductsFormType;
-  handleInputChange: (field: string, value: any) => void;
-  errors: Record<string, string>;
-  actionType: string;
-  productMutation: any;
-  setOpenProductDialog: () => void;
-  handleSubmit: (action: "add" | "edit" | "billing-page-edit") => void;
-  dirtyFields: any;
-  setDialogMode: (mode: "view" | "edit") => void;
-}) => {
+export const ProductEditForm = () => {
+  const formDataState = useProductsStore((state) => state.formDataState);
+  const errors = useProductsStore((state) => state.errors);
+  const actionType = useProductsStore((state) => state.actionType);
+  const dirtyFields = useProductsStore((state) => state.dirtyFields);
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+
+  const { handleInputChange, handleSubmit, productMutation } = useProductDialog();
   return (
     <motion.div
       initial={{ opacity: 0, x: 8 }}
@@ -58,7 +47,6 @@ export const ProductEditForm = ({
                   variant="outline"
                   size="lg"
                   type="button"
-                  onClick={() => {}}
                   className="h-10 gap-2 font-medium shadow-sm"
                 >
                   <Upload className="h-4 w-4" />
@@ -260,7 +248,8 @@ export const ProductEditForm = ({
   );
 };
 
-export const ProductPreview = ({ formData }: { formData: ProductsFormType }) => {
+export const ProductPreview = () => {
+  const formData = useProductsStore((state) => state.formDataState);
   const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "—";
   const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : "—";
   const displayPurchasePrice = formData.purchasePrice

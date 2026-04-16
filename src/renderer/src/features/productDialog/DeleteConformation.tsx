@@ -4,17 +4,18 @@ import { AlertTriangle } from "lucide-react";
 import { motion } from "motion/react";
 import toast from "react-hot-toast";
 
+import { useProductsStore } from "@/store/productsStore";
+
 export const DeleteConfirmation = ({
   showDeleteConfirm,
   setShowDeleteConfirm,
-  deleteProductMutation,
-  productId
+  deleteProductMutation
 }: {
   showDeleteConfirm: boolean;
   setShowDeleteConfirm: (v: boolean) => void;
   deleteProductMutation: UseMutationResult<null, Error, string>;
-  productId: string | null;
 }) => {
+  const productId = useProductsStore((state) => state.productId);
   if (!showDeleteConfirm) return null;
 
   return (
