@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { ignoredWeight } from "@/constants";
+import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductSearchItemDTO } from "@shared/types";
 import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
@@ -48,7 +48,15 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   return (
     <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-3 transition-colors">
       <div className="border-border bg-muted/60 flex h-18 w-18 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
-        <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+        {product.imageUrl ? (
+          <img
+            src={`${PROTOCOL_NAME}${product.imageUrl}`}
+            alt={product.name || "Product-Image"}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+        )}
       </div>
 
       <div className="min-w-0 flex-1">

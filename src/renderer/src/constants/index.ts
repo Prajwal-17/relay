@@ -53,6 +53,7 @@ export const PRODUCT_STATUS_OPTIONS = [
   { value: PRODUCT_FILTER.ALL, label: "All" },
   { value: PRODUCT_FILTER.DELETED, label: "Deleted" }
 ] as const;
+export const PROTOCOL_NAME = "app-assets://";
 
 export const weights = [
   {

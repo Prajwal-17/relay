@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ignoredWeight } from "@/constants";
+import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductSearchItemDTO } from "@shared/types";
 import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
@@ -52,7 +52,15 @@ export default function ProductGridItem({ product }: ProductGridItemProps) {
   return (
     <div className="group bg-card border-border relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
       <div className="bg-muted/40 border-border/50 flex aspect-4/3 items-center justify-center overflow-hidden border-b">
-        <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+        {product.imageUrl ? (
+          <img
+            src={`${PROTOCOL_NAME}${product.imageUrl}`}
+            alt={product.name || "Product-Image"}
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+        )}
       </div>
 
       <div className="flex flex-1 flex-col p-3.5">

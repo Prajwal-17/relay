@@ -9,43 +9,31 @@ import toast from "react-hot-toast";
 import z from "zod";
 
 export const useProductDialog = () => {
-  const filterType = useProductsStore((state) => state.filterType);
-  const openProductDialog = useProductsStore((state) => state.openProductDialog);
-  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
-  const actionType = useProductsStore((state) => state.actionType);
-  const setActionType = useProductsStore((state) => state.setActionType);
-  const productId = useProductsStore((state) => state.productId);
-  const setProductId = useProductsStore((state) => state.setProductId);
-  const formDataState = useProductsStore((state) => state.formDataState);
-  const setFormDataState = useProductsStore((state) => state.setFormDataState);
-  const dirtyFields = useProductsStore((state) => state.dirtyFields);
-  const setDirtyFields = useProductsStore((state) => state.setDirtyFields);
-  const searchParam = useProductsStore((state) => state.searchParam);
-  const errors = useProductsStore((state) => state.errors);
-  const setErrors = useProductsStore((state) => state.setErrors);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
   const queryClient = useQueryClient();
 
+  const actionType = useProductsStore((state) => state.actionType);
+
   useEffect(() => {
+    const state = useProductsStore.getState();
     if (actionType === "add") {
-      setProductId(null);
-      setFormDataState({});
-      setDirtyFields({});
-      setErrors({});
+      state.setProductId(null);
+      state.setFormDataState(
+        Object.keys(state.formDataState).length > 0 ? {} : state.formDataState
+      );
+      state.setDirtyFields({});
+      state.setErrors({});
     }
 
-    if (actionType === "edit") {
-      setErrors({});
+    if (actionType === "edit" || actionType === "billing-page-edit") {
+      state.setErrors({});
     }
-
-    if (actionType === "billing-page-edit") {
-      setErrors({});
-    }
-  }, [actionType, setProductId, setFormDataState, setDirtyFields, setErrors]);
+  }, [actionType]);
 
   const handleInputChange = (field: string, value: any) => {
+    const { actionType, formDataState, errors, setFormDataState, setDirtyFields, setErrors } =
+      useProductsStore.getState();
+
     const updates: Record<string, any> = { [field]: value };
 
     if (field === "unit" && (value === "none" || value === "")) {
@@ -120,6 +108,7 @@ export const useProductDialog = () => {
           action: "edit" | "billing-page-edit";
           payload: UpdateProductPayload;
         }) => {
+      const { productId } = useProductsStore.getState();
       if (action === "add") {
         return apiClient.post("/api/products", payload);
       } else {
@@ -130,6 +119,16 @@ export const useProductDialog = () => {
       }
     },
     onSuccess: (_response, variables) => {
+      const {
+        filterType,
+        searchParam,
+        setErrors,
+        setProductId,
+        setFormDataState,
+        setDirtyFields,
+        setOpenProductDialog
+      } = useProductsStore.getState();
+
       queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
       setErrors({});
       setProductId(null);
@@ -146,6 +145,7 @@ export const useProductDialog = () => {
   });
 
   const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
+    const { formDataState, dirtyFields, setErrors } = useProductsStore.getState();
     const fullFormValidation = updateProductSchema.safeParse(formDataState);
 
     if (!fullFormValidation.success) {
@@ -189,6 +189,9 @@ export const useProductDialog = () => {
   const deleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
+      const { filterType, searchParam, setErrors, setFormDataState, setOpenProductDialog } =
+        useProductsStore.getState();
+
       queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
       setErrors({});
       setFormDataState({});
@@ -201,20 +204,11 @@ export const useProductDialog = () => {
   });
 
   return {
-    openProductDialog,
-    setOpenProductDialog,
-    deleteProductMutation,
-    actionType,
-    setActionType,
     showDeleteConfirm,
     setShowDeleteConfirm,
-    errors,
-    setErrors,
-    productId,
-    formDataState,
-    dirtyFields,
     handleInputChange,
     handleSubmit,
-    productMutation
+    productMutation,
+    deleteProductMutation
   };
 };

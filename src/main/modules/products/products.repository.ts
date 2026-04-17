@@ -23,6 +23,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
       .select({
         id: products.id,
         name: products.name,
+        imageUrl: products.imageUrl,
         productSnapshot: products.productSnapshot,
         weight: products.weight,
         unit: products.unit,
@@ -55,6 +56,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
     .select({
       id: products.id,
       name: products.name,
+      imageUrl: products.imageUrl,
       productSnapshot: products.productSnapshot,
       weight: products.weight,
       unit: products.unit,
@@ -86,6 +88,7 @@ const createProduct = async (payload: CreateProductPayload) => {
       .insert(products)
       .values({
         name: payload.name,
+        imageUrl: payload.imageUrl,
         productSnapshot: generateProductSnapshot({
           name: payload.name,
           weight: payload.weight ?? null,

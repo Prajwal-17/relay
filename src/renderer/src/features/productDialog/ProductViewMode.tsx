@@ -5,7 +5,7 @@ import { Check, Copy, ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
-
+import { PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 
 export const ProductViewMode = () => {
@@ -35,9 +35,9 @@ export const ProductViewMode = () => {
         <div className="bg-secondary/40 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-4xl border shadow-sm">
           {formData.imageUrl ? (
             <img
-              src={formData.imageUrl}
-              alt={formData.name || "Product"}
-              className="h-full w-full object-cover"
+              src={`${PROTOCOL_NAME}${formData.imageUrl}`}
+              alt={formData.name || "Product-Image"}
+              className="h-full w-full object-contain"
             />
           ) : (
             <div className="flex flex-col items-center gap-2.5">

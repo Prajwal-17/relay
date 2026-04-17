@@ -16,6 +16,7 @@ import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
 import { ImageOff, Trash2, Upload } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
+import toast from "react-hot-toast";
 import { StatusIndicator } from "./StatusIndicator";
 
 export const ProductEditForm = () => {
@@ -27,6 +28,16 @@ export const ProductEditForm = () => {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
 
   const { handleInputChange, handleSubmit, productMutation } = useProductDialog();
+
+  const openFilePicker = async () => {
+    const response = await window.productsApi.openDialogAndSaveImage();
+    if (response.status === "error") {
+      toast.error(response.error.message);
+    } else {
+      handleInputChange("imageUrl", response.data.url);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, x: 8 }}
@@ -42,26 +53,33 @@ export const ProductEditForm = () => {
               <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Product Image
               </Label>
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="outline"
-                  size="lg"
-                  type="button"
-                  className="h-10 gap-2 font-medium shadow-sm"
-                >
-                  <Upload className="h-4 w-4" />
-                  Upload
-                </Button>
-                {formDataState.imageUrl && (
+              <div className="flex max-w-[320px] items-start gap-3">
+                {formDataState.imageUrl ? (
+                  <div className="flex w-full flex-col items-start gap-1">
+                    <span className="text-foreground text-sm leading-snug font-semibold break-all">
+                      {formDataState.imageUrl.split(/[/\\]/).pop() || formDataState.imageUrl}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      type="button"
+                      onClick={() => handleInputChange("imageUrl", null)}
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive -ml-2 h-7 gap-1.5 px-2 text-xs font-bold tracking-wider uppercase"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="outline"
+                    size="lg"
                     type="button"
-                    onClick={() => handleInputChange("imageUrl", null)}
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 gap-2"
+                    onClick={() => openFilePicker()}
+                    className="h-10 gap-2 font-medium shadow-sm"
                   >
-                    <Trash2 className="h-4 w-4" />
-                    Remove
+                    <Upload className="h-4 w-4" />
+                    Upload
                   </Button>
                 )}
               </div>

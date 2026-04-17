@@ -386,3 +386,7 @@ export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
 }
+
+export interface ProductsApi {
+  openDialogAndSaveImage: () => Promise<ApiResponse<{ url: string }>>;
+}
