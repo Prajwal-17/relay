@@ -1,5 +1,5 @@
-import { navLinks } from "@/constants/Navlinks";
 import quickcartLogo from "@/assets/quickcart.svg";
+import { navLinks } from "@/constants/Navlinks";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { FileText, ShoppingCart } from "lucide-react";
@@ -213,7 +213,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             transition={{ duration: 0.16, ease: "easeInOut" }}
             className="flex items-center gap-3"
           >
-            <div className="bg-primary/10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl p-2">
+            <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl p-2">
               <img
                 src={quickcartLogo}
                 alt="QuickCart logo"

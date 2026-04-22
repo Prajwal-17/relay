@@ -1,332 +1,251 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { PRODUCT_UNITS } from "@/constants";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
-import { AlertTriangle, History, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { useProductsStore } from "@/store/productsStore";
+import { Clock, Edit3, Eye, Info, ReceiptText, Trash2, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
+import { DeleteConfirmation } from "./DeleteConformation";
+import { ProductEditForm, ProductPreview } from "./ProductEditForm";
+import { ProductHistoryTimeline } from "./ProductHistoryTimeline";
+import { ProductViewMode } from "./ProductViewMode";
 
 export function ProductDialog() {
-  const {
-    openProductDialog,
-    setOpenProductDialog,
-    actionType,
-    showDeleteConfirm,
-    setShowDeleteConfirm,
-    productId,
-    formDataState,
-    dirtyFields,
-    deleteProductMutation,
-    handleSubmit,
-    handleInputChange,
-    errors,
-    productMutation
-  } = useProductDialog();
+  const { showDeleteConfirm, setShowDeleteConfirm, deleteProductMutation, productMutation } =
+    useProductDialog();
+
+  const openProductDialog = useProductsStore((state) => state.openProductDialog);
+  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
+  const actionType = useProductsStore((state) => state.actionType);
+  const dialogMode = useProductsStore((state) => state.dialogMode);
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
+  const initialTab = useProductsStore((state) => state.initialTab);
+  const setInitialTab = useProductsStore((state) => state.setInitialTab);
+  const productName = useProductsStore((state) => state.formDataState.name);
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  const isEditMode = dialogMode === "edit";
+  const isViewMode = dialogMode === "view";
+  const isAddMode = actionType === "add";
+
+  // add mode always shows edit form
+  const showEditForm = isEditMode || isAddMode;
 
   return (
-    <>
-      <Dialog open={openProductDialog} onOpenChange={setOpenProductDialog}>
-        <DialogContent
-          onOpenAutoFocus={(e) => {
-            if (actionType === "billing-page-edit" || actionType === "edit") {
-              e.preventDefault();
-            }
-          }}
-          onInteractOutside={(e) => {
-            if (productMutation.isPending) e.preventDefault();
-          }}
-          onKeyDownCapture={(e) => {
-            if (productMutation.isPending) e.preventDefault();
-          }}
-          className="flex h-full max-h-[85vh] w-full min-w-225 flex-col p-0"
+    <Dialog
+      open={openProductDialog}
+      onOpenChange={() => {
+        setInitialTab("info");
+        setOpenProductDialog();
+      }}
+    >
+      <DialogContent
+        showCloseButton={false}
+        onOpenAutoFocus={(e) => {
+          if (actionType === "billing-page-edit" || actionType === "edit") {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          if (productMutation.isPending) e.preventDefault();
+        }}
+        onKeyDownCapture={(e) => {
+          if (productMutation.isPending) e.preventDefault();
+        }}
+        className="flex h-[88vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
+      >
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as "info" | "history" | "transactions")}
+          className="flex h-full flex-col"
         >
-          <div className="flex h-full flex-col">
-            <div className="p-6 pb-0">
-              <DialogHeader>
-                <DialogTitle className="text-2xl">
-                  {actionType === "edit" || actionType === "billing-page-edit"
-                    ? "Edit Product"
-                    : "Add New Product"}
-                </DialogTitle>
-              </DialogHeader>
+          <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">
+            <div className="min-w-0 pr-2">
+              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
+                {isAddMode ? "New Product" : productName || "Product Details"}
+              </h2>
+              {!isAddMode && (
+                <p className="text-muted-foreground mt-0.5 truncate text-[0.8rem]">
+                  {isViewMode ? "Viewing details" : "Editing"}
+                </p>
+              )}
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6">
-              <div className="space-y-6 py-6">
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="name" className="text-base font-semibold">
-                      Product Name *
-                    </Label>
-                    <Input
-                      id="name"
-                      type="text"
-                      value={formDataState.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
-                      placeholder="Enter product name"
-                      className="px-4 py-6 text-xl! font-semibold"
-                    />
-                    {errors.name && <div className="text-destructive">{errors.name}</div>}
-                  </div>
+            <div className="flex shrink-0 justify-center">
+              <TabsList className="bg-secondary/40 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] sm:w-fit">
+                <TabsTrigger
+                  value="info"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  Product Info
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  History
+                </TabsTrigger>
+                <TabsTrigger
+                  value="transactions"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                >
+                  <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  Transactions
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="w-full space-y-2">
-                        <Label htmlFor="weight" className="text-base font-semibold">
-                          Weight
-                        </Label>
-                        <Input
-                          id="weight"
-                          type="text"
-                          value={formDataState.weight ?? ""}
-                          onChange={(e) => handleInputChange("weight", e.target.value)}
-                          placeholder="e.g., 500"
-                          className="px-4 py-6 text-lg! font-medium"
-                        />
-                        {errors.weight && <div className="text-destructive">{errors.weight}</div>}
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="unit" className="text-base font-semibold">
-                          Unit
-                        </Label>
-                        <Select
-                          value={formDataState.unit ?? "none"}
-                          onValueChange={(value) => {
-                            handleInputChange("unit", value);
-                          }}
-                        >
-                          <SelectTrigger className="h-11 text-lg">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {PRODUCT_UNITS.map((unit) => (
-                              <SelectItem className="text-base font-medium" key={unit} value={unit}>
-                                {unit}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {errors.unit && <div className="text-destructive">{errors.unit}</div>}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="purchasePrice" className="text-base font-semibold">
-                        Purchase Price (Optional)
-                      </Label>
-                      <Input
-                        id="purchasePrice"
-                        type="text"
-                        value={formDataState.purchasePrice ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleInputChange("purchasePrice", value === "" ? null : value);
-                        }}
-                        className="px-4 py-6 text-lg! font-medium"
-                      />
-                      {errors.purchasePrice && (
-                        <div className="text-destructive">{errors.purchasePrice}</div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="price" className="text-base font-semibold">
-                        Selling Price *
-                      </Label>
-                      <Input
-                        id="price"
-                        type="text"
-                        value={formDataState.price ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleInputChange("price", value === "" ? null : value);
-                        }}
-                        className="px-4 py-6 text-lg! font-medium"
-                      />
-                      {errors.price && <div className="text-destructive">{errors.price}</div>}
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="mrp" className="text-base font-semibold">
-                        MRP (Optional)
-                      </Label>
-                      <Input
-                        id="mrp"
-                        type="text"
-                        value={formDataState.mrp ?? ""}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          handleInputChange("mrp", value === "" ? null : value);
-                        }}
-                        className="px-4 py-6 text-lg! font-medium"
-                      />
-                      {errors.mrp && <div className="text-destructive">{errors.mrp}</div>}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <Separator />
-                    <div className="space-y-4">
-                      <h4 className="text-foreground text-base font-semibold">Product Settings</h4>
-
-                      <div className="flex items-center justify-between rounded-lg border bg-slate-50/50 p-4">
-                        <div className="space-y-1">
-                          <Label htmlFor="status" className="text-base font-semibold">
-                            Product Status
-                          </Label>
-                          <p className="text-base text-slate-600">
-                            {formDataState.isDisabled
-                              ? "Product is currently inactive and hidden."
-                              : "Product is currently active and visible."}
-                          </p>
-                        </div>
-                        <Switch
-                          id="status"
-                          checked={!formDataState.isDisabled}
-                          onCheckedChange={(checked) => handleInputChange("isDisabled", !checked)}
-                          className="scale-125"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {actionType === "edit" && (
-                    <div className="flex items-center justify-between rounded-lg border bg-slate-50/50 p-6">
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-3 text-base font-semibold">
-                          <History className="h-5 w-5" />
-                          Version History
-                        </Label>
-                        <p className="text-base text-slate-600">
-                          View all changes made to this product
-                        </p>
-                      </div>
+            <div className="flex min-w-0 items-center justify-end gap-3 pl-2">
+              {!isAddMode && (
+                <>
+                  {isViewMode ? (
+                    <>
                       <Button
-                        type="button"
                         variant="outline"
-                        size="default"
-                        className="gap-2 px-6 py-3"
+                        onClick={() => setDialogMode("edit")}
+                        className="border-border text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                       >
-                        View History
+                        <Edit3 className="h-4 w-4" />
+                        Edit
                       </Button>
-                    </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowDeleteConfirm(true)}
+                        className="border-destructive/30 text-destructive hover:bg-destructive/10 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="hidden sm:inline">Delete</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      onClick={() => setDialogMode("view")}
+                      disabled={productMutation.isPending}
+                      className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                    >
+                      <Eye className="h-4 w-4" />
+                      View
+                    </Button>
                   )}
+                </>
+              )}
 
-                  {actionType === "edit" && (
-                    <div className="space-y-4">
-                      <Separator />
-                      <div className="space-y-4">
-                        <h4 className="text-foreground text-lg font-semibold">Danger Zone</h4>
-
-                        {!showDeleteConfirm ? (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setShowDeleteConfirm(true)}
-                            className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground h-12 w-full justify-center gap-2 bg-transparent text-base hover:cursor-pointer disabled:opacity-60"
-                          >
-                            <Trash2 className="h-5 w-5" />
-                            Delete Product
-                          </Button>
-                        ) : (
-                          <div className="border-destructive bg-card text-card-foreground space-y-4 rounded-lg border p-6">
-                            <div className="flex items-start gap-4">
-                              <AlertTriangle className="text-destructive mt-0.5 h-6 w-6 shrink-0" />
-                              <div className="space-y-3">
-                                <p className="text-destructive text-base font-semibold">
-                                  Are you sure you want to delete this product?
-                                </p>
-                                <p className="text-muted-foreground text-base">
-                                  This action cannot be undone. The product will be permanently
-                                  removed from your inventory.
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex gap-3">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="default"
-                                disabled={deleteProductMutation.isPending}
-                                onClick={() => setShowDeleteConfirm(false)}
-                                className="text-foreground border-border hover:bg-muted h-12 flex-1 cursor-pointer text-lg disabled:opacity-60"
-                              >
-                                Cancel
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="default"
-                                disabled={deleteProductMutation.isPending}
-                                onClick={() => {
-                                  if (!productId) {
-                                    toast.error("Product Id does exist.");
-                                    return;
-                                  }
-                                  deleteProductMutation.mutate(productId);
-                                }}
-                                className="bg-destructive text-destructive-foreground h-12 flex-1 cursor-pointer text-lg hover:opacity-90 disabled:opacity-60"
-                              >
-                                {deleteProductMutation.isPending
-                                  ? "Deleting Product..."
-                                  : "Delete Product"}
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div className="shrink-0 border-t p-8">
-              <div className="flex justify-end gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpenProductDialog()}
-                  disabled={productMutation.isPending}
-                  className="h-12 cursor-pointer px-8 text-base disabled:opacity-60"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleSubmit(actionType);
-                  }}
-                  disabled={
-                    productMutation.isPending ||
-                    (actionType === "add"
-                      ? Object.keys(formDataState).length === 0
-                      : Object.keys(dirtyFields).length === 0)
-                  }
-                  className="bg-primary hover:bg-primary/80 h-12 cursor-pointer px-8 text-base disabled:opacity-60"
-                >
-                  {productMutation.isPending
-                    ? actionType === "add"
-                      ? "Adding Product..."
-                      : "Updating Product..."
-                    : actionType === "add"
-                      ? "Add Product"
-                      : "Update Product"}
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setInitialTab("info");
+                  setOpenProductDialog();
+                }}
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
+              >
+                <X className="h-6! w-6!" />
+              </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+
+          {!isAddMode && showDeleteConfirm && (
+            <div className="shrink-0 px-7 py-4">
+              <DeleteConfirmation
+                showDeleteConfirm={showDeleteConfirm}
+                setShowDeleteConfirm={setShowDeleteConfirm}
+                deleteProductMutation={deleteProductMutation}
+              />
+            </div>
+          )}
+
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            <TabsContent value="info" className="mt-0 min-h-0 flex-1">
+              <AnimatePresence mode="wait">
+                {showEditForm ? (
+                  <motion.div
+                    key="edit-split"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                    className="flex h-full min-h-0"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+                      className="border-border bg-secondary/30 hidden w-[35%] shrink-0 overflow-y-auto border-r p-7 md:block"
+                    >
+                      <ProductPreview />
+                    </motion.div>
+
+                    <div className="flex min-h-0 flex-1 flex-col p-6">
+                      <ProductEditForm />
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div key="view" className="h-full overflow-y-auto px-7 py-6">
+                    <ProductViewMode />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </TabsContent>
+
+            <TabsContent value="history" className="relative mt-0 min-h-0 flex-1 overflow-hidden">
+              {isAddMode ? (
+                <PlaceholderTab
+                  icon={<Clock className="h-8 w-8" />}
+                  title="No History Available"
+                  description="This product hasn't been created yet. Save it first to start tracking changes."
+                />
+              ) : (
+                <ProductHistoryTimeline />
+              )}
+            </TabsContent>
+
+            <TabsContent value="transactions" className="mt-0 min-h-0 flex-1">
+              {isAddMode ? (
+                <PlaceholderTab
+                  icon={<ReceiptText className="h-8 w-8" />}
+                  title="No Transactions Yet"
+                  description="This product hasn't been created yet. Save it first to view transaction history."
+                />
+              ) : (
+                <PlaceholderTab
+                  icon={<ReceiptText className="h-8 w-8" />}
+                  title="Transactions"
+                  description="View all invoices where this product was sold — coming soon"
+                />
+              )}
+            </TabsContent>
+          </div>
+        </Tabs>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PlaceholderTab({
+  icon,
+  title,
+  description
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
+      className="flex flex-col items-center justify-center py-24"
+    >
+      <div className="bg-secondary text-muted-foreground mb-5 flex h-20 w-20 items-center justify-center rounded-2xl">
+        {icon}
+      </div>
+      <h3 className="text-foreground mb-2 text-lg font-semibold">{title}</h3>
+      <p className="text-muted-foreground text-base">{description}</p>
+    </motion.div>
   );
 }

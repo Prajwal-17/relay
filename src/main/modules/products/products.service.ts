@@ -7,10 +7,10 @@ import {
   type ProductSearchItemDTO,
   type UpdateProductPayload
 } from "../../../shared/types";
+import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { AppError } from "../../utils/appError";
-import { generateProductSnapshot } from "../../utils/product.utils";
 import { productRepository } from "./products.repository";
 import type { ProductSearchParams } from "./products.types";
 
@@ -142,6 +142,14 @@ const updateProduct = async (
   };
 };
 
+const getHistoryEntriesById = async (productId: string) => {
+  const entries = await productRepository.getHistoryEntriesById(productId);
+  return {
+    productId,
+    entries
+  };
+};
+
 const deleteProduct = async (productId: string) => {
   const changes = await productRepository.deleteProductById(productId);
   if (changes === 0) {
@@ -153,5 +161,6 @@ export const productService = {
   searchProduct,
   addProduct,
   updateProduct,
+  getHistoryEntriesById,
   deleteProduct
 };

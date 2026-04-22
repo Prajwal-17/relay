@@ -1,14 +1,14 @@
-import { and, eq, like, sql } from "drizzle-orm";
-import type {
-  CreateProductPayload,
-  ProductSearchItemDTO,
-  UpdateProductPayload
+import { and, desc, eq, like, sql } from "drizzle-orm";
+import {
+  type CreateProductPayload,
+  type ProductSearchItemDTO,
+  type UpdateProductPayload
 } from "../../../shared/types";
+import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
 import { AppError } from "../../utils/appError";
-import { generateProductSnapshot } from "../../utils/product.utils";
 import type { ProductSearchQuery } from "./products.types";
 
 const findById = async (id: string) => {
@@ -23,6 +23,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
       .select({
         id: products.id,
         name: products.name,
+        imageUrl: products.imageUrl,
         productSnapshot: products.productSnapshot,
         weight: products.weight,
         unit: products.unit,
@@ -32,7 +33,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
         totalQuantitySold: products.totalQuantitySold,
         isDisabled: products.isDisabled,
         isDeleted: products.isDeleted,
-        deletedAt: products.deletedAt
+        deletedAt: products.deletedAt,
+        lastSoldAt: products.lastSoldAt,
+        updatedAt: products.updatedAt,
+        createdAt: products.createdAt
       })
       .from(products)
       .where(params.whereClause)
@@ -52,6 +56,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
     .select({
       id: products.id,
       name: products.name,
+      imageUrl: products.imageUrl,
       productSnapshot: products.productSnapshot,
       weight: products.weight,
       unit: products.unit,
@@ -61,7 +66,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
       totalQuantitySold: products.totalQuantitySold,
       isDisabled: products.isDisabled,
       isDeleted: products.isDeleted,
-      deletedAt: products.deletedAt
+      deletedAt: products.deletedAt,
+      lastSoldAt: products.lastSoldAt,
+      updatedAt: products.updatedAt,
+      createdAt: products.createdAt
     })
     .from(products)
     .where(and(params.whereClause, like(products.productSnapshot, `%${params.searchTerm}%`)))
@@ -80,6 +88,7 @@ const createProduct = async (payload: CreateProductPayload) => {
       .insert(products)
       .values({
         name: payload.name,
+        imageUrl: payload.imageUrl,
         productSnapshot: generateProductSnapshot({
           name: payload.name,
           weight: payload.weight ?? null,
@@ -135,6 +144,23 @@ const insertHistory = async (historyObj: any) => {
   return db.insert(productHistory).values(historyObj).run();
 };
 
+const getHistoryEntriesById = async (productId: string) => {
+  return db
+    .select({
+      oldPrice: productHistory.oldPrice,
+      newPrice: productHistory.newPrice,
+      oldMrp: productHistory.oldMrp,
+      newMrp: productHistory.newMrp,
+      oldPurchasePrice: productHistory.oldPurchasePrice,
+      newPurchasePrice: productHistory.newPurchasePrice,
+      createdAt: productHistory.createdAt
+    })
+    .from(productHistory)
+    .where(eq(productHistory.productId, productId))
+    .orderBy(desc(productHistory.createdAt))
+    .all();
+};
+
 const deleteProductById = async (productId: string) => {
   const deletedAt = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
 
@@ -169,5 +195,6 @@ export const productRepository = {
   createProduct,
   updateById,
   insertHistory,
+  getHistoryEntriesById,
   deleteProductById
 };

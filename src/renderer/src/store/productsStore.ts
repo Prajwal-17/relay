@@ -10,19 +10,42 @@ export type ProductsFormType = Omit<
   price: string;
   purchasePrice: string | null;
   isDeleted: boolean;
+  imageUrl?: string | null;
+  pendingImageBlob?: Blob | null;
+  pendingImagePreviewUrl?: string | null;
+  lastSoldAt?: string | null;
+  totalQuantitySold?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 type ProductsStoreType = {
+  // search bar, filter & sort
   filterType: ProductFilterType;
   setFilterType: (newType: ProductFilterType) => void;
+  viewMode: "grid" | "list";
+  setViewMode: (mode: "grid" | "list") => void;
+  sortBy: string;
+  setSortBy: (sort: string) => void;
+  activeFilters: { key: string; label: string; value: string }[];
+  setActiveFilters: (filters: { key: string; label: string; value: string }[]) => void;
+  removeActiveFilter: (key: string) => void;
+  clearActiveFilters: () => void;
   openProductDialog: boolean;
-  setOpenProductDialog: () => void;
-  actionType: "add" | "edit" | "billing-page-edit";
-  setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
   searchParam: string;
   setSearchParam: (param: string) => void;
   searchResult: Product[] | [];
   setSearchResult: (mode: "append" | "replace", newResult: Product[]) => void;
+
+  // product dialog state
+  setOpenProductDialog: () => void;
+  dialogMode: "view" | "edit";
+  setDialogMode: (mode: "view" | "edit") => void;
+  initialTab: "info" | "history" | "transactions";
+  setInitialTab: (tab: "info" | "history" | "transactions") => void;
+  actionType: "add" | "edit" | "billing-page-edit";
+  setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
+  // product dialog form
   productId: string | null;
   setProductId: (id: string | null) => void;
   formDataState: ProductsFormType;
@@ -42,7 +65,14 @@ function initialFormData(): ProductsFormType {
     price: "",
     purchasePrice: null,
     isDisabled: false,
-    isDeleted: false
+    isDeleted: false,
+    imageUrl: null,
+    pendingImageBlob: null,
+    pendingImagePreviewUrl: null,
+    lastSoldAt: null,
+    totalQuantitySold: null,
+    createdAt: undefined,
+    updatedAt: undefined
   };
 }
 
@@ -59,6 +89,52 @@ export const useProductsStore = create<ProductsStoreType>()(
           "products/setFilterType"
         ),
 
+      viewMode: "list",
+      setViewMode: (mode) =>
+        set(
+          () => ({
+            viewMode: mode
+          }),
+          false,
+          "products/setViewMode"
+        ),
+
+      sortBy: "",
+      setSortBy: (sort) =>
+        set(
+          () => ({
+            sortBy: sort
+          }),
+          false,
+          "products/setSortBy"
+        ),
+
+      activeFilters: [],
+      setActiveFilters: (filters) =>
+        set(
+          () => ({
+            activeFilters: filters
+          }),
+          false,
+          "products/setActiveFilters"
+        ),
+      removeActiveFilter: (key) =>
+        set(
+          (state) => ({
+            activeFilters: state.activeFilters.filter((f) => f.key !== key)
+          }),
+          false,
+          "products/removeActiveFilter"
+        ),
+      clearActiveFilters: () =>
+        set(
+          () => ({
+            activeFilters: []
+          }),
+          false,
+          "products/clearActiveFilters"
+        ),
+
       openProductDialog: false,
       setOpenProductDialog: () =>
         set(
@@ -67,6 +143,26 @@ export const useProductsStore = create<ProductsStoreType>()(
           }),
           false,
           "products/setOpenProductDialog"
+        ),
+
+      dialogMode: "edit" as "view" | "edit",
+      setDialogMode: (mode) =>
+        set(
+          () => ({
+            dialogMode: mode
+          }),
+          false,
+          "products/setDialogMode"
+        ),
+
+      initialTab: "info" as "info" | "history" | "transactions",
+      setInitialTab: (tab) =>
+        set(
+          () => ({
+            initialTab: tab
+          }),
+          false,
+          "products/setInitialTab"
         ),
 
       actionType: "add",

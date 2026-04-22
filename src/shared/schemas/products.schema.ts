@@ -10,6 +10,7 @@ export const productCoreSchema = ProductSchema.omit({
   createdAt: true,
   updatedAt: true
 }).extend({
+  imageUrl: z.string({ error: "URL is invalid" }).nullable(),
   weight: z.preprocess(
     (val) => (typeof val === "string" && val.trim() === "" ? null : val),
     z.union([z.string(), z.null()]).optional()

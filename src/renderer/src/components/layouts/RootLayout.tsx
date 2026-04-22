@@ -8,7 +8,7 @@ const RootLayout = () => {
 
   return (
     <AnimatePresence mode="wait">
-      {!isOnboardingComplete ? (
+      {isOnboardingComplete ? (
         <OnboardingFlow key="onboarding" />
       ) : (
         <motion.div

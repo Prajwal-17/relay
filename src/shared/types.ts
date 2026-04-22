@@ -1,3 +1,4 @@
+// types used globally for both frontend & api service
 import type z from "zod";
 import type { createCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
@@ -25,6 +26,7 @@ export type Customer = {
 export type Product = {
   id: string;
   name: string;
+  imageUrl?: string | null;
   productSnapshot: string;
   weight: string | null;
   unit: string | null;
@@ -34,6 +36,7 @@ export type Product = {
   totalQuantitySold: number | null;
   isDisabled?: boolean;
   disabledAt?: string;
+  lastSoldAt?: string | null;
   updatedAt?: string;
   createdAt?: string;
 };
@@ -382,4 +385,8 @@ export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
+}
+
+export interface ProductsApi {
+  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
 }

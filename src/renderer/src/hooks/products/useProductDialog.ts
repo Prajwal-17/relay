@@ -1,3 +1,4 @@
+import { blobToDataUrl } from "@/features/productDialog/productImageCrop";
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import { dirtyFieldsProductSchema, updateProductSchema } from "@shared/schemas/products.schema";
@@ -8,44 +9,44 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import z from "zod";
 
+type ProductMutationVariables =
+  | {
+      action: "add";
+      payload: CreateProductPayload;
+      pendingImageBlob?: Blob | null;
+    }
+  | {
+      action: "edit" | "billing-page-edit";
+      payload: UpdateProductPayload;
+      pendingImageBlob?: Blob | null;
+    };
+
 export const useProductDialog = () => {
-  const filterType = useProductsStore((state) => state.filterType);
-  const openProductDialog = useProductsStore((state) => state.openProductDialog);
-  const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
-  const actionType = useProductsStore((state) => state.actionType);
-  const setActionType = useProductsStore((state) => state.setActionType);
-  const productId = useProductsStore((state) => state.productId);
-  const setProductId = useProductsStore((state) => state.setProductId);
-  const formDataState = useProductsStore((state) => state.formDataState);
-  const setFormDataState = useProductsStore((state) => state.setFormDataState);
-  const dirtyFields = useProductsStore((state) => state.dirtyFields);
-  const setDirtyFields = useProductsStore((state) => state.setDirtyFields);
-  const searchParam = useProductsStore((state) => state.searchParam);
-  const errors = useProductsStore((state) => state.errors);
-  const setErrors = useProductsStore((state) => state.setErrors);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
   const queryClient = useQueryClient();
 
+  const actionType = useProductsStore((state) => state.actionType);
+
   useEffect(() => {
+    const state = useProductsStore.getState();
     if (actionType === "add") {
-      setProductId(null);
-      setFormDataState({});
-      setDirtyFields({});
-      setErrors({});
+      state.setProductId(null);
+      state.setFormDataState(
+        Object.keys(state.formDataState).length > 0 ? {} : state.formDataState
+      );
+      state.setDirtyFields({});
+      state.setErrors({});
     }
 
-    if (actionType === "edit") {
-      setErrors({});
+    if (actionType === "edit" || actionType === "billing-page-edit") {
+      state.setErrors({});
     }
-
-    if (actionType === "billing-page-edit") {
-      setErrors({});
-    }
-  }, [actionType, setProductId, setFormDataState, setDirtyFields, setErrors]);
+  }, [actionType]);
 
   const handleInputChange = (field: string, value: any) => {
+    const { actionType, formDataState, errors, setFormDataState, setDirtyFields, setErrors } =
+      useProductsStore.getState();
+
     const updates: Record<string, any> = { [field]: value };
 
     if (field === "unit" && (value === "none" || value === "")) {
@@ -108,28 +109,41 @@ export const useProductDialog = () => {
   };
 
   const productMutation = useMutation({
-    mutationFn: async ({
-      action,
-      payload
-    }:
-      | {
-          action: "add";
-          payload: CreateProductPayload;
+    mutationFn: async ({ action, payload, pendingImageBlob }: ProductMutationVariables) => {
+      const { productId } = useProductsStore.getState();
+      const payloadWithSavedImage: CreateProductPayload | UpdateProductPayload = { ...payload };
+
+      if (pendingImageBlob) {
+        const dataUrl = await blobToDataUrl(pendingImageBlob);
+        const response = await window.productsApi.saveProductImage(dataUrl);
+
+        if (response.status === "error") {
+          throw new Error(response.error.message);
         }
-      | {
-          action: "edit" | "billing-page-edit";
-          payload: UpdateProductPayload;
-        }) => {
+
+        payloadWithSavedImage.imageUrl = response.data.url;
+      }
+
       if (action === "add") {
-        return apiClient.post("/api/products", payload);
+        return apiClient.post("/api/products", payloadWithSavedImage);
       } else {
         if (!productId) {
           throw new Error("Product Id does not exist");
         }
-        return apiClient.patch(`/api/products/${productId}`, payload);
+        return apiClient.patch(`/api/products/${productId}`, payloadWithSavedImage);
       }
     },
     onSuccess: (_response, variables) => {
+      const {
+        filterType,
+        searchParam,
+        setErrors,
+        setProductId,
+        setFormDataState,
+        setDirtyFields,
+        setOpenProductDialog
+      } = useProductsStore.getState();
+
       queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
       setErrors({});
       setProductId(null);
@@ -146,6 +160,8 @@ export const useProductDialog = () => {
   });
 
   const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
+    const { formDataState, dirtyFields, setErrors } = useProductsStore.getState();
+    const pendingImageBlob = formDataState.pendingImageBlob ?? null;
     const fullFormValidation = updateProductSchema.safeParse(formDataState);
 
     if (!fullFormValidation.success) {
@@ -180,15 +196,26 @@ export const useProductDialog = () => {
     const payloadInPaisa = convertCurrencyFieldsToPaisa(parseResult.data);
 
     if (action === "add") {
-      productMutation.mutate({ action, payload: payloadInPaisa as CreateProductPayload });
+      productMutation.mutate({
+        action,
+        payload: payloadInPaisa as CreateProductPayload,
+        pendingImageBlob
+      });
       return;
     }
-    productMutation.mutate({ action, payload: payloadInPaisa as UpdateProductPayload });
+    productMutation.mutate({
+      action,
+      payload: payloadInPaisa as UpdateProductPayload,
+      pendingImageBlob
+    });
   };
 
   const deleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
+      const { filterType, searchParam, setErrors, setFormDataState, setOpenProductDialog } =
+        useProductsStore.getState();
+
       queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
       setErrors({});
       setFormDataState({});
@@ -201,20 +228,11 @@ export const useProductDialog = () => {
   });
 
   return {
-    openProductDialog,
-    setOpenProductDialog,
-    deleteProductMutation,
-    actionType,
-    setActionType,
     showDeleteConfirm,
     setShowDeleteConfirm,
-    errors,
-    setErrors,
-    productId,
-    formDataState,
-    dirtyFields,
     handleInputChange,
     handleSubmit,
-    productMutation
+    productMutation,
+    deleteProductMutation
   };
 };

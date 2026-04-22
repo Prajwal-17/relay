@@ -1,8 +1,11 @@
 import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
+import { handleAssetsProtocol, registerProtocol } from "./protocol";
 
 const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
+
+registerProtocol();
 
 if (isDevBuild) {
   app.setName("QuickCart-Dev");
@@ -33,7 +36,8 @@ if (!gotTheLock) {
   });
 
   app.whenReady().then(async () => {
-    /**
+    handleAssetsProtocol();
+    /*
      * All main-process modules that touch app.getPath() are lazy-imported here,
      * have to load both modules at same time instead of one after other
      * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts

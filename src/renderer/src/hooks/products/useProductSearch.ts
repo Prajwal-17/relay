@@ -108,26 +108,11 @@ export const useProductSearch = (type: ProductSearchType) => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? searchResults.length + 1 : searchResults.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 95
-    // overscan: 5
+    estimateSize: () => 95,
+    overscan: 5
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
-
-  useEffect(() => {
-    if (virtualItems.length === 0) return;
-
-    const lastItem = virtualItems[virtualItems.length - 1];
-
-    if (
-      lastItem &&
-      lastItem.index >= searchResults.length - 1 &&
-      hasNextPage &&
-      !isFetchingNextPage
-    ) {
-      fetchNextPage();
-    }
-  }, [fetchNextPage, searchResults, hasNextPage, isFetchingNextPage, virtualItems]);
 
   return {
     productsSearchParam,
@@ -142,6 +127,8 @@ export const useProductSearch = (type: ProductSearchType) => {
     status,
     rowVirtualizer,
     virtualItems,
-    hasNextPage
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage
   };
 };

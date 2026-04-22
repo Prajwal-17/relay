@@ -3,8 +3,8 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { convertToPaisa } from "../../shared/utils/utils";
-import { generateProductSnapshot } from "../utils/product.utils";
 import { products } from "./schema";
+import { generateProductSnapshot } from "../../shared/utils/productSnapshot";
 
 const dbPath = "/home/prajwal/.config/pos/pos.db";
 const db = drizzle(dbPath);

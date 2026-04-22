@@ -1,7 +1,8 @@
-import type { ShareApi } from "src/shared/types";
+import type { ProductsApi, ShareApi } from "src/shared/types";
 
 declare global {
   interface Window {
     shareApi: ShareApi;
+    productsApi: ProductsApi;
   }
 }
