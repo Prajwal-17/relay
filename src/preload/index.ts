@@ -7,7 +7,7 @@ const shareApi: ShareApi = {
 };
 
 const productsApi: ProductsApi = {
-  openDialogAndSaveImage: () => ipcRenderer.invoke("dialog:openDialogAndSaveImage")
+  saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl)
 };
 
 if (process.contextIsolated) {

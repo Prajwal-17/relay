@@ -388,5 +388,5 @@ export interface ShareApi {
 }
 
 export interface ProductsApi {
-  openDialogAndSaveImage: () => Promise<ApiResponse<{ url: string }>>;
+  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
 }

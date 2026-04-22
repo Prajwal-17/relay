@@ -1,3 +1,4 @@
+import { blobToDataUrl } from "@/features/productDialog/productImageCrop";
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import { dirtyFieldsProductSchema, updateProductSchema } from "@shared/schemas/products.schema";
@@ -7,6 +8,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import z from "zod";
+
+type ProductMutationVariables =
+  | {
+      action: "add";
+      payload: CreateProductPayload;
+      pendingImageBlob?: Blob | null;
+    }
+  | {
+      action: "edit" | "billing-page-edit";
+      payload: UpdateProductPayload;
+      pendingImageBlob?: Blob | null;
+    };
 
 export const useProductDialog = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -96,26 +109,28 @@ export const useProductDialog = () => {
   };
 
   const productMutation = useMutation({
-    mutationFn: async ({
-      action,
-      payload
-    }:
-      | {
-          action: "add";
-          payload: CreateProductPayload;
-        }
-      | {
-          action: "edit" | "billing-page-edit";
-          payload: UpdateProductPayload;
-        }) => {
+    mutationFn: async ({ action, payload, pendingImageBlob }: ProductMutationVariables) => {
       const { productId } = useProductsStore.getState();
+      const payloadWithSavedImage: CreateProductPayload | UpdateProductPayload = { ...payload };
+
+      if (pendingImageBlob) {
+        const dataUrl = await blobToDataUrl(pendingImageBlob);
+        const response = await window.productsApi.saveProductImage(dataUrl);
+
+        if (response.status === "error") {
+          throw new Error(response.error.message);
+        }
+
+        payloadWithSavedImage.imageUrl = response.data.url;
+      }
+
       if (action === "add") {
-        return apiClient.post("/api/products", payload);
+        return apiClient.post("/api/products", payloadWithSavedImage);
       } else {
         if (!productId) {
           throw new Error("Product Id does not exist");
         }
-        return apiClient.patch(`/api/products/${productId}`, payload);
+        return apiClient.patch(`/api/products/${productId}`, payloadWithSavedImage);
       }
     },
     onSuccess: (_response, variables) => {
@@ -146,6 +161,7 @@ export const useProductDialog = () => {
 
   const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
     const { formDataState, dirtyFields, setErrors } = useProductsStore.getState();
+    const pendingImageBlob = formDataState.pendingImageBlob ?? null;
     const fullFormValidation = updateProductSchema.safeParse(formDataState);
 
     if (!fullFormValidation.success) {
@@ -180,10 +196,18 @@ export const useProductDialog = () => {
     const payloadInPaisa = convertCurrencyFieldsToPaisa(parseResult.data);
 
     if (action === "add") {
-      productMutation.mutate({ action, payload: payloadInPaisa as CreateProductPayload });
+      productMutation.mutate({
+        action,
+        payload: payloadInPaisa as CreateProductPayload,
+        pendingImageBlob
+      });
       return;
     }
-    productMutation.mutate({ action, payload: payloadInPaisa as UpdateProductPayload });
+    productMutation.mutate({
+      action,
+      payload: payloadInPaisa as UpdateProductPayload,
+      pendingImageBlob
+    });
   };
 
   const deleteProductMutation = useMutation<null, Error, string>({

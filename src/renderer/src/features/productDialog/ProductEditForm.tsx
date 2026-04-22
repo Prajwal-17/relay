@@ -9,14 +9,14 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PRODUCT_UNITS } from "@/constants";
+import { PRODUCT_UNITS, PROTOCOL_NAME } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { ImageOff, Trash2, Upload } from "lucide-react";
+import { ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
-import toast from "react-hot-toast";
+import { ProductImageCropSelector } from "./ProductImageCropSelector";
 import { StatusIndicator } from "./StatusIndicator";
 
 export const ProductEditForm = () => {
@@ -29,15 +29,6 @@ export const ProductEditForm = () => {
 
   const { handleInputChange, handleSubmit, productMutation } = useProductDialog();
 
-  const openFilePicker = async () => {
-    const response = await window.productsApi.openDialogAndSaveImage();
-    if (response.status === "error") {
-      toast.error(response.error.message);
-    } else {
-      handleInputChange("imageUrl", response.data.url);
-    }
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 8 }}
@@ -49,41 +40,15 @@ export const ProductEditForm = () => {
       <div className="flex-1 overflow-y-auto pr-1 pl-1">
         <div className="space-y-6">
           <div className="flex items-start justify-between gap-6">
-            <div className="space-y-3">
-              <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                Product Image
-              </Label>
-              <div className="flex max-w-[320px] items-start gap-3">
-                {formDataState.imageUrl ? (
-                  <div className="flex w-full flex-col items-start gap-1">
-                    <span className="text-foreground text-sm leading-snug font-semibold break-all">
-                      {formDataState.imageUrl.split(/[/\\]/).pop() || formDataState.imageUrl}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      type="button"
-                      onClick={() => handleInputChange("imageUrl", null)}
-                      className="text-destructive hover:bg-destructive/10 hover:text-destructive -ml-2 h-7 gap-1.5 px-2 text-xs font-bold tracking-wider uppercase"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Remove
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    type="button"
-                    onClick={() => openFilePicker()}
-                    className="h-10 gap-2 font-medium shadow-sm"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Upload
-                  </Button>
-                )}
-              </div>
-            </div>
+            <ProductImageCropSelector
+              imageUrl={formDataState.imageUrl}
+              pendingImagePreviewUrl={formDataState.pendingImagePreviewUrl}
+              onImageChange={(imageChange) => {
+                for (const [field, value] of Object.entries(imageChange)) {
+                  handleInputChange(field, value);
+                }
+              }}
+            />
 
             <div className="flex flex-col items-end space-y-3">
               <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
@@ -268,6 +233,11 @@ export const ProductEditForm = () => {
 
 export const ProductPreview = () => {
   const formData = useProductsStore((state) => state.formDataState);
+  const imageSrc = formData.pendingImagePreviewUrl
+    ? formData.pendingImagePreviewUrl
+    : formData.imageUrl
+      ? `${PROTOCOL_NAME}${formData.imageUrl}`
+      : null;
   const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "—";
   const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : "—";
   const displayPurchasePrice = formData.purchasePrice
@@ -304,11 +274,11 @@ export const ProductPreview = () => {
 
       <div className="mb-5 flex justify-center">
         <div className="bg-secondary/20 border-border/40 flex aspect-square w-[85%] max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-[2.5rem] border shadow-sm">
-          {formData.imageUrl ? (
+          {imageSrc ? (
             <img
-              src={formData.imageUrl}
-              alt={formData.name || "Product"}
-              className="h-full w-full object-cover"
+              src={imageSrc}
+              alt={formData.name || "Product-Image"}
+              className="h-full w-full object-contain"
             />
           ) : (
             <div className="flex flex-col items-center gap-2.5">

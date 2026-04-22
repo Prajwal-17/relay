@@ -1,5 +1,5 @@
-import { openDialogAndSaveImage } from "./uploadImage";
+import { saveProductImage } from "./uploadImage";
 
 export function productHandlers() {
-  openDialogAndSaveImage();
+  saveProductImage();
 }
