@@ -11,10 +11,9 @@ export const lineItemSchema = z.object({
   unit: z.string().nullable().default(null),
   mrp: z.number().int().positive().nullable().default(null),
   price: z.coerce.number().int().positive().min(1),
-  purchasePrice: z.number().int().positive().nullable().default(null),
   quantity: z.coerce.number().positive().gt(0),
   checkedQty: z.number().nonnegative().default(0),
-  isInventoryItem: z.boolean()
+  isDeleted: z.boolean()
 });
 
 export const payloadDataSchema = z.object({
@@ -27,6 +26,5 @@ export const payloadDataSchema = z.object({
 });
 
 export const txnPayloadSchema = z.object({
-  isAutoSave: z.boolean(),
   data: payloadDataSchema
 });

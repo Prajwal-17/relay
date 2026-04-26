@@ -1,8 +1,10 @@
-import { and, count, desc, eq, gte, lte, notInArray, sql, sum, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql, sum, type SQL } from "drizzle-orm";
 import {
   BATCH_CHECK_ACTION,
   UPDATE_QTY_ACTION,
   type BatchCheckAction,
+  type SyncedItems,
+  type TxnPayloadData,
   type UpdateQtyAction
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
@@ -10,7 +12,7 @@ import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
-import type { CreateSaleParams, FilterSalesParams, UpdateSaleParams } from "./sales.types";
+import type { FilterSalesParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
   return await db.query.sales.findFirst({
@@ -60,21 +62,16 @@ const filterSalesByDate = async (
   };
 };
 
-const createSale = async (payload: CreateSaleParams) => {
+const createSale = async (payload: TxnPayloadData) => {
   return db.transaction((tx) => {
+    const syncedItems: SyncedItems[] = [];
     const newSale = tx
       .insert(sales)
       .values({
         invoiceNo: Number(payload.transactionNo),
-        customerId: payload.customerId,
-        grandTotal: payload.grandTotal,
-        totalQuantity: payload.totalQuantity,
-        isPaid: payload.isPaid,
-        createdAt: payload.createdAt
-          ? payload.createdAt
-          : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+        customerId: payload.customerId
       })
-      .returning({ id: sales.id })
+      .returning()
       .get();
 
     if (!newSale || !newSale.id) {
@@ -82,82 +79,53 @@ const createSale = async (payload: CreateSaleParams) => {
     }
 
     for (const item of payload.items) {
-      tx.insert(saleItems)
-        .values({
-          saleId: newSale.id,
-          productId: item.productId ? item.productId : null,
-          name: item.name,
-          productSnapshot: item.productSnapshot,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          weight: item.weight,
-          unit: item.unit,
-          quantity: item.quantity,
-          totalPrice: item.totalPrice
-        })
-        .run();
+      const values = {
+        saleId: newSale.id,
+        productId: item.productId,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: Math.round((item.price * item.quantity) / 1000),
+        checkedQty: item.checkedQty
+      };
 
-      if (item.productId) {
+      // insert new
+      const newItem = tx.insert(saleItems).values(values).returning().get();
+
+      if (newItem.productId) {
         tx.update(products)
           .set({
-            totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
+            totalQuantitySold: newItem.quantity
           })
-          .where(eq(products.id, item.productId))
+          .where(eq(products.id, newItem.productId))
           .run();
       }
+
+      syncedItems.push({
+        rowId: item.rowId,
+        id: newItem.id,
+        updatedAt: newItem.updatedAt
+      });
     }
 
-    return newSale.id;
-    // return "Successfully created Sale";
+    updateSaleTotals(tx, newSale.id);
+
+    return {
+      billingId: newSale.id,
+      syncedItems: syncedItems,
+      deletedRowIds: []
+    };
   });
 };
 
-const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
+const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
   return db.transaction((tx) => {
-    // update sale
-    tx.update(sales)
-      .set({
-        customerId: payload.customerId,
-        grandTotal: payload.grandTotal,
-        isPaid: payload.isPaid,
-        totalQuantity: payload.totalQuantity,
-        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ','now'))`,
-        createdAt: payload.createdAt
-      })
-      .where(eq(sales.id, saleId))
-      .run();
-
-    const resultItems: any = [];
-
-    const quantitySoldAdjustments = new Map<string, number>();
-
-    const existingSaleItems = tx.select().from(saleItems).where(eq(saleItems.saleId, saleId)).all();
-
-    for (const saleItem of existingSaleItems) {
-      if (saleItem.productId) {
-        const current = quantitySoldAdjustments.get(saleItem.productId) || 0;
-        quantitySoldAdjustments.set(saleItem.productId, current - saleItem.quantity);
-      }
-    }
-
-    for (const item of payload.items) {
-      if (item.productId) {
-        const current = quantitySoldAdjustments.get(item.productId) || 0;
-        quantitySoldAdjustments.set(item.productId, current + item.quantity);
-      }
-    }
-
-    for (const [productId, netChange] of quantitySoldAdjustments) {
-      if (netChange !== 0) {
-        tx.update(products)
-          .set({
-            totalQuantitySold: sql`${products.totalQuantitySold} + ${netChange}`
-          })
-          .where(eq(products.id, productId))
-          .run();
-      }
-    }
+    const syncedItems: SyncedItems[] = [];
+    const deletedRowIds: string[] = [];
 
     for (const item of payload.items) {
       const values = {
@@ -167,54 +135,112 @@ const updateSale = async (saleId: string, payload: UpdateSaleParams) => {
         productSnapshot: item.productSnapshot,
         mrp: item.mrp,
         price: item.price,
-        purchasePrice: item.purchasePrice,
         weight: item.weight,
         unit: item.unit,
         quantity: item.quantity,
-        totalPrice: item.totalPrice,
+        totalPrice: Math.round((item.price * item.quantity) / 1000),
         checkedQty: item.checkedQty
       };
 
-      let dbItem;
-
-      if (item.id) {
-        // update sale item
-        dbItem = tx
-          .update(saleItems)
-          .set(values)
-          .where(eq(saleItems.id, item.id))
-          .returning()
-          .get();
+      if (item.isDeleted && item.id) {
+        // delete item
+        tx.delete(saleItems).where(eq(saleItems.id, item.id)).run();
+        deletedRowIds.push(item.rowId);
       } else {
-        // insert new
-        dbItem = tx.insert(saleItems).values(values).returning().get();
+        if (item.id) {
+          // update existing
+          const oldItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
+
+          if (!oldItem) {
+            continue;
+          }
+
+          const oldQty = oldItem.quantity;
+          const newQty = item.quantity;
+          const quantityDelta = newQty - oldQty;
+
+          if (item.productId && quantityDelta !== 0) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: sql`${products.totalQuantitySold}+ ${quantityDelta}`
+              })
+              .where(eq(products.id, item.productId))
+              .run();
+          }
+
+          const updatedItem = tx
+            .update(saleItems)
+            .set({
+              ...values,
+              updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+            })
+            .where(eq(saleItems.id, item.id))
+            .returning()
+            .get();
+
+          syncedItems.push({
+            rowId: item.rowId,
+            id: item.id,
+            updatedAt: updatedItem.updatedAt
+          });
+        } else {
+          // insert new
+          const newItem = tx.insert(saleItems).values(values).returning().get();
+
+          if (newItem.productId) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: newItem.quantity
+              })
+              .where(eq(products.id, newItem.productId))
+              .run();
+          }
+
+          syncedItems.push({
+            rowId: item.rowId,
+            id: newItem.id,
+            updatedAt: newItem.updatedAt
+          });
+        }
       }
-
-      // merge DB result with FE rowId
-      resultItems.push({
-        ...item, // retain FE props
-        ...dbItem, // overwrite with DB props (id)
-        rowId: item.rowId // force keep the specific rowId
-      });
     }
 
-    const keptItemIds = resultItems.map((item) => item.id);
+    updateSaleTotals(tx, saleId);
 
-    // delete items NOT in the payload
-    if (keptItemIds.length > 0) {
-      tx.delete(saleItems)
-        .where(and(eq(saleItems.saleId, saleId), notInArray(saleItems.id, keptItemIds)))
-        .run();
-    } else {
-      // delete all items if item array is empty
-      tx.delete(saleItems).where(eq(saleItems.saleId, saleId)).run();
-    }
+    tx.update(sales)
+      .set({
+        customerId: payload.customerId,
+        createdAt: payload.createdAt,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .where(eq(sales.id, saleId))
+      .run();
 
     return {
-      ...payload,
-      items: resultItems
+      syncedItems,
+      deletedRowIds
     };
   });
+};
+
+// pass tx in param to be included in the same atomic transaction
+const updateSaleTotals = async (tx: any, saleId: string) => {
+  const totals = tx
+    .select({
+      grandTotal: sum(saleItems.totalPrice).mapWith(Number),
+      totalQuantity: sum(saleItems.quantity).mapWith(Number)
+    })
+    .from(saleItems)
+    .where(eq(saleItems.saleId, saleId))
+    .get();
+
+  tx.update(sales)
+    .set({
+      grandTotal: totals?.grandTotal ?? 0,
+      totalQuantity: totals?.totalQuantity ?? 0
+    })
+    .where(eq(sales.id, saleId))
+    .run();
 };
 
 const deleteSaleById = async (id: string) => {
@@ -370,10 +396,11 @@ export const salesRepository = {
   getLatestInvoiceNo,
   filterSalesByDate,
   createSale,
-  updateSale,
+  syncSaleWithItems,
   convertSaleToEstimate,
   updateCheckedQty,
   batchCheckItems,
+  updateSaleTotals,
   deleteSaleById,
   updateSaleStatus
 };

@@ -1,8 +1,11 @@
-import { and, count, desc, eq, gte, lte, notInArray, sql, sum, type SQL } from "drizzle-orm";
+import { and, count, desc, eq, gte, lte, sql, sum, type SQL } from "drizzle-orm";
 import {
   BATCH_CHECK_ACTION,
   UPDATE_QTY_ACTION,
   type BatchCheckAction,
+  type SyncedItems,
+  type SyncResponse,
+  type TxnPayloadData,
   type UpdateQtyAction
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
@@ -10,11 +13,7 @@ import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
-import type {
-  CreateEstimateParams,
-  FilterEstimatesParams,
-  UpdateEstimateParams
-} from "./estimates.types";
+import type { FilterEstimatesParams } from "./estimates.types";
 
 const getEstimateById = async (id: string) => {
   return await db.query.estimates.findFirst({
@@ -64,21 +63,20 @@ const filterEstimatesByDate = async (
   };
 };
 
-const createEstimate = async (payload: CreateEstimateParams) => {
+const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> => {
   return db.transaction((tx) => {
+    const syncedItems: SyncedItems[] = [];
     const newEstimate = tx
       .insert(estimates)
       .values({
         estimateNo: Number(payload.transactionNo),
         customerId: payload.customerId,
-        grandTotal: payload.grandTotal,
-        totalQuantity: payload.totalQuantity,
         isPaid: payload.isPaid,
         createdAt: payload.createdAt
           ? payload.createdAt
           : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
-      .returning({ id: estimates.id })
+      .returning()
       .get();
 
     if (!newEstimate || !newEstimate.id) {
@@ -86,144 +84,174 @@ const createEstimate = async (payload: CreateEstimateParams) => {
     }
 
     for (const item of payload.items) {
-      tx.insert(estimateItems)
-        .values({
-          estimateId: newEstimate.id,
-          productId: item.productId ? item.productId : null,
-          name: item.name,
-          productSnapshot: item.productSnapshot,
-          mrp: item.mrp,
-          price: item.price,
-          purchasePrice: item.purchasePrice,
-          weight: item.weight,
-          unit: item.unit,
-          quantity: item.quantity,
-          totalPrice: item.totalPrice
-        })
-        .run();
-
-      if (item.productId) {
-        tx.update(products)
-          .set({
-            totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}`
-          })
-          .where(eq(products.id, item.productId))
-          .run();
-      }
-    }
-
-    return newEstimate.id;
-  });
-};
-
-const updateEstimate = async (estimateId: string, payload: UpdateEstimateParams) => {
-  return db.transaction((tx) => {
-    // update estimate
-    tx.update(estimates)
-      .set({
-        customerId: payload.customerId,
-        grandTotal: payload.grandTotal,
-        isPaid: payload.isPaid,
-        totalQuantity: payload.totalQuantity,
-        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ','now'))`,
-        createdAt: payload.createdAt
-      })
-      .where(eq(estimates.id, estimateId))
-      .run();
-
-    const resultItems: any = [];
-
-    const quantitySoldAdjustments = new Map<string, number>();
-
-    const existingEstimateItems = tx
-      .select()
-      .from(estimateItems)
-      .where(eq(estimateItems.estimateId, estimateId))
-      .all();
-
-    for (const estimateItem of existingEstimateItems) {
-      if (estimateItem.productId) {
-        const current = quantitySoldAdjustments.get(estimateItem.productId) || 0;
-        quantitySoldAdjustments.set(estimateItem.productId, current - estimateItem.quantity);
-      }
-    }
-
-    for (const item of payload.items) {
-      if (item.productId) {
-        const current = quantitySoldAdjustments.get(item.productId) || 0;
-        quantitySoldAdjustments.set(item.productId, current + item.quantity);
-      }
-    }
-
-    for (const [productId, netChange] of quantitySoldAdjustments) {
-      if (netChange !== 0) {
-        tx.update(products)
-          .set({
-            totalQuantitySold: sql`${products.totalQuantitySold} + ${netChange}`
-          })
-          .where(eq(products.id, productId))
-          .run();
-      }
-    }
-
-    for (const item of payload.items) {
       const values = {
-        estimateId: estimateId,
-        productId: item.productId,
+        estimateId: newEstimate.id,
+        productId: item.productId ? item.productId : null,
         name: item.name,
         productSnapshot: item.productSnapshot,
         mrp: item.mrp,
         price: item.price,
-        purchasePrice: item.purchasePrice,
+        purchasePrice: null,
         weight: item.weight,
         unit: item.unit,
         quantity: item.quantity,
-        totalPrice: item.totalPrice,
+        totalPrice: Math.round((item.price * item.quantity) / 1000),
         checkedQty: item.checkedQty
       };
 
-      let dbItem;
+      // insert new
+      const newItem = tx.insert(estimateItems).values(values).returning().get();
 
-      if (item.id) {
-        // update estimate item
-        dbItem = tx
-          .update(estimateItems)
-          .set(values)
-          .where(eq(estimateItems.id, item.id))
-          .returning()
-          .get();
-      } else {
-        // insert new
-        dbItem = tx.insert(estimateItems).values(values).returning().get();
+      if (newItem.productId) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
+          })
+          .where(eq(products.id, newItem.productId))
+          .run();
       }
 
-      // merge DB result with FE rowId
-      resultItems.push({
-        ...item, // retain FE props
-        ...dbItem, // overwrite with DB props (id)
-        rowId: item.rowId // force keep the specific rowId
+      syncedItems.push({
+        rowId: item.rowId,
+        id: newItem.id,
+        updatedAt: newItem.updatedAt
       });
     }
 
-    const keptItemIds = resultItems.map((item) => item.id);
-
-    // delete items NOT in the payload
-    if (keptItemIds.length > 0) {
-      tx.delete(estimateItems)
-        .where(
-          and(eq(estimateItems.estimateId, estimateId), notInArray(estimateItems.id, keptItemIds))
-        )
-        .run();
-    } else {
-      // delete all items if item array is empty
-      tx.delete(estimateItems).where(eq(estimateItems.estimateId, estimateId)).run();
-    }
+    updateEstimateTotals(tx, newEstimate.id);
 
     return {
-      ...payload,
-      items: resultItems
+      billingId: newEstimate.id,
+      syncedItems: syncedItems,
+      deletedRowIds: []
     };
   });
+};
+
+const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData) => {
+  return db.transaction((tx) => {
+    const syncedItems: SyncedItems[] = [];
+    const deletedRowIds: string[] = [];
+
+    for (const item of payload.items) {
+      const values = {
+        estimateId: estimateId,
+        productId: item.productId ? item.productId : null,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        purchasePrice: null,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: Math.round((item.price * item.quantity) / 1000),
+        checkedQty: item.checkedQty
+      };
+
+      if (item.isDeleted && item.id) {
+        // delete item
+        tx.delete(estimateItems).where(eq(estimateItems.id, item.id)).run();
+        deletedRowIds.push(item.rowId);
+      } else {
+        if (item.id) {
+          // update existing
+          const oldItem = tx
+            .select()
+            .from(estimateItems)
+            .where(eq(estimateItems.id, item.id))
+            .get();
+
+          if (!oldItem) {
+            continue;
+          }
+
+          const oldQty = oldItem.quantity;
+          const newQty = item.quantity;
+          const quantityDelta = newQty - oldQty;
+
+          if (item.productId && quantityDelta !== 0) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: sql`${products.totalQuantitySold} + ${quantityDelta}`
+              })
+              .where(eq(products.id, item.productId))
+              .run();
+          }
+
+          const updatedItem = tx
+            .update(estimateItems)
+            .set({
+              ...values,
+              updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+            })
+            .where(eq(estimateItems.id, item.id))
+            .returning()
+            .get();
+
+          syncedItems.push({
+            rowId: item.rowId,
+            id: item.id,
+            updatedAt: updatedItem.updatedAt
+          });
+        } else {
+          // insert new
+          const newItem = tx.insert(estimateItems).values(values).returning().get();
+
+          if (newItem.productId) {
+            tx.update(products)
+              .set({
+                totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
+              })
+              .where(eq(products.id, newItem.productId))
+              .run();
+          }
+
+          syncedItems.push({
+            rowId: item.rowId,
+            id: newItem.id,
+            updatedAt: newItem.updatedAt
+          });
+        }
+      }
+    }
+
+    updateEstimateTotals(tx, estimateId);
+
+    tx.update(estimates)
+      .set({
+        customerId: payload.customerId,
+        createdAt: payload.createdAt,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .where(eq(estimates.id, estimateId))
+      .run();
+
+    return {
+      syncedItems,
+      deletedRowIds
+    };
+  });
+};
+
+// pass tx in param to be included in the same atomic transaction
+const updateEstimateTotals = async (tx: any, estimateId: string) => {
+  const totals = tx
+    .select({
+      grandTotal: sum(estimateItems.totalPrice).mapWith(Number),
+      totalQuantity: sum(estimateItems.quantity).mapWith(Number)
+    })
+    .from(estimateItems)
+    .where(eq(estimateItems.estimateId, estimateId))
+    .get();
+
+  tx.update(estimates)
+    .set({
+      grandTotal: totals?.grandTotal ?? 0,
+      totalQuantity: totals?.totalQuantity ?? 0
+    })
+    .where(eq(estimates.id, estimateId))
+    .run();
 };
 
 const deleteEstimateById = async (id: string) => {
@@ -378,7 +406,8 @@ export const estimatesRepository = {
   getLatestEstimateNo,
   filterEstimatesByDate,
   createEstimate,
-  updateEstimate,
+  syncEstimateWithItems,
+  updateEstimateTotals,
   convertEstimateToSale,
   updateCheckedQty,
   batchCheckItems,

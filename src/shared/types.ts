@@ -361,16 +361,16 @@ export const BATCH_CHECK_ACTION = {
 
 export type BatchCheckAction = (typeof BATCH_CHECK_ACTION)[keyof typeof BATCH_CHECK_ACTION];
 
-export type UpdateResponseItem = UnifiedTransactionItem & {
+export type SyncedItems = {
   rowId: string;
+  id: string;
+  updatedAt: string;
 };
 
-export type UpdateSaleResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
-  items: UpdateResponseItem[];
-};
-
-export type UpdateEstimateResponse = Omit<UnifiedTransctionWithItems, "customer"> & {
-  items: UpdateResponseItem[];
+export type SyncResponse = {
+  billingId?: string;
+  syncedItems: SyncedItems[];
+  deletedRowIds: string[];
 };
 
 export const BILLSTATUS = {

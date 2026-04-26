@@ -1,9 +1,10 @@
-import { filterValidLineItems } from "@/utils";
-import type { Product, UnifiedTransactionItem, UpdateResponseItem } from "@shared/types";
+import { SYNCSTATUS, type SyncStatus } from "@/types";
+import type { Product, UnifiedTransactionItem } from "@shared/types";
 import { convertToPaisa, convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+import { immer } from "zustand/middleware/immer";
 
 export type LineItem = {
   id: string | null; // saleItem.id | estimateItem.id
@@ -15,49 +16,30 @@ export type LineItem = {
   unit: string | null;
   mrp: number | null;
   price: string;
-  purchasePrice: number | null;
   quantity: string;
-  totalPrice: number;
+  totalPrice: number; // UI-only
   checkedQty: number;
   isInventoryItem: boolean;
+  syncStatus: SyncStatus; // FE-only
+  isDeleted: boolean; // delete item flag
 };
 
 type LineItemsStore = {
   isCountColumnVisible: boolean;
   setIsCountControlsVisible: () => void;
-  lineItems: LineItem[] | [];
+  lineItems: LineItem[];
   setLineItems: (itemsArray: UnifiedTransactionItem[]) => void;
-  originalLineItems: LineItem[] | [];
-  setOriginalLineItems: () => void;
   addEmptyLineItem: (type?: "button") => void;
   addLineItem: (rowId: string, newItem: Product) => void;
   updateLineItem: (id: string, field: keyof LineItem, value: string | number) => void;
-  updateInternalIds: (responseItems: UpdateResponseItem[]) => void;
-  deleteLineItem: (id: string) => void;
+  deleteLineItem: (rowId: string) => void;
   setAllChecked: (checked: boolean) => void;
+  markItemAsSaving: (items: LineItem[]) => void;
+  markItemAsSynced: (rowIds: Set<string>) => void;
+  updateLineItemId: (idMap: Map<string, string>) => void; // <rowId, id(i.e saleItem.id || estimateItem.id)>
+  purgeDeletedItems: (rowIds: Set<string>) => void;
   reset: () => void;
 };
-
-function initialLineItem() {
-  const lineItem: LineItem = {
-    id: null,
-    rowId: uuidv4(),
-    productId: null,
-    name: "",
-    productSnapshot: "",
-    weight: null,
-    unit: null,
-    mrp: null,
-    price: "",
-    purchasePrice: null,
-    quantity: "",
-    totalPrice: 0,
-    checkedQty: 0,
-    isInventoryItem: false
-  };
-
-  return lineItem;
-}
 
 function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
   if (!itemsArray || itemsArray.length === 0) {
@@ -74,14 +56,37 @@ function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     unit: item.unit,
     mrp: item.mrp,
     price: item.price ? convertToRupees(Number(item.price)).toString() : "",
-    purchasePrice: item.purchasePrice,
     quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
     checkedQty: fromMilliUnits(item.checkedQty),
-    isInventoryItem: item.productId ? true : false
+    isInventoryItem: item.productId ? true : false,
+    syncStatus: SYNCSTATUS.SYNCED,
+    isDeleted: false
   }));
 
   return [...lineItemsArray, initialLineItem()];
+}
+
+function initialLineItem() {
+  const lineItem: LineItem = {
+    id: null,
+    rowId: uuidv4(),
+    productId: null,
+    name: "",
+    productSnapshot: "",
+    weight: null,
+    unit: null,
+    mrp: null,
+    price: "",
+    quantity: "",
+    totalPrice: 0,
+    checkedQty: 0,
+    isInventoryItem: false,
+    syncStatus: SYNCSTATUS.SYNCED,
+    isDeleted: false
+  };
+
+  return lineItem;
 }
 
 const reCalculateLineItem = (item: LineItem): LineItem => {
@@ -98,38 +103,26 @@ const reCalculateLineItem = (item: LineItem): LineItem => {
 
 export const useLineItemsStore = create<LineItemsStore>()(
   devtools(
-    (set) => ({
+    immer((set) => ({
       isCountColumnVisible: false,
       setIsCountControlsVisible: () =>
         set(
-          (state) => ({
-            isCountColumnVisible: !state.isCountColumnVisible
-          }),
+          (state) => {
+            state.isCountColumnVisible = !state.isCountColumnVisible;
+          },
           false,
           "lineItems/setIsCountControlsVisible"
         ),
 
-      // live state
       lineItems: [initialLineItem()],
 
       setLineItems: (itemsArray) =>
         set(
-          () => ({
-            lineItems: normalizeLineItems(itemsArray)
-          }),
+          (state) => {
+            state.lineItems = normalizeLineItems(itemsArray);
+          },
           false,
           "lineItems/setLineItems"
-        ),
-
-      // recently saved result from DB
-      originalLineItems: [],
-      setOriginalLineItems: () =>
-        set(
-          (state) => ({
-            originalLineItems: state.lineItems
-          }),
-          false,
-          "lineItems/setOriginalLineItems"
         ),
 
       // add empty row
@@ -138,11 +131,9 @@ export const useLineItemsStore = create<LineItemsStore>()(
           (state) => {
             const length = state.lineItems.length;
             if (type !== "button" && state.lineItems[length - 1].name === "") {
-              return state;
+              return;
             }
-            return {
-              lineItems: [...state.lineItems, initialLineItem()]
-            };
+            state.lineItems.push(initialLineItem());
           },
           false,
           "lineItems/addEmptyLineItem"
@@ -152,24 +143,17 @@ export const useLineItemsStore = create<LineItemsStore>()(
       addLineItem: (rowId, newItem) =>
         set(
           (state) => {
-            /**
-             * always create a new array to update the existing state array, coz react/zustand does
-             * shallow comparison hence the array reference remains the same, so creating new array creates new reference
-             * where react/zustand notices change
-             */
-            const currLineItems = [...state.lineItems];
-
             // get index of item at rowId
-            const index = currLineItems.findIndex((item) => item.rowId === rowId);
+            const index = state.lineItems.findIndex((item) => item.rowId === rowId);
+            if (index === -1) return;
+            const oldItem = state.lineItems[index];
 
-            // existing line item at rowId
-            const oldItem = currLineItems[index];
             const oldQtyNum = parseFloat(oldItem.quantity || "0");
             const oldItemQuantity = oldQtyNum >= 1 ? oldQtyNum : 1;
             const oldItemCheckedQty = oldItem.checkedQty > 1 ? oldItem.checkedQty : 0;
 
-            const updatedItem: LineItem = {
-              id: null,
+            const newLineItem: LineItem = {
+              id: oldItem.id,
               rowId: uuidv4(),
               productId: newItem.id,
               name: newItem.name,
@@ -178,18 +162,15 @@ export const useLineItemsStore = create<LineItemsStore>()(
               unit: newItem.unit,
               mrp: newItem.mrp,
               price: newItem.price ? convertToRupees(newItem.price).toString() : "",
-              purchasePrice: newItem.purchasePrice,
               quantity: oldItemQuantity.toString(),
-              totalPrice: parseFloat((oldItemQuantity * newItem.price).toFixed(2)),
+              totalPrice: 0, // temporary
               checkedQty: oldItemCheckedQty,
-              isInventoryItem: true
+              isInventoryItem: true,
+              syncStatus: SYNCSTATUS.IS_DIRTY,
+              isDeleted: false
             };
 
-            currLineItems[index] = { ...updatedItem };
-
-            return {
-              lineItems: currLineItems
-            };
+            state.lineItems[index] = reCalculateLineItem(newLineItem);
           },
           false,
           "lineItems/addLineItem"
@@ -199,122 +180,133 @@ export const useLineItemsStore = create<LineItemsStore>()(
       updateLineItem: (rowId, field, value) =>
         set(
           (state) => {
-            const updatedLineItems = state.lineItems.map((item: LineItem) => {
-              if (rowId !== item.rowId) return item;
+            const index = state.lineItems.findIndex((item) => item.rowId === rowId);
+            if (index === -1) return;
 
-              let updatedItem = item;
-              let finalValue: any;
-              let isInventoryItem: boolean = item.isInventoryItem;
-              if (field === "price" || field === "quantity") {
-                finalValue = value;
-                isInventoryItem = true;
-              } else {
-                finalValue = value;
-              }
+            // item to be updated
+            const item = state.lineItems[index];
 
-              if (field === "productSnapshot") {
-                updatedItem = {
-                  ...item,
-                  productId: null,
-                  name: "",
-                  weight: null,
-                  unit: null,
-                  mrp: null,
-                  purchasePrice: null
-                };
-                isInventoryItem = false;
-              }
+            let finalValue: any = value;
+            let isInventoryItem = item.isInventoryItem;
 
-              const draftItem = {
+            if (field === "price" || field === "quantity") {
+              finalValue = value;
+              isInventoryItem = true;
+            } else {
+              finalValue = value;
+            }
+
+            let updatedItem = { ...item };
+
+            if (field === "productSnapshot") {
+              updatedItem = {
                 ...updatedItem,
-                [field]: finalValue,
-                isInventoryItem
+                productId: null,
+                name: "",
+                weight: null,
+                unit: null,
+                mrp: null
               };
+              isInventoryItem = false;
+            }
 
-              if (["quantity", "price"].includes(field)) {
-                return reCalculateLineItem(draftItem);
-              }
-              return draftItem;
-            });
+            // apply the changed field
+            (updatedItem as any)[field] = finalValue;
+            updatedItem.isInventoryItem = isInventoryItem;
+            updatedItem.syncStatus = SYNCSTATUS.IS_DIRTY;
 
-            return {
-              lineItems: updatedLineItems
-            };
+            // if price or quantity changed, recalculate totalPrice
+            if (["quantity", "price"].includes(field)) {
+              updatedItem = reCalculateLineItem(updatedItem);
+            }
+
+            // replace the old item with the new one
+            state.lineItems[index] = updatedItem;
           },
           false,
           "lineItems/updateLineItem"
         ),
-
-      /**
-       * Update Internal Id's of LineItems array & update original LineItems
-       */
-      updateInternalIds: (responseItems) =>
-        set(
-          (state) => {
-            const updatedLineItems = state.lineItems.map((lineItem: LineItem) => {
-              const current = responseItems.find((item) => item.rowId === lineItem.rowId);
-
-              if (!current) return lineItem;
-              if (current.id === lineItem.id) {
-                return lineItem;
-              }
-
-              return {
-                ...lineItem,
-                id: current?.id
-              };
-            });
-
-            return {
-              lineItems: updatedLineItems,
-              originalLineItems: filterValidLineItems(updatedLineItems)
-            };
-          },
-          false,
-          "lineItems/updateInternalIds"
-        ),
-
       // delete a row
-      deleteLineItem: (id) =>
+      deleteLineItem: (rowId) =>
         set(
           (state) => {
-            const updatedLineItems = state.lineItems.filter((item) => item.rowId !== id);
-            if (updatedLineItems.length === 0) {
-              return {
-                lineItems: [initialLineItem()]
-              };
+            const itemToBeDeleted = state.lineItems.find((item) => item.rowId === rowId);
+            if (itemToBeDeleted) {
+              itemToBeDeleted.isDeleted = true;
             }
-            return {
-              lineItems: updatedLineItems
-            };
           },
           false,
           "lineItems/deleteLineItem"
         ),
 
-      setAllChecked: (checked) =>
+      setAllChecked: (checked: boolean) =>
         set(
-          (state) => ({
-            lineItems: state.lineItems.map((item: LineItem) => ({
-              ...item,
-              checkedQty: checked ? parseFloat(item.quantity || "0") : 0
-            }))
-          }),
+          (state) => {
+            state.lineItems.forEach((item) => {
+              item.syncStatus = SYNCSTATUS.IS_DIRTY;
+              item.checkedQty = checked ? parseFloat(item.quantity || "0") : 0;
+            });
+          },
           false,
           "lineItems/setAllChecked"
         ),
+
+      markItemAsSaving: (items) =>
+        set(
+          (state) => {
+            const ids = new Set(items.map((i) => i.id));
+
+            state.lineItems.forEach((item) => {
+              if (ids.has(item.id)) {
+                item.syncStatus = SYNCSTATUS.SAVING;
+              }
+            });
+          },
+          false,
+          "lineItems/markItemsAsSaved"
+        ),
+
+      markItemAsSynced: (rowIds) =>
+        set(
+          (state) => {
+            state.lineItems.forEach((item) => {
+              if (rowIds.has(item.rowId)) {
+                item.syncStatus = SYNCSTATUS.SYNCED;
+              }
+            });
+          },
+          false,
+          "lineItems/markItemsAsSynced"
+        ),
+
+      updateLineItemId: (idMap) =>
+        set(
+          (state) => {
+            state.lineItems.forEach((item) => {
+              if (idMap.has(item.rowId)) {
+                item.id = idMap.get(item.rowId)!; // type assertion - this value never be undefined
+              }
+            });
+          },
+          false,
+          "lineItems/updateLineItemId"
+        ),
+
+      purgeDeletedItems: (rowIds) =>
+        set((state) => {
+          state.lineItems = state.lineItems.filter((item) => !rowIds.has(item.rowId));
+        }),
 
       reset: () =>
         set(
           () => ({
             isCountColumnVisible: false,
-            lineItems: [initialLineItem()],
-            originalLineItems: []
+            lineItems: [initialLineItem()]
           }),
           false,
           "lineItems/reset"
         )
-    }),
+    })),
     { name: "line-items-store" }
   )
 );

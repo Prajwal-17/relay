@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DEFAULT_HOUR } from "@/constants";
 import { useBillingStore } from "@/store/billingStore";
 import { useSidebarStore } from "@/store/sidebarStore";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { PanelLeftOpen } from "lucide-react";
@@ -39,8 +40,9 @@ const BillingHeader = () => {
     const udpatedDate = new Date(billingDate);
     udpatedDate.setHours(hours);
     udpatedDate.setMinutes(minutes);
-    setBillingDate(udpatedDate);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
+    setBillingDate(udpatedDate);
+    processSyncQueue();
   };
 
   const handleDateChange = (date: Date) => {
@@ -60,6 +62,7 @@ const BillingHeader = () => {
 
     setBillingDate(selectedDate);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
+    processSyncQueue();
     setOpen(false);
   };
 

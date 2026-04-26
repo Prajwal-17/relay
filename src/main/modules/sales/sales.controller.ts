@@ -34,15 +34,14 @@ salesController.post("/create", validateRequest("json", txnPayloadSchema), async
   return c.json(result, 200);
 });
 
-// update an existing sale
 salesController.post(
-  "/:id/edit",
+  "/:id/sync",
   validateRequest("param", idSchema),
   validateRequest("json", txnPayloadSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const payload = c.req.valid("json");
-    const result = await salesService.updateSale(id, payload.data);
+    const result = await salesService.syncSale(id, payload.data);
     return c.json(result, 200);
   }
 );

@@ -1,4 +1,5 @@
 import type { LineItem } from "@/store/lineItemsStore";
+import { SYNCSTATUS } from "@/types";
 import {
   TRANSACTION_TYPE,
   UPDATE_QTY_ACTION,
@@ -7,7 +8,7 @@ import {
 } from "@shared/types";
 import { convertToPaisa, toMilliUnits } from "@shared/utils/utils";
 
-type NormalizedLineItem = Omit<LineItem, "price" | "quantity"> & {
+type NormalizedLineItem = Omit<LineItem, "price" | "quantity" | "syncStatus"> & {
   price: number;
   quantity: number;
 };
@@ -45,6 +46,10 @@ export const updateCheckedQuantity = (
   return Math.min(Math.max(updatedQty, 0), totalQty);
 };
 
+/**
+ * To be get status color of LineItem in Billing Page(light orange, green or white)
+ * @returns tailwind color class
+ */
 export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
   let bgColor = "bg-background";
   if (checkedQty === quantity && quantity > 0) {
@@ -59,6 +64,12 @@ export const toSentenceCase = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
 
+/**
+ * Filters out raw LineItems into a valid LineItems based on DB schema
+ * - Must Contain -> productSnapshot, price, quantity, totalPrice
+ * @param items Array of raw LineItems objects to filter
+ * @returns A array of valid LineItems
+ */
 export const filterValidLineItems = (items: LineItem[]) => {
   return items.filter(
     (item) =>
@@ -70,84 +81,57 @@ export const filterValidLineItems = (items: LineItem[]) => {
 };
 
 /**
- * Normalize Line Items for Api Payload construction
- * - Do not use for zustand actions, This does not inject rowId()
- * 1. Validation - Filter out invalid LineItems using `filterValidLineItems` func
- * 2. Convert `price` string to (Paisa).
- * 3. Transform `price` & `quantity` from string to number.
+ * Filters an array of line items, returning only those marked as "dirty" & "isDeleted = true" for autosave sync
+ *
+ * @param items - Array of LineItems to filter
+ * @returns A new array of LineItems whose `syncStatus` is "IS_DIRTY"
  */
-export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] {
-  const filteredLineitems = filterValidLineItems(lineItems);
-
-  return filteredLineitems.map((item) => ({
-    ...item,
-    price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: toMilliUnits(item.quantity),
-    checkedQty: toMilliUnits(item.checkedQty)
-  }));
-}
+export const filterDirtyLineItems = (items: LineItem[]) => {
+  return items.filter((item) => item.syncStatus === SYNCSTATUS.IS_DIRTY || item.isDeleted);
+};
 
 /**
- * Normalize Original Line Items for comparision
- * - Do not use for zustand actions, This does not inject rowId()
- * 1. Validation - Filter out invalid original LineItems using `filterValidLineItems` func
- * 2. Convert `price` string to (Paisa).
- * 3. Transform `price` & `quantity` from string to number.
+ * Normalize Line Items for Api Payload construction
+ * 1. Convert `price` string to (Paisa).
+ * 2. Transform `price` & `quantity` from string to number(milliUnits).
+ * 3. Strips of `syncStatus`,
+ * @param lineItems - An array of LineItems filtered through `filterDirtyLineItems`
  */
-export function normalizeOriginalLineItems(lineItems: LineItem[]) {
-  const filteredLineitems = filterValidLineItems(lineItems);
+export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] {
+  return lineItems.map((item) => {
+    // eslint-disable-next-line
+    const { syncStatus, ...rest } = item;
 
-  return filteredLineitems.map((item) => ({
-    ...item,
-    price: convertToPaisa(parseFloat(item.price || "0")),
-    quantity: toMilliUnits(item.quantity),
-    checkedQty: toMilliUnits(item.checkedQty)
-  }));
-}
-
-/** Strip off `id` & `rowId` fields in an array of objects for comparision */
-export function stripLineItems(originalLineItems: any[], currentLineItems: any[]) {
-  /* eslint-disable */
-  const stripedOriginal = originalLineItems.map(({ id, rowId, isInventoryItem, ...rest }) => rest);
-  const stripedCurrent = currentLineItems.map(({ id, rowId, isInventoryItem, ...rest }) => rest);
-  /* eslint-enable */
-
-  return {
-    originalCleaned: stripedOriginal,
-    currentCleaned: stripedCurrent
-  };
+    return {
+      ...rest,
+      price: convertToPaisa(parseFloat(item.price || "0")),
+      quantity: toMilliUnits(item.quantity),
+      checkedQty: toMilliUnits(item.checkedQty)
+    };
+  });
 }
 
 export function buildTransactionPayload({
   billingType,
-  billingId,
-  isAutoSave,
   transactionNo,
   customerId,
   items,
   createdAt
 }: {
   billingType: TransactionType;
-  billingId: string | null;
-  isAutoSave: boolean;
   transactionNo: number | null;
   customerId: string | null;
   items: NormalizedLineItem[];
   createdAt: string;
 }) {
   return {
-    billingType: billingType,
-    id: billingId,
-    payload: {
-      isAutoSave: isAutoSave,
-      data: {
-        transactionNo: transactionNo,
-        transactionType: billingType,
-        customerId,
-        isPaid: billingType === TRANSACTION_TYPE.SALE,
-        items,
-        createdAt
-      }
+    data: {
+      transactionNo: transactionNo,
+      transactionType: billingType,
+      customerId,
+      isPaid: billingType === TRANSACTION_TYPE.SALE,
+      items,
+      createdAt
     }
   };
 }

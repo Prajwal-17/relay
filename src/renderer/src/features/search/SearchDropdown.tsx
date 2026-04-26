@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
@@ -61,6 +62,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             addLineItem(rowId, product);
                             setIsDropdownOpen();
                             addEmptyLineItem();
+                            processSyncQueue();
                           }}
                           onMouseDown={(e) => e.preventDefault()}
                         >
@@ -121,9 +123,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   ? convertToRupees(product.mrp, { asString: true })
                                   : null,
                                 price: convertToRupees(product.price, { asString: true }),
-                                purchasePrice: product.purchasePrice
-                                  ? convertToRupees(product.purchasePrice, { asString: true })
-                                  : null,
                                 isDisabled: product.isDisabled,
                                 isDeleted: product.isDeleted
                               });

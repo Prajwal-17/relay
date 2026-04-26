@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
@@ -60,7 +61,10 @@ const LineItemRow = memo(
               <Trash2
                 className="text-destructive hover:bg-accent invisible rounded-md px-1 py-1 group-hover:visible hover:scale-103 hover:cursor-pointer active:scale-98"
                 size={33}
-                onClick={() => deleteLineItem(item.rowId)}
+                onClick={() => {
+                  deleteLineItem(item.rowId);
+                  processSyncQueue();
+                }}
               />
             </div>
           </div>
@@ -76,6 +80,7 @@ const LineItemRow = memo(
               onChange={(e) => {
                 setItemQuery(e.target.value);
                 updateLineItem(item.rowId, "productSnapshot", e.target.value);
+                processSyncQueue();
               }}
             />
           </div>
@@ -87,6 +92,7 @@ const LineItemRow = memo(
                   if (currentQty >= 0) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
                     updateLineItem(item.rowId, "quantity", newQty.toString());
+                    processSyncQueue();
                   }
                 }}
                 className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
@@ -107,6 +113,7 @@ const LineItemRow = memo(
                   // allow only number and three decimal points
                   if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
                     updateLineItem(item.rowId, "quantity", val);
+                    processSyncQueue();
                   }
                 }}
                 placeholder="0"
@@ -119,6 +126,7 @@ const LineItemRow = memo(
                   if (currentQty >= 1) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
                     updateLineItem(item.rowId, "quantity", newQty.toString());
+                    processSyncQueue();
                   }
                 }}
               >
@@ -146,6 +154,7 @@ const LineItemRow = memo(
                   // allow only number and two decimal points
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
                     updateLineItem(item.rowId, "price", val);
+                    processSyncQueue();
                   }
                 }}
                 className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
@@ -168,6 +177,7 @@ const LineItemRow = memo(
                 const currentQty = parseFloat(item.quantity || "0");
                 const newCheckedAt = checked ? 0 : currentQty;
                 updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                processSyncQueue();
               }}
               className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 transition-all ${
                 checked
@@ -196,6 +206,7 @@ const LineItemRow = memo(
                       item.checkedQty
                     );
                     updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                    processSyncQueue();
                   }}
                   disabled={checked}
                   className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
@@ -213,6 +224,7 @@ const LineItemRow = memo(
                       item.checkedQty
                     );
                     updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                    processSyncQueue();
                   }}
                   disabled={item.checkedQty === 0}
                   className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"

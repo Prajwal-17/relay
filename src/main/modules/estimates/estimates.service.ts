@@ -4,17 +4,17 @@ import {
   TRANSACTION_TYPE,
   type BatchCheckAction,
   type PaginatedApiResponse,
+  type SyncResponse,
   type TransactionListResponse,
   type TxnPayloadData,
   type UnifiedTransactionItem,
   type UnifiedTransctionWithItems,
-  type UpdateEstimateResponse,
   type UpdateQtyAction
 } from "../../../shared/types";
 import { estimates } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { estimatesRepository } from "./estimates.repository";
-import type { FilterEstimatesParams, UpdateEstimateParams } from "./estimates.types";
+import type { FilterEstimatesParams } from "./estimates.types";
 
 const getEstimateById = async (id: string): Promise<UnifiedTransctionWithItems> => {
   const estimate = await estimatesRepository.getEstimateById(id);
@@ -112,57 +112,21 @@ const filterEstimateByDate = async (
   };
 };
 
-const computeItemsAndTotals = (items: TxnPayloadData["items"]) => {
-  const finalItems = items.map((item) => {
-    const total = Math.round((item.price * item.quantity) / 1000);
-    return {
-      ...item,
-      totalPrice: total
-    };
-  });
-
-  const grandTotal = finalItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-  const totalQuantity = finalItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  return { finalItems, grandTotal, totalQuantity };
+const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> => {
+  const result = await estimatesRepository.createEstimate(payload);
+  return result;
 };
 
-const createEstimate = async (payload: TxnPayloadData): Promise<{ id: string }> => {
-  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
+const syncEstimate = async (id: string, payload: TxnPayloadData): Promise<SyncResponse> => {
+  const existingEstimate = await estimatesRepository.getEstimateById(id);
 
-  const finalPayload = {
-    ...payload,
-    items: finalItems,
-    grandTotal,
-    totalQuantity
-  };
+  if (!existingEstimate) {
+    throw new AppError("Estimate does not exist", 404);
+  }
 
-  const newEstimateId = await estimatesRepository.createEstimate(finalPayload);
+  const result = await estimatesRepository.syncEstimateWithItems(id, payload);
 
-  return { id: newEstimateId };
-};
-
-const updateEstimate = async (
-  id: string,
-  payload: TxnPayloadData
-): Promise<UpdateEstimateResponse> => {
-  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
-
-  const finalPayload: UpdateEstimateParams = {
-    ...payload,
-    items: finalItems,
-    grandTotal,
-    totalQuantity
-  };
-
-  const result = await estimatesRepository.updateEstimate(id, finalPayload);
-
-  return {
-    id,
-    type: TRANSACTION_TYPE.ESTIMATE,
-    ...result,
-    createdAt: result.createdAt
-  };
+  return result;
 };
 
 const convertEstimateToSale = async (id: string): Promise<{ id: string }> => {
@@ -202,7 +166,7 @@ export const estimatesService = {
   getNextEstimateNo,
   filterEstimateByDate,
   createEstimate,
-  updateEstimate,
+  syncEstimate,
   convertEstimateToSale,
   updateCheckedQtyService,
   batchCheckItemsService,

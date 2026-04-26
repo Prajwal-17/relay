@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import useDebounce from "@/hooks/useDebounce";
 import { apiClient } from "@/lib/apiClient";
 import { useBillingStore } from "@/store/billingStore";
+import { processSyncQueue } from "@/utils/syncWorker";
 import type { Customer } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
@@ -57,6 +58,7 @@ export const CustomerNameInput = () => {
       setCustomerId(data.id);
       setCustomerName(data.name);
       setOpen(false);
+      processSyncQueue();
       toast.success(`Created and selected customer: ${data.name}`);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
@@ -69,6 +71,7 @@ export const CustomerNameInput = () => {
     setCustomerId(customer.id);
     setCustomerName(customer.name);
     setOpen(false);
+    processSyncQueue();
   };
 
   const handleCreateCustomer = () => {

@@ -4,17 +4,17 @@ import {
   TRANSACTION_TYPE,
   type BatchCheckAction,
   type PaginatedApiResponse,
+  type SyncResponse,
   type TransactionListResponse,
   type TxnPayloadData,
   type UnifiedTransactionItem,
   type UnifiedTransctionWithItems,
-  type UpdateQtyAction,
-  type UpdateSaleResponse
+  type UpdateQtyAction
 } from "../../../shared/types";
 import { sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { salesRepository } from "./sales.repository";
-import type { FilterSalesParams, UpdateSaleParams } from "./sales.types";
+import type { FilterSalesParams } from "./sales.types";
 
 const getSaleById = async (id: string): Promise<UnifiedTransctionWithItems> => {
   const sale = await salesRepository.getSaleById(id);
@@ -112,54 +112,21 @@ const filterSalesByDate = async (
   };
 };
 
-const computeItemsAndTotals = (items: TxnPayloadData["items"]) => {
-  const finalItems = items.map((item) => {
-    const total = Math.round((item.price * item.quantity) / 1000);
-    return {
-      ...item,
-      totalPrice: total
-    };
-  });
-
-  const grandTotal = finalItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-  const totalQuantity = finalItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  return { finalItems, grandTotal, totalQuantity };
+const createSale = async (payload: TxnPayloadData): Promise<SyncResponse> => {
+  const result = await salesRepository.createSale(payload);
+  return result;
 };
 
-const createSale = async (payload: TxnPayloadData): Promise<{ id: string }> => {
-  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
+const syncSale = async (id: string, payload: TxnPayloadData): Promise<SyncResponse> => {
+  const existingSale = await salesRepository.getSaleById(id);
 
-  const finalPayload = {
-    ...payload,
-    items: finalItems,
-    grandTotal,
-    totalQuantity
-  };
+  if (!existingSale) {
+    throw new AppError("Sale does not exist", 404);
+  }
 
-  const newSaleId = await salesRepository.createSale(finalPayload);
+  const result = await salesRepository.syncSaleWithItems(id, payload);
 
-  return { id: newSaleId };
-};
-
-const updateSale = async (id: string, payload: TxnPayloadData): Promise<UpdateSaleResponse> => {
-  const { finalItems, grandTotal, totalQuantity } = computeItemsAndTotals(payload.items);
-
-  const finalPayload: UpdateSaleParams = {
-    ...payload,
-    items: finalItems,
-    grandTotal,
-    totalQuantity
-  };
-
-  const result = await salesRepository.updateSale(id, finalPayload);
-
-  return {
-    id,
-    type: TRANSACTION_TYPE.SALE,
-    ...result,
-    createdAt: result.createdAt
-  };
+  return result;
 };
 
 const convertSaleToEstimate = async (id: string): Promise<{ id: string }> => {
@@ -199,7 +166,7 @@ export const salesService = {
   getNextInvoiceNo,
   filterSalesByDate,
   createSale,
-  updateSale,
+  syncSale,
   convertSaleToEstimate,
   updateCheckedQtyService,
   batchCheckItemsService,

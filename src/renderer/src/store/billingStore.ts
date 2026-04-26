@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
 type BillingStore = {
+  isMetaDataDirty: boolean;
   billingId: string | null; // sales.id | estimates.id
   setBillingId: (newId: string | null) => void;
   billingType: TransactionType;
@@ -11,25 +12,23 @@ type BillingStore = {
   setTransactionNo: (newTransactionNo: number | null) => void;
   billingDate: Date;
   setBillingDate: (newDate: Date) => void;
-  originalBillingDate: Date;
-  setOriginalBillingDate: (newDate: Date) => void;
   customerId: string | null;
   setCustomerId: (id: string | null) => void;
   customerName: string;
   setCustomerName: (newCustomerName: string) => void;
   isNewCustomer: boolean;
   setIsNewCustomer: (isNew: boolean) => void;
-  originalCustomerId: string | null;
-  setOriginalCustomerId: (id: string | null) => void;
-  syncOriginals: () => void;
   status: BillStatus;
   setStatus: (newStatus: BillStatus) => void;
+  markMetaDataSynced: () => void;
   reset: () => void;
 };
 
 export const useBillingStore = create<BillingStore>()(
   devtools(
     (set) => ({
+      isMetaDataDirty: false,
+
       billingId: null, // sales.id || estimates.id
       setBillingId: (newId) =>
         set(
@@ -58,7 +57,8 @@ export const useBillingStore = create<BillingStore>()(
       setCustomerId: (id) =>
         set(
           () => ({
-            customerId: id
+            customerId: id,
+            isMetaDataDirty: true
           }),
           false,
           "billing/setCustomerId"
@@ -72,44 +72,16 @@ export const useBillingStore = create<BillingStore>()(
       setBillingDate: (newDate) =>
         set(
           () => ({
-            billingDate: newDate
+            billingDate: newDate,
+            isMetaDataDirty: true
           }),
           false,
           "billing/setBillingDate"
         ),
 
-      originalBillingDate: new Date(),
-      setOriginalBillingDate: (newDate) =>
-        set(
-          () => ({
-            originalBillingDate: newDate
-          }),
-          false,
-          "billing/setOriginalBillingDate"
-        ),
-
       isNewCustomer: true,
       setIsNewCustomer: (isNew) =>
         set(() => ({ isNewCustomer: isNew }), false, "billing/setIsNewCustomer"),
-
-      originalCustomerId: null,
-      setOriginalCustomerId: (id: string | null) =>
-        set(
-          () => ({
-            originalCustomerId: id
-          }),
-          false,
-          "billing/setOriginalCustomerId"
-        ),
-      syncOriginals: () =>
-        set(
-          (state) => ({
-            originalBillingDate: state.billingDate,
-            originalCustomerId: state.customerId
-          }),
-          false,
-          "billing/syncOriginals"
-        ),
 
       status: BILLSTATUS.IDLE,
       setStatus: (newStatus) =>
@@ -121,15 +93,19 @@ export const useBillingStore = create<BillingStore>()(
           "billing/setStatus"
         ),
 
+      markMetaDataSynced: () =>
+        set(() => ({
+          isMetaDataDirty: false
+        })),
+
       reset: () =>
         set(
           () => ({
+            isMetaDataDirty: false,
             billingId: null,
             transactionNo: null,
             billingDate: new Date(),
-            originalBillingDate: new Date(),
             customerId: null,
-            originalCustomerId: null,
             customerName: "",
             isNewCustomer: true,
             status: BILLSTATUS.IDLE

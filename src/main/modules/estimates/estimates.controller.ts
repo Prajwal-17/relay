@@ -34,15 +34,14 @@ estimatesController.post("/create", validateRequest("json", txnPayloadSchema), a
   return c.json(result, 200);
 });
 
-// update an existing estimate
 estimatesController.post(
-  "/:id/edit",
+  "/:id/sync",
   validateRequest("param", idSchema),
   validateRequest("json", txnPayloadSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const payload = c.req.valid("json");
-    const result = await estimatesService.updateEstimate(id, payload.data);
+    const result = await estimatesService.syncEstimate(id, payload.data);
     return c.json(result, 200);
   }
 );

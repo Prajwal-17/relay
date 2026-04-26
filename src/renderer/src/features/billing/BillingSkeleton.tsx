@@ -57,7 +57,7 @@ const BillingSkeleton = () => {
       </div>
 
       {/* Preview */}
-      <div className="hidden h-full w-[380px] rounded-xl border border-gray-200 bg-white p-4 lg:block">
+      <div className="hidden h-full w-95 rounded-xl border border-gray-200 bg-white p-4 lg:block">
         <div className="flex h-full animate-pulse flex-col rounded-lg border-2 border-green-50 p-4">
           <div className="mx-auto mb-2 h-6 w-3/4 rounded bg-gray-200"></div>
           <div className="mx-auto mb-6 h-4 w-1/2 rounded bg-gray-200"></div>

@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import useTransaction from "@/hooks/transaction/useTransaction";
-import useTransactionPersistance from "@/hooks/transaction/useTransactionPersistance";
 import { FileText, Printer, Save } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
 import { BillingSaveStatus } from "./BillingSaveStatus";
@@ -9,7 +8,7 @@ export const SummaryFooter = () => {
   const { type } = useParams();
 
   const { subtotal, grandTotal } = useTransaction();
-  const { handleManualAction, isSaving } = useTransactionPersistance();
+  const isSaving = true;
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -40,7 +39,7 @@ export const SummaryFooter = () => {
             variant="default"
             size="lg"
             className="bg-primary hover:bg-primary/90 h-11 cursor-pointer rounded-lg px-4 text-base font-medium md:h-12 md:px-5 md:text-lg"
-            onClick={() => handleManualAction("save&print")}
+            // onClick={() => handleManualAction("save&print")}
             disabled={isSaving}
           >
             <Printer className="mr-2 h-5 w-5 md:h-6 md:w-6" size={20} />
@@ -48,7 +47,7 @@ export const SummaryFooter = () => {
           </Button>
 
           <Button
-            onClick={() => handleManualAction("save")}
+            // onClick={() => handleManualAction("save")}
             variant="outline"
             size="lg"
             className="h-11 rounded-lg px-4 text-base font-medium hover:cursor-pointer md:h-12 md:px-5 md:text-lg"
@@ -59,7 +58,7 @@ export const SummaryFooter = () => {
           </Button>
 
           <Button
-            onClick={() => handleManualAction("saveAsPDF")}
+            // onClick={() => handleManualAction("saveAsPDF")}
             variant="outline"
             size="lg"
             className="h-11 rounded-lg px-4 text-base font-medium hover:cursor-pointer md:h-12 md:px-5 md:text-lg"

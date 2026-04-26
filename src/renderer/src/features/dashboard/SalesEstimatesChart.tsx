@@ -66,7 +66,7 @@ export function SalesEstimateChart() {
           value={timePeriod}
           onValueChange={(value) => setTimePeriod(value as TimePeriodType)}
         >
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-37.5">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
@@ -83,7 +83,7 @@ export function SalesEstimateChart() {
         {isSuccess && data && (
           <>
             {data.length <= 0 ? (
-              <div className="border-muted bg-secondary flex h-[300px] w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
+              <div className="border-muted bg-secondary flex h-75 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
                   <ChartColumnIncreasing className="text-muted-foreground" />
                 </div>
@@ -96,7 +96,7 @@ export function SalesEstimateChart() {
               </div>
             ) : (
               <div>
-                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ChartContainer config={chartConfig} className="h-75 w-full">
                   <BarChart
                     data={data}
                     margin={{ top: 20, right: 10, bottom: 20, left: 0 }}
