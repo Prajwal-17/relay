@@ -12,6 +12,8 @@ import { productsController } from "./modules/products/products.controller";
 import { salesController } from "./modules/sales/sales.controller";
 import { AppError } from "./utils/appError";
 
+const mode = process.env.MODE || process.env.NODE_ENV || "production";
+
 const app = new Hono();
 
 app.use(logger);
@@ -68,9 +70,9 @@ app.route("/api/products", productsController);
 app.route("/api/customers", customersController);
 app.route("/api/sales", salesController);
 app.route("/api/estimates", estimatesController);
+
 export function startServer() {
-  const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
-  const port = buildMode === "prod" ? 4722 : 4723;
+  const port = mode === "production" ? 4722 : 4723;
   console.log("Hono server running on port", port);
 
   const server = serve({

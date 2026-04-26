@@ -4,14 +4,14 @@ import { defineConfig } from "electron-vite";
 import path from "path";
 
 // set build mode using cross-env
-const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
+// const buildMode = process.env.VITE_BUILD_MODE ?? "prod";
 
 export default defineConfig({
   main: {
     envPrefix: "M_VITE_",
-    define: {
-      "import.meta.env.VITE_BUILD_MODE": JSON.stringify(buildMode)
-    },
+    // define: {
+    //   "import.meta.env.VITE_BUILD_MODE": JSON.stringify(buildMode)
+    // },
     build: {
       externalizeDeps: {
         exclude: ["electron-updater"]

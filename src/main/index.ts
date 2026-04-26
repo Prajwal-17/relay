@@ -1,9 +1,11 @@
 import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow } from "electron";
 import { join, resolve } from "node:path";
+import { initMainEnv } from "./loadEnv";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
 
-const isDevBuild = import.meta.env.VITE_BUILD_MODE === "dev";
+const mode = initMainEnv(app.isPackaged);
+const isDevBuild = mode === "development";
 
 registerProtocol();
 

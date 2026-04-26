@@ -15,25 +15,28 @@
     "typecheck:node": "tsc --noemit -p tsconfig.node.json --composite false",
     "typecheck:web": "tsc --noemit -p tsconfig.web.json --composite false",
     "typecheck": "pnpm run typecheck:node && pnpm run typecheck:web",
-    "start": "ELECTRON_DISABLE_SANDBOX=1 electron-vite preview",
     "postinstall": "electron-builder install-app-deps",
-    "dev": "pnpm run rebuild:electron && cross-env VITE_BUILD_MODE=dev ELECTRON_DISABLE_SANDBOX=1 electron-vite dev",
-    "dev:hono": "pnpm run rebuild:node && tsx src/main/standalone.ts",
-    "dev:web": "vite serve -c vite.config.web.ts",
-    "test": "pnpm run rebuild:node && vitest",
-    "rebuild:node": "npm rebuild better-sqlite3",
-    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
-    "db:seed": "pnpm run rebuild:node && tsx src/main/db/seed.ts",
-    "migrate": "pnpm run rebuild:node && drizzle-kit migrate",
-    "studio": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs studio",
-    "push": "pnpm run rebuild:node && drizzle-kit push",
-    "build": "pnpm run typecheck && electron-vite build",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "dev": "pnpm run rebuild && cross-env MODE=development NODE_ENV=development ELECTRON_DISABLE_SANDBOX=1 electron-vite dev --mode development",
+    "start": "cross-env MODE=production NODE_ENV=production ELECTRON_DISABLE_SANDBOX=1 electron-vite preview --mode production",
+    "test": "vitest",
+    "db:generate": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs generate",
+    "db:seed:dev": "cross-env MODE=development ELECTRON_RUN_AS_NODE=1 electron --require tsx/cjs src/main/db/seed.ts",
+    "db:seed:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron --require tsx/cjs src/main/db/seed.ts",
+    "db:migrate:dev": "cross-env MODE=development ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs migrate",
+    "db:migrate:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs migrate",
+    "db:studio:dev": "cross-env MODE=development ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs studio",
+    "db:studio:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs studio",
+    "db:push:dev": "cross-env MODE=development ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs push",
+    "db:push:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs push",
+    "build": "pnpm run typecheck && cross-env MODE=production NODE_ENV=production electron-vite build --mode production",
+    "build:dev": "pnpm run typecheck && cross-env MODE=development NODE_ENV=development electron-vite build --mode development",
     "build:unpack": "pnpm run build && electron-builder --dir",
     "build:win": "pnpm run build && electron-builder --win --publish never",
-    "build:mac": "electron-vite build && electron-builder --mac",
+    "build:mac": "electron-vite build --mode production && electron-builder --mac",
     "build:linux": "pnpm run build && electron-builder --linux --publish never",
-    "build:win:dev": "cross-env VITE_BUILD_MODE=dev pnpm run build && electron-builder --win --config electron-builder.dev.yml --publish never",
-    "build:linux:dev": "cross-env VITE_BUILD_MODE=dev pnpm run build && electron-builder --linux --config electron-builder.dev.yml --publish never"
+    "build:win:dev": "pnpm run build:dev && electron-builder --win --config electron-builder.dev.yml --publish never",
+    "build:linux:dev": "pnpm run build:dev && electron-builder --linux --config electron-builder.dev.yml --publish never"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -61,6 +64,7 @@
     "cmdk": "^1.1.1",
     "country-state-city": "^3.2.1",
     "csv-parser": "^3.2.0",
+    "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.3",
     "electron-store": "^8.2.0",
     "electron-updater": "^6.8.3",
@@ -126,7 +130,9 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron",
-      "esbuild"
+      "esbuild",
+      "better-sqlite3",
+      "@electron/rebuild"
     ]
   }
 }
