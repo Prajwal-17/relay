@@ -82,3 +82,5 @@ export function startServer() {
 
   return server;
 }
+
+startServer();

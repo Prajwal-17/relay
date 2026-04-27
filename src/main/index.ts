@@ -1,11 +1,13 @@
 import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow } from "electron";
+import { fork, type ChildProcess } from "node:child_process";
 import { join, resolve } from "node:path";
 import { initMainEnv } from "./loadEnv";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
 
 const mode = initMainEnv(app.isPackaged);
 const isDevBuild = mode === "development";
+let serverProcess: ChildProcess;
 
 registerProtocol();
 
@@ -45,12 +47,22 @@ if (!gotTheLock) {
      * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
      * this ensures the db path is valid & in exact location
      */
-    const [{ startServer }, { setupIpcHandlers }] = await Promise.all([
-      import("./server"),
-      import("./setupIpcHandlers")
-    ]);
+    const [{ setupIpcHandlers }] = await Promise.all([import("./setupIpcHandlers")]);
     setupIpcHandlers();
-    startServer();
+
+    serverProcess = fork(join(__dirname, "server.js"), [], {
+      env: process.env,
+      stdio: "inherit"
+    });
+
+    serverProcess.on("spawn", () => {
+      console.info("Spawed child process");
+    });
+
+    serverProcess.on("error", (err) => {
+      console.error("Failed to start Hono server", err);
+    });
+
     createWindow();
 
     app.on("activate", function () {
@@ -102,5 +114,11 @@ function createWindow(): void {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
+  }
+});
+
+app.on("will-quit", () => {
+  if (serverProcess) {
+    serverProcess.kill();
   }
 });
