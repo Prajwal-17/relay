@@ -29,14 +29,13 @@
     "db:studio:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs studio",
     "db:push:dev": "cross-env MODE=development ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs push",
     "db:push:prod": "cross-env MODE=production ELECTRON_RUN_AS_NODE=1 electron ./node_modules/drizzle-kit/bin.cjs push",
-    "build": "pnpm run typecheck && cross-env MODE=production NODE_ENV=production electron-vite build --mode production",
-    "build:dev": "pnpm run typecheck && cross-env MODE=development NODE_ENV=development electron-vite build --mode development",
+    "build": "pnpm run typecheck && electron-vite build",
     "build:unpack": "pnpm run build && electron-builder --dir",
     "build:win": "pnpm run build && electron-builder --win --publish never",
     "build:mac": "electron-vite build --mode production && electron-builder --mac",
     "build:linux": "pnpm run build && electron-builder --linux --publish never",
-    "build:win:dev": "pnpm run build:dev && electron-builder --win --config electron-builder.dev.yml --publish never",
-    "build:linux:dev": "pnpm run build:dev && electron-builder --linux --config electron-builder.dev.yml --publish never"
+    "build:win:dev": "pnpm run build&& electron-builder --win --config electron-builder.dev.yml --publish never",
+    "build:linux:dev": "pnpm run build && electron-builder --linux --config electron-builder.dev.yml --publish never"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
