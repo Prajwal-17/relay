@@ -150,6 +150,21 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
       };
 
       if (item.isDeleted && item.id) {
+        const existingItem = tx
+          .select()
+          .from(estimateItems)
+          .where(eq(estimateItems.id, item.id))
+          .get();
+
+        if (existingItem?.productId) {
+          tx.update(products)
+            .set({
+              totalQuantitySold: sql`${products.totalQuantitySold} - ${existingItem.quantity}`
+            })
+            .where(eq(products.id, existingItem.productId))
+            .run();
+        }
+
         // delete item
         tx.delete(estimateItems).where(eq(estimateItems.id, item.id)).run();
         deletedRowIds.push(item.rowId);
@@ -221,6 +236,7 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
     tx.update(estimates)
       .set({
         customerId: payload.customerId,
+        isPaid: payload.isPaid,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })

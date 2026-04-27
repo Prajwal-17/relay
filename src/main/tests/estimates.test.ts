@@ -1,19 +1,19 @@
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TRANSACTION_TYPE, type SyncResponse, type TxnPayloadData } from "../../shared/types";
-import { products, saleItems, sales } from "../db/schema";
+import { estimateItems, estimates, products } from "../db/schema";
 import {
   cleanupDb,
   createTestApp,
   createTestDb,
-  existingCustomRowId,
+  estimateCustomRowId,
   postTxn,
   rowId1,
   rowId2,
   rowId3,
   rowId4,
   seedCustomer,
-  seedInitialData,
+  seedInitialEstimateData,
   seedProduct,
   type DB
 } from "./helpers";
@@ -34,7 +34,7 @@ vi.mock("../db/db", () => {
   };
 });
 
-describe("sales endpoint integration tests", () => {
+describe("estimates endpoint integration tests", () => {
   let app: ReturnType<typeof createTestApp>;
   let db!: DB;
   let sqlite: ReturnType<typeof createTestDb>["sqlite"] | undefined;
@@ -54,11 +54,11 @@ describe("sales endpoint integration tests", () => {
     sqlite?.close();
   });
 
-  it("POST /api/sales/create persists the sale, its items, and product sold quantities", async () => {
-    const customer = await seedCustomer(db);
+  it("POST /api/estimates/create persists the estimate, estimate items, totals, and product sold quantities", async () => {
+    const customer = await seedCustomer(db, { name: "Estimate Walk-in Customer" });
     const product1 = await seedProduct(db, {
-      name: "Amul Gold Milk 1L",
-      productSnapshot: "Amul Gold Full Cream Milk 1 Liter pouch",
+      name: "Estimate Milk 1L",
+      productSnapshot: "Estimate Milk 1 Liter pouch",
       totalQuantitySold: 30000,
       mrp: 7200,
       price: 6800,
@@ -67,8 +67,8 @@ describe("sales endpoint integration tests", () => {
       unit: "Litre"
     });
     const product2 = await seedProduct(db, {
-      name: "Parle-G Glucose Biscuits",
-      productSnapshot: "Parle-G 800g pack",
+      name: "Estimate Biscuit 800g",
+      productSnapshot: "Estimate Biscuit 800g pack",
       totalQuantitySold: 20000,
       mrp: 8500,
       price: 8000,
@@ -77,13 +77,12 @@ describe("sales endpoint integration tests", () => {
       unit: "g"
     });
 
-    const createdAt = "2026-04-27T10:15:30.000Z";
     const payload: TxnPayloadData = {
-      transactionNo: 101,
-      transactionType: TRANSACTION_TYPE.SALE,
+      transactionNo: 201,
+      transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: customer.id,
       isPaid: false,
-      createdAt,
+      createdAt: "2026-04-27T11:45:00.000Z",
       items: [
         {
           id: null,
@@ -117,8 +116,8 @@ describe("sales endpoint integration tests", () => {
           id: null,
           rowId: rowId3,
           productId: null,
-          name: "Maggi 2-Minute Noodles",
-          productSnapshot: "Maggi Masala 70g pouch",
+          name: "Estimate Custom Item",
+          productSnapshot: "Estimate Custom Item 70g pouch",
           mrp: 1400,
           price: 1300,
           weight: "70",
@@ -130,88 +129,87 @@ describe("sales endpoint integration tests", () => {
       ]
     };
 
-    const response = await postTxn(app, "/api/sales/create", payload);
+    const response = await postTxn(app, "/api/estimates/create", payload);
     const body = (await response.json()) as SyncResponse;
 
     expect(response.status).toBe(200);
-    expect(body.billingId).toBeTruthy();
     expect(body.deletedRowIds).toEqual([]);
     expect(body.syncedItems.map((item) => item.rowId)).toEqual([rowId1, rowId2, rowId3]);
 
-    const createdSale = db.select().from(sales).where(eq(sales.id, body.billingId!)).get();
+    const createdEstimate = db
+      .select()
+      .from(estimates)
+      .where(eq(estimates.id, body.billingId!))
+      .get();
     const createdItems = db
       .select()
-      .from(saleItems)
-      .where(eq(saleItems.saleId, body.billingId!))
+      .from(estimateItems)
+      .where(eq(estimateItems.estimateId, body.billingId!))
       .all();
     const savedProduct1 = db.select().from(products).where(eq(products.id, product1.id)).get();
     const savedProduct2 = db.select().from(products).where(eq(products.id, product2.id)).get();
 
-    expect(createdSale).toMatchObject({
-      invoiceNo: 101,
+    expect(createdEstimate).toMatchObject({
+      estimateNo: 201,
       customerId: customer.id,
       isPaid: false,
-      createdAt,
+      createdAt: "2026-04-27T11:45:00.000Z",
       grandTotal: 146100,
       totalQuantity: 57000
     });
     expect(createdItems).toHaveLength(3);
-    expect(createdItems.map((item) => item.totalPrice)).toEqual(
-      expect.arrayContaining([47600, 40000, 58500])
-    );
     expect(savedProduct1?.totalQuantitySold).toBe(37000);
     expect(savedProduct2?.totalQuantitySold).toBe(25000);
   });
 
-  it("POST /api/sales/:id/sync updates, adds, and deletes items while keeping sale totals and product quantities correct", async () => {
-    const initialData = await seedInitialData(db);
-    const createdAt = "2026-04-28T08:00:00.000Z";
+  it("POST /api/estimates/:id/sync handles item update, add, delete, totals, and product quantity adjustments", async () => {
+    const initialData = await seedInitialEstimateData(db);
 
     const payload: TxnPayloadData = {
-      transactionNo: initialData.sale.invoiceNo,
-      transactionType: TRANSACTION_TYPE.SALE,
+      transactionNo: initialData.estimate.estimateNo,
+      transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: initialData.customer.id,
-      isPaid: true,
-      createdAt,
+      isPaid: false,
+      createdAt: "2026-04-28T09:30:00.000Z",
       items: [
         {
-          id: initialData.saleItem1.id,
+          id: initialData.estimateItem1.id,
           rowId: rowId1,
           productId: initialData.product1.id,
-          name: initialData.saleItem1.name,
-          productSnapshot: initialData.saleItem1.productSnapshot,
-          mrp: initialData.saleItem1.mrp,
-          price: initialData.saleItem1.price,
-          weight: initialData.saleItem1.weight,
-          unit: initialData.saleItem1.unit,
+          name: initialData.estimateItem1.name,
+          productSnapshot: initialData.estimateItem1.productSnapshot,
+          mrp: initialData.estimateItem1.mrp,
+          price: initialData.estimateItem1.price,
+          weight: initialData.estimateItem1.weight,
+          unit: initialData.estimateItem1.unit,
           quantity: 9000,
           checkedQty: 9,
           isDeleted: false
         },
         {
-          id: initialData.saleItem2.id,
+          id: initialData.estimateItem2.id,
           rowId: rowId2,
           productId: initialData.product2.id,
-          name: initialData.saleItem2.name,
-          productSnapshot: initialData.saleItem2.productSnapshot,
-          mrp: initialData.saleItem2.mrp,
-          price: initialData.saleItem2.price,
-          weight: initialData.saleItem2.weight,
-          unit: initialData.saleItem2.unit,
-          quantity: initialData.saleItem2.quantity,
-          checkedQty: initialData.saleItem2.checkedQty,
+          name: initialData.estimateItem2.name,
+          productSnapshot: initialData.estimateItem2.productSnapshot,
+          mrp: initialData.estimateItem2.mrp,
+          price: initialData.estimateItem2.price,
+          weight: initialData.estimateItem2.weight,
+          unit: initialData.estimateItem2.unit,
+          quantity: initialData.estimateItem2.quantity,
+          checkedQty: initialData.estimateItem2.checkedQty,
           isDeleted: true
         },
         {
-          id: initialData.saleItem3.id,
-          rowId: existingCustomRowId,
+          id: initialData.estimateItem3.id,
+          rowId: estimateCustomRowId,
           productId: null,
-          name: initialData.saleItem3.name,
-          productSnapshot: initialData.saleItem3.productSnapshot,
-          mrp: initialData.saleItem3.mrp,
-          price: initialData.saleItem3.price,
-          weight: initialData.saleItem3.weight,
-          unit: initialData.saleItem3.unit,
+          name: initialData.estimateItem3.name,
+          productSnapshot: initialData.estimateItem3.productSnapshot,
+          mrp: initialData.estimateItem3.mrp,
+          price: initialData.estimateItem3.price,
+          weight: initialData.estimateItem3.weight,
+          unit: initialData.estimateItem3.unit,
           quantity: 30000,
           checkedQty: 30,
           isDeleted: false
@@ -220,8 +218,8 @@ describe("sales endpoint integration tests", () => {
           id: null,
           rowId: rowId4,
           productId: initialData.product2.id,
-          name: "Parle-G Family Pack",
-          productSnapshot: "Parle-G 800g pack",
+          name: "Estimate Biscuit Refill",
+          productSnapshot: "Estimate Biscuit 800g pack",
           mrp: 8500,
           price: 7800,
           weight: "800",
@@ -233,25 +231,29 @@ describe("sales endpoint integration tests", () => {
       ]
     };
 
-    const response = await postTxn(app, `/api/sales/${initialData.sale.id}/sync`, payload);
+    const response = await postTxn(app, `/api/estimates/${initialData.estimate.id}/sync`, payload);
     const body = (await response.json()) as SyncResponse;
 
     expect(response.status).toBe(200);
     expect(body.deletedRowIds).toEqual([rowId2]);
     expect(body.syncedItems.map((item) => item.rowId)).toEqual(
-      expect.arrayContaining([rowId1, existingCustomRowId, rowId4])
+      expect.arrayContaining([rowId1, estimateCustomRowId, rowId4])
     );
 
-    const updatedSale = db.select().from(sales).where(eq(sales.id, initialData.sale.id)).get();
+    const updatedEstimate = db
+      .select()
+      .from(estimates)
+      .where(eq(estimates.id, initialData.estimate.id))
+      .get();
     const remainingItems = db
       .select()
-      .from(saleItems)
-      .where(eq(saleItems.saleId, initialData.sale.id))
+      .from(estimateItems)
+      .where(eq(estimateItems.estimateId, initialData.estimate.id))
       .all();
     const deletedItem = db
       .select()
-      .from(saleItems)
-      .where(eq(saleItems.id, initialData.saleItem2.id))
+      .from(estimateItems)
+      .where(eq(estimateItems.id, initialData.estimateItem2.id))
       .get();
     const savedProduct1 = db
       .select()
@@ -264,9 +266,9 @@ describe("sales endpoint integration tests", () => {
       .where(eq(products.id, initialData.product2.id))
       .get();
 
-    expect(updatedSale).toMatchObject({
+    expect(updatedEstimate).toMatchObject({
       customerId: initialData.customer.id,
-      createdAt,
+      createdAt: "2026-04-28T09:30:00.000Z",
       grandTotal: 123600,
       totalQuantity: 42000
     });

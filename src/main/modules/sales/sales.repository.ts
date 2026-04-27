@@ -69,7 +69,11 @@ const createSale = async (payload: TxnPayloadData) => {
       .insert(sales)
       .values({
         invoiceNo: Number(payload.transactionNo),
-        customerId: payload.customerId
+        customerId: payload.customerId,
+        isPaid: payload.isPaid,
+        createdAt: payload.createdAt
+          ? payload.createdAt
+          : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
       .returning()
       .get();
@@ -99,7 +103,7 @@ const createSale = async (payload: TxnPayloadData) => {
       if (newItem.productId) {
         tx.update(products)
           .set({
-            totalQuantitySold: newItem.quantity
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
           })
           .where(eq(products.id, newItem.productId))
           .run();
@@ -143,6 +147,17 @@ const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
       };
 
       if (item.isDeleted && item.id) {
+        const existingItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
+
+        if (existingItem?.productId) {
+          tx.update(products)
+            .set({
+              totalQuantitySold: sql`${products.totalQuantitySold} - ${existingItem.quantity}`
+            })
+            .where(eq(products.id, existingItem.productId))
+            .run();
+        }
+
         // delete item
         tx.delete(saleItems).where(eq(saleItems.id, item.id)).run();
         deletedRowIds.push(item.rowId);
@@ -190,7 +205,7 @@ const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
           if (newItem.productId) {
             tx.update(products)
               .set({
-                totalQuantitySold: newItem.quantity
+                totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
               })
               .where(eq(products.id, newItem.productId))
               .run();
@@ -210,6 +225,7 @@ const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
     tx.update(sales)
       .set({
         customerId: payload.customerId,
+        isPaid: payload.isPaid,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
