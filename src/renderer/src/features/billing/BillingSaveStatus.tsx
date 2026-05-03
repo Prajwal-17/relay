@@ -4,40 +4,42 @@ import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 export const BillingSaveStatus = () => {
   const status = useBillingStore((state) => state.status);
-
   const currentStatus = status === "idle" ? "saved" : status;
 
   return (
     <div
       className={cn(
-        "border-border bg-background flex items-center gap-2 rounded-t-xl px-4 py-2 text-sm font-medium transition-colors duration-300",
-        currentStatus === "saving" && "text-blue-600 dark:text-blue-400",
-        currentStatus === "saved" && "text-green-600 dark:text-green-400",
-        currentStatus === "unsaved" && "text-amber-600 dark:text-amber-400",
-        currentStatus === "error" && "text-destructive"
+        "flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-base font-semibold ring-1 transition-colors duration-300",
+        currentStatus === "saving" && "bg-blue-500/15 text-blue-400 ring-blue-400/25",
+        currentStatus === "saved" && "bg-success/15 text-success ring-success/25",
+        currentStatus === "unsaved" && "bg-amber-500/15 text-amber-400 ring-amber-400/25",
+        currentStatus === "error" && "bg-red-500/15 text-red-400 ring-red-400/25"
       )}
     >
       {currentStatus === "saving" && (
         <>
-          <Loader2 className="h-4 w-4 animate-spin" />
+          <Loader2 size={15} className="animate-spin" />
           <span>Saving...</span>
         </>
       )}
+
       {currentStatus === "saved" && (
         <>
-          <CheckCircle2 className="h-4 w-4" />
+          <CheckCircle2 size={15} />
           <span>Saved Changes</span>
         </>
       )}
+
       {currentStatus === "unsaved" && (
         <>
-          <Circle className="h-3 w-3 fill-current" />
+          <Circle size={13} className="fill-current" />
           <span>Unsaved Changes</span>
         </>
       )}
+
       {currentStatus === "error" && (
         <>
-          <AlertCircle className="h-4 w-4" />
+          <AlertCircle size={15} />
           <span>Save Failed</span>
         </>
       )}

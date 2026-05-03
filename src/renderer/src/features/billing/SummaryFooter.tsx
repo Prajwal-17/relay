@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import useTransaction from "@/hooks/transaction/useTransaction";
 import { FileText, Printer, Save } from "lucide-react";
 import { Navigate, useParams } from "react-router-dom";
-import { BillingSaveStatus } from "./BillingSaveStatus";
 
 export const SummaryFooter = () => {
   const { type } = useParams();
@@ -17,10 +16,6 @@ export const SummaryFooter = () => {
   return (
     <footer>
       <div className="bg-background relative mx-5 flex items-center justify-end gap-4 rounded-xl px-4 py-2 md:gap-6">
-        <div className="absolute top-0 right-1 -translate-y-full">
-          <BillingSaveStatus />
-        </div>
-
         <div className="flex items-center gap-6 text-right md:gap-8">
           <div className="flex items-center gap-2 text-sm md:text-base">
             <span className="text-muted-foreground text-base md:text-lg">Subtotal:</span>

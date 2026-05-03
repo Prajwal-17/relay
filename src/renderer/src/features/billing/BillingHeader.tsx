@@ -72,7 +72,7 @@ const BillingHeader = () => {
 
   return (
     <>
-      <div className="border-border bg-background mx-5 mb-3 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-md">
+      <div className="border-border bg-background mx-5 mt-2 mb-3 flex flex-col justify-center gap-2 rounded-xl border px-4 py-4 shadow-md">
         <div className="flex items-start justify-between gap-5">
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-4">
