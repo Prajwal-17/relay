@@ -333,7 +333,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       <>
         {!isSidebarOpen && (
           <div
-            className="fixed inset-y-0 left-0 z-40 w-4 lg:w-6"
+            className="fixed inset-y-0 left-0 z-40 w-4 lg:w-3"
             onMouseEnter={() => {
               if (Date.now() < suppressHoverOpenUntilRef.current) {
                 return;

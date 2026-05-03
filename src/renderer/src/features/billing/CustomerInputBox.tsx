@@ -80,70 +80,67 @@ export const CustomerNameInput = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-start justify-start space-y-2">
-      <p className="text-foreground text-lg font-medium">Customer Name</p>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            className="w-full max-w-sm justify-between py-5 text-lg font-normal"
-          >
-            {customerName ? customerName : "Select Customer..."}
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="z-40 w-95 p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder="Search customer..."
-              className="text-lg"
-              value={query}
-              onValueChange={setQuery}
-            />
-            <CommandList>
-              {isLoading && (
-                <div className="text-muted-foreground p-4 text-center text-sm">Loading...</div>
-              )}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          className="border-border/60 hover:bg-accent/50 h-12 w-112.5 justify-between bg-transparent px-4 text-lg font-normal"
+        >
+          <span className="truncate">{customerName ? customerName : "Select Customer..."}</span>
+          <ChevronsUpDown className="ml-3 h-5 w-5 shrink-0 opacity-40" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="z-40 w-112.5 p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search customer..."
+            className="py-2.5 text-base"
+            value={query}
+            onValueChange={setQuery}
+          />
+          <CommandList>
+            {isLoading && (
+              <div className="text-muted-foreground p-4 text-center text-sm">Loading...</div>
+            )}
 
-              {!isLoading && customers.length > 0 && (
-                <CommandGroup heading="Existing Customers">
-                  {customers.map((customer) => (
-                    <CommandItem
-                      key={customer.id}
-                      value={customer.name}
-                      onSelect={() => handleSelectCustomer(customer)}
-                      className="text-lg"
-                    >
-                      <Check
-                        className={`mr-2 h-4 w-4 ${
-                          customerId === customer.id ? "opacity-100" : "opacity-0"
-                        }`}
-                      />
-                      <div className="flex flex-col">
-                        <span>{customer.name}</span>
-                      </div>
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-
-              {!isLoading && query && (
-                <div className="mt-2 border-t p-2 pt-2">
-                  <Button
-                    onClick={handleCreateCustomer}
-                    disabled={createCustomerMutation.isPending}
-                    className="w-full justify-center text-lg font-medium"
+            {!isLoading && customers.length > 0 && (
+              <CommandGroup heading="Existing Customers">
+                {customers.map((customer) => (
+                  <CommandItem
+                    key={customer.id}
+                    value={customer.name}
+                    onSelect={() => handleSelectCustomer(customer)}
+                    className="py-2.5 text-base"
                   >
-                    <Plus className="mr-2 h-5 w-5" />
-                    {createCustomerMutation.isPending ? "Creating..." : `Create "${query}"`}
-                  </Button>
-                </div>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+                    <Check
+                      className={`mr-3 h-4 w-4 ${
+                        customerId === customer.id ? "opacity-100" : "opacity-0"
+                      }`}
+                    />
+                    <div className="flex flex-col">
+                      <span>{customer.name}</span>
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+
+            {!isLoading && query && (
+              <div className="mt-1 border-t p-2 pt-2">
+                <Button
+                  onClick={handleCreateCustomer}
+                  disabled={createCustomerMutation.isPending}
+                  className="w-full justify-center py-5 text-base font-medium"
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  {createCustomerMutation.isPending ? "Creating..." : `Create "${query}"`}
+                </Button>
+              </div>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
