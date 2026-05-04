@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { processSyncQueue } from "@/utils/syncWorker";
 import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { UPDATE_QTY_ACTION } from "@shared/types";
 import { convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
@@ -47,20 +47,20 @@ const LineItemRow = memo(
     return (
       <div key={item.rowId} className="relative">
         <div
-          className={`group ${checkedColor} grid w-full border transition-colors ${
+          className={`group ${checkedColor} border-border/70 hover:border-border grid w-full items-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 hover:shadow-[0_8px_24px_rgba(15,23,42,0.05)] ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
-          <div className="col-span-2 h-full w-full border-r">
-            <div className="flex h-full w-full items-center justify-between gap-2 px-4">
+          <div className="col-span-2 h-full min-h-[4.1rem] px-2">
+            <div className="flex h-full items-center justify-between gap-2">
               <GripVertical
-                className="hover:bg-accent invisible px-1 py-1 group-hover:visible hover:cursor-grab"
-                size={33}
+                className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
+                size={24}
               />
-              <span className="text-xl font-medium">{idx + 1}</span>
+              <span className="text-foreground text-lg font-semibold">{idx + 1}</span>
               <Trash2
-                className="text-destructive hover:bg-accent invisible rounded-md px-1 py-1 group-hover:visible hover:scale-103 hover:cursor-pointer active:scale-98"
-                size={33}
+                className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
+                size={28}
                 onClick={() => {
                   deleteLineItem(item.rowId);
                   processSyncQueue();
@@ -68,10 +68,10 @@ const LineItemRow = memo(
               />
             </div>
           </div>
-          <div className="col-span-7 border-r px-1 py-1">
+          <div className="col-span-7 px-1 py-1">
             <input
               value={item.productSnapshot}
-              className="focus:border-ring focus:ring-ring bg-background w-full rounded-lg border px-2 py-2 text-lg font-bold shadow-xs transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-11 w-full rounded-lg border px-3.5 py-6 text-lg font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -82,10 +82,11 @@ const LineItemRow = memo(
                 updateLineItem(item.rowId, "productSnapshot", e.target.value);
                 processSyncQueue();
               }}
+              placeholder="Search products"
             />
           </div>
-          <div className="col-span-3 h-full w-full border-r px-1 py-1">
-            <div className="border-border bg-background relative flex h-full w-full items-center rounded-lg border font-bold shadow-xs">
+          <div className="col-span-3 px-1 py-1">
+            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-12 w-full items-center rounded-lg border font-bold">
               <button
                 onClick={() => {
                   const currentQty = parseFloat(item.quantity) || 0;
@@ -95,9 +96,9 @@ const LineItemRow = memo(
                     processSyncQueue();
                   }
                 }}
-                className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-r-none transition-all active:scale-95"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
               >
-                <Plus size={22} />
+                <Plus size={22} strokeWidth={2.5} />
               </button>
               <input
                 type="text"
@@ -107,7 +108,7 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity}
-                className="focus:border-ring focus:ring-ring placeholder-muted-foreground w-full appearance-none rounded-lg px-2 py-2 text-center text-base font-semibold transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+                className="focus:border-ring focus:ring-ring placeholder-muted-foreground min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-lg font-semibold transition-all"
                 onChange={(e) => {
                   const val = e.target.value;
                   // allow only number and three decimal points
@@ -120,7 +121,7 @@ const LineItemRow = memo(
               />
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="hover:bg-primary/80 bg-primary text-foreground flex h-full w-20 cursor-pointer items-center justify-center rounded-lg rounded-l-none transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 1) {
@@ -130,7 +131,7 @@ const LineItemRow = memo(
                   }
                 }}
               >
-                <Minus size={22} />
+                <Minus size={22} strokeWidth={2.5} />
               </button>
               <QuantityPresets
                 rowId={item.rowId}
@@ -140,10 +141,10 @@ const LineItemRow = memo(
               />
             </div>
           </div>
-          <div className="col-span-3 border-r px-1 py-1">
-            <div className="relative h-full w-full">
-              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
-                <IndianRupee size={18} />
+          <div className="col-span-3 px-1 py-1">
+            <div className="relative h-12 w-full">
+              <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
+                <IndianRupee size={16} />
               </span>
               <input
                 type="string"
@@ -157,21 +158,21 @@ const LineItemRow = memo(
                     processSyncQueue();
                   }
                 }}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-lg font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
               />
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="relative h-full w-full">
-              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
-                <IndianRupee size={18} />
+            <div className="relative h-12 w-full">
+              <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
+                <IndianRupee size={16} />
               </span>
-              <div className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground h-full w-full appearance-none rounded-lg border py-2 pr-7 pl-10 text-right text-base font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed">
+              <div className="bg-muted/25 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-9 text-right text-lg font-semibold">
                 {item.totalPrice ? convertToRupees(item.totalPrice, { asString: true }) : "0"}
               </div>
             </div>
           </div>
-          <div className="col-span-1 flex items-center justify-center py-1">
+          <div className="col-span-1 flex items-center justify-center px-1 py-1">
             <button
               onClick={() => {
                 const currentQty = parseFloat(item.quantity || "0");
@@ -179,10 +180,10 @@ const LineItemRow = memo(
                 updateLineItem(item.rowId, "checkedQty", newCheckedAt);
                 processSyncQueue();
               }}
-              className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 transition-all ${
+              className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
                 checked
-                  ? "bg-success border-success"
-                  : "border-muted-foreground hover:border-foreground"
+                  ? "border-success bg-success text-background"
+                  : "border-border bg-background/90 text-muted-foreground hover:border-foreground hover:text-foreground"
               }`}
             >
               {checked && <Check className="text-background" strokeWidth={3} size={18} />}
@@ -190,12 +191,12 @@ const LineItemRow = memo(
           </div>
           {isCountColumnVisible && (
             <>
-              <div className="col-span-2 flex items-center justify-center py-1">
-                <span className="text-base font-semibold whitespace-nowrap">
+              <div className="col-span-2 flex items-center justify-center px-1 py-1">
+                <span className="text-foreground/80 text-lg font-semibold whitespace-nowrap">
                   {item.checkedQty}/{item.quantity || "0"}
                 </span>
               </div>
-              <div className="col-span-2 flex items-center justify-center gap-1 py-1">
+              <div className="col-span-2 flex items-center justify-center gap-1 px-1 py-1">
                 <Button
                   variant="outline"
                   size="sm"
@@ -209,9 +210,9 @@ const LineItemRow = memo(
                     processSyncQueue();
                   }}
                   disabled={checked}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+                  className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
-                  <Plus className="size-5" />
+                  <Plus className="size-4" />
                 </Button>
 
                 <Button
@@ -227,9 +228,9 @@ const LineItemRow = memo(
                     processSyncQueue();
                   }}
                   disabled={item.checkedQty === 0}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center bg-transparent p-0"
+                  className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
-                  <Minus className="size-5" />
+                  <Minus className="size-4" />
                 </Button>
               </div>
             </>

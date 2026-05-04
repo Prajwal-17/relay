@@ -74,7 +74,7 @@ const BillingHeader = () => {
   const hasRealCustomer = customerName && customerName !== "DEFAULT" && customerName !== "";
 
   return (
-    <div className="bg-card border-border/60 mx-4 my-4 flex flex-col gap-4 rounded-2xl border p-4 shadow-sm">
+    <div className="bg-card border-border/60 mx-4 my-2 flex flex-col gap-4 rounded-2xl border p-4 shadow-sm">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
           <Tooltip>

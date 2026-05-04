@@ -7,59 +7,60 @@ export const SummaryFooter = () => {
   const { type } = useParams();
 
   const { subtotal, grandTotal } = useTransaction();
-  const isSaving = true;
+  const isSaving = false;
 
   if (!type) {
     return <Navigate to="/not-found" />;
   }
 
   return (
-    <footer>
-      <div className="bg-background relative mx-5 flex items-center justify-end gap-4 rounded-xl px-4 py-2 md:gap-6">
-        <div className="flex items-center gap-6 text-right md:gap-8">
-          <div className="flex items-center gap-2 text-sm md:text-base">
-            <span className="text-muted-foreground text-base md:text-lg">Subtotal:</span>
-            <span className="text-foreground text-lg font-semibold">{subtotal}</span>
+    <footer className="absolute right-6 bottom-1 z-20">
+      <div className="bg-background/60 border-border/50 flex items-center gap-6 rounded-lg border py-1.5 pr-1.5 pl-6 shadow-xl backdrop-blur-xs">
+        <div className="flex items-end gap-6">
+          <div className="flex items-end gap-2">
+            <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
+              Subtotal:
+            </span>
+            <span className="text-foreground text-xl font-semibold">{subtotal}</span>
           </div>
-          <div className="flex items-center gap-2 md:gap-3">
-            <span className="text-muted-foreground text-xl font-medium md:text-2xl">Total:</span>
-            <span className="text-foreground text-2xl font-bold md:text-3xl">{grandTotal}</span>
+
+          <div className="bg-border/60 h-8 w-px shrink-0" />
+
+          <div className="flex items-end gap-2">
+            <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
+              Total:
+            </span>
+            <span className="text-foreground text-3xl font-bold">{grandTotal}</span>
           </div>
         </div>
 
-        <div className="bg-border hidden h-10 w-px md:block" />
+        <div className="bg-border/60 h-8 w-px shrink-0" />
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-3">
           <Button
             variant="default"
-            size="lg"
-            className="bg-primary hover:bg-primary/90 h-11 cursor-pointer rounded-lg px-4 text-base font-medium md:h-12 md:px-5 md:text-lg"
-            // onClick={() => handleManualAction("save&print")}
+            className="hover:bg-primary/90 h-12 cursor-pointer gap-3 rounded-lg px-6! text-base font-semibold shadow-sm"
             disabled={isSaving}
           >
-            <Printer className="mr-2 h-5 w-5 md:h-6 md:w-6" size={20} />
-            {isSaving ? "Saving ..." : "Save & Print"}
+            <Printer size={18} />
+            {isSaving ? "Saving..." : "Save & Print"}
           </Button>
 
           <Button
-            // onClick={() => handleManualAction("save")}
             variant="outline"
-            size="lg"
-            className="h-11 rounded-lg px-4 text-base font-medium hover:cursor-pointer md:h-12 md:px-5 md:text-lg"
+            className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-base font-medium transition-colors"
             disabled={isSaving}
           >
-            <Save className="mr-2 h-4 w-4 md:h-5 md:w-5" />
-            {isSaving ? "Saving..." : "Save"}
+            <Save size={18} className="text-muted-foreground" />
+            {isSaving ? "Saving..." : "Save & Exit"}
           </Button>
 
           <Button
-            // onClick={() => handleManualAction("saveAsPDF")}
             variant="outline"
-            size="lg"
-            className="h-11 rounded-lg px-4 text-base font-medium hover:cursor-pointer md:h-12 md:px-5 md:text-lg"
+            className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-base font-medium transition-colors"
             disabled={isSaving}
           >
-            <FileText className="mr-2 h-4 w-4 md:h-5 md:w-5" />
+            <FileText size={18} className="text-muted-foreground" />
             {isSaving ? "Saving PDF..." : "Save PDF"}
           </Button>
         </div>

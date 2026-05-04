@@ -73,7 +73,7 @@ const BillingPage = () => {
       <BillingTabBar />
       <div className="flex flex-1 gap-2 overflow-hidden">
         <div className="bg-background-secondary relative flex h-full flex-1 flex-col">
-          <div className="overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
           </div>

@@ -2,12 +2,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
-import { processSyncQueue } from "@/utils/syncWorker";
 import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { convertToRupees } from "@shared/utils/utils";
-import { Edit, Package, Search } from "lucide-react";
+import { Edit, Package, PackagePlus, Search } from "lucide-react";
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
@@ -15,24 +15,46 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
   const { dropdownRef, searchResults, parentRef, rowVirtualizer, hasNextPage, virtualItems } =
     useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
+  const openNewProductDialog = () => {
+    setIsDropdownOpen();
+    setProductId(null);
+    setFormDataState({});
+    setDialogMode("edit");
+    setActionType("add");
+    setOpenProductDialog();
+  };
+
   return (
     <>
       <div ref={dropdownRef}>
         <div
           ref={parentRef}
-          className="bg-background border-border absolute top-full left-[10%] z-30 max-h-96 w-[60%] overflow-y-auto rounded-lg border py-1 shadow-xl"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 max-h-96 w-[60%] overflow-y-auto rounded-2xl border py-2 shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
         >
           {searchResults.length === 0 ? (
-            <div className="text-muted-foreground p-16 text-center">
-              <Search className="mx-auto mb-6 h-16 w-16 opacity-30" />
-              <h3 className="text-foreground mb-3 text-xl font-semibold">No products found</h3>
-              <p className="text-muted-foreground font-medium">Try adjusting your search</p>
+            <div className="text-muted-foreground flex flex-col items-center px-8 py-14 text-center">
+              <div className="bg-muted/50 mb-5 flex h-16 w-16 items-center justify-center rounded-2xl">
+                <Search className="h-8 w-8 opacity-60" />
+              </div>
+              <h3 className="text-foreground mb-2 text-xl font-semibold">No products found</h3>
+              <p className="mb-6 max-w-sm text-sm font-medium">
+                Add the product now and continue billing without leaving this screen.
+              </p>
+              <Button
+                variant="outline"
+                onClick={openNewProductDialog}
+                className="h-11 cursor-pointer rounded-xl px-5 text-sm font-semibold shadow-none"
+              >
+                <PackagePlus className="mr-2 h-4 w-4" />
+                New Product
+              </Button>
             </div>
           ) : (
             <>
@@ -57,7 +79,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         data-index={virtualRow.index}
                       >
                         <div
-                          className="group hover:border-primary hover:bg-accent flex items-center gap-4 border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer"
+                          className="group hover:bg-accent/60 flex items-center gap-4 rounded-xl border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer"
                           onClick={() => {
                             addLineItem(rowId, product);
                             setIsDropdownOpen();
@@ -66,7 +88,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           }}
                           onMouseDown={(e) => e.preventDefault()}
                         >
-                          <div className="border-border flex h-8 w-8 items-center justify-center rounded-lg border bg-linear-to-br from-blue-50 to-blue-100">
+                          <div className="border-border/70 flex h-9 w-9 items-center justify-center rounded-xl border bg-linear-to-br from-blue-50 to-blue-100">
                             <Package className="h-5 w-5 text-blue-600" />
                           </div>
 
