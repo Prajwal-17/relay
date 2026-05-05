@@ -30,7 +30,7 @@ const getPageTitle = (pathname: string) => {
     return "Reports";
   }
 
-  if (matchPath("/settings", pathname)) {
+  if (matchPath("/settings/*", pathname)) {
     return "Settings";
   }
 

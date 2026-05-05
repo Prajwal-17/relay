@@ -1,5 +1,12 @@
-import { createHashRouter } from "react-router-dom";
+import { createHashRouter, Navigate } from "react-router-dom";
 import RootLayout from "./components/layouts/RootLayout";
+import {
+  BillingSettingsPage,
+  DashboardSettingsPage,
+  ExportsSettingsPage,
+  GeneralSettingsPage,
+  StorageSettingsPage
+} from "./features/settings/SettingsSections";
 import BillingPage from "./pages/billing/BillingPage";
 import CustomersPage from "./pages/customers/CustomersPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
@@ -36,7 +43,33 @@ export const router = createHashRouter([
       },
       {
         path: "settings",
-        element: <SettingsPage />
+        element: <SettingsPage />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="general" replace />
+          },
+          {
+            path: "general",
+            element: <GeneralSettingsPage />
+          },
+          {
+            path: "billing",
+            element: <BillingSettingsPage />
+          },
+          {
+            path: "dashboard",
+            element: <DashboardSettingsPage />
+          },
+          {
+            path: "exports",
+            element: <ExportsSettingsPage />
+          },
+          {
+            path: "storage",
+            element: <StorageSettingsPage />
+          }
+        ]
       },
       {
         path: "billing/*",
