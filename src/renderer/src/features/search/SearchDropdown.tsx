@@ -2,7 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
-import { useLineItemsStore } from "@/store/lineItemsStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
@@ -11,8 +12,9 @@ import { Edit, Package, PackagePlus, Search } from "lucide-react";
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
-  const addLineItem = useLineItemsStore((state) => state.addLineItem);
-  const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const addLineItem = useBillingSessionStore((state) => state.addLineItem);
+  const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
@@ -81,9 +83,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         <div
                           className="group hover:bg-accent/60 flex items-center gap-4 rounded-xl border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer"
                           onClick={() => {
-                            addLineItem(rowId, product);
+                            if (!activeTabId) return;
+                            addLineItem(activeTabId, rowId, product);
                             setIsDropdownOpen();
-                            addEmptyLineItem();
+                            addEmptyLineItem(activeTabId);
                             processSyncQueue();
                           }}
                           onMouseDown={(e) => e.preventDefault()}

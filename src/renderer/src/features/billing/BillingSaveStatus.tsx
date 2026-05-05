@@ -1,9 +1,13 @@
 import { cn } from "@/lib/utils";
-import { useBillingStore } from "@/store/billingStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 export const BillingSaveStatus = () => {
-  const status = useBillingStore((state) => state.status);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const status = useBillingSessionStore((state) =>
+    activeTabId ? (state.sessions[activeTabId]?.status ?? "idle") : "idle"
+  );
   const currentStatus = status === "idle" ? "saved" : status;
 
   return (

@@ -9,7 +9,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useDebounce from "@/hooks/useDebounce";
 import { apiClient } from "@/lib/apiClient";
-import { useBillingStore } from "@/store/billingStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import type { Customer } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,10 +19,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export const CustomerNameInput = () => {
-  const customerId = useBillingStore((state) => state.customerId);
-  const setCustomerId = useBillingStore((state) => state.setCustomerId);
-  const customerName = useBillingStore((state) => state.customerName);
-  const setCustomerName = useBillingStore((state) => state.setCustomerName);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const session = useBillingSessionStore((state) =>
+    activeTabId ? state.sessions[activeTabId] : null
+  );
+  const updateField = useBillingSessionStore((state) => state.updateField);
+  const customerId = session?.customerId ?? null;
+  const customerName = session?.customerName ?? "";
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -55,8 +59,8 @@ export const CustomerNameInput = () => {
         customerType: "cash"
       }),
     onSuccess: (data) => {
-      setCustomerId(data.id);
-      setCustomerName(data.name);
+      updateField(activeTabId, "customerId", data.id);
+      updateField(activeTabId, "customerName", data.name);
       setOpen(false);
       processSyncQueue();
       toast.success(`Created and selected customer: ${data.name}`);
@@ -68,8 +72,8 @@ export const CustomerNameInput = () => {
   });
 
   const handleSelectCustomer = (customer: Customer) => {
-    setCustomerId(customer.id);
-    setCustomerName(customer.name);
+    updateField(activeTabId, "customerId", customer.id);
+    updateField(activeTabId, "customerName", customer.name);
     setOpen(false);
     processSyncQueue();
   };
@@ -78,6 +82,8 @@ export const CustomerNameInput = () => {
     if (!query) return;
     createCustomerMutation.mutate(query);
   };
+
+  if (!activeTabId || !session) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

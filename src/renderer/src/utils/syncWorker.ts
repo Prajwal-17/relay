@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
-import { useBillingStore } from "@/store/billingStore";
-import { useLineItemsStore } from "@/store/lineItemsStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import {
   buildTransactionPayload,
   filterDirtyLineItems,
@@ -15,19 +15,16 @@ let isSyncing = false;
 const syncLogic = async () => {
   if (isSyncing) return;
 
-  const { lineItems, markItemAsSaving, markItemAsSynced, updateLineItemId, purgeDeletedItems } =
-    useLineItemsStore.getState();
-  const {
-    billingId,
-    setBillingId,
-    billingType,
-    transactionNo,
-    customerId,
-    setStatus,
-    billingDate,
-    isMetaDataDirty,
-    markMetaDataSynced
-  } = useBillingStore.getState();
+  const { activeTabId } = useBillingTabsStore.getState();
+  const sessionStore = useBillingSessionStore.getState();
+  const session = activeTabId ? sessionStore.sessions[activeTabId] : null;
+  if (!activeTabId || !session) return;
+
+  const { lineItems } = session;
+  const { markItemAsSaving, markItemAsSynced, updateLineItemId, purgeDeletedItems, updateField } =
+    sessionStore;
+  const { billingId, billingType, transactionNo, customerId, billingDate, isMetaDataDirty } =
+    session;
 
   const validLineItems = filterValidLineItems(lineItems);
   const dirtyItems = filterDirtyLineItems(validLineItems);
@@ -35,8 +32,8 @@ const syncLogic = async () => {
   if (dirtyItems.length === 0 && !isMetaDataDirty) return;
 
   isSyncing = true;
-  setStatus(BILLSTATUS.SAVING);
-  markItemAsSaving(dirtyItems);
+  updateField(activeTabId, "status", BILLSTATUS.SAVING);
+  markItemAsSaving(activeTabId, dirtyItems);
 
   const normalizedItems = normalizeLineItems(dirtyItems); // here strip of the sync status
   const payload = buildTransactionPayload({
@@ -56,7 +53,7 @@ const syncLogic = async () => {
     const response = (await apiClient.post(endpoint, payload)) as SyncResponse;
 
     if (isNewBill && response.billingId) {
-      setBillingId(response.billingId);
+      updateField(activeTabId, "billingId", response.billingId);
     }
 
     const updateIdsMap: Map<string, string> = new Map(
@@ -65,19 +62,19 @@ const syncLogic = async () => {
     const syncIds: Set<string> = new Set(response.syncedItems.map((i) => i.rowId));
     const purgeIds: Set<string> = new Set(response.deletedRowIds);
 
-    updateLineItemId(updateIdsMap);
-    markItemAsSynced(syncIds);
-    purgeDeletedItems(purgeIds);
-    markMetaDataSynced();
+    updateLineItemId(activeTabId, updateIdsMap);
+    markItemAsSynced(activeTabId, syncIds);
+    purgeDeletedItems(activeTabId, purgeIds);
+    updateField(activeTabId, "isMetaDataDirty", false);
   } catch (error) {
     console.error("Sync error:", error);
-    setStatus(BILLSTATUS.ERROR);
+    updateField(activeTabId, "status", BILLSTATUS.ERROR);
   } finally {
     isSyncing = false;
-    setStatus(BILLSTATUS.SAVED);
+    updateField(activeTabId, "status", BILLSTATUS.SAVED);
 
-    const freshState = useLineItemsStore.getState();
-    const freshValid = filterValidLineItems(freshState.lineItems);
+    const freshSession = useBillingSessionStore.getState().sessions[activeTabId];
+    const freshValid = filterValidLineItems(freshSession?.lineItems ?? []);
     const pendingItems = filterDirtyLineItems(freshValid);
 
     if (pendingItems.length > 0) {

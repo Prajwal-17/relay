@@ -1,6 +1,6 @@
 import useTransaction from "@/hooks/transaction/useTransaction";
-import { useBillingStore } from "@/store/billingStore";
-import { useLineItemsStore } from "@/store/lineItemsStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
@@ -12,11 +12,15 @@ import { Navigate, useParams } from "react-router-dom";
 const BillPreview = () => {
   const { type } = useParams();
   const formattedType = type?.slice(0, -1);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const session = useBillingSessionStore((state) =>
+    activeTabId ? state.sessions[activeTabId] : null
+  );
 
-  const lineItems = useLineItemsStore((state) => state.lineItems);
-  const transactionNo = useBillingStore((state) => state.transactionNo);
-  const billingDate = useBillingStore((state) => state.billingDate);
-  const customerName = useBillingStore((state) => state.customerName);
+  const lineItems = session?.lineItems ?? [];
+  const transactionNo = session?.transactionNo ?? null;
+  const billingDate = session?.billingDate ?? new Date();
+  const customerName = session?.customerName ?? "";
   const { subtotal, grandTotal } = useTransaction();
 
   const { setReceiptRef } = useReceiptRefStore();
@@ -29,6 +33,7 @@ const BillPreview = () => {
   if (!type) {
     return <Navigate to="/not-found" />;
   }
+  if (!activeTabId || !session) return null;
   return (
     <>
       <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">

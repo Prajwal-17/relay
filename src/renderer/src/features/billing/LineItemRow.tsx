@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
+import type { LineItem } from "@/store/billing/billingSession.types";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { processSyncQueue } from "@/utils/syncWorker";
@@ -21,12 +23,12 @@ const LineItemRow = memo(
     item: LineItem;
     isCountColumnVisible: boolean;
   }) => {
-    const { updateLineItem, deleteLineItem } = useLineItemsStore(
-      useShallow((state) => ({
-        updateLineItem: state.updateLineItem,
-        deleteLineItem: state.deleteLineItem
-      }))
+    const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+    const session = useBillingSessionStore((state) =>
+      activeTabId ? state.sessions[activeTabId] : null
     );
+    const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
+    const deleteLineItem = useBillingSessionStore((state) => state.deleteLineItem);
 
     const { activeRowId, setActiveRowId, isDropdownOpen, setItemQuery, setIsDropdownOpen } =
       useSearchDropdownStore(
@@ -43,6 +45,8 @@ const LineItemRow = memo(
     const qtyVal = parseFloat(item.quantity || "0");
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
+
+    if (!activeTabId || !session) return null;
 
     return (
       <div key={item.rowId} className="relative">
@@ -62,7 +66,7 @@ const LineItemRow = memo(
                 className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
                 size={28}
                 onClick={() => {
-                  deleteLineItem(item.rowId);
+                  deleteLineItem(activeTabId, item.rowId);
                   processSyncQueue();
                 }}
               />
@@ -79,7 +83,7 @@ const LineItemRow = memo(
               }}
               onChange={(e) => {
                 setItemQuery(e.target.value);
-                updateLineItem(item.rowId, "productSnapshot", e.target.value);
+                updateLineItem(activeTabId, item.rowId, "productSnapshot", e.target.value);
                 processSyncQueue();
               }}
               placeholder="Search products"
@@ -92,7 +96,7 @@ const LineItemRow = memo(
                   const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 0) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
-                    updateLineItem(item.rowId, "quantity", newQty.toString());
+                    updateLineItem(activeTabId, item.rowId, "quantity", newQty.toString());
                     processSyncQueue();
                   }
                 }}
@@ -113,7 +117,7 @@ const LineItemRow = memo(
                   const val = e.target.value;
                   // allow only number and three decimal points
                   if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
-                    updateLineItem(item.rowId, "quantity", val);
+                    updateLineItem(activeTabId, item.rowId, "quantity", val);
                     processSyncQueue();
                   }
                 }}
@@ -126,7 +130,7 @@ const LineItemRow = memo(
                   const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 1) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
-                    updateLineItem(item.rowId, "quantity", newQty.toString());
+                    updateLineItem(activeTabId, item.rowId, "quantity", newQty.toString());
                     processSyncQueue();
                   }
                 }}
@@ -154,7 +158,7 @@ const LineItemRow = memo(
                   const val = e.target.value;
                   // allow only number and two decimal points
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                    updateLineItem(item.rowId, "price", val);
+                    updateLineItem(activeTabId, item.rowId, "price", val);
                     processSyncQueue();
                   }
                 }}
@@ -177,7 +181,7 @@ const LineItemRow = memo(
               onClick={() => {
                 const currentQty = parseFloat(item.quantity || "0");
                 const newCheckedAt = checked ? 0 : currentQty;
-                updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
                 processSyncQueue();
               }}
               className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
@@ -206,7 +210,7 @@ const LineItemRow = memo(
                       parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
-                    updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                    updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
                     processSyncQueue();
                   }}
                   disabled={checked}
@@ -224,7 +228,7 @@ const LineItemRow = memo(
                       parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
-                    updateLineItem(item.rowId, "checkedQty", newCheckedAt);
+                    updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
                     processSyncQueue();
                   }}
                   disabled={item.checkedQty === 0}

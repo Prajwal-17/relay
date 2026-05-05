@@ -1,14 +1,17 @@
 import { apiClient } from "@/lib/apiClient";
-import { useBillingStore } from "@/store/billingStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { TRANSACTION_TYPE, type Customer, type TransactionType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
-const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
-  const setTransactionNo = useBillingStore((state) => state.setTransactionNo);
-  const setCustomerId = useBillingStore((state) => state.setCustomerId);
-  const setCustomerName = useBillingStore((state) => state.setCustomerName);
+const useInitialBillingData = (
+  formattedType: TransactionType,
+  activeTabId: string | null,
+  id?: string
+) => {
+  const updateField = useBillingSessionStore((state) => state.updateField);
 
   const shouldFetch =
     !id && (formattedType === TRANSACTION_TYPE.SALE || formattedType === TRANSACTION_TYPE.ESTIMATE);
@@ -36,19 +39,29 @@ const useInitialBillingData = (formattedType: TransactionType, id?: string) => {
   });
 
   useEffect(() => {
+    if (!activeTabId) return;
     if (!isTransactionFetched || !transactionData) {
       return;
     }
-    setTransactionNo(transactionData.nextNo);
-  }, [transactionData, setTransactionNo, isTransactionFetched]);
+    const currentSession = useBillingSessionStore.getState().sessions[activeTabId];
+    if (!currentSession || currentSession.transactionNo !== null) return;
+
+    const tabs = useBillingTabsStore.getState().tabs;
+    const maxNoInOpenTabs = tabs
+      .filter((tab) => tab.type === formattedType && tab.transactionNo !== null)
+      .reduce((max, tab) => Math.max(max, tab.transactionNo ?? 0), 0);
+
+    updateField(activeTabId, "transactionNo", Math.max(transactionData.nextNo, maxNoInOpenTabs));
+  }, [transactionData, isTransactionFetched, activeTabId, formattedType, updateField]);
 
   useEffect(() => {
+    if (!activeTabId) return;
     if (!isCustomerFetched || !customerData) {
       return;
     }
-    setCustomerId(customerData.id);
-    setCustomerName(customerData.name);
-  }, [customerData, setCustomerId, isCustomerFetched, setCustomerName]);
+    updateField(activeTabId, "customerId", customerData.id);
+    updateField(activeTabId, "customerName", customerData.name);
+  }, [customerData, isCustomerFetched, activeTabId, updateField]);
 
   useEffect(() => {
     if (isTransactionError) {

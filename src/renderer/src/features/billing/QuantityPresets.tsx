@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { MAX_PRESET_COUNT, weights } from "@/constants";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { processSyncQueue } from "@/utils/syncWorker";
-import { useLineItemsStore } from "@/store/lineItemsStore";
 import { useEffect, useRef } from "react";
 
 const QuantityPresets = ({
@@ -17,7 +18,8 @@ const QuantityPresets = ({
   setQtyPresetOpen: React.Dispatch<React.SetStateAction<number | null>>;
 }) => {
   const popDownRef = useRef<HTMLDivElement | null>(null);
-  const updateLineItem = useLineItemsStore((state) => state.updateLineItem);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
   const numbers = Array.from({ length: MAX_PRESET_COUNT }, (_, i) => i + 1);
 
   function handlePresetClick(e: React.MouseEvent) {
@@ -25,7 +27,8 @@ const QuantityPresets = ({
     if (!button?.dataset.value) {
       return;
     }
-    updateLineItem(rowId, "quantity", parseFloat(button.dataset.value));
+    if (!activeTabId) return;
+    updateLineItem(activeTabId, rowId, "quantity", button.dataset.value);
     processSyncQueue();
     setQtyPresetOpen(null);
   }

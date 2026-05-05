@@ -1,4 +1,4 @@
-import type { LineItem } from "@/store/lineItemsStore";
+import type { LineItem } from "@/store/billing/billingSession.types";
 import { SYNCSTATUS } from "@/types";
 import {
   TRANSACTION_TYPE,

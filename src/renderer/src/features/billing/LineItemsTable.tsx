@@ -5,7 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { useLineItemsStore, type LineItem } from "@/store/lineItemsStore";
+import type { LineItem } from "@/store/billing/billingSession.types";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
@@ -30,23 +32,32 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const isCountColumnVisible = useLineItemsStore((state) => state.isCountColumnVisible);
-  const setIsCountControlsVisible = useLineItemsStore((state) => state.setIsCountControlsVisible);
-  const lineItems = useLineItemsStore((state) => state.lineItems);
-  const addEmptyLineItem = useLineItemsStore((state) => state.addEmptyLineItem);
-  const setAllChecked = useLineItemsStore((state) => state.setAllChecked);
+  const updateField = useBillingSessionStore((state) => state.updateField);
+  const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
+  const setAllChecked = useBillingSessionStore((state) => state.setAllChecked);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
-  const totalItems = lineItems.filter((item) => item.productSnapshot.trim() !== "").length;
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+
+  const session = useBillingSessionStore((state) =>
+    activeTabId ? state.sessions[activeTabId] : null
+  );
+  const isCountColumnVisible = session?.isCountColumnVisible ?? false;
+
+  if (!activeTabId || !session) {
+    return null;
+  }
+
+  const totalItems = session.lineItems.filter((item) => item.productSnapshot.trim() !== "").length;
   const totalQty = fromMilliUnits(
-    lineItems.reduce((acc, item) => acc + toMilliUnits(parseFloat(item.quantity) || 0), 0)
+    session.lineItems.reduce((acc, item) => acc + toMilliUnits(parseFloat(item.quantity) || 0), 0)
   );
   const totalChecked = fromMilliUnits(
-    lineItems.reduce((acc, item) => acc + toMilliUnits(item.checkedQty), 0)
+    session.lineItems.reduce((acc, item) => acc + toMilliUnits(item.checkedQty), 0)
   );
   const allChecked = totalQty > 0 && totalChecked === totalQty;
 
@@ -118,7 +129,7 @@ const LineItemsTable = () => {
               <DropdownMenuContent align="end" className="min-w-44 rounded-xl p-1">
                 <DropdownMenuItem
                   onClick={() => {
-                    setAllChecked(true);
+                    setAllChecked(activeTabId, true);
                     processSyncQueue();
                   }}
                   className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-base font-medium"
@@ -129,7 +140,7 @@ const LineItemsTable = () => {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    setAllChecked(false);
+                    setAllChecked(activeTabId, false);
                     processSyncQueue();
                   }}
                   className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-base font-medium"
@@ -142,7 +153,9 @@ const LineItemsTable = () => {
 
             <Button
               variant="ghost"
-              onClick={setIsCountControlsVisible}
+              onClick={() =>
+                updateField(activeTabId, "isCountColumnVisible", !session.isCountColumnVisible)
+              }
               className="text-muted-foreground hover:text-foreground hover:bg-muted/60 h-11 cursor-pointer rounded-xl px-4 text-base font-semibold"
               title={isCountColumnVisible ? "Hide count column" : "Show count column"}
             >
@@ -178,22 +191,24 @@ const LineItemsTable = () => {
         </div>
 
         <div className="relative space-y-1.5 pt-2.5">
-          {lineItems.map(
-            (item: LineItem, idx: number) =>
-              !item.isDeleted && (
-                <LineItemRow
-                  key={item.rowId}
-                  idx={idx}
-                  item={item}
-                  isCountColumnVisible={isCountColumnVisible}
-                />
-              )
-          )}
+          {session &&
+            session.lineItems.length > 0 &&
+            session.lineItems.map(
+              (item: LineItem, idx: number) =>
+                !item.isDeleted && (
+                  <LineItemRow
+                    key={item.rowId}
+                    idx={idx}
+                    item={item}
+                    isCountColumnVisible={isCountColumnVisible}
+                  />
+                )
+            )}
 
           <div className="flex items-center justify-between px-1 pt-1">
             <Button
               size="lg"
-              onClick={() => addEmptyLineItem("button")}
+              onClick={() => addEmptyLineItem(activeTabId, "button")}
               className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 cursor-pointer rounded-xl px-6 text-base font-semibold shadow-[0_10px_24px_rgba(15,23,42,0.1)]"
             >
               <Plus className="mr-2 h-4 w-4" />

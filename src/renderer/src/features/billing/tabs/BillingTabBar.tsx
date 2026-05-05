@@ -9,11 +9,12 @@ import {
   MAX_BILLING_TABS,
   useBillingTabsStore,
   type BillingTabType
-} from "@/store/billingTabsStore";
+} from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
+import { apiClient } from "@/lib/apiClient";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { Plus, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { BillingSaveStatus } from "../BillingSaveStatus";
 import { BillingTab } from "./BillingTab";
@@ -44,17 +45,32 @@ const BillingTabBar = () => {
     }
   };
 
-  const handleNewTab = (type: TransactionType) => {
+  const handleNewTab = async (type: TransactionType) => {
     const routePath =
       type === TRANSACTION_TYPE.SALE ? "/billing/sales/create" : "/billing/estimates/create";
-    const tab = addTab(type, routePath, null, false);
+    const sameTypeTabs = useBillingTabsStore
+      .getState()
+      .tabs.filter((t) => t.type === type && t.transactionNo !== null);
+    const maxNo = sameTypeTabs.reduce((max, tab) => Math.max(max, tab.transactionNo ?? 0), 0);
+
+    let transactionNo = maxNo + 1;
+    try {
+      const response = await apiClient.get<{ nextNo: number }>(`/api/${type}s/next-number`);
+      transactionNo = Math.max(response.nextNo, maxNo + 1);
+    } catch {
+      // fallback already computed from open tabs
+    }
+
+    const tab = addTab(type, routePath, transactionNo, false);
     if (tab) {
+      setActiveTab(tab.id);
       navigate(routePath);
     }
   };
 
   const handleClosePage = () => {
     useBillingTabsStore.getState().reset();
+    useBillingSessionStore.setState({ sessions: {} });
     navigate("/");
   };
 
@@ -66,9 +82,9 @@ const BillingTabBar = () => {
   return (
     <div className="border-border/60 bg-card flex shrink-0 items-end justify-between border-b px-4 pt-2 select-none">
       <div className="flex flex-1 items-end gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <AnimatePresence initial={false} mode="popLayout">
+        <AnimatePresence initial={false}>
           {tabs.map((tab, index) => (
-            <Fragment key={tab.id}>
+            <motion.div key={tab.id} layout className="flex items-end gap-0.5">
               {showDivider && index === salesCount && (
                 <div className="bg-border mx-2 h-6 w-px shrink-0 self-center" />
               )}
@@ -78,7 +94,7 @@ const BillingTabBar = () => {
                 onSelect={() => handleTabClick(tab)}
                 onClose={(e) => handleCloseTab(e, tab.id)}
               />
-            </Fragment>
+            </motion.div>
           ))}
         </AnimatePresence>
 
@@ -104,14 +120,14 @@ const BillingTabBar = () => {
           <DropdownMenuContent align="start" sideOffset={8} className="min-w-42.5">
             <DropdownMenuItem
               className="cursor-pointer gap-3 py-2.5 text-lg! font-semibold"
-              onClick={() => handleNewTab(TRANSACTION_TYPE.SALE)}
+              onClick={() => void handleNewTab(TRANSACTION_TYPE.SALE)}
             >
               <span className="bg-success h-2.5 w-2.5 rounded-full" />
               New Sale
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer gap-3 py-2.5 text-lg! font-semibold"
-              onClick={() => handleNewTab(TRANSACTION_TYPE.ESTIMATE)}
+              onClick={() => void handleNewTab(TRANSACTION_TYPE.ESTIMATE)}
             >
               <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
               New Estimate

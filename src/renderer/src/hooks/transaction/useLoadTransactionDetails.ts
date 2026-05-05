@@ -1,6 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
-import { useBillingStore } from "@/store/billingStore";
-import { useLineItemsStore } from "@/store/lineItemsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import {
   TRANSACTION_TYPE,
   type TransactionType,
@@ -10,19 +9,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
-const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
-  const {
-    setBillingId,
-    setBillingType,
-    setTransactionNo,
-    setBillingDate,
-    setCustomerId,
-    setCustomerName
-  } = useBillingStore.getState();
-
-  // Line items store setters
-  const { setLineItems } = useLineItemsStore.getState();
-
+const useLoadTransactionDetails = (
+  type: TransactionType,
+  id?: string,
+  activeTabId?: string | null
+) => {
+  const { setLineItems, updateField } = useBillingSessionStore.getState();
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
     queryKey: [type, id],
     queryFn: async () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}s/${id}`),
@@ -36,17 +28,19 @@ const useLoadTransactionDetails = (type: TransactionType, id?: string) => {
   }, [isError, error]);
 
   useEffect(() => {
+    if (!activeTabId) return;
     if (isSuccess && data) {
-      setBillingId(data.id);
-      setBillingType(data.type);
-      setTransactionNo(data.transactionNo);
-      setBillingDate(new Date(data.createdAt as string));
-      setCustomerId(data.customerId);
-      setCustomerName(data.customer.name);
-      setLineItems(data.items);
+      updateField(activeTabId, "billingId", data.id);
+      updateField(activeTabId, "billingType", data.type);
+      updateField(activeTabId, "transactionNo", data.transactionNo);
+      updateField(activeTabId, "billingDate", new Date(data.createdAt as string));
+      updateField(activeTabId, "customerId", data.customerId);
+      updateField(activeTabId, "customerName", data.customer.name);
+      console.log(data.items);
+      setLineItems(activeTabId, data.items);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, data]);
+  }, [isSuccess, data, activeTabId]);
   return { status, isLoading, isFetched };
 };
 

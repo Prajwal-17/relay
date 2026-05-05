@@ -1,8 +1,12 @@
-import { useLineItemsStore } from "@/store/lineItemsStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { convertToRupees, formatToRupees } from "@shared/utils/utils";
 
 const useTransaction = () => {
-  const lineItems = useLineItemsStore((state) => state.lineItems);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const lineItems = useBillingSessionStore((state) =>
+    activeTabId ? (state.sessions[activeTabId]?.lineItems ?? []) : []
+  );
 
   const total = lineItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);

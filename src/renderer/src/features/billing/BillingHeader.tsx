@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DEFAULT_HOUR } from "@/constants";
-import { useBillingStore } from "@/store/billingStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { type TransactionType } from "@shared/types";
@@ -15,10 +16,11 @@ import { Navigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
 
 const BillingHeader = () => {
-  const transactionNo = useBillingStore((state) => state.transactionNo);
-  const billingDate = useBillingStore((state) => state.billingDate);
-  const setBillingDate = useBillingStore((state) => state.setBillingDate);
-  const customerName = useBillingStore((state) => state.customerName);
+  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const session = useBillingSessionStore((state) =>
+    activeTabId ? state.sessions[activeTabId] : null
+  );
+  const updateField = useBillingSessionStore((state) => state.updateField);
 
   const [open, setOpen] = useState(false);
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
@@ -27,6 +29,9 @@ const BillingHeader = () => {
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
 
   const { type } = useParams<{ type: TransactionType; id?: string }>();
+  const billingDate = session?.billingDate ?? new Date();
+  const transactionNo = session?.transactionNo ?? null;
+  const customerName = session?.customerName ?? "";
 
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === "") return;
@@ -42,7 +47,7 @@ const BillingHeader = () => {
     udpatedDate.setHours(hours);
     udpatedDate.setMinutes(minutes);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
-    setBillingDate(udpatedDate);
+    updateField(activeTabId, "billingDate", udpatedDate);
     processSyncQueue();
   };
 
@@ -50,7 +55,7 @@ const BillingHeader = () => {
     const now = new Date();
     const selectedDate = new Date(date);
 
-    setBillingDate(date);
+    updateField(activeTabId, "billingDate", date);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     const isToday =
       selectedDate.getDate() === now.getDate() && selectedDate.getMonth() === now.getMonth();
@@ -61,7 +66,7 @@ const BillingHeader = () => {
       selectedDate.setHours(DEFAULT_HOUR, 0, 0, 0);
     }
 
-    setBillingDate(selectedDate);
+    updateField(activeTabId, "billingDate", selectedDate);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     processSyncQueue();
     setOpen(false);
@@ -70,6 +75,7 @@ const BillingHeader = () => {
   if (!type) {
     return <Navigate to="/not-found" />;
   }
+  if (!activeTabId || !session) return null;
 
   const hasRealCustomer = customerName && customerName !== "DEFAULT" && customerName !== "";
 
