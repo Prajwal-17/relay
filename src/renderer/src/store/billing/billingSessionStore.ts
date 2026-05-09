@@ -17,6 +17,10 @@ type BillingSessionStore = {
   sessions: Record<string, BillingSessionData>;
   initSession: (tabId: string | null) => void;
   removeSession: (tabId: string | null) => void;
+  hydrateSession: (
+    tabId: string | null,
+    fields: Partial<Omit<BillingSessionData, "lineItems">>
+  ) => void;
 
   // generic field updater
   updateField: <K extends keyof BillingSessionData>(
@@ -69,6 +73,16 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
           },
           false,
           "billingSession/removeSession"
+        ),
+
+      hydrateSession: (tabId, fields) =>
+        set(
+          (state) => {
+            if (!tabId || !state.sessions[tabId]) return;
+            Object.assign(state.sessions[tabId], fields);
+          },
+          false,
+          "billingSession/hydrateSession"
         ),
 
       updateField: (tabId, field, value) =>

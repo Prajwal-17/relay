@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DEFAULT_HOUR } from "@/constants";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { type TransactionType } from "@shared/types";
@@ -105,7 +105,7 @@ const BillingHeader = () => {
             </span>
             <span className="text-muted-foreground/40 text-2xl font-light">/</span>
             <span className="text-foreground font-mono text-3xl font-extrabold tracking-tight tabular-nums">
-              #{transactionNo}
+              #{transactionNo ?? "New"}
             </span>
           </div>
         </div>

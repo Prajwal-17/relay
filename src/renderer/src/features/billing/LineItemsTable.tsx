@@ -5,9 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
 import type { LineItem } from "@/store/billing/billingSession.types";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
@@ -41,7 +41,7 @@ const LineItemsTable = () => {
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
-  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+  const { activeTabId, getActiveTabId } = useActiveTabId();
 
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
@@ -129,7 +129,9 @@ const LineItemsTable = () => {
               <DropdownMenuContent align="end" className="min-w-44 rounded-xl p-1">
                 <DropdownMenuItem
                   onClick={() => {
-                    setAllChecked(activeTabId, true);
+                    const tabId = getActiveTabId();
+                    if (!tabId) return;
+                    setAllChecked(tabId, true);
                     processSyncQueue();
                   }}
                   className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-base font-medium"
@@ -140,7 +142,9 @@ const LineItemsTable = () => {
 
                 <DropdownMenuItem
                   onClick={() => {
-                    setAllChecked(activeTabId, false);
+                    const tabId = getActiveTabId();
+                    if (!tabId) return;
+                    setAllChecked(tabId, false);
                     processSyncQueue();
                   }}
                   className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-base font-medium"
@@ -153,9 +157,11 @@ const LineItemsTable = () => {
 
             <Button
               variant="ghost"
-              onClick={() =>
-                updateField(activeTabId, "isCountColumnVisible", !session.isCountColumnVisible)
-              }
+              onClick={() => {
+                const tabId = getActiveTabId();
+                if (!tabId) return;
+                updateField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
+              }}
               className="text-muted-foreground hover:text-foreground hover:bg-muted/60 h-11 cursor-pointer rounded-xl px-4 text-base font-semibold"
               title={isCountColumnVisible ? "Hide count column" : "Show count column"}
             >
@@ -208,7 +214,11 @@ const LineItemsTable = () => {
           <div className="flex items-center justify-between px-1 pt-1">
             <Button
               size="lg"
-              onClick={() => addEmptyLineItem(activeTabId, "button")}
+              onClick={() => {
+                const tabId = getActiveTabId();
+                if (!tabId) return;
+                addEmptyLineItem(tabId, "button");
+              }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 cursor-pointer rounded-xl px-6 text-base font-semibold shadow-[0_10px_24px_rgba(15,23,42,0.1)]"
             >
               <Plus className="mr-2 h-4 w-4" />

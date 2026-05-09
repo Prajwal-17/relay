@@ -369,6 +369,7 @@ export type SyncedItems = {
 
 export type SyncResponse = {
   billingId?: string;
+  transactionNo?: number;
   syncedItems: SyncedItems[];
   deletedRowIds: string[];
 };

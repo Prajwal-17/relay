@@ -66,10 +66,20 @@ const filterEstimatesByDate = async (
 const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> => {
   return db.transaction((tx) => {
     const syncedItems: SyncedItems[] = [];
+
+    const lastEstimate = tx
+      .select()
+      .from(estimates)
+      .orderBy(desc(estimates.estimateNo))
+      .limit(1)
+      .get();
+    const nextEstimateNo = (lastEstimate?.estimateNo ?? 0) + 1;
+    const finalEstimateNo = payload.transactionNo ?? nextEstimateNo;
+
     const newEstimate = tx
       .insert(estimates)
       .values({
-        estimateNo: Number(payload.transactionNo),
+        estimateNo: finalEstimateNo,
         customerId: payload.customerId,
         isPaid: payload.isPaid,
         createdAt: payload.createdAt
@@ -122,6 +132,7 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
 
     return {
       billingId: newEstimate.id,
+      transactionNo: finalEstimateNo,
       syncedItems: syncedItems,
       deletedRowIds: []
     };

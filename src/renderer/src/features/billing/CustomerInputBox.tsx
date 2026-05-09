@@ -9,8 +9,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import useDebounce from "@/hooks/useDebounce";
 import { apiClient } from "@/lib/apiClient";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import type { Customer } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

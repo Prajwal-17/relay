@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
+import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
 import type { LineItem } from "@/store/billing/billingSession.types";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { processSyncQueue } from "@/utils/syncWorker";
@@ -23,7 +23,8 @@ const LineItemRow = memo(
     item: LineItem;
     isCountColumnVisible: boolean;
   }) => {
-    const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+    const { activeTabId, getActiveTabId } = useActiveTabId();
+
     const session = useBillingSessionStore((state) =>
       activeTabId ? state.sessions[activeTabId] : null
     );
@@ -66,7 +67,9 @@ const LineItemRow = memo(
                 className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
                 size={28}
                 onClick={() => {
-                  deleteLineItem(activeTabId, item.rowId);
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
+                  deleteLineItem(tabId, item.rowId);
                   processSyncQueue();
                 }}
               />
@@ -82,8 +85,10 @@ const LineItemRow = memo(
                 setIsDropdownOpen();
               }}
               onChange={(e) => {
+                const tabId = getActiveTabId();
+                if (!tabId) return;
                 setItemQuery(e.target.value);
-                updateLineItem(activeTabId, item.rowId, "productSnapshot", e.target.value);
+                updateLineItem(tabId, item.rowId, "productSnapshot", e.target.value);
                 processSyncQueue();
               }}
               placeholder="Search products"
@@ -93,10 +98,13 @@ const LineItemRow = memo(
             <div className="bg-muted/30 border-border/70 relative mx-auto flex h-12 w-full items-center rounded-lg border font-bold">
               <button
                 onClick={() => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
+
                   const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 0) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
-                    updateLineItem(activeTabId, item.rowId, "quantity", newQty.toString());
+                    updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
                     processSyncQueue();
                   }
                 }}
@@ -114,10 +122,12 @@ const LineItemRow = memo(
                 value={item.quantity}
                 className="focus:border-ring focus:ring-ring placeholder-muted-foreground min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-lg font-semibold transition-all"
                 onChange={(e) => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
                   const val = e.target.value;
                   // allow only number and three decimal points
                   if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
-                    updateLineItem(activeTabId, item.rowId, "quantity", val);
+                    updateLineItem(tabId, item.rowId, "quantity", val);
                     processSyncQueue();
                   }
                 }}
@@ -127,10 +137,12 @@ const LineItemRow = memo(
                 disabled={parseFloat(item.quantity || "0") <= 1}
                 className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
                   const currentQty = parseFloat(item.quantity) || 0;
                   if (currentQty >= 1) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
-                    updateLineItem(activeTabId, item.rowId, "quantity", newQty.toString());
+                    updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
                     processSyncQueue();
                   }
                 }}
@@ -155,10 +167,12 @@ const LineItemRow = memo(
                 value={item.price}
                 placeholder="0"
                 onChange={(e) => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
                   const val = e.target.value;
                   // allow only number and two decimal points
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
-                    updateLineItem(activeTabId, item.rowId, "price", val);
+                    updateLineItem(tabId, item.rowId, "price", val);
                     processSyncQueue();
                   }
                 }}
@@ -179,9 +193,11 @@ const LineItemRow = memo(
           <div className="col-span-1 flex items-center justify-center px-1 py-1">
             <button
               onClick={() => {
+                const tabId = getActiveTabId();
+                if (!tabId) return;
                 const currentQty = parseFloat(item.quantity || "0");
                 const newCheckedAt = checked ? 0 : currentQty;
-                updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
+                updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
                 processSyncQueue();
               }}
               className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
@@ -205,12 +221,14 @@ const LineItemRow = memo(
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    const tabId = getActiveTabId();
+                    if (!tabId) return;
                     const newCheckedAt = updateCheckedQuantity(
                       UPDATE_QTY_ACTION.INCREMENT,
                       parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
-                    updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
+                    updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
                     processSyncQueue();
                   }}
                   disabled={checked}
@@ -223,12 +241,14 @@ const LineItemRow = memo(
                   variant="outline"
                   size="sm"
                   onClick={() => {
+                    const tabId = getActiveTabId();
+                    if (!tabId) return;
                     const newCheckedAt = updateCheckedQuantity(
                       UPDATE_QTY_ACTION.DECREMENT,
                       parseFloat(item.quantity || "0"),
                       item.checkedQty
                     );
-                    updateLineItem(activeTabId, item.rowId, "checkedQty", newCheckedAt);
+                    updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
                     processSyncQueue();
                   }}
                   disabled={item.checkedQty === 0}

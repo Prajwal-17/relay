@@ -65,10 +65,15 @@ const filterSalesByDate = async (
 const createSale = async (payload: TxnPayloadData) => {
   return db.transaction((tx) => {
     const syncedItems: SyncedItems[] = [];
+
+    const lastSale = tx.select().from(sales).orderBy(desc(sales.invoiceNo)).limit(1).get();
+    const nextInvoiceNo = (lastSale?.invoiceNo ?? 0) + 1;
+    const finalInvoiceNo = payload.transactionNo ?? nextInvoiceNo;
+
     const newSale = tx
       .insert(sales)
       .values({
-        invoiceNo: Number(payload.transactionNo),
+        invoiceNo: finalInvoiceNo,
         customerId: payload.customerId,
         isPaid: payload.isPaid,
         createdAt: payload.createdAt
@@ -120,6 +125,7 @@ const createSale = async (payload: TxnPayloadData) => {
 
     return {
       billingId: newSale.id,
+      transactionNo: finalInvoiceNo,
       syncedItems: syncedItems,
       deletedRowIds: []
     };

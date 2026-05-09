@@ -1,6 +1,6 @@
-import useTransaction from "@/hooks/transaction/useTransaction";
+import useTransaction from "@/hooks/billing/useTransaction";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
@@ -64,7 +64,7 @@ const BillPreview = () => {
                 <span className="font-semibold">
                   {formattedType === TRANSACTION_TYPE.SALE ? "Invoice No:" : "Estimate No:"}
                 </span>{" "}
-                {transactionNo}
+                {transactionNo ?? "New"}
               </div>
               <div>
                 <span className="font-semibold">Name:</span>{" "}

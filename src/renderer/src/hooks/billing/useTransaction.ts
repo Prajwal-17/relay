@@ -1,5 +1,5 @@
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { convertToRupees, formatToRupees } from "@shared/utils/utils";
 
 const useTransaction = () => {

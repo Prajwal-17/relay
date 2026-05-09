@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import {
   buildTransactionPayload,
   filterDirtyLineItems,
@@ -15,7 +15,7 @@ let isSyncing = false;
 const syncLogic = async () => {
   if (isSyncing) return;
 
-  const { activeTabId } = useBillingTabsStore.getState();
+  const { activeTabId, updateTab } = useBillingTabsStore.getState();
   const sessionStore = useBillingSessionStore.getState();
   const session = activeTabId ? sessionStore.sessions[activeTabId] : null;
   if (!activeTabId || !session) return;
@@ -54,6 +54,13 @@ const syncLogic = async () => {
 
     if (isNewBill && response.billingId) {
       updateField(activeTabId, "billingId", response.billingId);
+      if (response.transactionNo !== null && response.transactionNo !== undefined) {
+        updateField(activeTabId, "transactionNo", response.transactionNo);
+      }
+      updateTab(activeTabId, {
+        routePath: `/billing/${billingType}s/${response.billingId}/edit`,
+        transactionNo: response.transactionNo ?? null
+      });
     }
 
     const updateIdsMap: Map<string, string> = new Map(

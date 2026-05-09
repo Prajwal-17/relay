@@ -5,13 +5,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { billingCoordinator } from "@/store/billing/billingCoordinator";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import {
   MAX_BILLING_TABS,
   useBillingTabsStore,
   type BillingTabType
 } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
-import { apiClient } from "@/lib/apiClient";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { Plus, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -25,8 +25,6 @@ const BillingTabBar = () => {
   const tabs = useBillingTabsStore((s) => s.tabs);
   const activeTabId = useBillingTabsStore((s) => s.activeTabId);
   const setActiveTab = useBillingTabsStore((s) => s.setActiveTab);
-  const addTab = useBillingTabsStore((s) => s.addTab);
-  const removeTab = useBillingTabsStore((s) => s.removeTab);
 
   const handleTabClick = (tab: BillingTabType) => {
     if (tab.id === activeTabId) return;
@@ -36,7 +34,7 @@ const BillingTabBar = () => {
 
   const handleCloseTab = (e: React.MouseEvent, tabId: string) => {
     e.stopPropagation();
-    const newActiveId = removeTab(tabId);
+    const newActiveId = billingCoordinator.removeTab(tabId);
     if (newActiveId) {
       const next = useBillingTabsStore.getState().tabs.find((t) => t.id === newActiveId);
       if (next) navigate(next.routePath);
@@ -48,20 +46,8 @@ const BillingTabBar = () => {
   const handleNewTab = async (type: TransactionType) => {
     const routePath =
       type === TRANSACTION_TYPE.SALE ? "/billing/sales/create" : "/billing/estimates/create";
-    const sameTypeTabs = useBillingTabsStore
-      .getState()
-      .tabs.filter((t) => t.type === type && t.transactionNo !== null);
-    const maxNo = sameTypeTabs.reduce((max, tab) => Math.max(max, tab.transactionNo ?? 0), 0);
 
-    let transactionNo = maxNo + 1;
-    try {
-      const response = await apiClient.get<{ nextNo: number }>(`/api/${type}s/next-number`);
-      transactionNo = Math.max(response.nextNo, maxNo + 1);
-    } catch {
-      // fallback already computed from open tabs
-    }
-
-    const tab = addTab(type, routePath, transactionNo, false);
+    const tab = billingCoordinator.addTab(type, routePath, null);
     if (tab) {
       setActiveTab(tab.id);
       navigate(routePath);

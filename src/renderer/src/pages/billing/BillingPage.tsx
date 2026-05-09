@@ -5,20 +5,23 @@ import LineItemsTable from "@/features/billing/LineItemsTable";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import BillingTabBar from "@/features/billing/tabs/BillingTabBar";
-import useReset from "@/hooks/transaction/useBillingReset";
-import useInitialBillingData from "@/hooks/transaction/useInitialBillingData";
-import useLoadTransactionDetails from "@/hooks/transaction/useLoadTransactionDetails";
+import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
+import useReset from "@/hooks/billing/useBillingReset";
+import { useInitialBillingData } from "@/hooks/billing/useInitialBillingData";
+import useLoadTransactionDetails from "@/hooks/billing/useLoadTransactionDetails";
+import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useBillingSessionStore } from "@/store/billing/useBillingSessionStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useLocation, useParams } from "react-router-dom";
 
 const BillingPage = () => {
   const { type, id } = useParams();
   const { pathname } = useLocation();
   const formattedType = type?.slice(0, -1) as TransactionType;
-  const activeTabId = useBillingTabsStore((state) => state.activeTabId);
+
+  const { activeTabId } = useActiveTabId();
+
   const initSession = useBillingSessionStore((state) => state.initSession);
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : undefined
@@ -30,18 +33,21 @@ const BillingPage = () => {
   useInitialBillingData(formattedType, activeTabId, id);
   const transactionNo = session?.transactionNo ?? null;
 
-  // register current route as a tab on mount
-  const tabRegistered = useRef(false);
+  // register current route as a tab and keep active tab route in sync with url
   useEffect(() => {
     if (!formattedType) return;
     const store = useBillingTabsStore.getState();
-    const activeTab = store.activeTabId
-      ? store.tabs.find((tab) => tab.id === store.activeTabId)
-      : undefined;
+    const activeTab = activeTabId ? store.tabs.find((tab) => tab.id === activeTabId) : undefined;
 
-    // If current active tab already matches this route, keep it.
+    if (activeTab && activeTab.routePath !== pathname) {
+      store.updateTab(activeTabId, {
+        routePath: pathname,
+        ...(id ? { transactionNo } : {})
+      });
+      return;
+    }
+
     if (activeTab && activeTab.routePath === pathname) {
-      tabRegistered.current = true;
       return;
     }
 
@@ -51,17 +57,7 @@ const BillingPage = () => {
     } else {
       store.addTab(formattedType, pathname, id ? (transactionNo ?? null) : null);
     }
-    tabRegistered.current = true;
-  }, [pathname, formattedType, id, transactionNo]);
-
-  useEffect(() => {
-    if (!transactionNo || !tabRegistered.current) return;
-    const store = useBillingTabsStore.getState();
-    const tab = store.findTabByRoute(pathname);
-    if (tab && tab.transactionNo !== transactionNo) {
-      store.updateTab(tab.id, { transactionNo });
-    }
-  }, [transactionNo, pathname]);
+  }, [pathname, formattedType, id, transactionNo, activeTabId]);
 
   useEffect(() => {
     if (!activeTabId) return;

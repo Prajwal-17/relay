@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { useBillingSessionStore } from "./useBillingSessionStore";
+import { useBillingSessionStore } from "./billingSessionStore";
 
 export const MAX_BILLING_TABS = 8;
 
@@ -57,7 +57,6 @@ export const useBillingTabsStore = create<BillingTabsStore>()(
               false,
               "tabs/activateExisting"
             );
-            return existing;
           }
         }
 
@@ -81,15 +80,6 @@ export const useBillingTabsStore = create<BillingTabsStore>()(
           false,
           "tabs/addTab"
         );
-
-        // Always start a brand new isolated session for a new tab.
-        const sessionStore = useBillingSessionStore.getState();
-        sessionStore.removeSession(newTab.id);
-        sessionStore.initSession(newTab.id);
-        sessionStore.updateField(newTab.id, "billingType", type);
-        if (transactionNo !== null) {
-          sessionStore.updateField(newTab.id, "transactionNo", transactionNo);
-        }
 
         return newTab;
       },
@@ -142,7 +132,6 @@ export const useBillingTabsStore = create<BillingTabsStore>()(
             const tab = state.tabs.find((t) => t.id === tabId);
             if (tab) {
               Object.assign(tab, updates);
-              sortTabsInPlace(state.tabs);
             }
           },
           false,

@@ -17,7 +17,7 @@ export const lineItemSchema = z.object({
 });
 
 export const payloadDataSchema = z.object({
-  transactionNo: z.number().positive(),
+  transactionNo: z.number().positive().nullable().optional(),
   transactionType: z.enum(TRANSACTION_TYPE),
   customerId: z.uuidv4(),
   isPaid: z.boolean(),
