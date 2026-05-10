@@ -48,7 +48,7 @@ const BillingHeader = () => {
     udpatedDate.setMinutes(minutes);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
     updateField(activeTabId, "billingDate", udpatedDate);
-    processSyncQueue();
+    if (activeTabId) processSyncQueue(activeTabId);
   };
 
   const handleDateChange = (date: Date) => {
@@ -68,7 +68,7 @@ const BillingHeader = () => {
 
     updateField(activeTabId, "billingDate", selectedDate);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
-    processSyncQueue();
+    if (activeTabId) processSyncQueue(activeTabId);
     setOpen(false);
   };
 

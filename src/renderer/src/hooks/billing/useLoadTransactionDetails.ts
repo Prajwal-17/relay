@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
+import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import {
   TRANSACTION_TYPE,
   type TransactionType,
@@ -15,11 +16,19 @@ const useLoadTransactionDetails = (
   tabId?: string | null // here pass activeTabId
 ) => {
   const currentSession = tabId ? useBillingSessionStore.getState().sessions[tabId] : undefined;
+  const activeTabRoutePath = tabId
+    ? useBillingTabsStore.getState().tabs.find((t) => t.id === tabId)?.routePath
+    : undefined;
+
+  // prevent fetching if react router's async URL (id) hasn't caught up to Zustand's active tab route yet
+  const isRouteSynced = !!id && !!activeTabRoutePath && activeTabRoutePath.includes(`/${id}/`);
+
   const shouldFetch =
     !!id &&
     !!tabId &&
+    isRouteSynced &&
     (type === TRANSACTION_TYPE.SALE || type === TRANSACTION_TYPE.ESTIMATE) &&
-    currentSession?.billingId !== id;
+    String(currentSession?.billingId) !== String(id);
 
   const { setLineItems, hydrateSession } = useBillingSessionStore.getState();
   const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
@@ -50,10 +59,12 @@ const useLoadTransactionDetails = (
         customerName: data.customer.name
       });
       setLineItems(tabId, data.items);
+      useBillingTabsStore.getState().updateTab(tabId, { transactionNo: data.transactionNo });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, data, tabId]);
-  return { status, isLoading, isFetched };
+  const isDetailsLoading = shouldFetch && isLoading;
+  return { status, isLoading: isDetailsLoading, isFetched };
 };
 
 export default useLoadTransactionDetails;

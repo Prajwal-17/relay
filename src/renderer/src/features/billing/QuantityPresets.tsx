@@ -29,7 +29,7 @@ const QuantityPresets = ({
     }
     if (!activeTabId) return;
     updateLineItem(activeTabId, rowId, "quantity", button.dataset.value);
-    processSyncQueue();
+    processSyncQueue(activeTabId);
     setQtyPresetOpen(null);
   }
 

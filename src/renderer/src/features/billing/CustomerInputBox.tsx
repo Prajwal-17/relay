@@ -62,7 +62,7 @@ export const CustomerNameInput = () => {
       updateField(activeTabId, "customerId", data.id);
       updateField(activeTabId, "customerName", data.name);
       setOpen(false);
-      processSyncQueue();
+      if (activeTabId) processSyncQueue(activeTabId);
       toast.success(`Created and selected customer: ${data.name}`);
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
@@ -75,7 +75,7 @@ export const CustomerNameInput = () => {
     updateField(activeTabId, "customerId", customer.id);
     updateField(activeTabId, "customerName", customer.name);
     setOpen(false);
-    processSyncQueue();
+    if (activeTabId) processSyncQueue(activeTabId);
   };
 
   const handleCreateCustomer = () => {

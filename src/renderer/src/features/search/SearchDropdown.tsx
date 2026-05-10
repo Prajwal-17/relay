@@ -87,7 +87,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             addLineItem(activeTabId, rowId, product);
                             setIsDropdownOpen();
                             addEmptyLineItem(activeTabId);
-                            processSyncQueue();
+                            processSyncQueue(activeTabId);
                           }}
                           onMouseDown={(e) => e.preventDefault()}
                         >

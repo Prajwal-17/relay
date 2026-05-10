@@ -10,15 +10,16 @@ import {
 import { BILLSTATUS, type SyncResponse } from "@shared/types";
 import debounce from "lodash.debounce";
 
-let isSyncing = false;
+const syncStates = new Map<string, boolean>();
+const syncQueues = new Map<string, ReturnType<typeof debounce>>();
 
-const syncLogic = async () => {
-  if (isSyncing) return;
+const syncLogic = async (tabId: string) => {
+  if (syncStates.get(tabId)) return;
 
-  const { activeTabId, updateTab } = useBillingTabsStore.getState();
+  const { updateTab } = useBillingTabsStore.getState();
   const sessionStore = useBillingSessionStore.getState();
-  const session = activeTabId ? sessionStore.sessions[activeTabId] : null;
-  if (!activeTabId || !session) return;
+  const session = sessionStore.sessions[tabId];
+  if (!session) return;
 
   const { lineItems } = session;
   const { markItemAsSaving, markItemAsSynced, updateLineItemId, purgeDeletedItems, updateField } =
@@ -31,9 +32,9 @@ const syncLogic = async () => {
 
   if (dirtyItems.length === 0 && !isMetaDataDirty) return;
 
-  isSyncing = true;
-  updateField(activeTabId, "status", BILLSTATUS.SAVING);
-  markItemAsSaving(activeTabId, dirtyItems);
+  syncStates.set(tabId, true);
+  updateField(tabId, "status", BILLSTATUS.SAVING);
+  markItemAsSaving(tabId, dirtyItems);
 
   const normalizedItems = normalizeLineItems(dirtyItems); // here strip of the sync status
   const payload = buildTransactionPayload({
@@ -53,13 +54,13 @@ const syncLogic = async () => {
     const response = (await apiClient.post(endpoint, payload)) as SyncResponse;
 
     if (isNewBill && response.billingId) {
-      updateField(activeTabId, "billingId", response.billingId);
+      updateField(tabId, "billingId", response.billingId);
       if (response.transactionNo !== null && response.transactionNo !== undefined) {
-        updateField(activeTabId, "transactionNo", response.transactionNo);
+        updateField(tabId, "transactionNo", response.transactionNo);
       }
-      updateTab(activeTabId, {
+      updateTab(tabId, {
         routePath: `/billing/${billingType}s/${response.billingId}/edit`,
-        transactionNo: response.transactionNo ?? null
+        transactionNo: response.transactionNo
       });
     }
 
@@ -69,25 +70,34 @@ const syncLogic = async () => {
     const syncIds: Set<string> = new Set(response.syncedItems.map((i) => i.rowId));
     const purgeIds: Set<string> = new Set(response.deletedRowIds);
 
-    updateLineItemId(activeTabId, updateIdsMap);
-    markItemAsSynced(activeTabId, syncIds);
-    purgeDeletedItems(activeTabId, purgeIds);
-    updateField(activeTabId, "isMetaDataDirty", false);
+    updateLineItemId(tabId, updateIdsMap);
+    markItemAsSynced(tabId, syncIds);
+    purgeDeletedItems(tabId, purgeIds);
+    updateField(tabId, "isMetaDataDirty", false);
   } catch (error) {
     console.error("Sync error:", error);
-    updateField(activeTabId, "status", BILLSTATUS.ERROR);
+    updateField(tabId, "status", BILLSTATUS.ERROR);
   } finally {
-    isSyncing = false;
-    updateField(activeTabId, "status", BILLSTATUS.SAVED);
+    syncStates.set(tabId, false);
+    updateField(tabId, "status", BILLSTATUS.SAVED);
 
-    const freshSession = useBillingSessionStore.getState().sessions[activeTabId];
+    const freshSession = useBillingSessionStore.getState().sessions[tabId];
     const freshValid = filterValidLineItems(freshSession?.lineItems ?? []);
     const pendingItems = filterDirtyLineItems(freshValid);
 
     if (pendingItems.length > 0) {
-      processSyncQueue();
+      processSyncQueue(tabId);
     }
   }
 };
 
-export const processSyncQueue = debounce(syncLogic, 800);
+export const processSyncQueue = (tabId: string) => {
+  if (!syncQueues.has(tabId)) {
+    syncQueues.set(
+      tabId,
+      debounce((id: string) => syncLogic(id), 800)
+    );
+  }
+  const fn = syncQueues.get(tabId)!;
+  fn(tabId);
+};

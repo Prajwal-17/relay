@@ -132,7 +132,7 @@ const LineItemsTable = () => {
                     const tabId = getActiveTabId();
                     if (!tabId) return;
                     setAllChecked(tabId, true);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }}
                   className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-base font-medium"
                 >
@@ -145,7 +145,7 @@ const LineItemsTable = () => {
                     const tabId = getActiveTabId();
                     if (!tabId) return;
                     setAllChecked(tabId, false);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }}
                   className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-base font-medium"
                 >

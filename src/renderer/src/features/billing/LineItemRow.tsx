@@ -25,9 +25,6 @@ const LineItemRow = memo(
   }) => {
     const { activeTabId, getActiveTabId } = useActiveTabId();
 
-    const session = useBillingSessionStore((state) =>
-      activeTabId ? state.sessions[activeTabId] : null
-    );
     const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
     const deleteLineItem = useBillingSessionStore((state) => state.deleteLineItem);
 
@@ -47,7 +44,7 @@ const LineItemRow = memo(
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
 
-    if (!activeTabId || !session) return null;
+    if (!activeTabId) return null;
 
     return (
       <div key={item.rowId} className="relative">
@@ -70,7 +67,7 @@ const LineItemRow = memo(
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   deleteLineItem(tabId, item.rowId);
-                  processSyncQueue();
+                  processSyncQueue(tabId);
                 }}
               />
             </div>
@@ -89,7 +86,7 @@ const LineItemRow = memo(
                 if (!tabId) return;
                 setItemQuery(e.target.value);
                 updateLineItem(tabId, item.rowId, "productSnapshot", e.target.value);
-                processSyncQueue();
+                processSyncQueue(tabId);
               }}
               placeholder="Search products"
             />
@@ -105,7 +102,7 @@ const LineItemRow = memo(
                   if (currentQty >= 0) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
                     updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }
                 }}
                 className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
@@ -128,7 +125,7 @@ const LineItemRow = memo(
                   // allow only number and three decimal points
                   if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
                     updateLineItem(tabId, item.rowId, "quantity", val);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }
                 }}
                 placeholder="0"
@@ -143,7 +140,7 @@ const LineItemRow = memo(
                   if (currentQty >= 1) {
                     const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
                     updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }
                 }}
               >
@@ -173,7 +170,7 @@ const LineItemRow = memo(
                   // allow only number and two decimal points
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
                     updateLineItem(tabId, item.rowId, "price", val);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }
                 }}
                 className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-lg font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
@@ -198,7 +195,7 @@ const LineItemRow = memo(
                 const currentQty = parseFloat(item.quantity || "0");
                 const newCheckedAt = checked ? 0 : currentQty;
                 updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
-                processSyncQueue();
+                processSyncQueue(tabId);
               }}
               className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
                 checked
@@ -229,7 +226,7 @@ const LineItemRow = memo(
                       item.checkedQty
                     );
                     updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }}
                   disabled={checked}
                   className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
@@ -249,7 +246,7 @@ const LineItemRow = memo(
                       item.checkedQty
                     );
                     updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
-                    processSyncQueue();
+                    processSyncQueue(tabId);
                   }}
                   disabled={item.checkedQty === 0}
                   className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"

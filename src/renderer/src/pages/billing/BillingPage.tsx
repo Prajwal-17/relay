@@ -9,13 +9,15 @@ import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
 import useReset from "@/hooks/billing/useBillingReset";
 import { useInitialBillingData } from "@/hooks/billing/useInitialBillingData";
 import useLoadTransactionDetails from "@/hooks/billing/useLoadTransactionDetails";
+import { billingCoordinator } from "@/store/billing/billingCoordinator";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
-import { useEffect } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 const BillingPage = () => {
+  const navigate = useNavigate();
   const { type, id } = useParams();
   const { pathname } = useLocation();
   const formattedType = type?.slice(0, -1) as TransactionType;
@@ -33,32 +35,55 @@ const BillingPage = () => {
   useInitialBillingData(formattedType, activeTabId, id);
   const transactionNo = session?.transactionNo ?? null;
 
-  // register current route as a tab and keep active tab route in sync with url
+  const activeTabRoutePath = useBillingTabsStore((state) =>
+    activeTabId ? state.tabs.find((t) => t.id === activeTabId)?.routePath : undefined
+  );
+
+  const prevPathname = useRef(pathname);
+  const prevActiveRoute = useRef(activeTabRoutePath);
+
   useEffect(() => {
     if (!formattedType) return;
+
+    const pathChanged = pathname !== prevPathname.current;
+    const routeChanged = activeTabRoutePath !== prevActiveRoute.current;
+
+    // update refs AFTER computing deltas
+    prevPathname.current = pathname;
+    prevActiveRoute.current = activeTabRoutePath;
+
+    // handlers worker url update
+    // to sync browser URL with the zustand store
+    if (routeChanged && !pathChanged) {
+      if (activeTabRoutePath && activeTabRoutePath !== pathname) {
+        navigate(activeTabRoutePath, { replace: true });
+      }
+      return; // to stop from adding new tab
+    }
+
+    // handles user navigation (sidebar, click, manual or 1st mount)
+    // only act only if the URL is changed
     const store = useBillingTabsStore.getState();
     const activeTab = activeTabId ? store.tabs.find((tab) => tab.id === activeTabId) : undefined;
-
-    if (activeTab && activeTab.routePath !== pathname) {
-      store.updateTab(activeTabId, {
-        routePath: pathname,
-        ...(id ? { transactionNo } : {})
-      });
-      return;
-    }
 
     if (activeTab && activeTab.routePath === pathname) {
       return;
     }
 
     const existing = store.findTabByRoute(pathname);
-    if (existing) {
-      store.setActiveTab(existing.id);
-    } else {
-      store.addTab(formattedType, pathname, id ? (transactionNo ?? null) : null);
-    }
-  }, [pathname, formattedType, id, transactionNo, activeTabId]);
 
+    if (existing) {
+      if (existing.id !== activeTabId) {
+        // existing -> make it active
+        store.setActiveTab(existing.id);
+      }
+    } else {
+      // new tab
+      billingCoordinator.addTab(formattedType, pathname, id ? (transactionNo ?? null) : null);
+    }
+  }, [pathname, activeTabRoutePath, formattedType, id, transactionNo, activeTabId, navigate]);
+
+  // update billing type in store -> based on route
   useEffect(() => {
     if (!activeTabId) return;
     if (formattedType && Object.values(TRANSACTION_TYPE).includes(formattedType)) {
