@@ -1,0 +1,10 @@
+dist/
+build/
+node_modules/
+out/
+drizzle/
+
+src/renderer/src/components/ui/
+
+pnpm-lock.yaml
+

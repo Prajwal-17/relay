@@ -71,7 +71,7 @@ const LineItemsTable = () => {
 
   return (
     <div className="mx-4 h-full">
-      <div className="border-border/70 bg-background/95 relative w-full flex-1 rounded-xl border px-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)]">
+      <div className="border-border/70 bg-background/95 relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)]">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.88))] px-4 py-3">
           <Button
             variant="outline"
