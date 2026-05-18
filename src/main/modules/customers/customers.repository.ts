@@ -1,6 +1,7 @@
 import { count, desc, eq, like, sql } from "drizzle-orm";
 import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
 import { db } from "../../db/db";
+import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
@@ -41,6 +42,18 @@ const getCustomers = async (searchTerm: string) => {
 
 const getDefaultCustomer = async () => {
   return db.select().from(customers).where(like(customers.name, "DEFAULT")).get();
+};
+
+const createDefaultCustomer = (storeId: string, tx: any) => {
+  return tx
+    .insert(customers)
+    .values({
+      name: "DEFAULT",
+      storeId: storeId,
+      customerType: CustomerRole.CASH
+    })
+    .returning()
+    .get();
 };
 
 const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
@@ -154,6 +167,7 @@ export const customersRepository = {
   findById,
   getCustomers,
   getDefaultCustomer,
+  createDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,
   getCustomerSummary,

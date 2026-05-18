@@ -8,13 +8,20 @@ import { customersController } from "./modules/customers/customers.controller";
 import { dashboardController } from "./modules/dashboard/dashboard.controller";
 import { estimatesController } from "./modules/estimates/estimates.controller";
 import { onboardingController } from "./modules/onboarding/onboarding.controller";
+import { preferencesController } from "./modules/preferences/preferences.controller";
 import { productsController } from "./modules/products/products.controller";
 import { salesController } from "./modules/sales/sales.controller";
 import { AppError } from "./utils/appError";
 
+export type Env = {
+  Variables: {
+    storeId: string;
+  };
+};
+
 const mode = process.env.MODE || process.env.NODE_ENV || "production";
 
-const app = new Hono();
+const app = new Hono<Env>();
 
 app.use(logger);
 
@@ -64,12 +71,19 @@ app.onError((err, c) => {
   );
 });
 
+// set storeProfile.id globally
+app.use("/*", async (c, next) => {
+  c.set("storeId", "default");
+  await next();
+});
+
 app.route("/api/onboarding", onboardingController);
 app.route("/api/dashboard", dashboardController);
 app.route("/api/products", productsController);
 app.route("/api/customers", customersController);
 app.route("/api/sales", salesController);
 app.route("/api/estimates", estimatesController);
+app.route("/api/app-preferences", preferencesController);
 
 export function startServer() {
   const port = mode === "production" ? 4722 : 4723;

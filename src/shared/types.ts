@@ -384,6 +384,23 @@ export const BILLSTATUS = {
 
 export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
+export interface AppConfig {
+  billing: {
+    defaultCustomerId: string;
+  };
+  exports: {
+    askBeforeSavingPdf: boolean;
+    defaultPdfLocation: string;
+    defaultExportFormat: string;
+  };
+}
+
+export type AppPreferencesResponse = {
+  id: string;
+  storeId: string;
+  config: AppConfig;
+};
+
 export interface ShareApi {
   saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
 }

@@ -14,10 +14,10 @@ import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding"
 import { cn } from "@/lib/utils";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { locationSchema } from "@shared/schemas/onboarding.schema";
-import { City, State } from "country-state-city";
+import type { ICity, IState } from "country-state-city";
 import { ArrowRight, Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const LocationStep = () => {
   const { formData, setFormData, prevStep } = useOnboardingStore();
@@ -32,12 +32,33 @@ export const LocationStep = () => {
     }
   }, []);
 
-  const statesForIndia = useMemo(() => State.getStatesOfCountry("IN"), []);
+  const [statesForIndia, setStatesForIndia] = useState<IState[]>([]);
+  const [citiesForState, setCitiesForState] = useState<ICity[]>([]);
 
-  const citiesForState = useMemo(
-    () => (formData.stateCode ? City.getCitiesOfState("IN", formData.stateCode) : []),
-    [formData.stateCode]
-  );
+  useEffect(() => {
+    import("country-state-city").then(({ State }) => {
+      setStatesForIndia(State.getStatesOfCountry("IN"));
+    });
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+    const stateCode = formData.stateCode;
+
+    if (stateCode) {
+      import("country-state-city").then(({ City }) => {
+        if (isMounted) {
+          setCitiesForState(City.getCitiesOfState("IN", stateCode));
+        }
+      });
+    } else {
+      setCitiesForState([]);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [formData.stateCode]);
 
   const validate = () => {
     const result = locationSchema.safeParse(formData);

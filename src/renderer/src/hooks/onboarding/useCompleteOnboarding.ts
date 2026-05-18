@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/apiClient";
+import { useAppStore } from "@/store/appStore";
 import { useOnboardingStore } from "@/store/onboardingStore";
 import { onboardingSchema } from "@shared/schemas/onboarding.schema";
 import { useMutation } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export const useCompleteOnboarding = () => {
     },
     onSuccess: () => {
       completeOnboarding();
+      useAppStore.getState().setIsOnboardingComplete(true);
     },
     onError: (error: Error) => {
       toast.error(error.message);
