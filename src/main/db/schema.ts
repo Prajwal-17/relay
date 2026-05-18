@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
+import type { AppConfig } from "../../shared/types";
 import type { CustomerRole } from "./enum";
 
 export const appInstance = sqliteTable("app_instance", {
@@ -16,7 +17,7 @@ export const appInstance = sqliteTable("app_instance", {
 });
 
 export const storeProfile = sqliteTable("store_profile", {
-  id: text("id").primaryKey(), // prevent multiple entries
+  id: text("id").primaryKey(), // prevent multiple entries - ensure only one store per app
   storeName: text("store_name").notNull(),
   ownerName: text("owner_name").notNull(),
   phone: text("phone").notNull(),
@@ -36,46 +37,63 @@ export const storeProfile = sqliteTable("store_profile", {
     .notNull()
 });
 
-export const customers = sqliteTable("customers", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  name: text("name").notNull().unique(),
-  contact: text("contact"),
-  customerType: text("customer_type").$type<CustomerRole>().notNull(),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const customers = sqliteTable(
+  "customers",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    storeId: text("store_id").references(() => storeProfile.id, {
+      onDelete: "cascade"
+    }),
+    name: text("name").notNull().unique(),
+    contact: text("contact"),
+    customerType: text("customer_type").$type<CustomerRole>().notNull(),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [index("customer_store_id_idx").on(table.storeId)]
+);
 
-export const products = sqliteTable("products", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  name: text("name").notNull(),
-  imageUrl: text("image_url"),
-  productSnapshot: text("product_snapshot").notNull(),
-  weight: text("weight"),
-  unit: text("unit"),
-  mrp: integer("mrp"),
-  price: integer("price").notNull(),
-  purchasePrice: integer("purchase_price"),
-  totalQuantitySold: integer("total_quantity_sold").default(0),
-  isDisabled: integer("is_disabled", { mode: "boolean" }).notNull().default(false),
-  disabledAt: text("disabled_at"),
-  isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
-  deletedAt: text("deleted_at"),
-  lastSoldAt: text("last_sold_at"),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const products = sqliteTable(
+  "products",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    storeId: text("store_id").references(() => storeProfile.id, {
+      onDelete: "cascade"
+    }),
+    name: text("name").notNull(),
+    imageUrl: text("image_url"),
+    productSnapshot: text("product_snapshot").notNull(),
+    weight: text("weight"),
+    unit: text("unit"),
+    mrp: integer("mrp"),
+    price: integer("price").notNull(),
+    purchasePrice: integer("purchase_price"),
+    totalQuantitySold: integer("total_quantity_sold").default(0),
+    isDisabled: integer("is_disabled", { mode: "boolean" }).notNull().default(false),
+    disabledAt: text("disabled_at"),
+    isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
+    deletedAt: text("deleted_at"),
+    lastSoldAt: text("last_sold_at"),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [
+    index("product_store_id_idx").on(table.storeId),
+    index("product_snapshot_idx").on(table.productSnapshot)
+  ]
+);
 
 export const productHistory = sqliteTable("product_history", {
   id: text("id")
@@ -103,88 +121,138 @@ export const productHistory = sqliteTable("product_history", {
     .notNull()
 });
 
-export const sales = sqliteTable("sales", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  invoiceNo: integer("invoice_no").notNull().unique(),
-  customerId: text("customer_id")
-    .references(() => customers.id)
-    .notNull(),
-  grandTotal: integer("grand_total", { mode: "number" }),
-  totalQuantity: integer("total_quantity", { mode: "number" }),
-  isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const sales = sqliteTable(
+  "sales",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    storeId: text("store_id").references(() => storeProfile.id, {
+      onDelete: "cascade"
+    }),
+    invoiceNo: integer("invoice_no").notNull().unique(),
+    customerId: text("customer_id")
+      .references(() => customers.id)
+      .notNull(),
+    grandTotal: integer("grand_total", { mode: "number" }),
+    totalQuantity: integer("total_quantity", { mode: "number" }),
+    isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [
+    index("sales_id_idx").on(table.id),
+    index("sales_customer_id_idx").on(table.customerId)
+  ]
+);
 
-export const saleItems = sqliteTable("sale_items", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  saleId: text("sale_id")
-    .references(() => sales.id, { onDelete: "cascade" })
-    .notNull(),
-  productId: text("product_id").references(() => products.id),
-  name: text("name").notNull(),
-  productSnapshot: text("product_snapshot").notNull(),
-  mrp: integer("mrp"),
-  price: integer("price").notNull(),
-  purchasePrice: integer("purchase_price"),
-  weight: text("weight"),
-  unit: text("unit"),
-  quantity: integer("quantity").notNull(),
-  totalPrice: integer("total_price").notNull(),
-  checkedQty: integer("checked_qty").default(0),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const saleItems = sqliteTable(
+  "sale_items",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    saleId: text("sale_id")
+      .references(() => sales.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: text("product_id").references(() => products.id),
+    name: text("name").notNull(),
+    productSnapshot: text("product_snapshot").notNull(),
+    mrp: integer("mrp"),
+    price: integer("price").notNull(),
+    purchasePrice: integer("purchase_price"),
+    weight: text("weight"),
+    unit: text("unit"),
+    quantity: integer("quantity").notNull(),
+    totalPrice: integer("total_price").notNull(),
+    checkedQty: integer("checked_qty").default(0),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [
+    index("sale_items_id_idx").on(table.id),
+    index("sale_items_sale_id_idx").on(table.saleId),
+    index("sale_items_product_id_idx").on(table.productId)
+  ]
+);
 
-export const estimates = sqliteTable("estimates", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  estimateNo: integer("estimate_no").notNull().unique(),
-  customerId: text("customer_id")
-    .references(() => customers.id)
-    .notNull(),
-  grandTotal: integer("grand_total", { mode: "number" }),
-  totalQuantity: integer("total_quantity", { mode: "number" }),
-  isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const estimates = sqliteTable(
+  "estimates",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    storeId: text("store_id").references(() => storeProfile.id, {
+      onDelete: "cascade"
+    }),
+    estimateNo: integer("estimate_no").notNull().unique(),
+    customerId: text("customer_id")
+      .references(() => customers.id)
+      .notNull(),
+    grandTotal: integer("grand_total", { mode: "number" }),
+    totalQuantity: integer("total_quantity", { mode: "number" }),
+    isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [
+    index("estimates_id_idx").on(table.id),
+    index("estimates_customer_id_idx").on(table.customerId)
+  ]
+);
 
-export const estimateItems = sqliteTable("estimate_items", {
+export const estimateItems = sqliteTable(
+  "estimate_items",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    estimateId: text("estimate_id")
+      .references(() => estimates.id, { onDelete: "cascade" })
+      .notNull(),
+    productId: text("product_id").references(() => products.id),
+    name: text("name").notNull(),
+    productSnapshot: text("product_snapshot").notNull(),
+    mrp: integer("mrp"),
+    price: integer("price").notNull(),
+    purchasePrice: integer("purchase_price"),
+    weight: text("weight"),
+    unit: text("unit"),
+    quantity: integer("quantity").notNull(),
+    totalPrice: integer("total_price").notNull(),
+    checkedQty: integer("checked_qty").default(0),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [
+    index("estimate_items_id_idx").on(table.id),
+    index("estimate_items_estimate_id_idx").on(table.estimateId),
+    index("estimate_items_product_id_idx").on(table.productId)
+  ]
+);
+
+export const appPreferences = sqliteTable("app_preferences", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv4()),
-  estimateId: text("estimate_id")
-    .references(() => estimates.id, { onDelete: "cascade" })
-    .notNull(),
-  productId: text("product_id").references(() => products.id),
-  name: text("name").notNull(),
-  productSnapshot: text("product_snapshot").notNull(),
-  mrp: integer("mrp"),
-  price: integer("price").notNull(),
-  purchasePrice: integer("purchase_price"),
-  weight: text("weight"),
-  unit: text("unit"),
-  quantity: integer("quantity").notNull(),
-  totalPrice: integer("total_price").notNull(),
-  checkedQty: integer("checked_qty").default(0),
+  storeId: text("store_id").references(() => storeProfile.id),
+  config: text("config", { mode: "json" }).$type<AppConfig>().notNull(),
   createdAt: text("created_at")
     .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
     .notNull(),
