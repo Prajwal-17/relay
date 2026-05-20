@@ -1,5 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
@@ -7,11 +15,40 @@ import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
+import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
-import { Edit, Package, PackagePlus, Search } from "lucide-react";
+import { Edit, Info, Package, PackagePlus, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+/** Highlights all occurrences of `query` within `text` (case-insensitive). */
+const HighlightedText = ({ text, query }: { text: string; query: string }) => {
+  if (!query.trim()) return <>{text}</>;
+
+  // Escape regex special chars so the raw query is safe to use in a RegExp
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const regex = new RegExp(`(${escaped})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <mark key={i} className="bg-search-highlight rounded-sm text-inherit">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
+  const setActiveRowId = useSearchDropdownStore((state) => state.setActiveRowId);
+  const setItemQuery = useSearchDropdownStore((state) => state.setItemQuery);
+  const itemQuery = useSearchDropdownStore((state) => state.itemQuery);
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
   const addLineItem = useBillingSessionStore((state) => state.addLineItem);
   const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
@@ -21,8 +58,21 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
-  const { dropdownRef, searchResults, parentRef, rowVirtualizer, hasNextPage, virtualItems } =
-    useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
+  const [sortBy, setSortBy] = useState<string>("name-asc");
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const highlightedIndexRef = useRef(highlightedIndex);
+  highlightedIndexRef.current = highlightedIndex;
+
+  const {
+    dropdownRef,
+    searchResults,
+    parentRef,
+    rowVirtualizer,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    virtualItems
+  } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
   const openNewProductDialog = () => {
     setIsDropdownOpen();
@@ -33,13 +83,132 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setOpenProductDialog();
   };
 
+  // Local sorting based on selected criteria
+  const sortedSearchResults = useMemo(() => {
+    const list = [...searchResults];
+    if (sortBy === "name-asc") {
+      return list.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    if (sortBy === "name-desc") {
+      return list.sort((a, b) => b.name.localeCompare(a.name));
+    }
+    if (sortBy === "price-asc") {
+      return list.sort((a, b) => a.price - b.price);
+    }
+    if (sortBy === "price-desc") {
+      return list.sort((a, b) => b.price - a.price);
+    }
+    if (sortBy === "mrp-asc") {
+      return list.sort((a, b) => (a.mrp ?? 0) - (b.mrp ?? 0));
+    }
+    if (sortBy === "mrp-desc") {
+      return list.sort((a, b) => (b.mrp ?? 0) - (a.mrp ?? 0));
+    }
+    return list;
+  }, [searchResults, sortBy]);
+
+  // Reset highlighted index when search results or sort order change
+  useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [searchResults, sortBy]);
+
+  // Infinite scroll — fetch next page when the last visible virtual row is near the end
+  useEffect(() => {
+    if (virtualItems.length === 0) return;
+    const lastItem = virtualItems[virtualItems.length - 1];
+    const totalRows = hasNextPage ? sortedSearchResults.length + 1 : sortedSearchResults.length;
+    if (lastItem && lastItem.index >= totalRows - 1 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [virtualItems, hasNextPage, isFetchingNextPage, fetchNextPage, sortedSearchResults.length]);
+
+  // Focus the next empty row's search input and open its dropdown
+  const focusNextRow = useCallback(() => {
+    setTimeout(() => {
+      if (!activeTabId) return;
+      const session = useBillingSessionStore.getState().sessions[activeTabId];
+      if (!session) return;
+      // Find the last non-deleted empty row (the newly added one)
+      const lastEmptyRow = [...session.lineItems]
+        .reverse()
+        .find((item) => !item.isDeleted && item.name === "");
+      if (!lastEmptyRow) return;
+
+      // Set the dropdown to open for the new row
+      setActiveRowId(lastEmptyRow.rowId);
+      setItemQuery("");
+      // isDropdownOpen was toggled off by selectProduct, toggle it back on
+      setIsDropdownOpen();
+
+      // Focus the new row's search input
+      const inputs = document.querySelectorAll<HTMLInputElement>(
+        'input[placeholder="Search products"]'
+      );
+      const lastInput = inputs[inputs.length - 1];
+      if (lastInput) {
+        lastInput.focus();
+      }
+    }, 50);
+  }, [activeTabId, setActiveRowId, setItemQuery, setIsDropdownOpen]);
+
+  // Select the highlighted product
+  const selectProduct = useCallback(
+    (index: number) => {
+      const product = sortedSearchResults[index];
+      if (!product || !activeTabId) return;
+      addLineItem(activeTabId, rowId, product);
+      setIsDropdownOpen();
+      addEmptyLineItem(activeTabId);
+      processSyncQueue(activeTabId);
+      focusNextRow();
+    },
+    [
+      sortedSearchResults,
+      activeTabId,
+      rowId,
+      addLineItem,
+      setIsDropdownOpen,
+      addEmptyLineItem,
+      focusNextRow
+    ]
+  );
+
+  // Keyboard navigation: ArrowDown, ArrowUp, Enter
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const len = sortedSearchResults.length;
+      if (len === 0) return;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => {
+          const next = prev < len - 1 ? prev + 1 : 0;
+          rowVirtualizer.scrollToIndex(next, { align: "auto" });
+          return next;
+        });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setHighlightedIndex((prev) => {
+          const next = prev > 0 ? prev - 1 : len - 1;
+          rowVirtualizer.scrollToIndex(next, { align: "auto" });
+          return next;
+        });
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (highlightedIndexRef.current >= 0) {
+          selectProduct(highlightedIndexRef.current);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [sortedSearchResults, rowVirtualizer, selectProduct]);
+
   return (
     <>
       <div ref={dropdownRef}>
-        <div
-          ref={parentRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 max-h-96 w-[60%] overflow-y-auto rounded-2xl border py-2 shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
-        >
+        <div className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-8 py-14 text-center">
               <div className="bg-muted/50 mb-5 flex h-16 w-16 items-center justify-center rounded-2xl">
@@ -60,117 +229,180 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
-              <div
-                className="relative w-full"
-                style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
-              >
-                <div
-                  className="absolute top-0 left-0 w-full"
-                  style={{
-                    transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
-                  }}
-                >
-                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                    const product = searchResults[virtualRow.index];
-                    if (!product) return null;
-
-                    return (
-                      <div
-                        key={virtualRow.key}
-                        ref={rowVirtualizer.measureElement}
-                        data-index={virtualRow.index}
-                      >
-                        <div
-                          className="group hover:bg-accent/60 flex items-center gap-4 rounded-xl border-l-4 border-transparent px-4 py-3 transition-all duration-200 hover:cursor-pointer"
-                          onClick={() => {
-                            if (!activeTabId) return;
-                            addLineItem(activeTabId, rowId, product);
-                            setIsDropdownOpen();
-                            addEmptyLineItem(activeTabId);
-                            processSyncQueue(activeTabId);
-                          }}
-                          onMouseDown={(e) => e.preventDefault()}
-                        >
-                          <div className="border-border/70 flex h-9 w-9 items-center justify-center rounded-xl border bg-linear-to-br from-blue-50 to-blue-100">
-                            <Package className="h-5 w-5 text-blue-600" />
-                          </div>
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-4">
-                              <div className="min-w-0 flex-1">
-                                <div className="mb-1 flex items-center gap-2">
-                                  <h4 className="text-foreground truncate text-lg font-semibold">
-                                    {product.name}
-                                  </h4>
-                                  {product.weight !== null &&
-                                    ignoredWeight.some((w) =>
-                                      `${product.weight}+${product.unit}`.includes(w)
-                                    ) && (
-                                      <Badge
-                                        variant="outline"
-                                        className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
-                                      >
-                                        {product.weight}
-                                        {product.unit}
-                                      </Badge>
-                                    )}
-                                  {product.mrp && (
-                                    <Badge
-                                      variant="outline"
-                                      className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
-                                    >
-                                      MRP ₹{convertToRupees(product.mrp, { asString: true })}
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="shrink-0 text-right">
-                                <span className="text-success text-xl font-bold">
-                                  ₹ {convertToRupees(product.price, { asString: true })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setProductId(product.id);
-                              setActionType("billing-page-edit");
-                              setOpenProductDialog();
-                              setFormDataState({
-                                name: product.name,
-                                weight: product.weight,
-                                unit: product.unit,
-                                mrp: product.mrp
-                                  ? convertToRupees(product.mrp, { asString: true })
-                                  : null,
-                                price: convertToRupees(product.price, { asString: true }),
-                                isDisabled: product.isDisabled,
-                                isDeleted: product.isDeleted
-                              });
-                            }}
-                            className="hover:cursor-pointer"
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+              {/* Sticky Sorting Header */}
+              <div className="border-border/60 bg-muted/20 flex items-center justify-between border-b px-4 py-2">
+                <div className="flex items-center gap-1.5">
+                  <Package className="text-muted-foreground/80 h-4 w-4" />
+                  <span className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
+                    {searchResults.length} Products Found
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground/85 text-xs font-semibold whitespace-nowrap">
+                    Sort by:
+                  </span>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger className="border-border bg-background hover:bg-accent/40 h-7 w-[140px] cursor-pointer justify-between rounded-lg px-2 text-[11px] font-semibold shadow-none">
+                      <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent
+                      align="end"
+                      className="border-border bg-background z-40 rounded-xl shadow-md"
+                    >
+                      <SelectItem value="name-asc">Name (A ➔ Z)</SelectItem>
+                      <SelectItem value="name-desc">Name (Z ➔ A)</SelectItem>
+                      <SelectItem value="price-asc">Price (Low ➔ High)</SelectItem>
+                      <SelectItem value="price-desc">Price (High ➔ Low)</SelectItem>
+                      <SelectItem value="mrp-asc">MRP (Low ➔ High)</SelectItem>
+                      <SelectItem value="mrp-desc">MRP (High ➔ Low)</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-              {!hasNextPage && searchResults.length > 0 && (
-                <div className="text-muted-foreground flex flex-col items-center py-10 text-center">
-                  <div className="text-2xl font-medium">No more products</div>
-                  <p className="mt-2 text-base opacity-75">
-                    You&apos;ve reached the end of the list
-                  </p>
+
+              {/* Virtualized List Container */}
+              <div ref={parentRef} className="flex-1 overflow-y-auto py-2">
+                <div
+                  className="relative w-full"
+                  style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+                >
+                  <div
+                    className="absolute top-0 left-0 w-full"
+                    style={{
+                      transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
+                    }}
+                  >
+                    {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                      const product = sortedSearchResults[virtualRow.index];
+                      if (!product) return null;
+
+                      return (
+                        <div
+                          key={virtualRow.key}
+                          ref={rowVirtualizer.measureElement}
+                          data-index={virtualRow.index}
+                        >
+                          <div
+                            className={`group flex items-center gap-4 rounded-xl border-l-4 px-4 py-3 transition-all duration-200 hover:cursor-pointer ${
+                              highlightedIndex === virtualRow.index
+                                ? "border-primary bg-primary/10 ring-primary/25 shadow-sm ring-1"
+                                : "hover:bg-accent/60 border-transparent"
+                            }`}
+                            onClick={() => {
+                              if (!activeTabId) return;
+                              addLineItem(activeTabId, rowId, product);
+                              setIsDropdownOpen();
+                              addEmptyLineItem(activeTabId);
+                              processSyncQueue(activeTabId);
+                              focusNextRow();
+                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                          >
+                            <div className="border-border/70 from-search-icon-bg-from to-search-icon-bg-to flex h-9 w-9 items-center justify-center rounded-xl border bg-linear-to-br">
+                              <Package className="text-search-icon-fg h-5 w-5" />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                  <div className="mb-1 flex items-center gap-2">
+                                    <h4 className="text-foreground truncate text-lg font-semibold">
+                                      <HighlightedText text={product.name} query={itemQuery} />
+                                    </h4>
+                                    {product.weight !== null &&
+                                      ignoredWeight.some((w) =>
+                                        `${product.weight}+${product.unit}`.includes(w)
+                                      ) && (
+                                        <Badge
+                                          variant="outline"
+                                          className="border-search-badge-weight-border bg-search-badge-weight-bg text-search-badge-weight-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+                                        >
+                                          {product.weight}
+                                          {product.unit}
+                                        </Badge>
+                                      )}
+                                    {product.mrp && (
+                                      <Badge
+                                        variant="outline"
+                                        className="border-search-badge-mrp-border bg-search-badge-mrp-bg text-search-badge-mrp-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+                                      >
+                                        MRP ₹{convertToRupees(product.mrp, { asString: true })}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="shrink-0 text-right">
+                                  <span className="text-success text-xl font-bold">
+                                    ₹ {convertToRupees(product.price, { asString: true })}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setProductId(product.id);
+                                setActionType("billing-page-edit");
+                                setOpenProductDialog();
+                                setFormDataState({
+                                  name: product.name,
+                                  weight: product.weight,
+                                  unit: product.unit,
+                                  mrp: product.mrp
+                                    ? convertToRupees(product.mrp, { asString: true })
+                                    : null,
+                                  price: convertToRupees(product.price, { asString: true }),
+                                  isDisabled: product.isDisabled,
+                                  isDeleted: product.isDeleted
+                                });
+                              }}
+                              className="hover:cursor-pointer"
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </Button>
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 shrink-0 cursor-pointer rounded-lg"
+                                  onClick={(e) => e.stopPropagation()}
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                >
+                                  <Info className="text-muted-foreground h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent side="right" className="text-xs leading-relaxed">
+                                <p>
+                                  Created:{" "}
+                                  {product.createdAt ? formatDateStr(product.createdAt) : "—"}
+                                </p>
+                                <p>
+                                  Updated:{" "}
+                                  {product.updatedAt ? formatDateStr(product.updatedAt) : "—"}
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              )}
+                {!hasNextPage && searchResults.length > 0 && (
+                  <div className="text-muted-foreground flex flex-col items-center py-10 text-center">
+                    <div className="text-2xl font-medium">No more products</div>
+                    <p className="mt-2 text-base opacity-75">
+                      You&apos;ve reached the end of the list
+                    </p>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>

@@ -84,6 +84,18 @@
   --product-badge-bg: oklch(94% 0.02 90);
   --product-badge-text: oklch(45% 0.12 80);
 
+  /* Search Dropdown */
+  --search-highlight: oklch(93% 0.14 95);
+  --search-icon-bg-from: oklch(97% 0.01 90);
+  --search-icon-bg-to: oklch(94% 0.03 90);
+  --search-icon-fg: oklch(55% 0.15 85);
+  --search-badge-weight-border: oklch(88% 0.005 264);
+  --search-badge-weight-bg: oklch(96% 0.003 264);
+  --search-badge-weight-text: oklch(50% 0.015 264);
+  --search-badge-mrp-border: oklch(85% 0.06 70);
+  --search-badge-mrp-bg: oklch(95% 0.03 80);
+  --search-badge-mrp-text: oklch(48% 0.12 55);
+
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -165,6 +177,17 @@
   --color-product-divider: var(--product-divider);
   --color-product-badge-bg: var(--product-badge-bg);
   --color-product-badge-text: var(--product-badge-text);
+
+  --color-search-highlight: var(--search-highlight);
+  --color-search-icon-bg-from: var(--search-icon-bg-from);
+  --color-search-icon-bg-to: var(--search-icon-bg-to);
+  --color-search-icon-fg: var(--search-icon-fg);
+  --color-search-badge-weight-border: var(--search-badge-weight-border);
+  --color-search-badge-weight-bg: var(--search-badge-weight-bg);
+  --color-search-badge-weight-text: var(--search-badge-weight-text);
+  --color-search-badge-mrp-border: var(--search-badge-mrp-border);
+  --color-search-badge-mrp-bg: var(--search-badge-mrp-bg);
+  --color-search-badge-mrp-text: var(--search-badge-mrp-text);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
