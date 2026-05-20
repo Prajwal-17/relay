@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { ProductsApi, ShareApi, TransactionType } from "../shared/types";
+import type { DialogApi, ProductsApi, ShareApi, TransactionType } from "../shared/types";
 
 const shareApi: ShareApi = {
   saveAsPDF: (transactionId: string, type: TransactionType) =>
@@ -10,6 +10,10 @@ const productsApi: ProductsApi = {
   saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl)
 };
 
+const dialogApi: DialogApi = {
+  selectFolder: () => ipcRenderer.invoke("dialog:selectFolder")
+};
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electronAPI", {
@@ -17,6 +21,7 @@ if (process.contextIsolated) {
     });
     contextBridge.exposeInMainWorld("shareApi", shareApi);
     contextBridge.exposeInMainWorld("productsApi", productsApi);
+    contextBridge.exposeInMainWorld("dialogApi", dialogApi);
   } catch (error) {
     console.error(error);
   }
@@ -27,4 +32,6 @@ if (process.contextIsolated) {
   window.shareApi = shareApi;
   // @ts-ignore (define in ts)
   window.productsApi = productsApi;
+  // @ts-ignore (define in ts)
+  window.dialogApi = dialogApi;
 }

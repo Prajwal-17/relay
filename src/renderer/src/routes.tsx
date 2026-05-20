@@ -2,10 +2,8 @@ import { createHashRouter, Navigate } from "react-router-dom";
 import RootLayout from "./components/layouts/RootLayout";
 import {
   BillingSettingsPage,
-  DashboardSettingsPage,
   ExportsSettingsPage,
-  GeneralSettingsPage,
-  StorageSettingsPage
+  StoreProfileSettingsPage
 } from "./features/settings/SettingsSections";
 import BillingPage from "./pages/billing/BillingPage";
 import CustomersPage from "./pages/customers/CustomersPage";
@@ -47,27 +45,19 @@ export const router = createHashRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="general" replace />
+            element: <Navigate to="store-profile" replace />
           },
           {
-            path: "general",
-            element: <GeneralSettingsPage />
+            path: "store-profile",
+            element: <StoreProfileSettingsPage />
           },
           {
             path: "billing",
             element: <BillingSettingsPage />
           },
           {
-            path: "dashboard",
-            element: <DashboardSettingsPage />
-          },
-          {
             path: "exports",
             element: <ExportsSettingsPage />
-          },
-          {
-            path: "storage",
-            element: <StorageSettingsPage />
           }
         ]
       },

@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { AppConfig } from "../../../shared/types";
 import { db } from "../../db/db";
 import { appPreferences } from "../../db/schema";
@@ -13,6 +13,22 @@ const getPreferences = async (storeId: string) => {
     .from(appPreferences)
     .where(eq(appPreferences.storeId, storeId))
     .limit(1)
+    .get();
+};
+
+const updatePreferences = async (storeId: string, config: AppConfig) => {
+  return db
+    .update(appPreferences)
+    .set({
+      config,
+      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .where(eq(appPreferences.storeId, storeId))
+    .returning({
+      id: appPreferences.id,
+      storeId: appPreferences.storeId,
+      config: appPreferences.config
+    })
     .get();
 };
 
@@ -44,5 +60,6 @@ const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx
 
 export const preferencesRepository = {
   getPreferences,
+  updatePreferences,
   createDefaultPreferences
 };

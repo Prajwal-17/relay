@@ -1,9 +1,7 @@
 export const settingsNavigation = [
-  { id: "general", label: "General" },
+  { id: "store-profile", label: "Store Profile" },
   { id: "billing", label: "Billing" },
-  { id: "dashboard", label: "Dashboard" },
-  { id: "exports", label: "Exports" },
-  { id: "storage", label: "Storage" }
+  { id: "exports", label: "Exports & Storage" }
 ] as const;
 
 export type SettingsSectionId = (typeof settingsNavigation)[number]["id"];

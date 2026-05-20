@@ -21,7 +21,7 @@ const useAppBootstrap = () => {
     isSuccess: isPreferencesSuccess
   } = useQuery({
     queryKey: ["appPreferences"],
-    queryFn: () => apiClient.get<AppPreferencesResponse>("/api/preferences"),
+    queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
     retry: false
   });
 

@@ -408,3 +408,24 @@ export interface ShareApi {
 export interface ProductsApi {
   saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
 }
+
+export interface DialogApi {
+  selectFolder: () => Promise<string | null>;
+}
+
+export type StoreProfile = {
+  id: string;
+  storeName: string;
+  ownerName: string;
+  phone: string;
+  email: string;
+  addressLine1: string;
+  addressLine2: string | null;
+  country: string;
+  state: string;
+  pincode: string;
+  city: string;
+  gstin: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
