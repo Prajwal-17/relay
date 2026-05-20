@@ -161,6 +161,10 @@ const deleteSaleById = async (id: string) => {
   await salesRepository.deleteSaleById(id);
 };
 
+const duplicateSaleById = async (id: string) => {
+  return await salesRepository.duplicateSaleById(id);
+};
+
 export const salesService = {
   getSaleById,
   getNextInvoiceNo,
@@ -171,5 +175,6 @@ export const salesService = {
   updateCheckedQtyService,
   batchCheckItemsService,
   deleteSaleById,
-  updateSaleStatus
+  updateSaleStatus,
+  duplicateSaleById
 };

@@ -97,3 +97,10 @@ estimatesController.delete("/:id", validateRequest("param", idSchema), async (c)
   await estimatesService.deleteEstimateById(id);
   return c.body(null, 204);
 });
+
+// duplicate Estimate By Id
+estimatesController.post("/:id/duplicate", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await estimatesService.duplicateEstimateById(id);
+  return c.json(result, 200);
+});

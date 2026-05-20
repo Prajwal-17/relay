@@ -161,6 +161,10 @@ const deleteEstimateById = async (id: string) => {
   await estimatesRepository.deleteEstimateById(id);
 };
 
+const duplicateEstimateById = async (id: string) => {
+  return await estimatesRepository.duplicateEstimateById(id);
+};
+
 export const estimatesService = {
   getEstimateById,
   getNextEstimateNo,
@@ -171,5 +175,6 @@ export const estimatesService = {
   updateCheckedQtyService,
   batchCheckItemsService,
   updateEstimateStatus,
-  deleteEstimateById
+  deleteEstimateById,
+  duplicateEstimateById
 };

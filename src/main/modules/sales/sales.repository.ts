@@ -413,6 +413,68 @@ const updateSaleStatus = async (id: string, isPaid: boolean) => {
     .run();
 };
 
+const duplicateSaleById = async (id: string) => {
+  return db.transaction((tx) => {
+    const originalSale = tx.select().from(sales).where(eq(sales.id, id)).get();
+    if (!originalSale) {
+      throw new AppError(`Sale with id:${id} does not exist`, 404);
+    }
+    const originalItems = tx.select().from(saleItems).where(eq(saleItems.saleId, id)).all();
+
+    const lastSale = tx.select().from(sales).orderBy(desc(sales.invoiceNo)).limit(1).get();
+    const nextInvoiceNo = (lastSale?.invoiceNo ?? 0) + 1;
+
+    const newSale = tx
+      .insert(sales)
+      .values({
+        invoiceNo: nextInvoiceNo,
+        customerId: originalSale.customerId,
+        grandTotal: originalSale.grandTotal,
+        totalQuantity: originalSale.totalQuantity,
+        isPaid: originalSale.isPaid,
+        createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .returning()
+      .get();
+
+    if (!newSale || !newSale.id) {
+      throw new AppError("Failed to Create Duplicate Sale", 500);
+    }
+
+    for (const item of originalItems) {
+      const values = {
+        saleId: newSale.id,
+        productId: item.productId,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+        checkedQty: 0
+      };
+
+      const newItem = tx.insert(saleItems).values(values).returning().get();
+
+      if (newItem.productId) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
+          })
+          .where(eq(products.id, newItem.productId))
+          .run();
+      }
+    }
+
+    return {
+      id: newSale.id,
+      invoiceNo: nextInvoiceNo
+    };
+  });
+};
+
 export const salesRepository = {
   getSaleById,
   getLatestInvoiceNo,
@@ -424,5 +486,6 @@ export const salesRepository = {
   batchCheckItems,
   updateSaleTotals,
   deleteSaleById,
-  updateSaleStatus
+  updateSaleStatus,
+  duplicateSaleById
 };

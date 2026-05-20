@@ -428,6 +428,78 @@ const updateEstimateStatus = async (id: string, isPaid: boolean) => {
     .run();
 };
 
+const duplicateEstimateById = async (id: string) => {
+  return db.transaction((tx) => {
+    const originalEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
+    if (!originalEstimate) {
+      throw new AppError(`Estimate with id:${id} does not exist`, 404);
+    }
+    const originalItems = tx
+      .select()
+      .from(estimateItems)
+      .where(eq(estimateItems.estimateId, id))
+      .all();
+
+    const lastEstimate = tx
+      .select()
+      .from(estimates)
+      .orderBy(desc(estimates.estimateNo))
+      .limit(1)
+      .get();
+    const nextEstimateNo = (lastEstimate?.estimateNo ?? 0) + 1;
+
+    const newEstimate = tx
+      .insert(estimates)
+      .values({
+        estimateNo: nextEstimateNo,
+        customerId: originalEstimate.customerId,
+        grandTotal: originalEstimate.grandTotal,
+        totalQuantity: originalEstimate.totalQuantity,
+        isPaid: originalEstimate.isPaid,
+        createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .returning()
+      .get();
+
+    if (!newEstimate || !newEstimate.id) {
+      throw new AppError("Failed to Create Duplicate Estimate", 500);
+    }
+
+    for (const item of originalItems) {
+      const values = {
+        estimateId: newEstimate.id,
+        productId: item.productId,
+        name: item.name,
+        productSnapshot: item.productSnapshot,
+        mrp: item.mrp,
+        price: item.price,
+        purchasePrice: item.purchasePrice,
+        weight: item.weight,
+        unit: item.unit,
+        quantity: item.quantity,
+        totalPrice: item.totalPrice,
+        checkedQty: 0
+      };
+
+      const newItem = tx.insert(estimateItems).values(values).returning().get();
+
+      if (newItem.productId) {
+        tx.update(products)
+          .set({
+            totalQuantitySold: sql`${products.totalQuantitySold} + ${newItem.quantity}`
+          })
+          .where(eq(products.id, newItem.productId))
+          .run();
+      }
+    }
+
+    return {
+      id: newEstimate.id,
+      estimateNo: nextEstimateNo
+    };
+  });
+};
+
 export const estimatesRepository = {
   getEstimateById,
   getLatestEstimateNo,
@@ -439,5 +511,6 @@ export const estimatesRepository = {
   updateCheckedQty,
   batchCheckItems,
   updateEstimateStatus,
-  deleteEstimateById
+  deleteEstimateById,
+  duplicateEstimateById
 };

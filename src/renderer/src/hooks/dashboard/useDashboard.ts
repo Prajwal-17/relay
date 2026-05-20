@@ -73,11 +73,23 @@ export const useDashboard = () => {
     }
   });
 
+  const duplicateMutation = useMutation<{ id: string }, Error, MutationVariables>({
+    mutationFn: ({ type, id }) => apiClient.post(`/api/${type}s/${id}/duplicate`),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [type, date, sortBy], exact: false });
+      toast.success(`Successfully duplicated ${toSentenceCase(variables.type)}`);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
   return {
     sortBy,
     setSortBy,
     deleteMutation,
     convertMutation,
-    txnStatusMutation
+    txnStatusMutation,
+    duplicateMutation
   };
 };

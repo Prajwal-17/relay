@@ -25,6 +25,7 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import {
   CircleCheckBig,
   CircleOff,
+  Copy,
   Download,
   Edit,
   Eye,
@@ -45,6 +46,7 @@ const DashboardTableRow = ({
   deleteMutation,
   convertMutation,
   txnStatusMutation,
+  duplicateMutation,
   setIsViewModalOpen,
   setTransactionId
 }: {
@@ -55,6 +57,7 @@ const DashboardTableRow = ({
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
   txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
+  duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
   setIsViewModalOpen: (value: boolean) => void;
   setTransactionId: (id: string) => void;
 }) => {
@@ -81,6 +84,10 @@ const DashboardTableRow = ({
   const onConvert = useCallback(() => {
     convertMutation.mutate({ type: transaction.type, id: transaction.id });
   }, [convertMutation, transaction.type, transaction.id]);
+
+  const onDuplicate = useCallback(() => {
+    duplicateMutation.mutate({ type: transaction.type, id: transaction.id });
+  }, [duplicateMutation, transaction.type, transaction.id]);
 
   const handleStatus = useCallback(() => {
     txnStatusMutation.mutate({
@@ -225,6 +232,15 @@ const DashboardTableRow = ({
                   <span className="text-lg">Convert</span>
                 </DropdownMenuItem>
 
+                <DropdownMenuItem
+                  onSelect={() => onDuplicate()}
+                  className="cursor-pointer"
+                  disabled={duplicateMutation.isPending}
+                >
+                  <Copy className="mr-1 h-4 w-4" />
+                  <span className="text-lg">Duplicate</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem disabled>
@@ -324,6 +340,7 @@ function memoComparator(prev: any, next: any) {
 
   if (prev.deleteMutation?.isPending !== next.deleteMutation?.isPending) return false;
   if (prev.convertMutation?.isPending !== next.convertMutation?.isPending) return false;
+  if (prev.duplicateMutation?.isPending !== next.duplicateMutation?.isPending) return false;
 
   return true;
 }

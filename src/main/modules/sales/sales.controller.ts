@@ -97,3 +97,10 @@ salesController.delete("/:id", validateRequest("param", idSchema), async (c) => 
   await salesService.deleteSaleById(id);
   return c.body(null, 204);
 });
+
+// duplicate Sale By Id
+salesController.post("/:id/duplicate", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await salesService.duplicateSaleById(id);
+  return c.json(result, 200);
+});
