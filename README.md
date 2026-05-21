@@ -1,59 +1,122 @@
-# Getting Started
+# QuickCart
 
-### Stack
+Offline first desktop billing app for managing invoices, estimates, products, and customers.
 
-- Electron JS
-- Vite
-- React
-- Better-sqlite3
-- Drizzle
+## Features
 
-### Installation
+- **Products** — Full CRUD, soft delete, image upload/crop, price history, search, filter, sort, grid/list view, enable/disable toggle.
+- **Billing** — Ring up products, assign customers, checkout. Tracks totals and payment status.
+- **Invoices** — Generate and print. Product snapshots keep past invoices accurate when prices change.
+- **Estimates** — Quotes without impacting revenue.
+- **Customers** — Directory for assigning to sales and estimates.
+- **Dashboard** — Charts and metrics.
+- **Onboarding** — First-launch wizard to set up store details.
 
-Clone Repo
-
-```bash
-$ git clone https://github.com/Prajwal-17/pos.git
-```
-
-Install dependencies
+## Getting Started
 
 ```bash
-$ pnpm install
+git clone https://github.com/Prajwal-17/pos.git
+cd pos
+pnpm install
+pnpm dev
 ```
 
-### Devlopment
+## Build
 
 ```bash
-$ pnpm dev
+pnpm build:win    # Windows
+pnpm build:linux  # Linux
 ```
 
-### Build
+Output in `dist/`.
+
+## Commands
+
+| Command                | Description                    |
+| ---------------------- | ------------------------------ |
+| `pnpm dev`             | Start dev mode with hot reload |
+| `pnpm build`           | Typecheck and build            |
+| `pnpm start`           | Preview production build       |
+| `pnpm seed`            | Seed database                  |
+| `pnpm db:migrate:dev`  | Run migrations (dev)           |
+| `pnpm db:migrate:prod` | Run migrations (prod)          |
+| `pnpm db:push:dev`     | Push schema to dev DB          |
+| `pnpm db:push:prod`    | Push schema to prod DB         |
+| `pnpm db:studio:dev`   | Open Drizzle Studio (dev)      |
+| `pnpm db:studio:prod`  | Open Drizzle Studio (prod)     |
+
+## Tech Stack
+
+**Frontend:** React, Vite, Tailwind CSS, Shadcn, Zustand, TanStack Query, React Router v7, recharts, zod, jspdf.
+**Backend:** Electron, Hono, better-sqlite3, Drizzle ORM.
+
+## Architecture
+
+Three directories under `src/`:
+
+- `main/` — Electron process, SQLite, Hono API server.
+- `renderer/` — React UI.
+- `shared/` — Types, constants, Zod schemas, Utils.
+
+## Database
+
+Tables: app_instance, store_profile, customers, products, product_history, sales, sale_items, estimates, estimate_items.
+
+DB file locations:
+
+- Linux: `/home/<user>/.config/quickcart/<dbname>.db`
+- Windows: `C:\Users\<username>\AppData\Roaming\quickcart\<dbname>.db`
+
+## Common Errors & Fixes
+
+### 1. Chrome Sandbox Error (Linux only)
+
+```
+FATAL:sandbox/linux/suid/client/setuid_sandbox_host.cc:169]
+The SUID sandbox helper binary was found, but is not configured correctly.
+```
+
+Fix option 1 (set env var):
 
 ```bash
-# Windows
-$ pnpm run build:win
-
-# Linux
-$ pnpm run build:linux
-
+ELECTRON_DISABLE_SANDBOX=1 pnpm dev
 ```
 
-The packaged app will be in `dist/` folder.
+The dev script in package.json already includes this.
 
-### DB Paths
+Fix option 2 (set permissions):
 
-- **LINUX** - `/home/prajwal/.config/<dbfolder>/<dbname>.db`
-- **WINDOWS** - `C:\Users\<username>\AppData\Roaming\<appfolder>\<dbname>.db`
+```bash
+sudo chown root <path-to-electron>/chrome-sandbox
+sudo chmod 4755 <path-to-electron>/chrome-sandbox
+```
 
-### Docs & References
+Example:
 
-##### Electron Auto-update
+```bash
+sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+```
 
-- https://www.electron.build/configuration
+Example:
 
-- https://medium.com/@johndyer24/creating-and-deploying-an-auto-updating-electron-app-for-mac-and-windows-using-electron-builder-6a3982c0cee6
+```bash
+sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+```
 
-- Basic Example - https://github.com/iffy/electron-updater-example/blob/master/main.js
+### 2. better-sqlite3 NODE_MODULE_VERSION Mismatch
 
-- Example - https://github.com/iffy/electron-updater-example/blob/master/main.js
+Error: `better-sqlite3` was compiled against a different Node.js version. This happens because `better-sqlite3` is a native C++ addon. The system Node.js and Electron's embedded Node.js have different version fingerprints.
+
+Fix for dev (Electron runtime):
+
+```bash
+pnpm rebuild better-sqlite3
+```
+
+If that fails:
+
+```bash
+rm -rf node_modules && pnpm install
+```
