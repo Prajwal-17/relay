@@ -22,6 +22,11 @@ export const useProductSearch = (type: ProductSearchType) => {
   const setProductsSearchParam = useProductsStore((state) => state.setSearchParam);
   const dropdownSearchParam = useSearchDropdownStore((state) => state.itemQuery);
   const filterType = useProductsStore((state) => state.filterType);
+  const sortBy = useProductsStore((state) => state.sortBy);
+  const priceMin = useProductsStore((state) => state.priceMin);
+  const priceMax = useProductsStore((state) => state.priceMax);
+  const hasMrp = useProductsStore((state) => state.hasMrp);
+  const hasPurchasePrice = useProductsStore((state) => state.hasPurchasePrice);
 
   const productsDebouncedValue = useDebounce(productsSearchParam, PRODUCTS_SEARCH_DELAY);
   const dropdownDebouncedValue = useDebounce(dropdownSearchParam, PRODUCTS_SEARCH_DELAY);
@@ -33,12 +38,32 @@ export const useProductSearch = (type: ProductSearchType) => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // If the product dialog is currently open, do not close the search dropdown
+      const isProductDialogOpen = useProductsStore.getState().openProductDialog;
+      if (isProductDialogOpen) return;
+
+      const target = event.target as HTMLElement;
+      // If clicking inside a dialog content, overlay, portal, or a select dropdown, ignore
+      if (
+        target &&
+        target.closest &&
+        (target.closest('[role="dialog"]') ||
+          target.closest('[data-slot^="dialog"]') ||
+          target.closest('[data-slot^="select"]'))
+      ) {
+        return;
+      }
+
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen();
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        // If the product dialog is open, let the dialog consume Escape and do not close the search dropdown
+        const isProductDialogOpen = useProductsStore.getState().openProductDialog;
+        if (isProductDialogOpen) return;
+
         setIsDropdownOpen();
       }
     };
@@ -64,16 +89,29 @@ export const useProductSearch = (type: ProductSearchType) => {
   } = useInfiniteQuery({
     queryKey: [
       filterType,
-      type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? productsDebouncedValue : dropdownDebouncedValue
+      type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? productsDebouncedValue : dropdownDebouncedValue,
+      ...(type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? [sortBy, priceMin, priceMax, hasMrp, hasPurchasePrice] : [])
     ],
     queryFn: ({ pageParam = 1 }) => {
       if (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE) {
-        return apiClient.get("/api/products/search", {
+        const apiParams: Record<string, string | number | boolean | undefined> = {
           query: productsDebouncedValue,
           pageNo: pageParam,
           pageSize: PRODUCTS_SEARCH_PAGE_SIZE,
-          filterType: filterType
-        });
+          filterType: filterType,
+          sortBy: sortBy || undefined,
+          hasMrp: hasMrp || undefined,
+          hasPurchasePrice: hasPurchasePrice || undefined
+        };
+        if (priceMin) {
+          const parsed = parseFloat(priceMin);
+          if (!isNaN(parsed)) apiParams.priceMin = Math.round(parsed * 100);
+        }
+        if (priceMax) {
+          const parsed = parseFloat(priceMax);
+          if (!isNaN(parsed)) apiParams.priceMax = Math.round(parsed * 100);
+        }
+        return apiClient.get("/api/products/search", apiParams);
       } else if (type === PRODUCTSEARCH_TYPE.BILLINGPAGE) {
         return apiClient.get("/api/products/search", {
           query: dropdownDebouncedValue,

@@ -1,6 +1,7 @@
-import { and, eq, ne, SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNotNull, lte, ne, SQL, sql } from "drizzle-orm";
 import {
   PRODUCT_FILTER,
+  PRODUCT_SORT_BY,
   type CreateProductPayload,
   type PaginatedApiResponse,
   type ProductHistory,
@@ -14,10 +15,27 @@ import { AppError } from "../../utils/appError";
 import { productRepository } from "./products.repository";
 import type { ProductSearchParams } from "./products.types";
 
+function buildOrderClause(sortBy: string | null): SQL | undefined {
+  if (!sortBy) return undefined;
+
+  switch (sortBy) {
+    case PRODUCT_SORT_BY.NAME_ASC:
+      return asc(products.name);
+    case PRODUCT_SORT_BY.NAME_DESC:
+      return desc(products.name);
+    case PRODUCT_SORT_BY.PRICE_LOW_HIGH:
+      return asc(products.price);
+    case PRODUCT_SORT_BY.PRICE_HIGH_LOW:
+      return desc(products.price);
+    default:
+      return undefined;
+  }
+}
+
 const searchProduct = async (
   params: ProductSearchParams
 ): Promise<PaginatedApiResponse<{ data: ProductSearchItemDTO[] | [] }>> => {
-  let whereClause: SQL;
+  let whereClause: SQL | undefined;
 
   switch (params.filterType) {
     case PRODUCT_FILTER.ALL:
@@ -34,11 +52,28 @@ const searchProduct = async (
       whereClause = and(ne(products.isDeleted, true), ne(products.isDisabled, true))!;
   }
 
+  if (params.priceMin !== null) {
+    whereClause = and(whereClause, gte(products.price, params.priceMin));
+  }
+  if (params.priceMax !== null) {
+    whereClause = and(whereClause, lte(products.price, params.priceMax));
+  }
+
+  if (params.hasMrp) {
+    whereClause = and(whereClause, isNotNull(products.mrp));
+  }
+  if (params.hasPurchasePrice) {
+    whereClause = and(whereClause, isNotNull(products.purchasePrice));
+  }
+
   const offset = (params.pageNo - 1) * params.pageSize;
+
+  const orderClause = buildOrderClause(params.sortBy);
 
   const searchResult = await productRepository.searchProducts({
     searchTerm: params.query,
     whereClause,
+    orderClause,
     limit: params.pageSize,
     offset
   });

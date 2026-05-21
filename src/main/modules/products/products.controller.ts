@@ -13,12 +13,28 @@ export const productsController = new Hono();
 // search product
 productsController.get("/search", validateRequest("query", productSearchSchema), async (c) => {
   const rawParams = c.req.valid("query");
-  const { query, pageNo, pageSize, filterType } = rawParams;
+  const {
+    query,
+    pageNo,
+    pageSize,
+    filterType,
+    sortBy,
+    priceMin,
+    priceMax,
+    hasMrp,
+    hasPurchasePrice
+  } = rawParams;
+
   const result = await productService.searchProduct({
     query,
     pageNo,
     pageSize,
-    filterType
+    filterType,
+    sortBy,
+    priceMin,
+    priceMax,
+    hasMrp,
+    hasPurchasePrice
   });
   return c.json(result, 200);
 });

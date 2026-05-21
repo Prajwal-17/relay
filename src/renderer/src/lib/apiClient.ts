@@ -1,6 +1,9 @@
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4722";
 
-function buildURL(path: string, params?: Record<string, string | number | undefined>): string {
+function buildURL(
+  path: string,
+  params?: Record<string, string | number | boolean | undefined>
+): string {
   const url = new URL(path, BASE_URL);
   if (params) {
     for (const [key, value] of Object.entries(params)) {
@@ -15,7 +18,7 @@ function buildURL(path: string, params?: Record<string, string | number | undefi
 async function request<T>(
   path: string,
   options: RequestInit = {},
-  params?: Record<string, string | number | undefined>
+  params?: Record<string, string | number | boolean | undefined>
 ): Promise<T> {
   const url = buildURL(path, params);
   const response = await fetch(url, {
@@ -40,7 +43,7 @@ async function request<T>(
 }
 
 export const apiClient = {
-  get: <T>(path: string, params?: Record<string, string | number | undefined>) =>
+  get: <T>(path: string, params?: Record<string, string | number | boolean | undefined>) =>
     request<T>(path, { method: "GET" }, params),
 
   post: <T>(path: string, body?: unknown) =>

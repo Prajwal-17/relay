@@ -41,6 +41,14 @@ export default function ProductHeader() {
   const setViewMode = useProductsStore((state) => state.setViewMode);
   const sortBy = useProductsStore((state) => state.sortBy);
   const setSortBy = useProductsStore((state) => state.setSortBy);
+  const priceMin = useProductsStore((state) => state.priceMin);
+  const setPriceMin = useProductsStore((state) => state.setPriceMin);
+  const priceMax = useProductsStore((state) => state.priceMax);
+  const setPriceMax = useProductsStore((state) => state.setPriceMax);
+  const hasMrp = useProductsStore((state) => state.hasMrp);
+  const toggleMrpFilter = useProductsStore((state) => state.toggleMrpFilter);
+  const hasPurchasePrice = useProductsStore((state) => state.hasPurchasePrice);
+  const togglePurchasePriceFilter = useProductsStore((state) => state.togglePurchasePriceFilter);
   const activeFilters = useProductsStore((state) => state.activeFilters);
   const removeActiveFilter = useProductsStore((state) => state.removeActiveFilter);
   const clearActiveFilters = useProductsStore((state) => state.clearActiveFilters);
@@ -56,7 +64,12 @@ export default function ProductHeader() {
   }, []);
 
   const activeSortLabel = PRODUCT_SORT_OPTIONS.find((s) => s.value === sortBy)?.label;
-  const activeFilterCount = activeFilters.length + (filterType !== PRODUCT_FILTER.ACTIVE ? 1 : 0);
+  const activeFilterCount =
+    activeFilters.length +
+    (filterType !== PRODUCT_FILTER.ACTIVE ? 1 : 0) +
+    (priceMin || priceMax ? 1 : 0) +
+    (hasMrp ? 1 : 0) +
+    (hasPurchasePrice ? 1 : 0);
 
   return (
     <div className="sticky top-0 z-10 space-y-2.5">
@@ -88,7 +101,7 @@ export default function ProductHeader() {
             <Button
               variant="outline"
               size="lg"
-              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 relative cursor-pointer gap-2.5 px-5 text-base font-semibold shadow-none transition-all"
+              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 relative cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
             >
               <SlidersHorizontal className="h-5 w-5" />
               Filter
@@ -114,7 +127,7 @@ export default function ProductHeader() {
                   <button
                     key={option.value}
                     onClick={() => setFilterType(option.value as ProductFilterType)}
-                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
                       filterType === option.value
                         ? "bg-foreground/10 text-foreground"
                         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -136,16 +149,18 @@ export default function ProductHeader() {
               <div className="flex items-center gap-2.5">
                 <Input
                   type="number"
-                  placeholder="Min"
+                  placeholder="Min ₹"
                   className="h-10 [appearance:textfield] text-sm"
-                  disabled
+                  value={priceMin ?? ""}
+                  onChange={(e) => setPriceMin(e.target.value || null)}
                 />
                 <span className="text-muted-foreground text-sm">–</span>
                 <Input
                   type="number"
-                  placeholder="Max"
+                  placeholder="Max ₹"
                   className="h-10 [appearance:textfield] text-sm"
-                  disabled
+                  value={priceMax ?? ""}
+                  onChange={(e) => setPriceMax(e.target.value || null)}
                 />
               </div>
             </div>
@@ -158,29 +173,49 @@ export default function ProductHeader() {
               </p>
               <div className="space-y-1">
                 <button
-                  className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex w-full cursor-not-allowed items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium opacity-50 transition-colors"
-                  disabled
+                  onClick={toggleMrpFilter}
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
+                    hasMrp
+                      ? "bg-foreground/10 text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
                 >
                   Has MRP
+                  {hasMrp && <Check className="text-foreground h-4 w-4" />}
                 </button>
                 <button
-                  className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex w-full cursor-not-allowed items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium opacity-50 transition-colors"
-                  disabled
+                  onClick={togglePurchasePriceFilter}
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
+                    hasPurchasePrice
+                      ? "bg-foreground/10 text-foreground"
+                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                  }`}
                 >
                   Has Purchase Price
+                  {hasPurchasePrice && <Check className="text-foreground h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            {filterType !== PRODUCT_FILTER.ACTIVE && (
+            {(filterType !== PRODUCT_FILTER.ACTIVE ||
+              priceMin ||
+              priceMax ||
+              hasMrp ||
+              hasPurchasePrice) && (
               <>
                 <Separator />
                 <div className="p-3">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    onClick={() => setFilterType(PRODUCT_FILTER.ACTIVE)}
-                    className="text-muted-foreground hover:text-destructive w-full cursor-pointer justify-center gap-1.5 text-sm font-medium"
+                    onClick={() => {
+                      setFilterType(PRODUCT_FILTER.ACTIVE);
+                      setPriceMin(null);
+                      setPriceMax(null);
+                      if (hasMrp) toggleMrpFilter();
+                      if (hasPurchasePrice) togglePurchasePriceFilter();
+                    }}
+                    className="border-destructive/40 text-destructive hover:bg-destructive/10 w-full cursor-pointer justify-center gap-1.5 text-sm font-medium"
                   >
                     <X className="h-4 w-4" />
                     Clear selection
@@ -196,7 +231,7 @@ export default function ProductHeader() {
             <Button
               variant="outline"
               size="lg"
-              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 cursor-pointer gap-2.5 px-5 text-base font-semibold shadow-none transition-all"
+              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
             >
               <ArrowDownAZ className="h-5 w-5" />
               {activeSortLabel ?? "Sort"}
@@ -204,7 +239,7 @@ export default function ProductHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56 rounded-xl">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            <DropdownMenuLabel className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
               Sort by
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -215,7 +250,7 @@ export default function ProductHeader() {
                   <DropdownMenuRadioItem
                     key={option.value}
                     value={option.value}
-                    className="cursor-pointer gap-2.5 rounded-lg py-2.5 text-sm font-medium"
+                    className="cursor-pointer gap-2.5 rounded-lg py-2.5 text-base font-medium"
                   >
                     <Icon className="h-4 w-4 opacity-60" />
                     {option.label}
@@ -228,7 +263,7 @@ export default function ProductHeader() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={() => setSortBy("")}
-                  className="text-muted-foreground cursor-pointer justify-center rounded-lg py-2 text-xs font-medium"
+                  className="text-muted-foreground cursor-pointer justify-center rounded-lg py-2 text-sm font-medium"
                 >
                   Clear sort
                 </DropdownMenuItem>
@@ -306,23 +341,60 @@ export default function ProductHeader() {
           />
         ))}
 
+        {(priceMin || priceMax) && (
+          <FilterChip
+            label="Price"
+            value={
+              priceMin && priceMax
+                ? `₹${priceMin} - ₹${priceMax}`
+                : priceMin
+                  ? `≥ ₹${priceMin}`
+                  : `≤ ₹${priceMax}`
+            }
+            onRemove={() => {
+              setPriceMin(null);
+              setPriceMax(null);
+            }}
+          />
+        )}
+
+        {hasMrp && <FilterChip label="Has MRP" value="Yes" onRemove={toggleMrpFilter} />}
+
+        {hasPurchasePrice && (
+          <FilterChip label="Has Purchase Price" value="Yes" onRemove={togglePurchasePriceFilter} />
+        )}
+
         <button
           onClick={() => setFilterOpen(true)}
-          className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+          className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-medium transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add filter
         </button>
 
-        {(activeFilters.length > 0 || filterType !== PRODUCT_FILTER.ACTIVE || sortBy) && (
-          <Separator orientation="vertical" className="h-6!" />
-        )}
-        {(activeFilters.length > 0 || filterType !== PRODUCT_FILTER.ACTIVE || sortBy) && (
+        {(activeFilters.length > 0 ||
+          filterType !== PRODUCT_FILTER.ACTIVE ||
+          sortBy ||
+          priceMin ||
+          priceMax ||
+          hasMrp ||
+          hasPurchasePrice) && <Separator orientation="vertical" className="h-6!" />}
+        {(activeFilters.length > 0 ||
+          filterType !== PRODUCT_FILTER.ACTIVE ||
+          sortBy ||
+          priceMin ||
+          priceMax ||
+          hasMrp ||
+          hasPurchasePrice) && (
           <button
             onClick={() => {
               clearActiveFilters();
               setFilterType(PRODUCT_FILTER.ACTIVE);
               setSortBy("");
+              setPriceMin(null);
+              setPriceMax(null);
+              if (hasMrp) toggleMrpFilter();
+              if (hasPurchasePrice) togglePurchasePriceFilter();
             }}
             className="text-destructive hover:text-destructive hover:bg-destructive/8 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-semibold transition-colors"
           >
@@ -345,8 +417,8 @@ function FilterChip({
   onRemove?: () => void;
 }) {
   return (
-    <span className="border-border bg-muted/40 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-base font-medium transition-all">
-      <span className="text-muted-foreground text-sm">{label}:</span>
+    <span className="border-border bg-muted/40 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-lg font-medium transition-all">
+      <span className="text-muted-foreground text-base">{label}:</span>
       <span className="font-semibold">{value}</span>
       {onRemove && (
         <button

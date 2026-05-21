@@ -280,13 +280,27 @@ export const SortOption = {
   DATE_OLDEST_FIRST: "date_oldest_first",
   HIGH_TO_LOW: "high_to_low",
   LOW_TO_HIGH: "low_to_high"
-  // STATUS_UNPAID: "status_unpaid",
-  // STATUS_PAID: "status_paid"
+} as const;
+
+export const PRODUCT_SORT_BY = {
+  NAME_ASC: "name_asc",
+  NAME_DESC: "name_desc",
+  PRICE_LOW_HIGH: "price_low_high",
+  PRICE_HIGH_LOW: "price_high_low"
+} as const;
+
+export const PROPERTY_FILTER = {
+  HAS_MRP: "hasMrp",
+  HAS_PURCHASE_PRICE: "hasPurchasePrice"
 } as const;
 
 export type ProductFilterType = (typeof PRODUCT_FILTER)[keyof typeof PRODUCT_FILTER];
 
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
+
+export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SORT_BY];
+
+export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 
 export type TransactionType = (typeof TRANSACTION_TYPE)[keyof typeof TRANSACTION_TYPE];
 

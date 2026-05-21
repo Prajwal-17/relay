@@ -136,7 +136,6 @@ export const useProductDialog = () => {
     onSuccess: (_response, variables) => {
       const {
         filterType,
-        searchParam,
         setErrors,
         setProductId,
         setFormDataState,
@@ -144,7 +143,7 @@ export const useProductDialog = () => {
         setOpenProductDialog
       } = useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
+      queryClient.invalidateQueries({ queryKey: [filterType] });
       setErrors({});
       setProductId(null);
       setFormDataState({});
@@ -213,10 +212,10 @@ export const useProductDialog = () => {
   const deleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
-      const { filterType, searchParam, setErrors, setFormDataState, setOpenProductDialog } =
+      const { filterType, setErrors, setFormDataState, setOpenProductDialog } =
         useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType, searchParam] });
+      queryClient.invalidateQueries({ queryKey: [filterType] });
       setErrors({});
       setFormDataState({});
       setOpenProductDialog();

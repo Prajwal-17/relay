@@ -1,4 +1,4 @@
-import { PRODUCT_FILTER, SortOption, TIME_PERIOD } from "@shared/types";
+import { PRODUCT_FILTER, PRODUCT_SORT_BY, SortOption, TIME_PERIOD } from "@shared/types";
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -42,10 +42,10 @@ export const ignoredWeight = ["", "1ml", "1g", "none", "1pc", "1kg"];
 export const PRODUCTS_SEARCH_DELAY = 400;
 export const PRODUCTS_SEARCH_PAGE_SIZE = 20;
 export const PRODUCT_SORT_OPTIONS = [
-  { value: "name_asc", label: "Name: A → Z", icon: ArrowDownAZ },
-  { value: "name_desc", label: "Name: Z → A", icon: ArrowUpAZ },
-  { value: "price_low_high", label: "Price: Low → High", icon: TrendingUp },
-  { value: "price_high_low", label: "Price: High → Low", icon: TrendingDown }
+  { value: PRODUCT_SORT_BY.NAME_ASC, label: "Name: A → Z", icon: ArrowDownAZ },
+  { value: PRODUCT_SORT_BY.NAME_DESC, label: "Name: Z → A", icon: ArrowUpAZ },
+  { value: PRODUCT_SORT_BY.PRICE_LOW_HIGH, label: "Price: Low → High", icon: TrendingUp },
+  { value: PRODUCT_SORT_BY.PRICE_HIGH_LOW, label: "Price: High → Low", icon: TrendingDown }
 ] as const;
 export const PRODUCT_STATUS_OPTIONS = [
   { value: PRODUCT_FILTER.ACTIVE, label: "Active" },

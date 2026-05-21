@@ -20,11 +20,9 @@ import { convertToRupees } from "@shared/utils/utils";
 import { Edit, Info, Package, PackagePlus, Search } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-/** Highlights all occurrences of `query` within `text` (case-insensitive). */
 const HighlightedText = ({ text, query }: { text: string; query: string }) => {
   if (!query.trim()) return <>{text}</>;
 
-  // Escape regex special chars so the raw query is safe to use in a RegExp
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const regex = new RegExp(`(${escaped})`, "gi");
   const parts = text.split(regex);
@@ -83,7 +81,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setOpenProductDialog();
   };
 
-  // Local sorting based on selected criteria
   const sortedSearchResults = useMemo(() => {
     const list = [...searchResults];
     if (sortBy === "name-asc") {
@@ -107,12 +104,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     return list;
   }, [searchResults, sortBy]);
 
-  // Reset highlighted index when search results or sort order change
   useEffect(() => {
     setHighlightedIndex(-1);
   }, [searchResults, sortBy]);
 
-  // Infinite scroll — fetch next page when the last visible virtual row is near the end
   useEffect(() => {
     if (virtualItems.length === 0) return;
     const lastItem = virtualItems[virtualItems.length - 1];
@@ -122,25 +117,22 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     }
   }, [virtualItems, hasNextPage, isFetchingNextPage, fetchNextPage, sortedSearchResults.length]);
 
-  // Focus the next empty row's search input and open its dropdown
   const focusNextRow = useCallback(() => {
     setTimeout(() => {
       if (!activeTabId) return;
       const session = useBillingSessionStore.getState().sessions[activeTabId];
       if (!session) return;
-      // Find the last non-deleted empty row (the newly added one)
+      // find the last non-deleted empty row
       const lastEmptyRow = [...session.lineItems]
         .reverse()
         .find((item) => !item.isDeleted && item.name === "");
       if (!lastEmptyRow) return;
 
-      // Set the dropdown to open for the new row
+      // set dropdown to open for the new row
       setActiveRowId(lastEmptyRow.rowId);
       setItemQuery("");
-      // isDropdownOpen was toggled off by selectProduct, toggle it back on
       setIsDropdownOpen();
 
-      // Focus the new row's search input
       const inputs = document.querySelectorAll<HTMLInputElement>(
         'input[placeholder="Search products"]'
       );
@@ -151,7 +143,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     }, 50);
   }, [activeTabId, setActiveRowId, setItemQuery, setIsDropdownOpen]);
 
-  // Select the highlighted product
   const selectProduct = useCallback(
     (index: number) => {
       const product = sortedSearchResults[index];
@@ -173,7 +164,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     ]
   );
 
-  // Keyboard navigation: ArrowDown, ArrowUp, Enter
+  // arrow keys navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const len = sortedSearchResults.length;

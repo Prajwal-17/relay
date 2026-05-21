@@ -6,11 +6,17 @@ export type ProductSearchParams = {
   pageNo: number;
   pageSize: number;
   filterType: ProductFilterType;
+  sortBy: string | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  hasMrp: boolean;
+  hasPurchasePrice: boolean;
 };
 
 export type ProductSearchQuery = {
   searchTerm: string;
   whereClause: SQL | undefined;
+  orderClause: SQL | undefined;
   limit: number;
   offset: number;
 };

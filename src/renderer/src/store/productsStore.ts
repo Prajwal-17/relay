@@ -27,6 +27,14 @@ type ProductsStoreType = {
   setViewMode: (mode: "grid" | "list") => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
+  priceMin: string | null;
+  setPriceMin: (val: string | null) => void;
+  priceMax: string | null;
+  setPriceMax: (val: string | null) => void;
+  hasMrp: boolean;
+  toggleMrpFilter: () => void;
+  hasPurchasePrice: boolean;
+  togglePurchasePriceFilter: () => void;
   activeFilters: { key: string; label: string; value: string }[];
   setActiveFilters: (filters: { key: string; label: string; value: string }[]) => void;
   removeActiveFilter: (key: string) => void;
@@ -107,6 +115,46 @@ export const useProductsStore = create<ProductsStoreType>()(
           }),
           false,
           "products/setSortBy"
+        ),
+
+      priceMin: null,
+      setPriceMin: (val) =>
+        set(
+          () => ({
+            priceMin: val
+          }),
+          false,
+          "products/setPriceMin"
+        ),
+
+      priceMax: null,
+      setPriceMax: (val) =>
+        set(
+          () => ({
+            priceMax: val
+          }),
+          false,
+          "products/setPriceMax"
+        ),
+
+      hasMrp: false,
+      toggleMrpFilter: () =>
+        set(
+          (state) => ({
+            hasMrp: !state.hasMrp
+          }),
+          false,
+          "products/toggleMrpFilter"
+        ),
+
+      hasPurchasePrice: false,
+      togglePurchasePriceFilter: () =>
+        set(
+          (state) => ({
+            hasPurchasePrice: !state.hasPurchasePrice
+          }),
+          false,
+          "products/togglePurchasePriceFilter"
         ),
 
       activeFilters: [],

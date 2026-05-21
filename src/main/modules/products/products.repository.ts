@@ -40,9 +40,11 @@ const searchProducts = async (params: ProductSearchQuery) => {
       })
       .from(products)
       .where(params.whereClause)
-      .orderBy(products.name)
+      .orderBy(params.orderClause ?? products.name)
       .limit(params.limit)
       .offset(params.offset);
+
+    return searchResult;
   }
 
   const priorityOrder = sql`
@@ -51,6 +53,10 @@ const searchProducts = async (params: ProductSearchQuery) => {
             ELSE 2
           END
         `;
+
+  const orderBy = params.orderClause
+    ? [priorityOrder, params.orderClause]
+    : [priorityOrder, products.productSnapshot];
 
   searchResult = await db
     .select({
@@ -73,7 +79,7 @@ const searchProducts = async (params: ProductSearchQuery) => {
     })
     .from(products)
     .where(and(params.whereClause, like(products.productSnapshot, `%${params.searchTerm}%`)))
-    .orderBy(priorityOrder, products.productSnapshot)
+    .orderBy(...orderBy)
     .limit(params.limit)
     .offset(params.offset);
 
