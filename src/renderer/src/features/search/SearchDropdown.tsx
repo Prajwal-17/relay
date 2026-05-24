@@ -53,6 +53,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const highlightedIndexRef = useRef(highlightedIndex);
   highlightedIndexRef.current = highlightedIndex;
 
+  const dropdownContainerRef = useRef<HTMLDivElement>(null);
+
   const {
     dropdownRef,
     searchResults,
@@ -64,6 +66,13 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     virtualItems
   } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
+  useEffect(() => {
+    const el = dropdownContainerRef.current;
+    if (!el) return;
+    el.style.scrollMarginBottom = "10rem";
+    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, []);
+
   const openNewProductDialog = () => {
     setIsDropdownOpen();
     setProductId(null);
@@ -74,7 +83,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   };
 
   useEffect(() => {
-    setHighlightedIndex(-1);
+    setHighlightedIndex(searchResults.length > 0 ? 0 : -1);
   }, [searchResults]);
 
   useEffect(() => {
@@ -91,26 +100,28 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       if (!activeTabId) return;
       const session = useBillingSessionStore.getState().sessions[activeTabId];
       if (!session) return;
-      // find the last non-deleted empty row
-      const lastEmptyRow = [...session.lineItems]
-        .reverse()
-        .find((item) => !item.isDeleted && item.name === "");
-      if (!lastEmptyRow) return;
 
-      // set dropdown to open for the new row
-      setActiveRowId(lastEmptyRow.rowId);
+      const visibleItems = session.lineItems.filter((item) => !item.isDeleted);
+      const currentIdx = visibleItems.findIndex((item) => item.rowId === rowId);
+      if (currentIdx === -1) return;
+
+      // only auto focus if the immediate next row is empty
+      const nextRow = visibleItems[currentIdx + 1];
+      if (!nextRow || nextRow.name !== "") return;
+
+      setActiveRowId(nextRow.rowId);
       setItemQuery("");
       setIsDropdownOpen();
 
       const inputs = document.querySelectorAll<HTMLInputElement>(
         'input[placeholder="Search products"]'
       );
-      const lastInput = inputs[inputs.length - 1];
-      if (lastInput) {
-        lastInput.focus();
+      const nextInput = inputs[currentIdx + 1];
+      if (nextInput) {
+        nextInput.focus();
       }
     }, 50);
-  }, [activeTabId, setActiveRowId, setItemQuery, setIsDropdownOpen]);
+  }, [activeTabId, setActiveRowId, setItemQuery, setIsDropdownOpen, rowId]);
 
   const selectProduct = useCallback(
     (index: number) => {
@@ -168,7 +179,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   return (
     <>
       <div ref={dropdownRef}>
-        <div className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]">
+        <div
+          ref={dropdownContainerRef}
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+        >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-8 py-14 text-center">
               <div className="bg-muted/50 mb-5 flex h-16 w-16 items-center justify-center rounded-2xl">

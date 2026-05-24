@@ -16,7 +16,7 @@ export const createInitialSession = () => {
     isNewCustomer: true,
     status: BILLSTATUS.IDLE,
     isCountColumnVisible: false,
-    lineItems: [createInitialLineItem()]
+    lineItems: Array.from({ length: 5 }, () => createInitialLineItem())
   };
 };
 

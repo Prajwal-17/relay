@@ -1,7 +1,6 @@
 import { SYNCSTATUS } from "@/types";
 import { type Product, type UnifiedTransactionItem } from "@shared/types";
 import { convertToRupees } from "@shared/utils/utils";
-import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -144,7 +143,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
 
             const newLineItem: LineItem = {
               id: oldItem.id,
-              rowId: uuidv4(),
+              rowId: oldItem.rowId,
               productId: newItem.id,
               name: newItem.name,
               productSnapshot: newItem.productSnapshot,
