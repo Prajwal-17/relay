@@ -1,12 +1,5 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
@@ -18,7 +11,7 @@ import { processSyncQueue } from "@/utils/syncWorker";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
 import { Edit, Info, Package, PackagePlus, Search } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const HighlightedText = ({ text, query }: { text: string; query: string }) => {
   if (!query.trim()) return <>{text}</>;
@@ -56,7 +49,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
-  const [sortBy, setSortBy] = useState<string>("name-asc");
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const highlightedIndexRef = useRef(highlightedIndex);
   highlightedIndexRef.current = highlightedIndex;
@@ -81,41 +73,18 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setOpenProductDialog();
   };
 
-  const sortedSearchResults = useMemo(() => {
-    const list = [...searchResults];
-    if (sortBy === "name-asc") {
-      return list.sort((a, b) => a.name.localeCompare(b.name));
-    }
-    if (sortBy === "name-desc") {
-      return list.sort((a, b) => b.name.localeCompare(a.name));
-    }
-    if (sortBy === "price-asc") {
-      return list.sort((a, b) => a.price - b.price);
-    }
-    if (sortBy === "price-desc") {
-      return list.sort((a, b) => b.price - a.price);
-    }
-    if (sortBy === "mrp-asc") {
-      return list.sort((a, b) => (a.mrp ?? 0) - (b.mrp ?? 0));
-    }
-    if (sortBy === "mrp-desc") {
-      return list.sort((a, b) => (b.mrp ?? 0) - (a.mrp ?? 0));
-    }
-    return list;
-  }, [searchResults, sortBy]);
-
   useEffect(() => {
     setHighlightedIndex(-1);
-  }, [searchResults, sortBy]);
+  }, [searchResults]);
 
   useEffect(() => {
     if (virtualItems.length === 0) return;
     const lastItem = virtualItems[virtualItems.length - 1];
-    const totalRows = hasNextPage ? sortedSearchResults.length + 1 : sortedSearchResults.length;
+    const totalRows = hasNextPage ? searchResults.length + 1 : searchResults.length;
     if (lastItem && lastItem.index >= totalRows - 1 && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [virtualItems, hasNextPage, isFetchingNextPage, fetchNextPage, sortedSearchResults.length]);
+  }, [virtualItems, hasNextPage, isFetchingNextPage, fetchNextPage, searchResults.length]);
 
   const focusNextRow = useCallback(() => {
     setTimeout(() => {
@@ -145,7 +114,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
   const selectProduct = useCallback(
     (index: number) => {
-      const product = sortedSearchResults[index];
+      const product = searchResults[index];
       if (!product || !activeTabId) return;
       addLineItem(activeTabId, rowId, product);
       setIsDropdownOpen();
@@ -154,7 +123,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       focusNextRow();
     },
     [
-      sortedSearchResults,
+      searchResults,
       activeTabId,
       rowId,
       addLineItem,
@@ -167,7 +136,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   // arrow keys navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const len = sortedSearchResults.length;
+      const len = searchResults.length;
       if (len === 0) return;
 
       if (e.key === "ArrowDown") {
@@ -194,7 +163,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [sortedSearchResults, rowVirtualizer, selectProduct]);
+  }, [searchResults, rowVirtualizer, selectProduct]);
 
   return (
     <>
@@ -220,37 +189,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
-              {/* Sticky Sorting Header */}
-              <div className="border-border/60 bg-muted/20 flex items-center justify-between border-b px-4 py-2">
-                <div className="flex items-center gap-1.5">
-                  <Package className="text-muted-foreground/80 h-4 w-4" />
-                  <span className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
-                    {searchResults.length} Products Found
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground/85 text-xs font-semibold whitespace-nowrap">
-                    Sort by:
-                  </span>
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="border-border bg-background hover:bg-accent/40 h-7 w-[140px] cursor-pointer justify-between rounded-lg px-2 text-[11px] font-semibold shadow-none">
-                      <SelectValue placeholder="Sort" />
-                    </SelectTrigger>
-                    <SelectContent
-                      align="end"
-                      className="border-border bg-background z-40 rounded-xl shadow-md"
-                    >
-                      <SelectItem value="name-asc">Name (A ➔ Z)</SelectItem>
-                      <SelectItem value="name-desc">Name (Z ➔ A)</SelectItem>
-                      <SelectItem value="price-asc">Price (Low ➔ High)</SelectItem>
-                      <SelectItem value="price-desc">Price (High ➔ Low)</SelectItem>
-                      <SelectItem value="mrp-asc">MRP (Low ➔ High)</SelectItem>
-                      <SelectItem value="mrp-desc">MRP (High ➔ Low)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               {/* Virtualized List Container */}
               <div ref={parentRef} className="flex-1 overflow-y-auto py-2">
                 <div
@@ -264,7 +202,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                     }}
                   >
                     {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                      const product = sortedSearchResults[virtualRow.index];
+                      const product = searchResults[virtualRow.index];
                       if (!product) return null;
 
                       return (
