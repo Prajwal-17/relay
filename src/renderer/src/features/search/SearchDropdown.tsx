@@ -10,7 +10,7 @@ import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
-import { Edit, Info, Package, PackagePlus, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Edit, Info, Package, PackagePlus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const HighlightedText = ({ text, query }: { text: string; query: string }) => {
@@ -52,6 +52,23 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const highlightedIndexRef = useRef(highlightedIndex);
   highlightedIndexRef.current = highlightedIndex;
+
+  type SortField = "name" | "price" | "mrp" | "weight";
+  type SortDir = "asc" | "desc";
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir | null>(null);
+
+  const toggleSort = (field: SortField) => {
+    if (sortField !== field) {
+      setSortField(field);
+      setSortDir("asc");
+    } else if (sortDir === "asc") {
+      setSortDir("desc");
+    } else {
+      setSortField(null);
+      setSortDir(null);
+    }
+  };
 
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
 
@@ -181,15 +198,15 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       <div ref={dropdownRef}>
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-lg border shadow-lg"
         >
           {searchResults.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center px-8 py-14 text-center">
-              <div className="bg-muted/50 mb-5 flex h-16 w-16 items-center justify-center rounded-2xl">
-                <Search className="h-8 w-8 opacity-60" />
+            <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
+              <div className="bg-muted/50 mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
+                <Search className="h-6 w-6 opacity-60" />
               </div>
-              <h3 className="text-foreground mb-2 text-xl font-semibold">No products found</h3>
-              <p className="mb-6 max-w-sm text-sm font-medium">
+              <h3 className="text-foreground mb-1.5 text-lg font-semibold">No products found</h3>
+              <p className="mb-5 max-w-sm text-sm font-medium">
                 Add the product now and continue billing without leaving this screen.
               </p>
               <Button
@@ -203,8 +220,44 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
+              <div className="border-border/70 bg-muted/30 flex shrink-0 items-center gap-4 border-b px-3.5 py-2">
+                <div className="text-muted-foreground text-[0.75rem] font-bold tracking-[0.16em] uppercase">
+                  Sort
+                </div>
+                <div className="flex items-center gap-1">
+                  {(
+                    [
+                      { field: "name" as SortField, label: "Name" },
+                      { field: "price" as SortField, label: "Price" },
+                      { field: "mrp" as SortField, label: "MRP" },
+                      { field: "weight" as SortField, label: "Weight" }
+                    ] satisfies { field: SortField; label: string }[]
+                  ).map(({ field, label }) => {
+                    const isActive = sortField === field;
+                    return (
+                      <button
+                        key={field}
+                        onClick={() => toggleSort(field)}
+                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.82rem] font-semibold transition ${
+                          isActive
+                            ? "bg-foreground text-background"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        {label}
+                        {isActive &&
+                          (sortDir === "asc" ? (
+                            <ArrowUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ArrowDown className="h-3.5 w-3.5" />
+                          ))}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               {/* Virtualized List Container */}
-              <div ref={parentRef} className="flex-1 overflow-y-auto py-2">
+              <div ref={parentRef} className="flex-1 overflow-y-auto py-1">
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
@@ -226,9 +279,9 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-index={virtualRow.index}
                         >
                           <div
-                            className={`group flex items-center gap-4 rounded-xl border-l-4 px-4 py-3 transition-all duration-200 hover:cursor-pointer ${
+                            className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
-                                ? "border-primary bg-primary/10 ring-primary/25 shadow-sm ring-1"
+                                ? "border-foreground bg-foreground/6 ring-foreground/15 ring-1"
                                 : "hover:bg-accent/60 border-transparent"
                             }`}
                             onClick={() => {
@@ -241,8 +294,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             }}
                             onMouseDown={(e) => e.preventDefault()}
                           >
-                            <div className="border-border/70 from-search-icon-bg-from to-search-icon-bg-to flex h-9 w-9 items-center justify-center rounded-xl border bg-linear-to-br">
-                              <Package className="text-search-icon-fg h-5 w-5" />
+                            <div className="border-border/70 from-search-icon-bg-from to-search-icon-bg-to flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-linear-to-br">
+                              <Package className="text-search-icon-fg h-4.5 w-4.5" />
                             </div>
 
                             <div className="min-w-0 flex-1">
