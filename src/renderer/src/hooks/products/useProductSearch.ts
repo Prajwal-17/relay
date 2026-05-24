@@ -90,7 +90,9 @@ export const useProductSearch = (type: ProductSearchType) => {
     queryKey: [
       filterType,
       type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? productsDebouncedValue : dropdownDebouncedValue,
-      ...(type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? [sortBy, priceMin, priceMax, hasMrp, hasPurchasePrice] : [])
+      ...(type === PRODUCTSEARCH_TYPE.PRODUCTPAGE
+        ? [sortBy, priceMin, priceMax, hasMrp, hasPurchasePrice]
+        : [])
     ],
     queryFn: ({ pageParam = 1 }) => {
       if (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE) {
@@ -135,8 +137,19 @@ export const useProductSearch = (type: ProductSearchType) => {
     }
   }, [isError, error]);
 
+  const prevResultsRef = useRef<ProductSearchItemDTO[]>([]);
+
   const searchResults = useMemo(() => {
-    return data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
+    const next = data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
+    const prev = prevResultsRef.current;
+
+    // return the same reference if the data hasn't changed
+    if (prev.length === next.length && next.every((item, i) => item.id === prev[i]?.id)) {
+      return prev;
+    }
+
+    prevResultsRef.current = next;
+    return next;
   }, [data]);
 
   /**
@@ -147,7 +160,7 @@ export const useProductSearch = (type: ProductSearchType) => {
     count: hasNextPage ? searchResults.length + 1 : searchResults.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 95,
-    overscan: 5
+    overscan: 8
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();

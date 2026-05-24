@@ -45,7 +45,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
-  const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
@@ -70,8 +69,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     }
   };
 
-  const dropdownContainerRef = useRef<HTMLDivElement>(null);
-
   const {
     dropdownRef,
     searchResults,
@@ -83,6 +80,9 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     virtualItems
   } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
+  const dropdownContainerRef = useRef<HTMLDivElement>(null);
+
+  // auto-scroll the dropdown into view when it opens near the bottom of the page
   useEffect(() => {
     const el = dropdownContainerRef.current;
     if (!el) return;
@@ -99,9 +99,16 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setOpenProductDialog();
   };
 
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
+
+  // Only reset highlight when the result count actually changes
+  const prevResultsLenRef = useRef(searchResults.length);
   useEffect(() => {
-    setHighlightedIndex(searchResults.length > 0 ? 0 : -1);
-  }, [searchResults]);
+    if (searchResults.length !== prevResultsLenRef.current) {
+      setHighlightedIndex(searchResults.length > 0 ? 0 : -1);
+      prevResultsLenRef.current = searchResults.length;
+    }
+  }, [searchResults.length]);
 
   useEffect(() => {
     if (virtualItems.length === 0) return;
@@ -198,7 +205,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       <div ref={dropdownRef}>
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-lg border shadow-lg"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
@@ -220,7 +227,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
-              <div className="border-border/70 bg-muted/30 flex shrink-0 items-center gap-4 border-b px-3.5 py-2">
+              <div className="border-border/70 bg-background flex shrink-0 items-center gap-4 border-b px-3.5 py-2">
                 <div className="text-muted-foreground text-[0.75rem] font-bold tracking-[0.16em] uppercase">
                   Sort
                 </div>
@@ -256,8 +263,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   })}
                 </div>
               </div>
-              {/* Virtualized List Container */}
-              <div ref={parentRef} className="flex-1 overflow-y-auto py-1">
+
+              <div ref={parentRef} className="flex-1 overflow-y-auto scroll-smooth py-1">
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
