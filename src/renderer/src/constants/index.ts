@@ -3,6 +3,8 @@ import {
   ArrowDownAZ,
   ArrowUpAZ,
   BarChart3,
+  CalendarArrowDown,
+  CalendarArrowUp,
   Receipt,
   TrendingDown,
   TrendingUp,
@@ -81,19 +83,23 @@ export const weights = [
 export const sortOptions = [
   {
     value: SortOption.DATE_NEWEST_FIRST,
-    label: "Date (Newest first)"
+    label: "Date (Newest first)",
+    icon: CalendarArrowDown
   },
   {
     value: SortOption.DATE_OLDEST_FIRST,
-    label: "Date (Oldest first)"
+    label: "Date (Oldest first)",
+    icon: CalendarArrowUp
   },
   {
     value: SortOption.HIGH_TO_LOW,
-    label: "Amount (High to Low)"
+    label: "Amount (High to Low)",
+    icon: TrendingDown
   },
   {
     value: SortOption.LOW_TO_HIGH,
-    label: "Amount (Low to High)"
+    label: "Amount (Low to High)",
+    icon: TrendingUp
   }
 ];
 

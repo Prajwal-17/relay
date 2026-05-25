@@ -24,15 +24,25 @@ export const DashboardCard = () => {
             defaultValue={sortBy}
             onValueChange={(value: SortType) => setSortBy(value)}
           >
-            <SelectTrigger className="text-foreground h-11! w-55 cursor-pointer text-base font-semibold">
+            <SelectTrigger className="text-foreground h-11! w-62 cursor-pointer text-base font-semibold">
               <SelectValue placeholder="Date (Newest First)" />
             </SelectTrigger>
             <SelectContent>
-              {sortOptions.map((s, idx) => (
-                <SelectItem key={idx} value={s.value} className="cursor-pointer">
-                  {s.label}
-                </SelectItem>
-              ))}
+              {sortOptions.map((s, idx) => {
+                const Icon = s.icon;
+                return (
+                  <SelectItem
+                    key={idx}
+                    value={s.value}
+                    className="cursor-pointer text-base font-medium"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Icon className="text-muted-foreground h-4 w-4" />
+                      {s.label}
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
           <DateRangePicker />

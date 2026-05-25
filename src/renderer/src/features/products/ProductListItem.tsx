@@ -46,8 +46,8 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   };
 
   return (
-    <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-3 transition-colors">
-      <div className="border-border bg-muted/60 flex h-18 w-18 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
+    <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-2.5 transition-colors">
+      <div className="border-border bg-muted/60 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border">
         {product.imageUrl ? (
           <img
             src={`${PROTOCOL_NAME}${product.imageUrl}`}
@@ -69,7 +69,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {showWeight && (
             <Badge
               variant="outline"
-              className="border-border bg-muted/50 text-muted-foreground rounded-full px-2.5 py-0.5 text-base font-semibold shadow-none"
+              className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
             >
               {product.weight}
               {product.unit}
@@ -78,7 +78,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {product.mrp && (
             <Badge
               variant="outline"
-              className="bg-product-badge-bg text-product-badge-text rounded-full border-transparent px-2.5 py-0.5 text-base font-semibold shadow-none"
+              className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
             >
               MRP ₹{convertToRupees(product.mrp, { asString: true })}
             </Badge>

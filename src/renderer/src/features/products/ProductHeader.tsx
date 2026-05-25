@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PRODUCT_SORT_OPTIONS, PRODUCT_STATUS_OPTIONS } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
@@ -276,28 +277,40 @@ export default function ProductHeader() {
 
         {/* view mode toggle */}
         <div className="border-border bg-muted/30 flex items-center gap-1 rounded-lg border p-1.5">
-          <button
-            onClick={() => setViewMode("list")}
-            className={`cursor-pointer rounded-md p-2.5 transition-all ${
-              viewMode === "list"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            title="List view"
-          >
-            <List className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => setViewMode("grid")}
-            className={`cursor-pointer rounded-md p-2.5 transition-all ${
-              viewMode === "grid"
-                ? "bg-card text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            title="Grid view"
-          >
-            <Grid3X3 className="h-5 w-5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setViewMode("list")}
+                className={`cursor-pointer rounded-md p-2.5 transition-all ${
+                  viewMode === "list"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <List className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-sm">
+              List view
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`cursor-pointer rounded-md p-2.5 transition-all ${
+                  viewMode === "grid"
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Grid3X3 className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="text-sm">
+              Grid view
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <Button

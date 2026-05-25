@@ -32,7 +32,7 @@ export const useDateRangePicker = () => {
     week: "flex w-full mt-2",
     day: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
     day_button:
-      "h-10 w-10 p-0 font-medium aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
+      "h-10 w-10 p-0 font-semibold text-base aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
     day_today: "bg-accent text-accent-foreground font-semibold",
     day_outside: "text-muted-foreground opacity-50",
     day_disabled: "text-muted-foreground opacity-50",

@@ -26,9 +26,7 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
                 <IndianRupee className="text-success h-5 w-5" />
               </div>
               <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
-              <span className="text-2xl font-bold">
-                {totalRevenue && formatToRupees(totalRevenue)}
-              </span>
+              <span className="text-2xl font-bold">{formatToRupees(totalRevenue ?? 0)}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="bg-secondary/90 flex h-10 w-10 items-center justify-center rounded-lg">

@@ -29,8 +29,8 @@ export const DashboardTable = () => {
             <LoaderCircle className="text-primary animate-spin" size={24} />
           </div>
         ) : (
-          <div className="border-border/60 rounded-lg border shadow-md">
-            <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 px-4 py-2 text-base font-semibold">
+          <div className="border-border/60 flex min-h-0 flex-1 flex-col rounded-lg border shadow-md">
+            <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 rounded-t-lg px-4 py-2 text-base font-semibold">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer Name</div>
               <div className="col-span-2 flex items-center">
@@ -46,7 +46,7 @@ export const DashboardTable = () => {
             </div>
 
             {transactionData.length > 0 ? (
-              <div ref={parentRef} className="max-h-[60vh] overflow-auto scroll-smooth">
+              <div ref={parentRef} className="min-h-0 flex-1 overflow-auto scroll-smooth">
                 <div
                   style={{
                     height: `${rowVirtualizer.getTotalSize()}px`,

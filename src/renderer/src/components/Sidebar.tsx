@@ -222,7 +222,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             </div>
             <div className="min-w-0">
               <span className="block truncate text-xl font-semibold">QuickCart</span>
-              <span className="text-muted-foreground block truncate text-sm">Workspace</span>
+              <span className="text-sidebar-foreground/55 block truncate text-sm">Workspace</span>
             </div>
           </motion.div>
         </div>
@@ -282,7 +282,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                       "flex w-full items-center gap-3 rounded-xl px-4 py-1.5 text-[1.05rem] font-medium transition-colors duration-150",
                       isActive
                         ? "bg-secondary text-sidebar-foreground font-semibold"
-                        : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     )}
                   >
                     <span className="shrink-0 [&_svg]:h-[1.35rem] [&_svg]:w-[1.35rem]">
