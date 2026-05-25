@@ -290,8 +290,8 @@ export default function ProductHeader() {
                 <List className="h-5 w-5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-sm">
-              List view
+            <TooltipContent side="bottom">
+              <p className="text-base">List view</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -307,8 +307,8 @@ export default function ProductHeader() {
                 <Grid3X3 className="h-5 w-5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-sm">
-              Grid view
+            <TooltipContent side="bottom">
+              <p className="text-base">Grid view</p>
             </TooltipContent>
           </Tooltip>
         </div>

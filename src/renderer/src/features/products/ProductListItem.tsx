@@ -1,4 +1,6 @@
+import { HighlightedText } from "@/components/highlighted-text";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductSearchItemDTO } from "@shared/types";
@@ -12,6 +14,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setInitialTab = useProductsStore((state) => state.setInitialTab);
+  const searchParam = useProductsStore((state) => state.searchParam);
 
   const showWeight =
     product.weight !== null &&
@@ -64,7 +67,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           <h3
             className={`text-xl leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
           >
-            {product.name}
+            <HighlightedText text={product.name} query={searchParam} />
           </h3>
           {showWeight && (
             <Badge
@@ -95,34 +98,61 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
 
       {!product.isDeleted && (
         <div className="flex shrink-0 items-center gap-1">
-          <button
-            onClick={() => prepareAndOpenDialog("view")}
-            className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
-            title="View"
-          >
-            <Eye className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => prepareAndOpenDialog("edit")}
-            className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
-            title="Edit"
-          >
-            <Edit className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => prepareAndOpenDialog("view")}
-            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
-            title="Delete"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => prepareAndOpenDialog("view", "history")}
-            className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
-            title="History"
-          >
-            <Clock className="h-5 w-5" />
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog("view")}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Eye className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">View</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog("edit")}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Edit className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">Edit</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog("view")}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">Delete</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog("view", "history")}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Clock className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">History</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )}
     </div>

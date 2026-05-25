@@ -1,3 +1,4 @@
+import { HighlightedText } from "@/components/highlighted-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -12,28 +13,6 @@ import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
 import { ArrowDown, ArrowUp, Edit, Info, Package, PackagePlus, Search } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-const HighlightedText = ({ text, query }: { text: string; query: string }) => {
-  if (!query.trim()) return <>{text}</>;
-
-  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const regex = new RegExp(`(${escaped})`, "gi");
-  const parts = text.split(regex);
-
-  return (
-    <>
-      {parts.map((part, i) =>
-        regex.test(part) ? (
-          <mark key={i} className="bg-search-highlight rounded-sm text-inherit">
-            {part}
-          </mark>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
-  );
-};
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);

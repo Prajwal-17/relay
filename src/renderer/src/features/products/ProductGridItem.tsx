@@ -1,3 +1,4 @@
+import { HighlightedText } from "@/components/highlighted-text";
 import { Button } from "@/components/ui/button";
 import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
@@ -16,6 +17,7 @@ export default function ProductGridItem({ product }: ProductGridItemProps) {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setInitialTab = useProductsStore((state) => state.setInitialTab);
+  const searchParam = useProductsStore((state) => state.searchParam);
 
   const showWeight =
     product.weight !== null &&
@@ -67,7 +69,7 @@ export default function ProductGridItem({ product }: ProductGridItemProps) {
         <h3
           className={`line-clamp-2 text-sm leading-snug font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
         >
-          {product.name}
+          <HighlightedText text={product.name} query={searchParam} />
         </h3>
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
