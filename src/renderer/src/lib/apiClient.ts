@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4722";
+const BASE_URL =
+  window.env?.API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:4722";
 
 function buildURL(
   path: string,

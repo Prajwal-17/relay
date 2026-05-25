@@ -1,45 +1,38 @@
 import Database from "better-sqlite3";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { app } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import * as schema from "./schema";
 
-function getDbPath() {
-  if (process.env.M_VITE_DATABASE_URL) {
-    return process.env.M_VITE_DATABASE_URL; // using env var(:memory) to run tests
+export let db: BetterSQLite3Database<typeof schema>;
+
+export async function initDb() {
+  if (db) return db;
+
+  async function getDbPath() {
+    return process.env.M_VITE_DATABASE_URL;
   }
 
-  // linux - /home/<user>/.config/<appName>/pos.db
-  // win - C:\Users\<user>\AppData\Roaming\<appName>\pos.db
-  return path.join(app.getPath("userData"), "pos.db");
-}
-
-function getMigrationsFolder() {
-  if (process.env.M_VITE_MIGRATION_FOLDER) {
-    return path.join(process.cwd(), process.env.M_VITE_MIGRATION_FOLDER);
+  async function getMigrationsFolder() {
+    return process.env.M_VITE_MIGRATION_FOLDER!;
   }
 
-  return app.isPackaged
-    ? path.join(process.resourcesPath, "drizzle")
-    : path.join(__dirname, "../../drizzle");
-}
+  const dbPath = await getDbPath();
+  fs.mkdirSync(path.dirname(dbPath!), { recursive: true });
 
-const dbPath = getDbPath();
-fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+  const sqlite = new Database(dbPath);
+  sqlite.pragma("journal_mode = WAL");
 
-const sqlite = new Database(dbPath);
-sqlite.pragma("journal_mode = WAL");
+  db = drizzle(sqlite, { schema, logger: false });
 
-// sqlite.pragma("foreign_keys = OFF");
-export const db = drizzle(sqlite, { schema, logger: false });
+  const migrationsFolder = await getMigrationsFolder();
+  if (fs.existsSync(migrationsFolder)) {
+    migrate(db, { migrationsFolder });
+  } else {
+    console.error("Migration folder not found");
+  }
 
-const migrationsFolder = getMigrationsFolder();
-
-if (fs.existsSync(migrationsFolder)) {
-  migrate(db, { migrationsFolder });
-  // sqlite.pragma("foreign_keys = ON");
-} else {
-  console.error("Migration folder not found");
+  return db;
 }

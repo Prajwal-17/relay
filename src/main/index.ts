@@ -1,11 +1,12 @@
 import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow } from "electron";
 import { fork, type ChildProcess } from "node:child_process";
-import { join, resolve } from "node:path";
+import path, { join, resolve } from "node:path";
+import { initDb } from "./db/db";
 import { initMainEnv } from "./loadEnv";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
 
-const mode = initMainEnv(app.isPackaged);
+const mode = initMainEnv();
 const isDevBuild = mode === "development";
 let serverProcess: ChildProcess;
 
@@ -21,7 +22,8 @@ if (process.platform === "win32") {
   app.setAppUserModelId(isDevBuild ? "com.quickcart-dev.app" : "com.quickcart.app");
 }
 
-if (!app.isPackaged || isDevBuild) {
+// when in prod -> electron uses its default path (/Quickcart) but for dev set it explicitly
+if (isDevBuild) {
   app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
 }
 
@@ -50,6 +52,15 @@ if (!gotTheLock) {
     const [{ setupIpcHandlers }] = await Promise.all([import("./setupIpcHandlers")]);
     setupIpcHandlers();
 
+    // pass to forked server process (electron's app isnt available there)
+    process.env.M_VITE_DATABASE_URL = join(app.getPath("userData"), "pos.db");
+    process.env.M_VITE_IS_PACKAGED = String(app.isPackaged);
+    process.env.M_VITE_MIGRATION_FOLDER = app.isPackaged
+      ? path.join(process.resourcesPath, "drizzle")
+      : path.join(__dirname, "../../drizzle");
+
+    await initDb();
+
     serverProcess = fork(join(__dirname, "server.js"), [], {
       env: process.env,
       stdio: "inherit"
@@ -72,6 +83,8 @@ if (!gotTheLock) {
 }
 
 function createWindow(): void {
+  const apiPort = isDevBuild ? 4723 : 4722;
+
   mainWindow = new BrowserWindow({
     show: false,
     autoHideMenuBar: false,
@@ -79,8 +92,9 @@ function createWindow(): void {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
-      nodeIntegration: false
-    }
+      nodeIntegration: false,
+      additionalArguments: [`--api-port=${apiPort}`]
+    } as Electron.WebPreferences
   });
 
   mainWindow.once("ready-to-show", async () => {

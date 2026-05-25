@@ -14,6 +14,9 @@ const dialogApi: DialogApi = {
   selectFolder: () => ipcRenderer.invoke("dialog:selectFolder")
 };
 
+const apiArg = process.argv.find((a) => a.startsWith("--api-port="));
+const apiPort = apiArg ? Number(apiArg.split("=")[1]) : 4722;
+
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld("electronAPI", {
@@ -22,6 +25,9 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("shareApi", shareApi);
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("dialogApi", dialogApi);
+    contextBridge.exposeInMainWorld("env", {
+      API_URL: `http://localhost:${apiPort}`
+    });
   } catch (error) {
     console.error(error);
   }
@@ -34,4 +40,6 @@ if (process.contextIsolated) {
   window.productsApi = productsApi;
   // @ts-ignore (define in ts)
   window.dialogApi = dialogApi;
+  // @ts-ignore (define in ts)
+  window.env = { API_URL: `http://localhost:${apiPort}` };
 }

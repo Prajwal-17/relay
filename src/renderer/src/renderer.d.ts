@@ -5,5 +5,8 @@ declare global {
     shareApi: ShareApi;
     productsApi: ProductsApi;
     dialogApi: DialogApi;
+    env: {
+      API_URL: string;
+    };
   }
 }

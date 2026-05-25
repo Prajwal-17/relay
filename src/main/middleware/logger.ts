@@ -1,15 +1,9 @@
 import { createMiddleware } from "hono/factory";
 import pino from "pino";
 
-const isPackaged = (() => {
-  try {
-    // ubuntu build fix
-    // eslint-disable-next-line
-    return require("electron").app.isPackaged;
-  } catch {
-    return false;
-  }
-})();
+// M_VITE_IS_PACKAGED is set by index.ts before forking the server process
+// `app` from electron is not available in forked process
+const isPackaged = process.env.M_VITE_IS_PACKAGED === "true";
 
 export const loggerInstance = isPackaged
   ? pino({ level: "info" })

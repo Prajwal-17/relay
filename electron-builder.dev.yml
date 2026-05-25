@@ -1,6 +1,6 @@
 appId: com.quickcart-dev.app
 productName: QuickCart-Dev
-extraMetadata:
+extraMetadata: # injects properties into package.json
   name: quickcart-dev
 directories:
   buildResources: build
@@ -13,6 +13,11 @@ files:
   - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
 asarUnpack:
   - resources/**
+extraResources:
+  - from: drizzle/
+    to: drizzle/
+    filter:
+      - "**/*"
 win:
   executableName: QuickCart-Dev
   icon: build/icon-dev.png
