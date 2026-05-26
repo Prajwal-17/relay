@@ -185,10 +185,24 @@ const getHistoryEntriesById = async (productId: string) => {
   };
 };
 
-const deleteProduct = async (productId: string) => {
-  const changes = await productRepository.deleteProductById(productId);
+const softDeleteProduct = async (productId: string) => {
+  const changes = await productRepository.softDeleteProductById(productId);
   if (changes === 0) {
     throw new AppError("No product was deleted.", 400);
+  }
+};
+
+const hardDeleteProduct = async (productId: string) => {
+  const changes = await productRepository.hardDeleteProductById(productId);
+  if (changes === 0) {
+    throw new AppError("No product was deleted.", 400);
+  }
+};
+
+const restoreProduct = async (productId: string) => {
+  const changes = await productRepository.restoreSoftDeletedProductById(productId);
+  if (changes === 0) {
+    throw new AppError("No product was restored.", 400);
   }
 };
 
@@ -197,5 +211,7 @@ export const productService = {
   addProduct,
   updateProduct,
   getHistoryEntriesById,
-  deleteProduct
+  softDeleteProduct,
+  hardDeleteProduct,
+  restoreProduct
 };

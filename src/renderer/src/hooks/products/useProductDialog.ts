@@ -2,7 +2,14 @@ import { blobToDataUrl } from "@/features/productDialog/productImageCrop";
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import { dirtyFieldsProductSchema, updateProductSchema } from "@shared/schemas/products.schema";
-import type { CreateProductPayload, UpdateProductPayload } from "@shared/types";
+import {
+  ACTION_TYPE,
+  PRODUCT_OPERATION,
+  type CreateProductPayload,
+  type UpdateProductPayload,
+  type ActionType,
+  type ProductOperation
+} from "@shared/types";
 import { convertToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -11,25 +18,24 @@ import z from "zod";
 
 type ProductMutationVariables =
   | {
-      action: "add";
+      action: typeof ACTION_TYPE.ADD;
       payload: CreateProductPayload;
       pendingImageBlob?: Blob | null;
     }
   | {
-      action: "edit" | "billing-page-edit";
+      action: typeof ACTION_TYPE.EDIT | typeof ACTION_TYPE.BILLING_PAGE_EDIT;
       payload: UpdateProductPayload;
       pendingImageBlob?: Blob | null;
     };
 
 export const useProductDialog = () => {
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const queryClient = useQueryClient();
 
   const actionType = useProductsStore((state) => state.actionType);
 
   useEffect(() => {
     const state = useProductsStore.getState();
-    if (actionType === "add") {
+    if (actionType === ACTION_TYPE.ADD) {
       state.setProductId(null);
       state.setFormDataState(
         Object.keys(state.formDataState).length > 0 ? {} : state.formDataState
@@ -38,7 +44,7 @@ export const useProductDialog = () => {
       state.setErrors({});
     }
 
-    if (actionType === "edit" || actionType === "billing-page-edit") {
+    if (actionType === ACTION_TYPE.EDIT || actionType === ACTION_TYPE.BILLING_PAGE_EDIT) {
       state.setErrors({});
     }
   }, [actionType]);
@@ -57,7 +63,7 @@ export const useProductDialog = () => {
 
     setFormDataState(updates);
 
-    if (actionType === "billing-page-edit" || actionType === "edit") {
+    if (actionType === ACTION_TYPE.BILLING_PAGE_EDIT || actionType === ACTION_TYPE.EDIT) {
       setDirtyFields(updates);
     }
 
@@ -124,7 +130,7 @@ export const useProductDialog = () => {
         payloadWithSavedImage.imageUrl = response.data.url;
       }
 
-      if (action === "add") {
+      if (action === ACTION_TYPE.ADD) {
         return apiClient.post("/api/products", payloadWithSavedImage);
       } else {
         if (!productId) {
@@ -150,7 +156,7 @@ export const useProductDialog = () => {
       setDirtyFields({});
       setOpenProductDialog();
       toast.success(
-        variables.action === "add" ? "Successfully created product" : "Successfully updated product"
+        variables.action === ACTION_TYPE.ADD ? "Successfully created product" : "Successfully updated product"
       );
     },
     onError: (error) => {
@@ -158,7 +164,7 @@ export const useProductDialog = () => {
     }
   });
 
-  const handleSubmit = async (action: "add" | "edit" | "billing-page-edit") => {
+  const handleSubmit = async (action: ActionType) => {
     const { formDataState, dirtyFields, setErrors } = useProductsStore.getState();
     const pendingImageBlob = formDataState.pendingImageBlob ?? null;
     const fullFormValidation = updateProductSchema.safeParse(formDataState);
@@ -176,7 +182,7 @@ export const useProductDialog = () => {
 
     let parseResult;
 
-    if (action === "add") {
+    if (action === ACTION_TYPE.ADD) {
       parseResult = fullFormValidation;
     } else {
       parseResult = dirtyFieldsProductSchema.safeParse(dirtyFields);
@@ -194,7 +200,7 @@ export const useProductDialog = () => {
 
     const payloadInPaisa = convertCurrencyFieldsToPaisa(parseResult.data);
 
-    if (action === "add") {
+    if (action === ACTION_TYPE.ADD) {
       productMutation.mutate({
         action,
         payload: payloadInPaisa as CreateProductPayload,
@@ -209,17 +215,79 @@ export const useProductDialog = () => {
     });
   };
 
-  const deleteProductMutation = useMutation<null, Error, string>({
+  const [activeDialog, setActiveDialog] = useState<ProductOperation>(PRODUCT_OPERATION.IDLE);
+
+  const dialogMessages = {
+    [PRODUCT_OPERATION.SOFT_DELETE]: {
+      title: "Delete Product?",
+      description:
+        "Are you sure you want to delete this product? It will be moved to the deleted products list."
+    },
+    [PRODUCT_OPERATION.PERMANENT_DELETE]: {
+      title: "Permanently Delete Product?",
+      description:
+        "This action cannot be undone. This product will be permanently removed from the database."
+    },
+    [PRODUCT_OPERATION.RESTORE]: {
+      title: "Restore Product?",
+      description: "Are you sure you want to restore this product to your active inventory?"
+    }
+  };
+
+  const softDeleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
-      const { filterType, setErrors, setFormDataState, setOpenProductDialog } =
+      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
         useProductsStore.getState();
 
       queryClient.invalidateQueries({ queryKey: [filterType] });
       setErrors({});
       setFormDataState({});
-      setOpenProductDialog();
+      if (openProductDialog) {
+        setOpenProductDialog();
+      }
       toast.success("Successfully deleted product");
+      setActiveDialog(PRODUCT_OPERATION.IDLE);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
+  const permanentDeleteProductMutation = useMutation<null, Error, string>({
+    mutationFn: (productId: string) => apiClient.delete(`/api/products/${productId}/delete`),
+    onSuccess: () => {
+      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
+        useProductsStore.getState();
+
+      queryClient.invalidateQueries({ queryKey: [filterType] });
+      setErrors({});
+      setFormDataState({});
+      if (openProductDialog) {
+        setOpenProductDialog();
+      }
+      toast.success("Successfully deleted product permanently");
+      setActiveDialog(PRODUCT_OPERATION.IDLE);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
+  const restoreProductMutation = useMutation<null, Error, string>({
+    mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/restore`),
+    onSuccess: () => {
+      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
+        useProductsStore.getState();
+
+      queryClient.invalidateQueries({ queryKey: [filterType] });
+      setErrors({});
+      setFormDataState({});
+      if (openProductDialog) {
+        setOpenProductDialog();
+      }
+      toast.success("Successfully restored product");
+      setActiveDialog(PRODUCT_OPERATION.IDLE);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -227,11 +295,14 @@ export const useProductDialog = () => {
   });
 
   return {
-    showDeleteConfirm,
-    setShowDeleteConfirm,
+    activeDialog,
+    setActiveDialog,
+    dialogMessages,
     handleInputChange,
     handleSubmit,
     productMutation,
-    deleteProductMutation
+    softDeleteProductMutation,
+    permanentDeleteProductMutation,
+    restoreProductMutation
   };
 };

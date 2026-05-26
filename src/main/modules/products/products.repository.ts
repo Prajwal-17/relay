@@ -1,4 +1,4 @@
-import { and, desc, eq, like, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, like, sql } from "drizzle-orm";
 import {
   type CreateProductPayload,
   type ProductSearchItemDTO,
@@ -7,7 +7,14 @@ import {
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
-import { estimateItems, productHistory, products, saleItems } from "../../db/schema";
+import {
+  estimateItems,
+  estimates,
+  productHistory,
+  products,
+  saleItems,
+  sales
+} from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import type { ProductSearchQuery } from "./products.types";
 
@@ -167,26 +174,77 @@ const getHistoryEntriesById = async (productId: string) => {
     .all();
 };
 
-const deleteProductById = async (productId: string) => {
+const softDeleteProductById = async (productId: string) => {
   const deletedAt = sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`;
-
-  const inSales = await db.query.saleItems.findFirst({ where: eq(saleItems.productId, productId) });
-  const inEstimates = await db.query.estimateItems.findFirst({
-    where: eq(estimateItems.productId, productId)
-  });
-
-  if (inSales || inEstimates) {
-    throw new AppError(
-      "Cannot delete product. It is already used in existing sales or estimates.",
-      400
-    );
-  }
 
   const result = db
     .update(products)
     .set({
       isDeleted: true,
       deletedAt,
+      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .where(eq(products.id, productId))
+    .run();
+
+  return result.changes;
+};
+
+const hardDeleteProductById = async (productId: string) => {
+  return db.transaction((tx) => {
+    const salesResult = tx
+      .select({ count: count() })
+      .from(sales)
+      .where(
+        inArray(
+          sales.id,
+          tx
+            .select({ saleId: saleItems.saleId })
+            .from(saleItems)
+            .where(eq(saleItems.productId, productId))
+        )
+      )
+      .get();
+
+    const estimatesResult = tx
+      .select({ count: count() })
+      .from(estimates)
+      .where(
+        inArray(
+          estimates.id,
+          tx
+            .select({ estimateId: estimateItems.estimateId })
+            .from(estimateItems)
+            .where(eq(estimateItems.productId, productId))
+        )
+      )
+      .get();
+
+    const linkedSalesCount = salesResult?.count ?? 0;
+    const linkedEstimatesCount = estimatesResult?.count ?? 0;
+
+    if (linkedSalesCount > 0 || linkedEstimatesCount > 0) {
+      const parts: any = [];
+      if (linkedSalesCount > 0) parts.push(`${linkedSalesCount} sale(s)`);
+      if (linkedEstimatesCount > 0) parts.push(`${linkedEstimatesCount} estimate(s)`);
+
+      const errorMessage = `Cannot delete product. It is currently linked to ${parts.join(" and ")}.`;
+
+      throw new AppError(errorMessage, 400);
+    }
+
+    const result = db.delete(products).where(eq(products.id, productId)).run();
+
+    return result.changes;
+  });
+};
+
+const restoreSoftDeletedProductById = async (productId: string) => {
+  const result = db
+    .update(products)
+    .set({
+      isDeleted: false,
+      deletedAt: null,
       updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
     })
     .where(eq(products.id, productId))
@@ -202,5 +260,7 @@ export const productRepository = {
   updateById,
   insertHistory,
   getHistoryEntriesById,
-  deleteProductById
+  softDeleteProductById,
+  hardDeleteProductById,
+  restoreSoftDeletedProductById
 };

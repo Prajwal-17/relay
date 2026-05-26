@@ -1,3 +1,5 @@
+import { PROTOCOL_NAME } from "@/constants";
+import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
@@ -5,8 +7,6 @@ import { Check, Copy, ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
-import { PROTOCOL_NAME } from "@/constants";
-import { useProductsStore } from "@/store/productsStore";
 
 export const ProductViewMode = () => {
   const formData = useProductsStore((state) => state.formDataState);
@@ -173,7 +173,7 @@ function CopyableId({ id }: { id: string }) {
       onClick={handleCopy}
       className="text-muted-foreground hover:text-foreground flex flex-col items-end gap-1.5 transition-colors duration-150 sm:flex-row sm:items-center"
     >
-      <span className="font-mono text-sm font-medium">{id}</span>
+      <span className="font-mono text-sm font-medium">id - {id}</span>
       {copied ? <Check className="text-success h-4 w-4" /> : <Copy className="h-4 w-4" />}
     </button>
   );

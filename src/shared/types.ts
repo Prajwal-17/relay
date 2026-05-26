@@ -398,6 +398,39 @@ export const BILLSTATUS = {
 
 export type BillStatus = (typeof BILLSTATUS)[keyof typeof BILLSTATUS];
 
+// products page types - dialog mode, initial tab, action type, operation type
+export const DIALOG_MODE = {
+  VIEW: "view",
+  EDIT: "edit"
+} as const;
+
+export type DialogMode = (typeof DIALOG_MODE)[keyof typeof DIALOG_MODE];
+
+export const INITIAL_TAB = {
+  INFO: "info",
+  HISTORY: "history",
+  TRANSACTIONS: "transactions"
+} as const;
+
+export type InitialTab = (typeof INITIAL_TAB)[keyof typeof INITIAL_TAB];
+
+export const ACTION_TYPE = {
+  ADD: "add",
+  EDIT: "edit",
+  BILLING_PAGE_EDIT: "billing-page-edit"
+} as const;
+
+export type ActionType = (typeof ACTION_TYPE)[keyof typeof ACTION_TYPE];
+
+export const PRODUCT_OPERATION = {
+  SOFT_DELETE: "soft-delete",
+  PERMANENT_DELETE: "permanent-delete",
+  RESTORE: "restore",
+  IDLE: "idle"
+} as const;
+
+export type ProductOperation = (typeof PRODUCT_OPERATION)[keyof typeof PRODUCT_OPERATION];
+
 export interface AppConfig {
   billing: {
     defaultCustomerId: string;
@@ -408,6 +441,7 @@ export interface AppConfig {
     defaultExportFormat: string;
   };
 }
+// ------------
 
 export type AppPreferencesResponse = {
   id: string;

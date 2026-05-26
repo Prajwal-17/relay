@@ -1,7 +1,7 @@
 import type { Area } from "react-easy-crop";
 
 const WEBP_QUALITY = 0.9;
-const CANVAS_BACKGROUND = "#230234";
+const CANVAS_BACKGROUND = "#ffffff";
 
 const createImage = (url: string) =>
   // promise based image loader

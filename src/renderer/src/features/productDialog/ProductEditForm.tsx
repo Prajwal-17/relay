@@ -18,6 +18,7 @@ import { motion } from "motion/react";
 import { useMemo } from "react";
 import { ProductImageCropSelector } from "./ProductImageCropSelector";
 import { StatusIndicator } from "./StatusIndicator";
+import { ACTION_TYPE, DIALOG_MODE } from "@shared/types";
 
 export const ProductEditForm = () => {
   const formDataState = useProductsStore((state) => state.formDataState);
@@ -183,18 +184,18 @@ export const ProductEditForm = () => {
 
       <div className="shrink-0 border-t pt-3">
         <div className="flex justify-end gap-4">
-          {(actionType === "edit" || actionType === "billing-page-edit") && (
+          {(actionType === ACTION_TYPE.EDIT || actionType === ACTION_TYPE.BILLING_PAGE_EDIT) && (
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setDialogMode("view")}
+              onClick={() => setDialogMode(DIALOG_MODE.VIEW)}
               disabled={productMutation.isPending}
               className="h-12 cursor-pointer px-6 text-base transition-all duration-160 ease-out active:scale-[0.97] disabled:opacity-60"
             >
               Cancel
             </Button>
           )}
-          {actionType === "add" && (
+          {actionType === ACTION_TYPE.ADD && (
             <Button
               type="button"
               variant="outline"
@@ -207,21 +208,21 @@ export const ProductEditForm = () => {
           )}
           <Button
             onClick={() => {
-              handleSubmit(actionType as "add" | "edit" | "billing-page-edit");
+              handleSubmit(actionType);
             }}
             disabled={
               productMutation.isPending ||
-              (actionType === "add"
+              (actionType === ACTION_TYPE.ADD
                 ? Object.keys(formDataState).length === 0
                 : Object.keys(dirtyFields).length === 0)
             }
             className="bg-primary hover:bg-primary/80 h-12 cursor-pointer px-8 text-base font-semibold transition-all duration-160 ease-out active:scale-[0.97] disabled:opacity-60"
           >
             {productMutation.isPending
-              ? actionType === "add"
+              ? actionType === ACTION_TYPE.ADD
                 ? "Adding Product..."
                 : "Updating Product..."
-              : actionType === "add"
+              : actionType === ACTION_TYPE.ADD
                 ? "Add Product"
                 : "Update Product"}
           </Button>
@@ -273,7 +274,7 @@ export const ProductPreview = () => {
       </div>
 
       <div className="mb-5 flex justify-center">
-        <div className="bg-secondary/20 border-border/40 flex aspect-square w-[85%] max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-[2.5rem] border shadow-sm">
+        <div className="bg-card border-border/40 flex aspect-square w-[85%] max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-[2.5rem] border shadow-sm">
           {imageSrc ? (
             <img
               src={imageSrc}

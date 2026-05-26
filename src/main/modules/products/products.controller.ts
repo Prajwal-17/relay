@@ -68,6 +68,20 @@ productsController.patch(
 // delete product (soft delete)
 productsController.post("/:id/delete", validateRequest("param", idSchema), async (c) => {
   const { id } = c.req.valid("param");
-  await productService.deleteProduct(id);
+  await productService.softDeleteProduct(id);
+  return c.body(null, 204);
+});
+
+// delete product (hard delete)
+productsController.delete("/:id/delete", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await productService.hardDeleteProduct(id);
+  return c.body(null, 204);
+});
+
+// restore deleted product
+productsController.post("/:id/restore", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await productService.restoreProduct(id);
   return c.body(null, 204);
 });

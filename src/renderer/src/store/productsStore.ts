@@ -1,4 +1,14 @@
-import { PRODUCT_FILTER, type Product, type ProductFilterType } from "@shared/types";
+import {
+  PRODUCT_FILTER,
+  DIALOG_MODE,
+  INITIAL_TAB,
+  ACTION_TYPE,
+  type Product,
+  type ProductFilterType,
+  type DialogMode,
+  type InitialTab,
+  type ActionType
+} from "@shared/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -17,6 +27,7 @@ export type ProductsFormType = Omit<
   totalQuantitySold?: number | null;
   createdAt?: string;
   updatedAt?: string;
+  deletedAt?: string | null;
 };
 
 type ProductsStoreType = {
@@ -47,12 +58,12 @@ type ProductsStoreType = {
 
   // product dialog state
   setOpenProductDialog: () => void;
-  dialogMode: "view" | "edit";
-  setDialogMode: (mode: "view" | "edit") => void;
-  initialTab: "info" | "history" | "transactions";
-  setInitialTab: (tab: "info" | "history" | "transactions") => void;
-  actionType: "add" | "edit" | "billing-page-edit";
-  setActionType: (action: "add" | "edit" | "billing-page-edit") => void;
+  dialogMode: DialogMode;
+  setDialogMode: (mode: DialogMode) => void;
+  initialTab: InitialTab;
+  setInitialTab: (tab: InitialTab) => void;
+  actionType: ActionType;
+  setActionType: (action: ActionType) => void;
   // product dialog form
   productId: string | null;
   setProductId: (id: string | null) => void;
@@ -80,7 +91,8 @@ function initialFormData(): ProductsFormType {
     lastSoldAt: null,
     totalQuantitySold: null,
     createdAt: undefined,
-    updatedAt: undefined
+    updatedAt: undefined,
+    deletedAt: null
   };
 }
 
@@ -193,7 +205,7 @@ export const useProductsStore = create<ProductsStoreType>()(
           "products/setOpenProductDialog"
         ),
 
-      dialogMode: "edit" as "view" | "edit",
+      dialogMode: DIALOG_MODE.EDIT,
       setDialogMode: (mode) =>
         set(
           () => ({
@@ -203,7 +215,7 @@ export const useProductsStore = create<ProductsStoreType>()(
           "products/setDialogMode"
         ),
 
-      initialTab: "info" as "info" | "history" | "transactions",
+      initialTab: INITIAL_TAB.INFO,
       setInitialTab: (tab) =>
         set(
           () => ({
@@ -213,7 +225,7 @@ export const useProductsStore = create<ProductsStoreType>()(
           "products/setInitialTab"
         ),
 
-      actionType: "add",
+      actionType: ACTION_TYPE.ADD,
       setActionType: (action) =>
         set(
           () => ({

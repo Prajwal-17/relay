@@ -1,11 +1,31 @@
 import { HighlightedText } from "@/components/highlighted-text";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
-import type { ProductSearchItemDTO } from "@shared/types";
+import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Clock, Edit, Eye, ImageOff, Trash2 } from "lucide-react";
+import { Clock, Edit, Eye, ImageOff, RotateCcw, Trash2 } from "lucide-react";
+import { useProductDialog } from "@/hooks/products/useProductDialog";
+import {
+  ACTION_TYPE,
+  DIALOG_MODE,
+  INITIAL_TAB,
+  PRODUCT_OPERATION,
+  type ProductSearchItemDTO,
+  type DialogMode,
+  type InitialTab
+} from "@shared/types";
 
 export default function ProductListItem({ product }: { product: ProductSearchItemDTO }) {
   const setProductId = useProductsStore((state) => state.setProductId);
@@ -16,15 +36,24 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   const setInitialTab = useProductsStore((state) => state.setInitialTab);
   const searchParam = useProductsStore((state) => state.searchParam);
 
+  const {
+    activeDialog,
+    setActiveDialog,
+    dialogMessages,
+    softDeleteProductMutation,
+    permanentDeleteProductMutation,
+    restoreProductMutation
+  } = useProductDialog();
+
   const showWeight =
     product.weight !== null &&
     ignoredWeight.some((w) => `${product.weight}+${product.unit}`.includes(w));
 
   const prepareAndOpenDialog = (
-    mode: "view" | "edit",
-    tab: "info" | "history" | "transactions" = "info"
+    mode: DialogMode,
+    tab: InitialTab = INITIAL_TAB.INFO
   ) => {
-    setActionType("edit");
+    setActionType(ACTION_TYPE.EDIT);
     setDialogMode(mode);
     setInitialTab(tab);
     setProductId(product.id);
@@ -43,7 +72,8 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       totalQuantitySold: product.totalQuantitySold,
       lastSoldAt: product.lastSoldAt ?? null,
       createdAt: product.createdAt,
-      updatedAt: product.updatedAt
+      updatedAt: product.updatedAt,
+      deletedAt: product.deletedAt ?? null
     });
     setOpenProductDialog();
   };
@@ -87,21 +117,29 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             </Badge>
           )}
         </div>
-        <p className="text-muted-foreground mt-0.5 text-sm font-medium">
-          {fromMilliUnits(product.totalQuantitySold ?? 0)} sold
-        </p>
+        <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-1.5 text-sm font-medium">
+          <span>{fromMilliUnits(product.totalQuantitySold ?? 0)} sold</span>
+          {product.isDeleted && product.deletedAt && (
+            <>
+              <span className="text-muted-foreground/40">•</span>
+              <span className="text-destructive font-semibold">
+                Deleted on {formatDateStr(product.deletedAt)}
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="shrink-0 text-right">
         <div className="text-foreground text-2xl font-bold">{formatToRupees(product.price)}</div>
       </div>
 
-      {!product.isDeleted && (
+      {product.isDeleted ? (
         <div className="flex shrink-0 items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => prepareAndOpenDialog("view")}
+                onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
                 className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
                 <Eye className="h-5 w-5" />
@@ -115,7 +153,65 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => prepareAndOpenDialog("edit")}
+                onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Clock className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">History</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">Permanently Delete</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">Restore</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+              >
+                <Eye className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-base">View</p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => prepareAndOpenDialog(DIALOG_MODE.EDIT)}
                 className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
                 <Edit className="h-5 w-5" />
@@ -129,7 +225,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => prepareAndOpenDialog("view")}
+                onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
                 className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
                 <Trash2 className="h-5 w-5" />
@@ -143,7 +239,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={() => prepareAndOpenDialog("view", "history")}
+                onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
                 className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
                 <Clock className="h-5 w-5" />
@@ -155,6 +251,85 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           </Tooltip>
         </div>
       )}
+
+      {/* Confirmation Dialogs */}
+      <AlertDialog
+        open={activeDialog === PRODUCT_OPERATION.SOFT_DELETE}
+        onOpenChange={(isOpen) => !isOpen && setActiveDialog(PRODUCT_OPERATION.IDLE)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg">
+              {dialogMessages[PRODUCT_OPERATION.SOFT_DELETE].title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {dialogMessages[PRODUCT_OPERATION.SOFT_DELETE].description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+              onClick={() => softDeleteProductMutation.mutate(product.id)}
+              disabled={softDeleteProductMutation.isPending}
+            >
+              {softDeleteProductMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={activeDialog === PRODUCT_OPERATION.PERMANENT_DELETE}
+        onOpenChange={(isOpen) => !isOpen && setActiveDialog(PRODUCT_OPERATION.IDLE)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg">
+              {dialogMessages[PRODUCT_OPERATION.PERMANENT_DELETE].title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {dialogMessages[PRODUCT_OPERATION.PERMANENT_DELETE].description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+              onClick={() => permanentDeleteProductMutation.mutate(product.id)}
+              disabled={permanentDeleteProductMutation.isPending}
+            >
+              {permanentDeleteProductMutation.isPending ? "Deleting..." : "Permanently Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={activeDialog === PRODUCT_OPERATION.RESTORE}
+        onOpenChange={(isOpen) => !isOpen && setActiveDialog(PRODUCT_OPERATION.IDLE)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg">
+              {dialogMessages[PRODUCT_OPERATION.RESTORE].title}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {dialogMessages[PRODUCT_OPERATION.RESTORE].description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+              onClick={() => restoreProductMutation.mutate(product.id)}
+              disabled={restoreProductMutation.isPending}
+            >
+              {restoreProductMutation.isPending ? "Restoring..." : "Restore"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
