@@ -2,7 +2,7 @@ import { HighlightedText } from "@/components/highlighted-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ignoredWeight } from "@/constants";
+import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
@@ -11,7 +11,8 @@ import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
-import { ArrowDown, ArrowUp, Edit, Info, Package, PackagePlus, Search } from "lucide-react";
+import { ArrowDown, ArrowUp, Edit, Image, Info, PackagePlus, Search } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
@@ -27,9 +28,43 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
+  const {
+    dropdownRef,
+    searchResults,
+    parentRef,
+    rowVirtualizer,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    virtualItems
+  } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
+
+  // keybindings state ↑ ↓
   const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const highlightedIndexRef = useRef(highlightedIndex);
   highlightedIndexRef.current = highlightedIndex;
+
+  // mouse hover state -> shows img preview
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  // triggers on mouse hover, not keyboard highlight
+  const previewProduct =
+    hoveredIndex !== null && hoveredIndex >= 0 ? searchResults[hoveredIndex] : null;
+
+  const [delayedPreviewProduct, setDelayedPreviewProduct] = useState<typeof previewProduct | null>(
+    null
+  );
+
+  // img preview debouncer
+  useEffect(() => {
+    if (!previewProduct || !previewProduct.imageUrl) {
+      setDelayedPreviewProduct(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDelayedPreviewProduct(previewProduct);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [previewProduct]);
 
   type SortField = "name" | "price" | "mrp" | "weight";
   type SortDir = "asc" | "desc";
@@ -48,18 +83,59 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     }
   };
 
-  const {
-    dropdownRef,
-    searchResults,
-    parentRef,
-    rowVirtualizer,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    virtualItems
-  } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
-
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
+
+  const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({ display: "none" });
+
+  const updatePreviewPosition = useCallback(() => {
+    if (!delayedPreviewProduct || !dropdownContainerRef.current) {
+      setPreviewStyle({ display: "none" });
+      return;
+    }
+
+    // get the html element
+    const rowEl = dropdownContainerRef.current.querySelector(
+      `[data-search-dropdown-index="${hoveredIndex}"]`
+    );
+
+    if (rowEl && parentRef.current) {
+      const rowRect = rowEl.getBoundingClientRect();
+      const dropdownRect = dropdownContainerRef.current.getBoundingClientRect();
+      const parentRect = parentRef.current.getBoundingClientRect();
+
+      // check if row is visible within the scroll container
+      if (rowRect.bottom < parentRect.top || rowRect.top > parentRect.bottom) {
+        setPreviewStyle({ display: "none" });
+        return;
+      }
+
+      // img preview card
+      const PREVIEW_SIZE = 144;
+      setPreviewStyle({
+        position: "fixed",
+        top: rowRect.top + rowRect.height / 2 - PREVIEW_SIZE / 2,
+        left: dropdownRect.left - 12 - PREVIEW_SIZE,
+        display: "block",
+        zIndex: 9999
+      });
+    } else {
+      setPreviewStyle({ display: "none" });
+    }
+  }, [delayedPreviewProduct, hoveredIndex, parentRef]);
+
+  useEffect(() => {
+    updatePreviewPosition();
+    const parentEl = parentRef.current;
+    if (parentEl) {
+      parentEl.addEventListener("scroll", updatePreviewPosition);
+      window.addEventListener("resize", updatePreviewPosition);
+      return () => {
+        parentEl.removeEventListener("scroll", updatePreviewPosition);
+        window.removeEventListener("resize", updatePreviewPosition);
+      };
+    }
+    return undefined;
+  }, [updatePreviewPosition, parentRef]);
 
   // auto-scroll the dropdown into view when it opens near the bottom of the page
   useEffect(() => {
@@ -80,7 +156,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
 
-  // Only reset highlight when the result count actually changes
+  // only reset highlight when the result count actually changes
   const prevResultsLenRef = useRef(searchResults.length);
   useEffect(() => {
     if (searchResults.length !== prevResultsLenRef.current) {
@@ -182,6 +258,44 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   return (
     <>
       <div ref={dropdownRef}>
+        <AnimatePresence>
+          {delayedPreviewProduct && delayedPreviewProduct.imageUrl && (
+            <motion.div
+              key={delayedPreviewProduct.id}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={{ type: "spring", stiffness: 600, damping: 35 }}
+              style={previewStyle}
+            >
+              <div className="relative h-36 w-36">
+                <div className="h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/6">
+                  <img
+                    src={`${PROTOCOL_NAME}${delayedPreviewProduct.imageUrl}`}
+                    alt="Preview"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+
+                {delayedPreviewProduct.weight && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                    className="bg-foreground text-card font-roboto absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
+                  >
+                    {delayedPreviewProduct.weight}
+                    {delayedPreviewProduct.unit}
+                  </motion.div>
+                )}
+
+                {/* img preview tail */}
+                <div className="bg-card absolute top-1/2 -right-1.25 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-[2px_-2px_4px_rgba(0,0,0,0.06)]"></div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div
           ref={dropdownContainerRef}
           className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
@@ -263,6 +377,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           key={virtualRow.key}
                           ref={rowVirtualizer.measureElement}
                           data-index={virtualRow.index}
+                          data-search-dropdown-index={virtualRow.index}
                         >
                           <div
                             className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
@@ -279,9 +394,22 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               focusNextRow();
                             }}
                             onMouseDown={(e) => e.preventDefault()}
+                            onMouseEnter={() => setHoveredIndex(virtualRow.index)}
+                            onMouseLeave={() => setHoveredIndex(null)}
                           >
-                            <div className="border-border/70 from-search-icon-bg-from to-search-icon-bg-to flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border bg-linear-to-br">
-                              <Package className="text-search-icon-fg h-4.5 w-4.5" />
+                            <div className="bg-muted/30 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
+                              {product.imageUrl ? (
+                                <img
+                                  src={`${PROTOCOL_NAME}${product.imageUrl}`}
+                                  alt={product.name || "Product"}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <Image
+                                  className="text-muted-foreground/25 h-4 w-4"
+                                  strokeWidth={1.25}
+                                />
+                              )}
                             </div>
 
                             <div className="min-w-0 flex-1">

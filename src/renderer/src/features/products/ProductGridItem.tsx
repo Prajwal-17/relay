@@ -4,7 +4,7 @@ import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import type { ProductSearchItemDTO } from "@shared/types";
 import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
-import { Clock, Edit, Eye, ImageOff, Trash2 } from "lucide-react";
+import { Clock, Edit, Eye, Image, Trash2 } from "lucide-react";
 
 type ProductGridItemProps = {
   product: ProductSearchItemDTO;
@@ -35,7 +35,7 @@ export default function ProductGridItem({ product }: ProductGridItemProps) {
       name: product.name,
       weight: product.weight,
       unit: product.unit,
-      imageUrl: "./para20.png",
+      imageUrl: product.imageUrl ?? null,
       mrp: product.mrp ? convertToRupees(product.mrp, { asString: true }) : null,
       price: convertToRupees(product.price, { asString: true }),
       purchasePrice: product.purchasePrice
@@ -53,15 +53,15 @@ export default function ProductGridItem({ product }: ProductGridItemProps) {
 
   return (
     <div className="group bg-card border-border relative flex flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="bg-muted/40 border-border/50 flex aspect-4/3 items-center justify-center overflow-hidden border-b">
+      <div className="bg-muted/20 border-border/50 flex aspect-4/3 items-center justify-center overflow-hidden border-b">
         {product.imageUrl ? (
           <img
             src={`${PROTOCOL_NAME}${product.imageUrl}`}
             alt={product.name || "Product-Image"}
-            className="h-full w-full object-contain"
+            className="h-full w-full object-contain p-2"
           />
         ) : (
-          <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
+          <Image className="text-muted-foreground/20 h-10 w-10" strokeWidth={1.25} />
         )}
       </div>
 

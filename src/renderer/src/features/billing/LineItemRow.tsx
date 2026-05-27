@@ -53,7 +53,7 @@ const LineItemRow = memo(
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
-          <div className="col-span-2 h-full min-h-[4.1rem] px-2">
+          <div className="col-span-2 h-full min-h-[3.3rem] px-2">
             <div className="flex h-full items-center justify-between gap-2">
               <GripVertical
                 className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
@@ -75,7 +75,7 @@ const LineItemRow = memo(
           <div className="col-span-7 px-1 py-1">
             <input
               value={item.productSnapshot}
-              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-11 w-full rounded-lg border px-3.5 py-6 text-lg font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-11 w-full rounded-lg border px-3.5 py-2.5 text-lg font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -92,7 +92,7 @@ const LineItemRow = memo(
             />
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-12 w-full items-center rounded-lg border font-bold">
+            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-11 w-full items-center rounded-lg border font-bold">
               <button
                 onClick={() => {
                   const tabId = getActiveTabId();
@@ -105,7 +105,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-11 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
               >
                 <Plus size={22} strokeWidth={2.5} />
               </button>
@@ -132,7 +132,7 @@ const LineItemRow = memo(
               />
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-12 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-11 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -155,7 +155,7 @@ const LineItemRow = memo(
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="relative h-12 w-full">
+            <div className="relative h-11 w-full">
               <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
                 <IndianRupee size={16} />
               </span>
@@ -178,7 +178,7 @@ const LineItemRow = memo(
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="relative h-12 w-full">
+            <div className="relative h-11 w-full">
               <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
                 <IndianRupee size={16} />
               </span>

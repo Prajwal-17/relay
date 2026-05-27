@@ -196,7 +196,7 @@ const LineItemsTable = () => {
           )}
         </div>
 
-        <div className="relative space-y-1.5 pt-2.5">
+        <div className="relative space-y-1 pt-2.5">
           {session &&
             session.lineItems.length > 0 &&
             session.lineItems.map(
