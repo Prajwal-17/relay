@@ -30,7 +30,7 @@ export const LocationStep = () => {
     if (formData.countryCode !== "IN") {
       setFormData({ countryCode: "IN", country: "India" });
     }
-  }, []);
+  }, [formData.countryCode, setFormData]);
 
   const [statesForIndia, setStatesForIndia] = useState<IState[]>([]);
   const [citiesForState, setCitiesForState] = useState<ICity[]>([]);

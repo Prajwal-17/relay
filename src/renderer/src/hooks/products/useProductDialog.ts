@@ -5,10 +5,10 @@ import { dirtyFieldsProductSchema, updateProductSchema } from "@shared/schemas/p
 import {
   ACTION_TYPE,
   PRODUCT_OPERATION,
-  type CreateProductPayload,
-  type UpdateProductPayload,
   type ActionType,
-  type ProductOperation
+  type CreateProductPayload,
+  type ProductOperation,
+  type UpdateProductPayload
 } from "@shared/types";
 import { convertToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -156,7 +156,9 @@ export const useProductDialog = () => {
       setDirtyFields({});
       setOpenProductDialog();
       toast.success(
-        variables.action === ACTION_TYPE.ADD ? "Successfully created product" : "Successfully updated product"
+        variables.action === ACTION_TYPE.ADD
+          ? "Successfully created product"
+          : "Successfully updated product"
       );
     },
     onError: (error) => {
