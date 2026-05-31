@@ -1,13 +1,13 @@
 import {
-  PRODUCT_FILTER,
+  ACTION_TYPE,
   DIALOG_MODE,
   INITIAL_TAB,
-  ACTION_TYPE,
-  type Product,
-  type ProductFilterType,
+  PRODUCT_FILTER,
+  type ActionType,
   type DialogMode,
   type InitialTab,
-  type ActionType
+  type Product,
+  type ProductFilterType
 } from "@shared/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -34,8 +34,6 @@ type ProductsStoreType = {
   // search bar, filter & sort
   filterType: ProductFilterType;
   setFilterType: (newType: ProductFilterType) => void;
-  viewMode: "grid" | "list";
-  setViewMode: (mode: "grid" | "list") => void;
   sortBy: string;
   setSortBy: (sort: string) => void;
   priceMin: string | null;
@@ -92,7 +90,8 @@ function initialFormData(): ProductsFormType {
     totalQuantitySold: null,
     createdAt: undefined,
     updatedAt: undefined,
-    deletedAt: null
+    deletedAt: null,
+    disabledAt: null
   };
 }
 
@@ -107,16 +106,6 @@ export const useProductsStore = create<ProductsStoreType>()(
           }),
           false,
           "products/setFilterType"
-        ),
-
-      viewMode: "list",
-      setViewMode: (mode) =>
-        set(
-          () => ({
-            viewMode: mode
-          }),
-          false,
-          "products/setViewMode"
         ),
 
       sortBy: "",

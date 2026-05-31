@@ -12,22 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PRODUCT_SORT_OPTIONS, PRODUCT_STATUS_OPTIONS } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useProductsStore } from "@/store/productsStore";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
-import {
-  ArrowDownAZ,
-  Check,
-  ChevronDown,
-  Grid3X3,
-  List,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  X
-} from "lucide-react";
+import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 export default function ProductHeader() {
@@ -38,8 +27,6 @@ export default function ProductHeader() {
   const setActionType = useProductsStore((state) => state.setActionType);
   const filterType = useProductsStore((state) => state.filterType);
   const setFilterType = useProductsStore((state) => state.setFilterType);
-  const viewMode = useProductsStore((state) => state.viewMode);
-  const setViewMode = useProductsStore((state) => state.setViewMode);
   const sortBy = useProductsStore((state) => state.sortBy);
   const setSortBy = useProductsStore((state) => state.setSortBy);
   const priceMin = useProductsStore((state) => state.priceMin);
@@ -272,46 +259,6 @@ export default function ProductHeader() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Separator orientation="vertical" className="h-10!" />
-
-        {/* view mode toggle */}
-        <div className="border-border bg-muted/30 flex items-center gap-1 rounded-lg border p-1.5">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`cursor-pointer rounded-md p-2.5 transition-all ${
-                  viewMode === "list"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <List className="h-5 w-5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p className="text-base">List view</p>
-            </TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`cursor-pointer rounded-md p-2.5 transition-all ${
-                  viewMode === "grid"
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Grid3X3 className="h-5 w-5" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              <p className="text-base">Grid view</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
 
         <Button
           onClick={() => {

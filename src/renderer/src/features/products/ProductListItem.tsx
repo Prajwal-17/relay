@@ -70,7 +70,8 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       lastSoldAt: product.lastSoldAt ?? null,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
-      deletedAt: product.deletedAt ?? null
+      deletedAt: product.deletedAt ?? null,
+      disabledAt: product.disabledAt ?? null
     });
     setOpenProductDialog();
   };
@@ -121,6 +122,16 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
               <span className="text-muted-foreground/40">•</span>
               <span className="text-destructive font-semibold">
                 Deleted on {formatDateStr(product.deletedAt)}
+              </span>
+            </>
+          )}
+          {product.isDisabled && !product.isDeleted && (
+            <>
+              <span className="text-muted-foreground/40">•</span>
+              <span className="text-destructive font-semibold">
+                {product.disabledAt
+                  ? `Disabled on ${formatDateStr(product.disabledAt)}`
+                  : "Disabled"}
               </span>
             </>
           )}

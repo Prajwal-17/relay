@@ -176,6 +176,9 @@ const DashboardTableRow = ({
               >
                 <Trash2 size={20} />
               </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-base">Delete</p>
+              </TooltipContent>
             </Tooltip>
 
             <AlertDialog

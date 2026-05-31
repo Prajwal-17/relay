@@ -14,6 +14,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
+import {
+  ACTION_TYPE,
+  DIALOG_MODE,
+  INITIAL_TAB,
+  PRODUCT_OPERATION,
+  type InitialTab
+} from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { Clock, Edit3, Eye, Info, ReceiptText, RotateCcw, Trash2, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -21,13 +28,6 @@ import { useState } from "react";
 import { ProductEditForm, ProductPreview } from "./ProductEditForm";
 import { ProductHistoryTimeline } from "./ProductHistoryTimeline";
 import { ProductViewMode } from "./ProductViewMode";
-import {
-  DIALOG_MODE,
-  ACTION_TYPE,
-  INITIAL_TAB,
-  PRODUCT_OPERATION,
-  type InitialTab
-} from "@shared/types";
 
 export function ProductDialog() {
   const {
@@ -104,6 +104,15 @@ export function ProductDialog() {
                           : "Deleted"}
                       </span>
                     </div>
+                  ) : formDataState.isDisabled ? (
+                    <div className="text-destructive mt-0.5 flex items-center gap-1.5 text-[0.8rem] font-semibold">
+                      <span className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
+                      <span>
+                        {formDataState.disabledAt
+                          ? `Disabled on ${formatDateStrToISTDateTimeStr(formDataState.disabledAt)}`
+                          : "Disabled"}
+                      </span>
+                    </div>
                   ) : (
                     <p className="text-muted-foreground mt-0.5 truncate text-[0.8rem]">
                       {isViewMode ? "Viewing details" : "Editing"}
@@ -140,7 +149,7 @@ export function ProductDialog() {
             </div>
 
             <div className="flex min-w-0 items-center justify-end gap-3 pl-2">
-              {!isAddMode && (
+              {!isAddMode && activeTab === INITIAL_TAB.INFO && (
                 <>
                   {isViewMode ? (
                     <>
@@ -258,7 +267,10 @@ export function ProductDialog() {
               </AnimatePresence>
             </TabsContent>
 
-            <TabsContent value={INITIAL_TAB.HISTORY} className="relative mt-0 min-h-0 flex-1 overflow-hidden">
+            <TabsContent
+              value={INITIAL_TAB.HISTORY}
+              className="relative mt-0 min-h-0 flex-1 overflow-hidden"
+            >
               {isAddMode ? (
                 <PlaceholderTab
                   icon={<Clock className="h-8 w-8" />}

@@ -298,7 +298,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[60%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[80%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
@@ -466,7 +466,13 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     : null,
                                   price: convertToRupees(product.price, { asString: true }),
                                   isDisabled: product.isDisabled,
-                                  isDeleted: product.isDeleted
+                                  isDeleted: product.isDeleted,
+                                  totalQuantitySold: product.totalQuantitySold,
+                                  lastSoldAt: product.lastSoldAt ?? null,
+                                  createdAt: product.createdAt,
+                                  updatedAt: product.updatedAt,
+                                  deletedAt: product.deletedAt ?? null,
+                                  disabledAt: product.disabledAt ?? null
                                 });
                               }}
                               className="hover:cursor-pointer"

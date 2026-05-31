@@ -35,7 +35,7 @@ export type Product = {
   purchasePrice: number | null;
   totalQuantitySold: number | null;
   isDisabled?: boolean;
-  disabledAt?: string;
+  disabledAt?: string | null;
   lastSoldAt?: string | null;
   updatedAt?: string;
   createdAt?: string;
