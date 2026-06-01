@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import { defineConfig } from "drizzle-kit";
 import path from "path";
+import { getFallbackDbPath } from "./src/main/utils/fallbackDbPath";
 
 const mode = process.env.MODE || "development";
 const envFile = `.env.${mode}`;
@@ -12,6 +13,6 @@ export default defineConfig({
   schema: "./src/main/db/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.M_VITE_DATABASE_URL!
+    url: process.env.M_VITE_DATABASE_URL! || getFallbackDbPath()
   }
 });

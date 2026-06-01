@@ -4,6 +4,7 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import fs from "node:fs";
 import path from "node:path";
+import { getFallbackDbPath } from "../utils/fallbackDbPath";
 import * as schema from "./schema";
 
 export let db: BetterSQLite3Database<typeof schema>;
@@ -12,7 +13,7 @@ export async function initDb() {
   if (db) return db;
 
   async function getDbPath() {
-    return process.env.M_VITE_DATABASE_URL;
+    return process.env.M_VITE_DATABASE_URL || getFallbackDbPath();
   }
 
   async function getMigrationsFolder() {

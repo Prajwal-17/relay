@@ -1,5 +1,6 @@
+const defaultPort = import.meta.env.MODE === "development" ? 4723 : 4722;
 const BASE_URL =
-  window.env?.API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:4722";
+  window.env?.API_URL || import.meta.env.VITE_API_BASE_URL || `http://localhost:${defaultPort}`;
 
 function buildURL(
   path: string,
