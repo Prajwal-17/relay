@@ -175,6 +175,8 @@ export const useProductSearch = (type: ProductSearchType) => {
 
   const virtualItems = rowVirtualizer.getVirtualItems();
 
+  const totalCount = data?.pages[0]?.totalCount;
+
   return {
     productsSearchParam,
     setProductsSearchParam,
@@ -190,6 +192,7 @@ export const useProductSearch = (type: ProductSearchType) => {
     virtualItems,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    totalCount
   };
 };

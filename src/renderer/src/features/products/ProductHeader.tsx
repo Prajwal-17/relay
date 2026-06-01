@@ -41,7 +41,7 @@ export default function ProductHeader() {
   const removeActiveFilter = useProductsStore((state) => state.removeActiveFilter);
   const clearActiveFilters = useProductsStore((state) => state.clearActiveFilters);
 
-  const { productsSearchParam, setProductsSearchParam } = useProductSearch(
+  const { productsSearchParam, setProductsSearchParam, totalCount } = useProductSearch(
     PRODUCTSEARCH_TYPE.PRODUCTPAGE
   );
 
@@ -273,95 +273,105 @@ export default function ProductHeader() {
       </div>
 
       {/* active filters */}
-      <div className="border-border/60 bg-card flex flex-wrap items-center gap-3 rounded-xl border px-5 py-3.5">
-        <FilterChip
-          label="Status"
-          value={PRODUCT_STATUS_OPTIONS.find((s) => s.value === filterType)?.label ?? filterType}
-          onRemove={
-            filterType !== PRODUCT_FILTER.ACTIVE
-              ? () => setFilterType(PRODUCT_FILTER.ACTIVE)
-              : undefined
-          }
-        />
-
-        {sortBy && (
+      <div className="border-border/60 bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-3.5">
+        <div className="flex flex-wrap items-center gap-3">
           <FilterChip
-            label="Sort"
-            value={activeSortLabel ?? sortBy}
-            onRemove={() => setSortBy("")}
-          />
-        )}
-
-        {activeFilters.map((filter) => (
-          <FilterChip
-            key={filter.key}
-            label={filter.label}
-            value={filter.value}
-            onRemove={() => removeActiveFilter(filter.key)}
-          />
-        ))}
-
-        {(priceMin || priceMax) && (
-          <FilterChip
-            label="Price"
-            value={
-              priceMin && priceMax
-                ? `₹${priceMin} - ₹${priceMax}`
-                : priceMin
-                  ? `≥ ₹${priceMin}`
-                  : `≤ ₹${priceMax}`
+            label="Status"
+            value={PRODUCT_STATUS_OPTIONS.find((s) => s.value === filterType)?.label ?? filterType}
+            onRemove={
+              filterType !== PRODUCT_FILTER.ACTIVE
+                ? () => setFilterType(PRODUCT_FILTER.ACTIVE)
+                : undefined
             }
-            onRemove={() => {
-              setPriceMin(null);
-              setPriceMax(null);
-            }}
           />
-        )}
 
-        {hasMrp && <FilterChip label="Has MRP" value="Yes" onRemove={toggleMrpFilter} />}
+          {sortBy && (
+            <FilterChip
+              label="Sort"
+              value={activeSortLabel ?? sortBy}
+              onRemove={() => setSortBy("")}
+            />
+          )}
 
-        {hasPurchasePrice && (
-          <FilterChip label="Has Purchase Price" value="Yes" onRemove={togglePurchasePriceFilter} />
-        )}
+          {activeFilters.map((filter) => (
+            <FilterChip
+              key={filter.key}
+              label={filter.label}
+              value={filter.value}
+              onRemove={() => removeActiveFilter(filter.key)}
+            />
+          ))}
 
-        <button
-          onClick={() => setFilterOpen(true)}
-          className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-medium transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Add filter
-        </button>
+          {(priceMin || priceMax) && (
+            <FilterChip
+              label="Price"
+              value={
+                priceMin && priceMax
+                  ? `₹${priceMin} - ₹${priceMax}`
+                  : priceMin
+                    ? `≥ ₹${priceMin}`
+                    : `≤ ₹${priceMax}`
+              }
+              onRemove={() => {
+                setPriceMin(null);
+                setPriceMax(null);
+              }}
+            />
+          )}
 
-        {(activeFilters.length > 0 ||
-          filterType !== PRODUCT_FILTER.ACTIVE ||
-          sortBy ||
-          priceMin ||
-          priceMax ||
-          hasMrp ||
-          hasPurchasePrice) && <Separator orientation="vertical" className="h-6!" />}
-        {(activeFilters.length > 0 ||
-          filterType !== PRODUCT_FILTER.ACTIVE ||
-          sortBy ||
-          priceMin ||
-          priceMax ||
-          hasMrp ||
-          hasPurchasePrice) && (
+          {hasMrp && <FilterChip label="Has MRP" value="Yes" onRemove={toggleMrpFilter} />}
+
+          {hasPurchasePrice && (
+            <FilterChip
+              label="Has Purchase Price"
+              value="Yes"
+              onRemove={togglePurchasePriceFilter}
+            />
+          )}
+
           <button
-            onClick={() => {
-              clearActiveFilters();
-              setFilterType(PRODUCT_FILTER.ACTIVE);
-              setSortBy("");
-              setPriceMin(null);
-              setPriceMax(null);
-              if (hasMrp) toggleMrpFilter();
-              if (hasPurchasePrice) togglePurchasePriceFilter();
-            }}
-            className="text-destructive hover:text-destructive hover:bg-destructive/8 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-semibold transition-colors"
+            onClick={() => setFilterOpen(true)}
+            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-medium transition-colors"
           >
-            <X className="h-4 w-4" />
-            Clear all
+            <Plus className="h-4 w-4" />
+            Add filter
           </button>
-        )}
+
+          {(activeFilters.length > 0 ||
+            filterType !== PRODUCT_FILTER.ACTIVE ||
+            sortBy ||
+            priceMin ||
+            priceMax ||
+            hasMrp ||
+            hasPurchasePrice) && <Separator orientation="vertical" className="h-6!" />}
+          {(activeFilters.length > 0 ||
+            filterType !== PRODUCT_FILTER.ACTIVE ||
+            sortBy ||
+            priceMin ||
+            priceMax ||
+            hasMrp ||
+            hasPurchasePrice) && (
+            <button
+              onClick={() => {
+                clearActiveFilters();
+                setFilterType(PRODUCT_FILTER.ACTIVE);
+                setSortBy("");
+                setPriceMin(null);
+                setPriceMax(null);
+                if (hasMrp) toggleMrpFilter();
+                if (hasPurchasePrice) togglePurchasePriceFilter();
+              }}
+              className="text-destructive hover:text-destructive hover:bg-destructive/8 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-semibold transition-colors"
+            >
+              <X className="h-4 w-4" />
+              Clear all
+            </button>
+          )}
+        </div>
+
+        <div className="text-muted-foreground ml-auto shrink-0 font-sans text-base font-semibold select-none">
+          Showing {totalCount} {totalCount === 1 ? "result" : "results"}
+        </div>
       </div>
     </div>
   );

@@ -181,6 +181,7 @@ export type ApiResponse<T> =
 
 export type PaginatedApiResponse<T> = {
   nextPageNo: PageNo;
+  totalCount?: number;
 } & T;
 
 export type CustomerSummary = {

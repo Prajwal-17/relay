@@ -83,19 +83,26 @@ const searchProduct = async (
 
   const orderClause = buildOrderClause(params.sortBy);
 
-  const searchResult = await productRepository.searchProducts({
-    searchTerm: params.query,
-    whereClause,
-    orderClause,
-    limit: params.pageSize,
-    offset,
-    billingMode: params.billingMode
-  });
+  const [searchResult, totalCount] = await Promise.all([
+    productRepository.searchProducts({
+      searchTerm: params.query,
+      whereClause,
+      orderClause,
+      limit: params.pageSize,
+      offset,
+      billingMode: params.billingMode
+    }),
+    productRepository.countSearchProducts({
+      searchTerm: params.query,
+      whereClause
+    })
+  ]);
 
   const nextpageNo = searchResult.length === 20 ? params.pageNo + 1 : null;
 
   return {
     nextPageNo: nextpageNo,
+    totalCount,
     data: searchResult.length > 0 ? searchResult : []
   };
 };

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, inArray, like, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, like, sql, type SQL } from "drizzle-orm";
 import { type CreateProductPayload, type UpdateProductPayload } from "../../../shared/types";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
@@ -84,6 +84,25 @@ const searchProducts = async (params: ProductSearchQuery) => {
     .orderBy(...orderBy)
     .limit(params.limit)
     .offset(params.offset);
+};
+
+const countSearchProducts = async (params: {
+  searchTerm: string;
+  whereClause: SQL | undefined;
+}) => {
+  if (params.searchTerm === "") {
+    const result = db.select({ count: count() }).from(products).where(params.whereClause).get();
+    return result?.count ?? 0;
+  }
+
+  const term = params.searchTerm;
+
+  const result = db
+    .select({ count: count() })
+    .from(products)
+    .where(and(params.whereClause, like(products.productSnapshot, `%${term}%`)))
+    .get();
+  return result?.count ?? 0;
 };
 
 const createProduct = async (payload: CreateProductPayload) => {
@@ -249,6 +268,7 @@ const restoreSoftDeletedProductById = async (productId: string) => {
 export const productRepository = {
   findById,
   searchProducts,
+  countSearchProducts,
   createProduct,
   updateById,
   insertHistory,
