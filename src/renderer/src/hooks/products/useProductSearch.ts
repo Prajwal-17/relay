@@ -2,7 +2,11 @@ import { PRODUCTS_SEARCH_DELAY, PRODUCTS_SEARCH_PAGE_SIZE } from "@/constants";
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { type PaginatedApiResponse, type ProductSearchItemDTO } from "@shared/types";
+import {
+  type BillingProductDTO,
+  type PaginatedApiResponse,
+  type ProductSearchItemDTO
+} from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
@@ -16,11 +20,14 @@ export const PRODUCTSEARCH_TYPE = {
 
 type ProductSearchType = (typeof PRODUCTSEARCH_TYPE)[keyof typeof PRODUCTSEARCH_TYPE];
 
+type SearchResultItem = ProductSearchItemDTO | BillingProductDTO;
+
 export const useProductSearch = (type: ProductSearchType) => {
   const parentRef = useRef<HTMLDivElement>(null);
   const productsSearchParam = useProductsStore((state) => state.searchParam);
   const setProductsSearchParam = useProductsStore((state) => state.setSearchParam);
   const dropdownSearchParam = useSearchDropdownStore((state) => state.itemQuery);
+  const dropdownSortBy = useSearchDropdownStore((state) => state.sortBy);
   const filterType = useProductsStore((state) => state.filterType);
   const sortBy = useProductsStore((state) => state.sortBy);
   const priceMin = useProductsStore((state) => state.priceMin);
@@ -92,7 +99,7 @@ export const useProductSearch = (type: ProductSearchType) => {
       type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? productsDebouncedValue : dropdownDebouncedValue,
       ...(type === PRODUCTSEARCH_TYPE.PRODUCTPAGE
         ? [sortBy, priceMin, priceMax, hasMrp, hasPurchasePrice]
-        : [])
+        : [dropdownSortBy])
     ],
     queryFn: ({ pageParam = 1 }) => {
       if (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE) {
@@ -103,7 +110,8 @@ export const useProductSearch = (type: ProductSearchType) => {
           filterType: filterType,
           sortBy: sortBy || undefined,
           hasMrp: hasMrp || undefined,
-          hasPurchasePrice: hasPurchasePrice || undefined
+          hasPurchasePrice: hasPurchasePrice || undefined,
+          billingMode: false
         };
         if (priceMin) {
           const parsed = parseFloat(priceMin);
@@ -119,14 +127,16 @@ export const useProductSearch = (type: ProductSearchType) => {
           query: dropdownDebouncedValue,
           pageNo: pageParam,
           pageSize: PRODUCTS_SEARCH_PAGE_SIZE,
-          filterType: filterType
+          filterType: filterType,
+          sortBy: dropdownSortBy || undefined,
+          billingMode: true
         });
       }
       throw new Error("Something went wrong");
     },
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
-    getNextPageParam: (lastPage: PaginatedApiResponse<{ data: ProductSearchItemDTO[] | [] }>) => {
+    getNextPageParam: (lastPage: PaginatedApiResponse<{ data: SearchResultItem[] | [] }>) => {
       return lastPage.nextPageNo ?? null;
     }
   });
@@ -137,7 +147,7 @@ export const useProductSearch = (type: ProductSearchType) => {
     }
   }, [isError, error]);
 
-  const prevResultsRef = useRef<ProductSearchItemDTO[]>([]);
+  const prevResultsRef = useRef<SearchResultItem[]>([]);
 
   const searchResults = useMemo(() => {
     const next = data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];

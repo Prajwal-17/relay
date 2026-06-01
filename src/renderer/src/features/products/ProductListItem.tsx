@@ -54,25 +54,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
     setDialogMode(mode);
     setInitialTab(tab);
     setProductId(product.id);
-    setFormDataState({
-      name: product.name,
-      weight: product.weight,
-      unit: product.unit,
-      imageUrl: product.imageUrl ?? null,
-      mrp: product.mrp ? convertToRupees(product.mrp, { asString: true }) : null,
-      price: convertToRupees(product.price, { asString: true }),
-      purchasePrice: product.purchasePrice
-        ? convertToRupees(product.purchasePrice, { asString: true })
-        : null,
-      isDisabled: product.isDisabled,
-      isDeleted: product.isDeleted,
-      totalQuantitySold: product.totalQuantitySold,
-      lastSoldAt: product.lastSoldAt ?? null,
-      createdAt: product.createdAt,
-      updatedAt: product.updatedAt,
-      deletedAt: product.deletedAt ?? null,
-      disabledAt: product.disabledAt ?? null
-    });
+    setFormDataState({});
     setOpenProductDialog();
   };
 

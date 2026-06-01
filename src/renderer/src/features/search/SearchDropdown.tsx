@@ -9,9 +9,20 @@ import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
+import { ACTION_TYPE, DIALOG_MODE, PRODUCT_SORT_BY } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { convertToRupees } from "@shared/utils/utils";
-import { ArrowDown, ArrowUp, Edit, Image, Info, PackagePlus, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Edit,
+  Eye,
+  Image,
+  Info,
+  ListFilter,
+  PackagePlus,
+  Search
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -25,6 +36,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
+  const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
 
@@ -66,21 +78,58 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     return () => clearTimeout(timer);
   }, [previewProduct]);
 
-  type SortField = "name" | "price" | "mrp" | "weight";
-  type SortDir = "asc" | "desc";
-  const [sortField, setSortField] = useState<SortField | null>(null);
-  const [sortDir, setSortDir] = useState<SortDir | null>(null);
+  type SortField = "name" | "price" | "mrp";
+
+  const sortBy = useSearchDropdownStore((state) => state.sortBy);
+  const setSortBy = useSearchDropdownStore((state) => state.setSortBy);
 
   const toggleSort = (field: SortField) => {
-    if (sortField !== field) {
-      setSortField(field);
-      setSortDir("asc");
-    } else if (sortDir === "asc") {
-      setSortDir("desc");
-    } else {
-      setSortField(null);
-      setSortDir(null);
+    if (field === "name") {
+      if (sortBy === PRODUCT_SORT_BY.NAME_ASC) setSortBy(PRODUCT_SORT_BY.NAME_DESC);
+      else if (sortBy === PRODUCT_SORT_BY.NAME_DESC) setSortBy(null);
+      else setSortBy(PRODUCT_SORT_BY.NAME_ASC);
+    } else if (field === "price") {
+      if (sortBy === PRODUCT_SORT_BY.PRICE_LOW_HIGH) setSortBy(PRODUCT_SORT_BY.PRICE_HIGH_LOW);
+      else if (sortBy === PRODUCT_SORT_BY.PRICE_HIGH_LOW) setSortBy(null);
+      else setSortBy(PRODUCT_SORT_BY.PRICE_LOW_HIGH);
+    } else if (field === "mrp") {
+      if (sortBy === PRODUCT_SORT_BY.MRP_LOW_HIGH) setSortBy(PRODUCT_SORT_BY.MRP_HIGH_LOW);
+      else if (sortBy === PRODUCT_SORT_BY.MRP_HIGH_LOW) setSortBy(null);
+      else setSortBy(PRODUCT_SORT_BY.MRP_LOW_HIGH);
     }
+  };
+
+  const getTooltipText = (field: SortField) => {
+    if (field === "name") {
+      if (sortBy === PRODUCT_SORT_BY.NAME_ASC) return "Sort Name (Z to A)";
+      if (sortBy === PRODUCT_SORT_BY.NAME_DESC) return "Clear Name sort";
+      return "Sort Name (A to Z)";
+    }
+    if (field === "price") {
+      if (sortBy === PRODUCT_SORT_BY.PRICE_LOW_HIGH) return "Sort Price (High to Low)";
+      if (sortBy === PRODUCT_SORT_BY.PRICE_HIGH_LOW) return "Clear Price sort";
+      return "Sort Price (Low to High)";
+    }
+    if (field === "mrp") {
+      if (sortBy === PRODUCT_SORT_BY.MRP_LOW_HIGH) return "Sort MRP (High to Low)";
+      if (sortBy === PRODUCT_SORT_BY.MRP_HIGH_LOW) return "Clear MRP sort";
+      return "Sort MRP (Low to High)";
+    }
+    return "";
+  };
+
+  const getSortDir = (field: SortField): "asc" | "desc" | null => {
+    if (field === "name") {
+      if (sortBy === PRODUCT_SORT_BY.NAME_ASC) return "asc";
+      if (sortBy === PRODUCT_SORT_BY.NAME_DESC) return "desc";
+    } else if (field === "price") {
+      if (sortBy === PRODUCT_SORT_BY.PRICE_LOW_HIGH) return "asc";
+      if (sortBy === PRODUCT_SORT_BY.PRICE_HIGH_LOW) return "desc";
+    } else if (field === "mrp") {
+      if (sortBy === PRODUCT_SORT_BY.MRP_LOW_HIGH) return "asc";
+      if (sortBy === PRODUCT_SORT_BY.MRP_HIGH_LOW) return "desc";
+    }
+    return null;
   };
 
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
@@ -153,9 +202,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setActionType("add");
     setOpenProductDialog();
   };
-
-  const setDialogMode = useProductsStore((state) => state.setDialogMode);
-
   // only reset highlight when the result count actually changes
   const prevResultsLenRef = useRef(searchResults.length);
   useEffect(() => {
@@ -298,7 +344,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[80%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
@@ -320,38 +366,45 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
-              <div className="border-border/70 bg-background flex shrink-0 items-center gap-4 border-b px-3.5 py-2">
-                <div className="text-muted-foreground text-[0.75rem] font-bold tracking-[0.16em] uppercase">
-                  Sort
+              <div className="border-border/70 bg-background flex shrink-0 items-center gap-3 border-b px-3.5 py-2">
+                <div className="text-muted-foreground flex items-center gap-1.5 text-sm font-semibold">
+                  <ListFilter className="h-3.5 w-3.5" />
+                  Sort by
                 </div>
                 <div className="flex items-center gap-1">
                   {(
                     [
                       { field: "name" as SortField, label: "Name" },
                       { field: "price" as SortField, label: "Price" },
-                      { field: "mrp" as SortField, label: "MRP" },
-                      { field: "weight" as SortField, label: "Weight" }
+                      { field: "mrp" as SortField, label: "MRP" }
                     ] satisfies { field: SortField; label: string }[]
                   ).map(({ field, label }) => {
-                    const isActive = sortField === field;
+                    const sortDir = getSortDir(field);
+                    const isActive = sortDir !== null;
                     return (
-                      <button
-                        key={field}
-                        onClick={() => toggleSort(field)}
-                        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.82rem] font-semibold transition ${
-                          isActive
-                            ? "bg-foreground text-background"
-                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
-                        }`}
-                      >
-                        {label}
-                        {isActive &&
-                          (sortDir === "asc" ? (
-                            <ArrowUp className="h-3.5 w-3.5" />
-                          ) : (
-                            <ArrowDown className="h-3.5 w-3.5" />
-                          ))}
-                      </button>
+                      <Tooltip key={field} delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <button
+                            onClick={() => toggleSort(field)}
+                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.82rem] font-semibold transition ${
+                              isActive
+                                ? "bg-foreground text-background"
+                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                            }`}
+                          >
+                            {label}
+                            {isActive &&
+                              (sortDir === "asc" ? (
+                                <ArrowUp className="h-3.5 w-3.5" />
+                              ) : (
+                                <ArrowDown className="h-3.5 w-3.5" />
+                              ))}
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="text-xs">
+                          {getTooltipText(field)}
+                        </TooltipContent>
+                      </Tooltip>
                     );
                   })}
                 </div>
@@ -425,7 +478,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       ) && (
                                         <Badge
                                           variant="outline"
-                                          className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
+                                          className="border-search-badge-weight-border bg-search-badge-weight-bg text-search-badge-weight-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
                                         >
                                           {product.weight}
                                           {product.unit}
@@ -434,7 +487,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     {product.mrp && (
                                       <Badge
                                         variant="outline"
-                                        className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
+                                        className="border-search-badge-mrp-border bg-search-badge-mrp-bg text-search-badge-mrp-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
                                       >
                                         MRP ₹{convertToRupees(product.mrp, { asString: true })}
                                       </Badge>
@@ -449,61 +502,79 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               </div>
                             </div>
 
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setProductId(product.id);
-                                setActionType("billing-page-edit");
-                                setOpenProductDialog();
-                                setFormDataState({
-                                  name: product.name,
-                                  weight: product.weight,
-                                  unit: product.unit,
-                                  mrp: product.mrp
-                                    ? convertToRupees(product.mrp, { asString: true })
-                                    : null,
-                                  price: convertToRupees(product.price, { asString: true }),
-                                  isDisabled: product.isDisabled,
-                                  isDeleted: product.isDeleted,
-                                  totalQuantitySold: product.totalQuantitySold,
-                                  lastSoldAt: product.lastSoldAt ?? null,
-                                  createdAt: product.createdAt,
-                                  updatedAt: product.updatedAt,
-                                  deletedAt: product.deletedAt ?? null,
-                                  disabledAt: product.disabledAt ?? null
-                                });
-                              }}
-                              className="hover:cursor-pointer"
-                            >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </Button>
+                            <div className="flex shrink-0 items-center gap-1.5">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setProductId(product.id);
+                                      setActionType(ACTION_TYPE.BILLING_PAGE_EDIT);
+                                      setDialogMode(DIALOG_MODE.VIEW);
+                                      setFormDataState({});
+                                      setOpenProductDialog();
+                                    }}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
+                                    <Eye className="h-4.5 w-4.5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">View Details</p>
+                                </TooltipContent>
+                              </Tooltip>
 
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 shrink-0 cursor-pointer rounded-lg"
-                                  onClick={(e) => e.stopPropagation()}
-                                  onMouseDown={(e) => e.stopPropagation()}
-                                >
-                                  <Info className="text-muted-foreground h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="right" className="text-xs leading-relaxed">
-                                <p>
-                                  Created:{" "}
-                                  {product.createdAt ? formatDateStr(product.createdAt) : "—"}
-                                </p>
-                                <p>
-                                  Updated:{" "}
-                                  {product.updatedAt ? formatDateStr(product.updatedAt) : "—"}
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg transition-all duration-150 active:scale-[0.95]"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setProductId(product.id);
+                                      setActionType(ACTION_TYPE.BILLING_PAGE_EDIT);
+                                      setDialogMode(DIALOG_MODE.EDIT);
+                                      setFormDataState({});
+                                      setOpenProductDialog();
+                                    }}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
+                                    <Edit className="h-4.5 w-4.5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">Edit Product</p>
+                                </TooltipContent>
+                              </Tooltip>
+
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-muted-foreground/70 hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    onClick={(e) => e.stopPropagation()}
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                  >
+                                    <Info className="h-4.5 w-4.5" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="text-xs leading-relaxed">
+                                  <p>
+                                    Created:{" "}
+                                    {product.createdAt ? formatDateStr(product.createdAt) : "—"}
+                                  </p>
+                                  <p>
+                                    Updated:{" "}
+                                    {product.updatedAt ? formatDateStr(product.updatedAt) : "—"}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
                           </div>
                         </div>
                       );

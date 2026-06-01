@@ -32,5 +32,10 @@ export const productSearchSchema = z.object({
     .boolean()
     .optional()
     .catch(false)
-    .transform((v) => v ?? false)
+    .transform((v) => v ?? false),
+  billingMode: z
+    .enum(["true", "false"])
+    .optional()
+    .transform((val) => val === "true")
+    .catch(false)
 });

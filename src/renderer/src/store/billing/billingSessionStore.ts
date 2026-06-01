@@ -1,5 +1,5 @@
 import { SYNCSTATUS } from "@/types";
-import { type Product, type UnifiedTransactionItem } from "@shared/types";
+import { type BillingProductDTO, type UnifiedTransactionItem } from "@shared/types";
 import { convertToRupees } from "@shared/utils/utils";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
@@ -31,7 +31,7 @@ type BillingSessionStore = {
   // LineItem actions
   setLineItems: (tabId: string | null, itemsArray: UnifiedTransactionItem[]) => void;
   addEmptyLineItem: (tabId: string | null, type?: "button") => void;
-  addLineItem: (tabId: string | null, rowId: string, newItem: Product) => void;
+  addLineItem: (tabId: string | null, rowId: string, newItem: BillingProductDTO) => void;
   updateLineItem: <K extends keyof LineItem>(
     tabId: string | null,
     rowId: string,

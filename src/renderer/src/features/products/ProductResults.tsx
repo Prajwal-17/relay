@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import type { ProductSearchItemDTO } from "@shared/types";
 import { LoaderCircle, Search } from "lucide-react";
 import { useEffect } from "react";
 import ProductListItem from "./ProductListItem";
@@ -66,7 +67,7 @@ export default function ProductResults() {
                         ref={rowVirtualizer.measureElement}
                         data-index={virtualRow.index}
                       >
-                        <ProductListItem product={product} />
+                        <ProductListItem product={product as ProductSearchItemDTO} />
                       </div>
                     );
                   })}

@@ -13,6 +13,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
+import { useProductFetch } from "@/hooks/products/useProductFetch";
 import { useProductsStore } from "@/store/productsStore";
 import {
   ACTION_TYPE,
@@ -22,7 +23,18 @@ import {
   type InitialTab
 } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { Clock, Edit3, Eye, Info, ReceiptText, RotateCcw, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Clock,
+  Edit3,
+  Eye,
+  Info,
+  LoaderCircle,
+  ReceiptText,
+  RotateCcw,
+  Trash2,
+  X
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { ProductEditForm, ProductPreview } from "./ProductEditForm";
@@ -56,6 +68,14 @@ export function ProductDialog() {
   const isEditMode = dialogMode === DIALOG_MODE.EDIT;
   const isViewMode = dialogMode === DIALOG_MODE.VIEW;
   const isAddMode = actionType === ACTION_TYPE.ADD;
+
+  // fetch fresh product data for edit/view mode
+  const {
+    isLoading: isProductLoading,
+    isError: isProductError,
+    error: productError,
+    refetch: refetchProduct
+  } = useProductFetch(productId, !isAddMode);
 
   // add mode always shows edit form
   const showEditForm = isEditMode || isAddMode;
@@ -236,35 +256,71 @@ export function ProductDialog() {
 
           <div className="relative flex min-h-0 flex-1 flex-col">
             <TabsContent value={INITIAL_TAB.INFO} className="mt-0 min-h-0 flex-1">
-              <AnimatePresence mode="wait">
-                {showEditForm ? (
-                  <motion.div
-                    key="edit-split"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                    className="flex h-full min-h-0"
+              {!isAddMode && isProductLoading ? (
+                <motion.div
+                  key="loading"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex h-full flex-col items-center justify-center gap-4"
+                >
+                  <LoaderCircle className="text-primary h-10 w-10 animate-spin" />
+                  <p className="text-muted-foreground text-base font-medium">
+                    Loading product details…
+                  </p>
+                </motion.div>
+              ) : !isAddMode && isProductError ? (
+                <motion.div
+                  key="error"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex h-full flex-col items-center justify-center gap-4"
+                >
+                  <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-2xl">
+                    <AlertTriangle className="text-destructive h-8 w-8" />
+                  </div>
+                  <h3 className="text-foreground text-lg font-semibold">Failed to load product</h3>
+                  <p className="text-muted-foreground max-w-sm text-center text-sm">
+                    {productError?.message || "Something went wrong. Please try again."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => refetchProduct()}
+                    className="cursor-pointer gap-2 text-sm font-semibold"
                   >
+                    Try Again
+                  </Button>
+                </motion.div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  {showEditForm ? (
                     <motion.div
-                      initial={{ opacity: 0, x: -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-                      className="border-border bg-background-secondary hidden w-[35%] shrink-0 overflow-y-auto border-r p-7 md:block"
+                      key="edit-split"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+                      className="flex h-full min-h-0"
                     >
-                      <ProductPreview />
-                    </motion.div>
+                      <motion.div
+                        initial={{ opacity: 0, x: -16 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
+                        className="border-border bg-background-secondary hidden w-[35%] shrink-0 overflow-y-auto border-r p-7 md:block"
+                      >
+                        <ProductPreview />
+                      </motion.div>
 
-                    <div className="flex min-h-0 flex-1 flex-col p-6">
-                      <ProductEditForm />
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div key="view" className="h-full overflow-y-auto px-7 py-6">
-                    <ProductViewMode />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      <div className="flex min-h-0 flex-1 flex-col p-6">
+                        <ProductEditForm />
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.div key="view" className="h-full overflow-y-auto px-7 py-6">
+                      <ProductViewMode />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              )}
             </TabsContent>
 
             <TabsContent

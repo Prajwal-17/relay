@@ -1,4 +1,4 @@
-import type { Product } from "src/shared/types";
+import { type Product, type ProductSortByType } from "@shared/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 
@@ -11,6 +11,8 @@ type SearchDropdownStoreType = {
   setActiveRowId: (rowId: string | null) => void;
   isDropdownOpen: boolean;
   setIsDropdownOpen: () => void;
+  sortBy: ProductSortByType | null;
+  setSortBy: (sortBy: ProductSortByType | null) => void;
   reset: () => void;
 };
 
@@ -48,8 +50,9 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
       activeRowId: null,
       setActiveRowId: (rowIndex) =>
         set(
-          () => ({
-            activeRowId: rowIndex
+          (state) => ({
+            activeRowId: rowIndex,
+            sortBy: state.activeRowId !== rowIndex ? null : state.sortBy
           }),
           false,
           "searchDropdown/setActiveRowId"
@@ -65,13 +68,24 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
           "searchDropdown/setIsDropdownOpen"
         ),
 
+      sortBy: null,
+      setSortBy: (sortBy) =>
+        set(
+          () => ({
+            sortBy
+          }),
+          false,
+          "searchDropdown/setSortBy"
+        ),
+
       reset: () =>
         set(
           () => ({
             itemQuery: "",
             availableProducts: [],
             activeRowId: null,
-            isDropDownOpen: false
+            isDropDownOpen: false,
+            sortBy: null
           }),
           false,
           "searchDropdown/reset"

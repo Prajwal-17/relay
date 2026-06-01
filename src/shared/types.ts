@@ -46,6 +46,20 @@ export type ProductSearchItemDTO = Product & {
   deletedAt?: string | null;
 };
 
+export type BillingProductDTO = {
+  id: string;
+  name: string;
+  imageUrl?: string | null;
+  productSnapshot: string;
+  weight: string | null;
+  unit: string | null;
+  mrp: number | null;
+  price: number;
+  purchasePrice: number | null;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
 export type ProductHistory = {
   id: string;
   name: string;
@@ -286,7 +300,9 @@ export const PRODUCT_SORT_BY = {
   NAME_ASC: "name_asc",
   NAME_DESC: "name_desc",
   PRICE_LOW_HIGH: "price_low_high",
-  PRICE_HIGH_LOW: "price_high_low"
+  PRICE_HIGH_LOW: "price_high_low",
+  MRP_LOW_HIGH: "mrp_low_high",
+  MRP_HIGH_LOW: "mrp_high_low"
 } as const;
 
 export const PROPERTY_FILTER = {

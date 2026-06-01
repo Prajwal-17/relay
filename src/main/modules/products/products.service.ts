@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gte, isNotNull, lte, ne, SQL, sql } from "drizzle-o
 import {
   PRODUCT_FILTER,
   PRODUCT_SORT_BY,
+  type BillingProductDTO,
   type CreateProductPayload,
   type PaginatedApiResponse,
   type ProductHistory,
@@ -27,14 +28,26 @@ function buildOrderClause(sortBy: string | null): SQL | undefined {
       return asc(products.price);
     case PRODUCT_SORT_BY.PRICE_HIGH_LOW:
       return desc(products.price);
+    case PRODUCT_SORT_BY.MRP_LOW_HIGH:
+      return asc(products.mrp);
+    case PRODUCT_SORT_BY.MRP_HIGH_LOW:
+      return desc(products.mrp);
     default:
       return undefined;
   }
 }
 
+const getProductById = async (productId: string) => {
+  const product = await productRepository.findById(productId);
+  if (!product) {
+    throw new AppError("Product not found", 404);
+  }
+  return product;
+};
+
 const searchProduct = async (
   params: ProductSearchParams
-): Promise<PaginatedApiResponse<{ data: ProductSearchItemDTO[] | [] }>> => {
+): Promise<PaginatedApiResponse<{ data: (ProductSearchItemDTO | BillingProductDTO)[] | [] }>> => {
   let whereClause: SQL | undefined;
 
   switch (params.filterType) {
@@ -75,7 +88,8 @@ const searchProduct = async (
     whereClause,
     orderClause,
     limit: params.pageSize,
-    offset
+    offset,
+    billingMode: params.billingMode
   });
 
   const nextpageNo = searchResult.length === 20 ? params.pageNo + 1 : null;
@@ -207,6 +221,7 @@ const restoreProduct = async (productId: string) => {
 };
 
 export const productService = {
+  getProductById,
   searchProduct,
   addProduct,
   updateProduct,

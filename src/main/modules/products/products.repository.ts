@@ -1,9 +1,5 @@
 import { and, count, desc, eq, inArray, like, sql } from "drizzle-orm";
-import {
-  type CreateProductPayload,
-  type ProductSearchItemDTO,
-  type UpdateProductPayload
-} from "../../../shared/types";
+import { type CreateProductPayload, type UpdateProductPayload } from "../../../shared/types";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
@@ -22,77 +18,72 @@ const findById = async (id: string) => {
   return db.select().from(products).where(eq(products.id, id)).get();
 };
 
+const columns = {
+  id: products.id,
+  name: products.name,
+  imageUrl: products.imageUrl,
+  productSnapshot: products.productSnapshot,
+  weight: products.weight,
+  unit: products.unit,
+  mrp: products.mrp,
+  price: products.price,
+  purchasePrice: products.purchasePrice,
+  totalQuantitySold: products.totalQuantitySold,
+  isDisabled: products.isDisabled,
+  disabledAt: products.disabledAt,
+  isDeleted: products.isDeleted,
+  deletedAt: products.deletedAt,
+  lastSoldAt: products.lastSoldAt,
+  updatedAt: products.updatedAt,
+  createdAt: products.createdAt
+};
+
+const billingColumns = {
+  id: products.id,
+  name: products.name,
+  imageUrl: products.imageUrl,
+  productSnapshot: products.productSnapshot,
+  weight: products.weight,
+  unit: products.unit,
+  mrp: products.mrp,
+  price: products.price,
+  purchasePrice: products.purchasePrice,
+  updatedAt: products.updatedAt,
+  createdAt: products.createdAt
+};
+
 const searchProducts = async (params: ProductSearchQuery) => {
-  let searchResult: ProductSearchItemDTO[] | [];
+  const selectedColumns = params.billingMode ? billingColumns : columns;
 
   if (params.searchTerm === "") {
-    searchResult = await db
-      .select({
-        id: products.id,
-        name: products.name,
-        imageUrl: products.imageUrl,
-        productSnapshot: products.productSnapshot,
-        weight: products.weight,
-        unit: products.unit,
-        mrp: products.mrp,
-        price: products.price,
-        purchasePrice: products.purchasePrice,
-        totalQuantitySold: products.totalQuantitySold,
-        isDisabled: products.isDisabled,
-        disabledAt: products.disabledAt,
-        isDeleted: products.isDeleted,
-        deletedAt: products.deletedAt,
-        lastSoldAt: products.lastSoldAt,
-        updatedAt: products.updatedAt,
-        createdAt: products.createdAt
-      })
+    return db
+      .select(selectedColumns)
       .from(products)
       .where(params.whereClause)
       .orderBy(params.orderClause ?? products.name)
       .limit(params.limit)
       .offset(params.offset);
-
-    return searchResult;
   }
 
-  const priorityOrder = sql`
-          CASE
-            WHEN lower(${products.name}) LIKE ${params.searchTerm + "%"} THEN 1
-            ELSE 2
-          END
-        `;
+  const term = params.searchTerm;
 
-  const orderBy = params.orderClause
-    ? [priorityOrder, params.orderClause]
-    : [priorityOrder, products.productSnapshot];
+  const relevance = sql`
+    CASE
+      WHEN lower(${products.productSnapshot}) LIKE ${term + "%"} THEN 1
+      WHEN lower(${products.productSnapshot}) LIKE ${"%" + term + "%"} THEN 2
+      ELSE 3
+    END
+  `;
 
-  searchResult = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      imageUrl: products.imageUrl,
-      productSnapshot: products.productSnapshot,
-      weight: products.weight,
-      unit: products.unit,
-      mrp: products.mrp,
-      price: products.price,
-      purchasePrice: products.purchasePrice,
-      totalQuantitySold: products.totalQuantitySold,
-      isDisabled: products.isDisabled,
-      disabledAt: products.disabledAt,
-      isDeleted: products.isDeleted,
-      deletedAt: products.deletedAt,
-      lastSoldAt: products.lastSoldAt,
-      updatedAt: products.updatedAt,
-      createdAt: products.createdAt
-    })
+  const orderBy = params.orderClause ? [relevance, params.orderClause] : [relevance, products.name];
+
+  return db
+    .select(selectedColumns)
     .from(products)
-    .where(and(params.whereClause, like(products.productSnapshot, `%${params.searchTerm}%`)))
+    .where(and(params.whereClause, like(products.productSnapshot, `%${term}%`)))
     .orderBy(...orderBy)
     .limit(params.limit)
     .offset(params.offset);
-
-  return searchResult;
 };
 
 const createProduct = async (payload: CreateProductPayload) => {

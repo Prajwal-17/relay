@@ -22,7 +22,8 @@ productsController.get("/search", validateRequest("query", productSearchSchema),
     priceMin,
     priceMax,
     hasMrp,
-    hasPurchasePrice
+    hasPurchasePrice,
+    billingMode
   } = rawParams;
 
   const result = await productService.searchProduct({
@@ -34,8 +35,16 @@ productsController.get("/search", validateRequest("query", productSearchSchema),
     priceMin,
     priceMax,
     hasMrp,
-    hasPurchasePrice
+    hasPurchasePrice,
+    billingMode
   });
+  return c.json(result, 200);
+});
+
+// get product by id
+productsController.get("/:id", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await productService.getProductById(id);
   return c.json(result, 200);
 });
 
