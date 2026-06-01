@@ -23,13 +23,19 @@ const BillPreview = () => {
   const customerName = session?.customerName ?? "";
   const { subtotal, grandTotal } = useTransaction();
 
-  const { setReceiptRef } = useReceiptRefStore();
+  const setReceiptRef = useReceiptRefStore((state) => state.setReceiptRef);
+  const removeReceiptRef = useReceiptRefStore((state) => state.removeReceiptRef);
   const localReceiptRef = useRef<HTMLDivElement | null>(null);
 
-  // update global ref whenever component renders
   useEffect(() => {
-    setReceiptRef(localReceiptRef as React.RefObject<HTMLDivElement>);
-  }, [setReceiptRef]);
+    if (!activeTabId) return;
+    setReceiptRef(activeTabId, localReceiptRef as React.RefObject<HTMLDivElement>);
+
+    // clean up on unmount
+    return () => {
+      removeReceiptRef(activeTabId);
+    };
+  }, [activeTabId, setReceiptRef, removeReceiptRef]);
   if (!type) {
     return <Navigate to="/not-found" />;
   }

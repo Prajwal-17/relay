@@ -101,3 +101,50 @@ export const processSyncQueue = (tabId: string) => {
   const fn = syncQueues.get(tabId)!;
   fn(tabId);
 };
+
+// get isSyncing state - in-flight
+export const isSyncing = (tabId: string): boolean => {
+  return syncStates.get(tabId) === true;
+};
+
+// wait until all changes are fully synced
+// resolves when tab is fully synced
+export const flushSync = (tabId: string): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    const TIMEOUT_MS = 10_000;
+    const POLL_INTERVAL_MS = 100;
+    const start = Date.now();
+
+    const poll = () => {
+      if (Date.now() - start > TIMEOUT_MS) {
+        reject(new Error("Timed out"));
+        return;
+      }
+
+      // still syncing — wait for it to finish
+      if (syncStates.get(tabId)) {
+        setTimeout(poll, POLL_INTERVAL_MS);
+        return;
+      }
+
+      const session = useBillingSessionStore.getState().sessions[tabId];
+      if (!session) {
+        resolve();
+        return;
+      }
+      const validItems = filterValidLineItems(session.lineItems);
+      const dirtyItems = filterDirtyLineItems(validItems);
+      const hasPending = dirtyItems.length > 0;
+
+      if (!hasPending) {
+        resolve();
+        return;
+      }
+
+      // pending items exist but sync has not picked them yet — keep waiting
+      setTimeout(poll, POLL_INTERVAL_MS);
+    };
+
+    poll();
+  });
+};
