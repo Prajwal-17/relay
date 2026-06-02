@@ -18,6 +18,7 @@ import { AppError } from "./utils/appError";
 export type Env = {
   Variables: {
     storeId: string;
+    settings: Record<string, any>;
   };
 };
 

@@ -96,6 +96,14 @@
   --search-badge-mrp-bg: oklch(95% 0.03 80);
   --search-badge-mrp-text: oklch(48% 0.12 55);
 
+  /* Invoice Template */
+  --invoice-bg: oklch(100% 0 0);
+  --invoice-text: oklch(20% 0.02 260);
+  --invoice-text-muted: oklch(45% 0.02 260);
+  --invoice-accent: oklch(55% 0.12 160);
+  --invoice-border: oklch(90% 0.01 260);
+  --invoice-table-header-bg: oklch(96% 0.01 260);
+
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
@@ -188,6 +196,13 @@
   --color-search-badge-mrp-border: var(--search-badge-mrp-border);
   --color-search-badge-mrp-bg: var(--search-badge-mrp-bg);
   --color-search-badge-mrp-text: var(--search-badge-mrp-text);
+
+  --color-invoice-bg: var(--invoice-bg);
+  --color-invoice-text: var(--invoice-text);
+  --color-invoice-text-muted: var(--invoice-text-muted);
+  --color-invoice-accent: var(--invoice-accent);
+  --color-invoice-border: var(--invoice-border);
+  --color-invoice-table-header-bg: var(--invoice-table-header-bg);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

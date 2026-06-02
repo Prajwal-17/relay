@@ -102,6 +102,13 @@ export const processSyncQueue = (tabId: string) => {
   fn(tabId);
 };
 
+export const forceSync = (tabId: string) => {
+  const fn = syncQueues.get(tabId);
+  if (fn) {
+    fn.flush();
+  }
+};
+
 // get isSyncing state - in-flight
 export const isSyncing = (tabId: string): boolean => {
   return syncStates.get(tabId) === true;

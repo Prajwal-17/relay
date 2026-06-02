@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, { Suspense } from "react";
 import AppShell from "./AppShell";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const OnboardingFlow = React.lazy(() =>
   import("@/features/onboarding/OnboardingFlow").then((module) => ({
@@ -49,6 +50,7 @@ const RootLayout = () => {
           className="h-screen w-full"
         >
           <AppShell />
+          <ReactQueryDevtools initialIsOpen={false} />
         </motion.div>
       )}
     </AnimatePresence>

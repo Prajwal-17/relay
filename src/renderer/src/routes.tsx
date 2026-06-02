@@ -8,6 +8,7 @@ import {
 import BillingPage from "./pages/billing/BillingPage";
 import CustomersPage from "./pages/customers/CustomersPage";
 import DashboardPage from "./pages/dashboard/DashboardPage";
+import PdfInvoicePage from "./pages/export/pdf/PdfInvoicePage";
 import HomePage from "./pages/home/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
 import ProductsPage from "./pages/products/ProductsPage";
@@ -83,6 +84,10 @@ export const router = createHashRouter([
         ]
       }
     ]
+  },
+  {
+    path: "export/pdf/:type",
+    element: <PdfInvoicePage />
   },
   {
     path: "*",

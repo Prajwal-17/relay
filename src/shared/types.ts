@@ -469,25 +469,12 @@ export interface AppConfig {
     defaultExportFormat: string;
   };
 }
-// ------------
 
 export type AppPreferencesResponse = {
   id: string;
   storeId: string;
   config: AppConfig;
 };
-
-export interface ShareApi {
-  saveAsPDF: (transactionId: string, type: TransactionType) => Promise<ApiResponse<string>>;
-}
-
-export interface ProductsApi {
-  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
-}
-
-export interface DialogApi {
-  selectFolder: () => Promise<string | null>;
-}
 
 export type StoreProfile = {
   id: string;
@@ -505,3 +492,17 @@ export type StoreProfile = {
   createdAt: string;
   updatedAt: string;
 };
+// ------------
+
+export interface ProductsApi {
+  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
+}
+
+export interface DialogApi {
+  selectFolder: () => Promise<string | null>;
+}
+
+export interface ExportApi {
+  exportAsPdf: (id: string, type: TransactionType) => Promise<string | null>;
+  showItemInFolder: (path: string) => void;
+}

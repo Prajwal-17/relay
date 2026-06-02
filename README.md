@@ -47,7 +47,7 @@ Output in `dist/`.
 
 ## Tech Stack
 
-**Frontend:** React, Vite, Tailwind CSS, Shadcn, Zustand, TanStack Query, React Router v7, recharts, zod, jspdf.
+**Frontend:** React, Vite, Tailwind CSS, Shadcn, Zustand, TanStack Query, React Router v7, recharts, zod.
 **Backend:** Electron, Hono, better-sqlite3, Drizzle ORM.
 
 ## Architecture

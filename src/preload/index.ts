@@ -1,10 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { DialogApi, ProductsApi, ShareApi, TransactionType } from "../shared/types";
-
-const shareApi: ShareApi = {
-  saveAsPDF: (transactionId: string, type: TransactionType) =>
-    ipcRenderer.invoke("shareApi:saveAsPDF", transactionId, type)
-};
+import type { DialogApi, ExportApi, ProductsApi, TransactionType } from "../shared/types";
 
 const productsApi: ProductsApi = {
   saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl)
@@ -12,6 +7,12 @@ const productsApi: ProductsApi = {
 
 const dialogApi: DialogApi = {
   selectFolder: () => ipcRenderer.invoke("dialog:selectFolder")
+};
+
+const exportApi: ExportApi = {
+  exportAsPdf: (id: string, type: TransactionType) =>
+    ipcRenderer.invoke("txn:exportAsPdf", id, type),
+  showItemInFolder: (path: string) => ipcRenderer.send("show-item-in-folder", path)
 };
 
 const apiArg = process.argv.find((a) => a.startsWith("--api-port="));
@@ -22,9 +23,9 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("electronAPI", {
       printReceipt: (html: string) => ipcRenderer.send("print-receipt", html)
     });
-    contextBridge.exposeInMainWorld("shareApi", shareApi);
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("dialogApi", dialogApi);
+    contextBridge.exposeInMainWorld("exportApi", exportApi);
     contextBridge.exposeInMainWorld("env", {
       API_URL: `http://localhost:${apiPort}`
     });
@@ -35,11 +36,11 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI;
   // @ts-ignore (define in ts)
-  window.shareApi = shareApi;
-  // @ts-ignore (define in ts)
   window.productsApi = productsApi;
   // @ts-ignore (define in ts)
   window.dialogApi = dialogApi;
+  // @ts-ignore (define in ts)
+  window.exportApi = exportApi;
   // @ts-ignore (define in ts)
   window.env = { API_URL: `http://localhost:${apiPort}` };
 }

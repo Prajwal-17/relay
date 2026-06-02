@@ -1,10 +1,10 @@
-import type { DialogApi, ProductsApi, ShareApi } from "src/shared/types";
+import type { DialogApi, ExportApi, ProductsApi } from "src/shared/types";
 
 declare global {
   interface Window {
-    shareApi: ShareApi;
     productsApi: ProductsApi;
     dialogApi: DialogApi;
+    exportApi: ExportApi;
     env: {
       API_URL: string;
     };

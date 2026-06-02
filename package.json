@@ -71,8 +71,6 @@
     "electron-updater": "^6.8.3",
     "hono": "^4.10.8",
     "immer": "^11.1.4",
-    "jspdf": "^3.0.2",
-    "jspdf-autotable": "^5.0.2",
     "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.534.0",
     "motion": "^12.23.12",

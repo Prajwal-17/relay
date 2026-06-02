@@ -2,14 +2,15 @@ import { Button } from "@/components/ui/button";
 import useReceiptPrint from "@/hooks/billing/useReceiptPrint";
 import useTransaction from "@/hooks/billing/useTransaction";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { flushSync } from "@/utils/syncWorker";
-import { FileText, Loader2, Printer, Save } from "lucide-react";
+import { flushSync, forceSync } from "@/utils/syncWorker";
+import { TRANSACTION_TYPE } from "@shared/types";
+import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 export const SummaryFooter = () => {
-  const { type } = useParams();
+  const { type, id } = useParams();
   const navigate = useNavigate();
 
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -17,11 +18,13 @@ export const SummaryFooter = () => {
   const { subtotal, grandTotal } = useTransaction();
   const { printReceipt } = useReceiptPrint();
 
-  const [isBusy, setIsBusy] = useState(false);
+  type LoadingAction = "print" | "exit" | "pdf" | null;
+  const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const waitForSync = useCallback(async (): Promise<boolean> => {
     if (!activeTabId) return false;
     try {
+      forceSync(activeTabId);
       await flushSync(activeTabId);
       return true;
     } catch (error) {
@@ -32,7 +35,7 @@ export const SummaryFooter = () => {
   }, [activeTabId]);
 
   const handleSaveAndPrint = useCallback(async () => {
-    setIsBusy(true);
+    setLoadingAction("print");
     try {
       const synced = await waitForSync();
       if (!synced) return;
@@ -47,12 +50,12 @@ export const SummaryFooter = () => {
       console.error("Print failed", error);
       toast.error("Print failed");
     } finally {
-      setIsBusy(false);
+      setLoadingAction(null);
     }
   }, [waitForSync, printReceipt, navigate, type]);
 
   const handleSaveAndExit = useCallback(async () => {
-    setIsBusy(true);
+    setLoadingAction("exit");
     try {
       const synced = await waitForSync();
       if (!synced) return;
@@ -62,9 +65,49 @@ export const SummaryFooter = () => {
       console.error("Save & Exit failed", error);
       toast.error("Failed to save. Please try again.");
     } finally {
-      setIsBusy(false);
+      setLoadingAction(null);
     }
   }, [waitForSync, navigate]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!id || !type) return;
+    setLoadingAction("pdf");
+    try {
+      const synced = await waitForSync();
+      if (!synced) return;
+      const txnType = type === "sales" ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE;
+      const response = await window.exportApi.exportAsPdf(id, txnType);
+      if (response && (response as any).status === "success") {
+        const filePath = (response as any).data as string;
+        toast.success(
+          (t) => (
+            <div className="flex items-center gap-4 whitespace-nowrap">
+              <span className="font-medium">PDF saved successfully</span>
+              <button
+                onClick={() => {
+                  window.exportApi.showItemInFolder(filePath);
+                  toast.dismiss(t.id);
+                }}
+                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
+              >
+                Open
+                <ArrowUpRight size={18} />
+              </button>
+            </div>
+          ),
+          { duration: 4000, style: { maxWidth: "fit-content" } }
+        );
+        navigate(`/dashboard/${type}`);
+      } else {
+        toast.error((response as any)?.error?.message || "Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("PDF Export failed", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [id, type, waitForSync, navigate]);
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -97,34 +140,43 @@ export const SummaryFooter = () => {
           <Button
             variant="default"
             className="hover:bg-primary/90 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-semibold shadow-sm"
-            disabled={isBusy}
+            disabled={loadingAction !== null}
             onClick={handleSaveAndPrint}
           >
-            {isBusy ? <Loader2 size={18} className="animate-spin" /> : <Printer size={18} />}
-            {isBusy ? "Saving..." : "Save & Print"}
+            {loadingAction === "print" ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <Printer size={18} />
+            )}
+            {loadingAction === "print" ? "Saving..." : "Save & Print"}
           </Button>
 
           <Button
             variant="outline"
             className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-medium transition-colors"
-            disabled={isBusy}
+            disabled={loadingAction !== null}
             onClick={handleSaveAndExit}
           >
-            {isBusy ? (
+            {loadingAction === "exit" ? (
               <Loader2 size={18} className="text-muted-foreground animate-spin" />
             ) : (
               <Save size={18} className="text-muted-foreground" />
             )}
-            {isBusy ? "Saving..." : "Save & Exit"}
+            {loadingAction === "exit" ? "Saving..." : "Save & Exit"}
           </Button>
 
           <Button
             variant="outline"
             className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-medium transition-colors"
-            disabled={isBusy}
+            disabled={loadingAction !== null}
+            onClick={handleExportPdf}
           >
-            <FileText size={18} className="text-muted-foreground" />
-            Save PDF
+            {loadingAction === "pdf" ? (
+              <Loader2 size={18} className="text-muted-foreground animate-spin" />
+            ) : (
+              <FileText size={18} className="text-muted-foreground" />
+            )}
+            {loadingAction === "pdf" ? "Saving..." : "Save PDF"}
           </Button>
         </div>
       </div>

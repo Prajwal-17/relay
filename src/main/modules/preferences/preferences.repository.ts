@@ -1,4 +1,6 @@
 import { eq, sql } from "drizzle-orm";
+import os from "os";
+import path from "path";
 import type { AppConfig } from "../../../shared/types";
 import { db } from "../../db/db";
 import { appPreferences } from "../../db/schema";
@@ -39,7 +41,7 @@ const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx
     },
     exports: {
       askBeforeSavingPdf: true,
-      defaultPdfLocation: "",
+      defaultPdfLocation: path.join(os.homedir(), "Downloads"),
       defaultExportFormat: "pdf"
     }
   };
