@@ -519,7 +519,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <Eye className="h-4.5 w-4.5" />
+                                    <Eye className="size-4.5" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -543,7 +543,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <Edit className="h-4.5 w-4.5" />
+                                    <Edit className="size-4.5" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>

@@ -95,6 +95,7 @@ export const useProductSearch = (type: ProductSearchType) => {
     status
   } = useInfiniteQuery({
     queryKey: [
+      "product-search",
       filterType,
       type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? productsDebouncedValue : dropdownDebouncedValue,
       ...(type === PRODUCTSEARCH_TYPE.PRODUCTPAGE
@@ -147,19 +148,8 @@ export const useProductSearch = (type: ProductSearchType) => {
     }
   }, [isError, error]);
 
-  const prevResultsRef = useRef<SearchResultItem[]>([]);
-
   const searchResults = useMemo(() => {
-    const next = data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
-    const prev = prevResultsRef.current;
-
-    // return the same reference if the data hasn't changed
-    if (prev.length === next.length && next.every((item, i) => item.id === prev[i]?.id)) {
-      return prev;
-    }
-
-    prevResultsRef.current = next;
-    return next;
+    return data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
   }, [data]);
 
   /**

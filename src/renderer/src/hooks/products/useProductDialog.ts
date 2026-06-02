@@ -140,16 +140,10 @@ export const useProductDialog = () => {
       }
     },
     onSuccess: (_response, variables) => {
-      const {
-        filterType,
-        setErrors,
-        setProductId,
-        setFormDataState,
-        setDirtyFields,
-        setOpenProductDialog
-      } = useProductsStore.getState();
+      const { setErrors, setProductId, setFormDataState, setDirtyFields, setOpenProductDialog } =
+        useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType] });
+      queryClient.invalidateQueries({ queryKey: ["product-search"] });
       setErrors({});
       setProductId(null);
       setFormDataState({});
@@ -239,10 +233,10 @@ export const useProductDialog = () => {
   const softDeleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/delete`),
     onSuccess: () => {
-      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
+      const { setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
         useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType] });
+      queryClient.invalidateQueries({ queryKey: ["product-search"] });
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
@@ -259,10 +253,10 @@ export const useProductDialog = () => {
   const permanentDeleteProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.delete(`/api/products/${productId}/delete`),
     onSuccess: () => {
-      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
+      const { setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
         useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType] });
+      queryClient.invalidateQueries({ queryKey: ["product-search"] });
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
@@ -279,10 +273,10 @@ export const useProductDialog = () => {
   const restoreProductMutation = useMutation<null, Error, string>({
     mutationFn: (productId: string) => apiClient.post(`/api/products/${productId}/restore`),
     onSuccess: () => {
-      const { filterType, setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
+      const { setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
         useProductsStore.getState();
 
-      queryClient.invalidateQueries({ queryKey: [filterType] });
+      queryClient.invalidateQueries({ queryKey: ["product-search"] });
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
