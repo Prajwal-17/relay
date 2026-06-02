@@ -4,6 +4,7 @@ import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { convertToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import {
+  customers,
   estimateItems,
   estimates,
   productHistory,
@@ -265,6 +266,70 @@ const restoreSoftDeletedProductById = async (productId: string) => {
   return result.changes;
 };
 
+const getTransactionsByProductId = async (params: {
+  productId: string;
+  pageSize: number;
+  offset: number;
+}) => {
+  const saleRows = db
+    .select({
+      type: sql<string>`'sale'`.as("type"),
+      transactionNo: sales.invoiceNo,
+      customerName: customers.name,
+      quantity: saleItems.quantity,
+      price: saleItems.price,
+      totalPrice: saleItems.totalPrice,
+      isPaid: sales.isPaid,
+      createdAt: sales.createdAt
+    })
+    .from(saleItems)
+    .innerJoin(sales, eq(saleItems.saleId, sales.id))
+    .innerJoin(customers, eq(sales.customerId, customers.id))
+    .where(eq(saleItems.productId, params.productId))
+    .all();
+
+  const estimateRows = db
+    .select({
+      type: sql<string>`'estimate'`.as("type"),
+      transactionNo: estimates.estimateNo,
+      customerName: customers.name,
+      quantity: estimateItems.quantity,
+      price: estimateItems.price,
+      totalPrice: estimateItems.totalPrice,
+      isPaid: estimates.isPaid,
+      createdAt: estimates.createdAt
+    })
+    .from(estimateItems)
+    .innerJoin(estimates, eq(estimateItems.estimateId, estimates.id))
+    .innerJoin(customers, eq(estimates.customerId, customers.id))
+    .where(eq(estimateItems.productId, params.productId))
+    .all();
+
+  const combined = [...saleRows, ...estimateRows].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA;
+  });
+
+  return combined.slice(params.offset, params.offset + params.pageSize);
+};
+
+const countTransactionsByProductId = async (productId: string) => {
+  const salesCount = db
+    .select({ count: count() })
+    .from(saleItems)
+    .where(eq(saleItems.productId, productId))
+    .get();
+
+  const estimatesCount = db
+    .select({ count: count() })
+    .from(estimateItems)
+    .where(eq(estimateItems.productId, productId))
+    .get();
+
+  return (salesCount?.count ?? 0) + (estimatesCount?.count ?? 0);
+};
+
 export const productRepository = {
   findById,
   searchProducts,
@@ -275,5 +340,7 @@ export const productRepository = {
   getHistoryEntriesById,
   softDeleteProductById,
   hardDeleteProductById,
-  restoreSoftDeletedProductById
+  restoreSoftDeletedProductById,
+  getTransactionsByProductId,
+  countTransactionsByProductId
 };

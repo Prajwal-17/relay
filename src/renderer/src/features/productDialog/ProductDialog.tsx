@@ -39,6 +39,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { ProductEditForm, ProductPreview } from "./ProductEditForm";
 import { ProductHistoryTimeline } from "./ProductHistoryTimeline";
+import { ProductTransactionsTable } from "./ProductTransactionsTable";
 import { ProductViewMode } from "./ProductViewMode";
 
 export function ProductDialog() {
@@ -338,7 +339,10 @@ export function ProductDialog() {
               )}
             </TabsContent>
 
-            <TabsContent value={INITIAL_TAB.TRANSACTIONS} className="mt-0 min-h-0 flex-1">
+            <TabsContent
+              value={INITIAL_TAB.TRANSACTIONS}
+              className="mt-0 flex h-full min-h-0 flex-1 flex-col overflow-hidden"
+            >
               {isAddMode ? (
                 <PlaceholderTab
                   icon={<ReceiptText className="h-8 w-8" />}
@@ -346,11 +350,7 @@ export function ProductDialog() {
                   description="This product hasn't been created yet. Save it first to view transaction history."
                 />
               ) : (
-                <PlaceholderTab
-                  icon={<ReceiptText className="h-8 w-8" />}
-                  title="Transactions"
-                  description="View all invoices where this product was sold — coming soon"
-                />
+                <ProductTransactionsTable />
               )}
             </TabsContent>
           </div>

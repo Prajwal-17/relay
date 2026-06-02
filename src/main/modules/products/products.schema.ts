@@ -39,3 +39,8 @@ export const productSearchSchema = z.object({
     .transform((val) => val === "true")
     .catch(false)
 });
+
+export const productTransactionsSchema = z.object({
+  pageNo: z.coerce.number().min(1).positive().default(1),
+  pageSize: z.coerce.number().positive().max(100).default(10)
+});

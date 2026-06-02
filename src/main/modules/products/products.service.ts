@@ -7,6 +7,7 @@ import {
   type PaginatedApiResponse,
   type ProductHistory,
   type ProductSearchItemDTO,
+  type ProductTransaction,
   type UpdateProductPayload
 } from "../../../shared/types";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
@@ -227,6 +228,30 @@ const restoreProduct = async (productId: string) => {
   }
 };
 
+const getTransactionsByProductId = async (
+  productId: string,
+  params: { pageNo: number; pageSize: number }
+): Promise<PaginatedApiResponse<{ data: ProductTransaction[] }>> => {
+  const offset = (params.pageNo - 1) * params.pageSize;
+
+  const [transactions, totalCount] = await Promise.all([
+    productRepository.getTransactionsByProductId({
+      productId,
+      pageSize: params.pageSize,
+      offset
+    }),
+    productRepository.countTransactionsByProductId(productId)
+  ]);
+
+  const nextPageNo = transactions.length === params.pageSize ? params.pageNo + 1 : null;
+
+  return {
+    nextPageNo,
+    totalCount,
+    data: transactions.length > 0 ? (transactions as ProductTransaction[]) : []
+  };
+};
+
 export const productService = {
   getProductById,
   searchProduct,
@@ -235,5 +260,6 @@ export const productService = {
   getHistoryEntriesById,
   softDeleteProduct,
   hardDeleteProduct,
-  restoreProduct
+  restoreProduct,
+  getTransactionsByProductId
 };

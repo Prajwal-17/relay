@@ -5,7 +5,7 @@ import {
 } from "../../../shared/schemas/products.schema";
 import { validateRequest } from "../../middleware/validation";
 import { idSchema } from "../../zod";
-import { productSearchSchema } from "./products.schema";
+import { productSearchSchema, productTransactionsSchema } from "./products.schema";
 import { productService } from "./products.service";
 
 export const productsController = new Hono();
@@ -53,6 +53,18 @@ productsController.get("/:id/history", validateRequest("param", idSchema), async
   const result = await productService.getHistoryEntriesById(id);
   return c.json(result, 200);
 });
+
+productsController.get(
+  "/:id/transactions",
+  validateRequest("param", idSchema),
+  validateRequest("query", productTransactionsSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { pageNo, pageSize } = c.req.valid("query");
+    const result = await productService.getTransactionsByProductId(id, { pageNo, pageSize });
+    return c.json(result, 200);
+  }
+);
 
 // add product
 productsController.post("/", validateRequest("json", createProductSchema), async (c) => {

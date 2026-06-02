@@ -75,6 +75,17 @@ export type ProductHistory = {
   newMrp: number;
 };
 
+export type ProductTransaction = {
+  type: TransactionType;
+  transactionNo: number;
+  customerName: string;
+  quantity: number;
+  price: number;
+  totalPrice: number;
+  isPaid: boolean;
+  createdAt: string;
+};
+
 export type UnifiedTransaction = {
   type: TransactionType;
   id: string;

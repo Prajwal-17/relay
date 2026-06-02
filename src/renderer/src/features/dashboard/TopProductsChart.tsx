@@ -52,13 +52,13 @@ export const TopProductsChart = () => {
             <LoaderCircle className="text-primary animate-spin" size={24} />
           </div>
         ) : colorizedData.length === 0 ? (
-          <div className="text-muted-foreground flex h-[300px] items-center justify-center">
+          <div className="text-muted-foreground flex h-75 items-center justify-center">
             No data available
           </div>
         ) : (
           <>
             {colorizedData.length > 0 && (
-              <ChartContainer config={chartConfig} className="h-[300px] w-full">
+              <ChartContainer config={chartConfig} className="h-75 w-full">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Pie
