@@ -2,13 +2,13 @@
 
 ## v4.2.2 — 08 Mar 2026
 
-### Added
+### Features
 
 - Persistent app zoom controls using `webContents` API
 - Enable WAL mode in SQLite
 - Build & release debian package
 
-### Improved
+### Improvements
 
 - Electron builder config for dev mode, get sqlite path using `userData`
 - Set app name per build mode
@@ -28,7 +28,7 @@
 
 ## v4.2.0 — 03 Mar 2026
 
-### Added
+### Features
 
 - Global error handler & zod validation middleware
 - API client layer — `apiClient` abstraction, env config for Vite
@@ -39,7 +39,7 @@
 - Run frontend as standalone mode
 - Focus search input on page load
 
-### Improved
+### Improvements
 
 - Migrate all API layers (products, dashboard, billing, customers) to client layer with DRY error handling
 - Electron builder overhaul — new config, app logo, scripts & dep upgrades
@@ -85,7 +85,7 @@
 
 ## v4.1.1 — 01 Feb 2026
 
-### Improved
+### Improvements
 
 - Migrate quantities to milli-units (`toMilliUnits` / `fromMilliUnits`)
 - Schema: change `totalQuantity` from real to integer in sales & estimates
@@ -102,7 +102,7 @@
 
 **Major release — billing page rewrite, Hono API migration, autosave**
 
-### Added
+### Features
 
 - Autosave — core flow & state management (replaced drafts approach)
 - Migrate all IPC handlers to Hono API routes (sales, estimates, customers, products)
@@ -114,7 +114,7 @@
 - Integration testing for `updateSale` & sales service
 - Create PDF — temporary solution
 
-### Improved
+### Improvements
 
 - Customer endpoints → RESTful resource (`/api/customers/:id/sales`)
 - Customer input changed to combobox in billing page
@@ -198,12 +198,12 @@
 
 ## v3.1.0 — 02 Nov 2025
 
-### Added
+### Features
 
 - Dashboard home page — metrics, chart, recent transactions, top products pie chart
 - Chart component metrics API endpoints
 
-### Improved
+### Improvements
 
 - Migrate customer transactions table to feature-rich table
 
@@ -214,12 +214,12 @@
 
 ## v3.0.1 — 25 Oct 2025
 
-### Added
+### Features
 
 - Product filter type (all | active | inactive)
 - Loading states across pages
 
-### Improved
+### Improvements
 
 - Products page virtualization & UI fixes
 - Billing page search dropdown event handlers
@@ -234,7 +234,7 @@
 
 **Major release — React Query migration, React Router v6, UI overhaul**
 
-### Added
+### Features
 
 - Migrate all APIs to React Query
 - Migrate to React Router v6 with folder-per-page structure
@@ -244,7 +244,7 @@
 - Products total quantity sold count
 - Not found page
 
-### Improved
+### Improvements
 
 - Rename `invoiceNo` → `transactionNo` in billing store & components
 - Dashboard table — UI, actions, mutations, scroll fix
@@ -259,12 +259,12 @@
 
 ## v2.3.3 — 29 Sep 2025
 
-### Added
+### Features
 
 - Sorting sales/estimates & refactor `filterByDateRange` API
 - New calendar component in dashboard table with date range presets
 
-### Improved
+### Improvements
 
 - Dashboard UI refresh
 
@@ -289,14 +289,14 @@
 
 ## v2.3.0 — 18 Sep 2025
 
-### Added
+### Features
 
 - Generate PDF for sales & estimates, copy to clipboard
 - Zod validation for product dialog
 - Custom infinite scroll hook for products page
 - Global constants & enums
 
-### Improved
+### Improvements
 
 - Restructure IPC handlers & modularize frontend
 
@@ -308,14 +308,14 @@
 
 ## v2.2.5 — 10 Sep 2025
 
-### Added
+### Features
 
 - Change date and time in billing
 - Sidebar access in billing page & billing header UI refactor
 - Summary footer component
 - Custom hook for save & print
 
-### Improved
+### Improvements
 
 - Fix all date conversions & update transactions API
 - Remove static font files
@@ -343,7 +343,7 @@
 
 **Major release — customers, sales dashboard, estimates**
 
-### Added
+### Features
 
 - Customers page — sidebar, details UI, CRUD APIs, search, delete logic
 - Customer selection in billing page with backend logic
@@ -388,7 +388,7 @@ _Build & release pipeline iterations — package.json, build.yml, auto-updater s
 
 **Major release — products management**
 
-### Added
+### Features
 
 - Products page UI & search
 - Add, update, delete products
@@ -396,7 +396,7 @@ _Build & release pipeline iterations — package.json, build.yml, auto-updater s
 - Disable ctrl+/ctrl- zoom shortcuts
 - Revamp search dropdown UI
 
-### Improved
+### Improvements
 
 - Add weight & MRP tag on product card
 - Utils for MRP and price formatting
