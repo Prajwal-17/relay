@@ -82,15 +82,17 @@ export const CustomerDialog = () => {
       const errorRecord = { ...errors };
 
       for (const field in formatted.fieldErrors) {
-        errorRecord[field] =
-          (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
+        errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
       }
       setErrors(errorRecord);
       return;
     }
 
     if (action === "add") {
-      customerMutation.mutate({ action: action, payload: parseResult.data as CreateCustomerPayload });
+      customerMutation.mutate({
+        action: action,
+        payload: parseResult.data as CreateCustomerPayload
+      });
       return;
     }
     customerMutation.mutate({ action: action, payload: parseResult.data as any });
@@ -109,8 +111,7 @@ export const CustomerDialog = () => {
 
     if (!result.success) {
       const formatted = z.flattenError(result.error);
-      errorRecord[field] =
-        (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
+      errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
       setErrors(errorRecord);
     } else {
       delete errorRecord[field];

@@ -112,9 +112,11 @@ function createWindow(): void {
   // https://stackoverflow.com/a/75716165/25649886
   mainWindow.webContents.on("before-input-event", (_, input) => {
     if (input.type === "keyDown" && input.key === "F12") {
-      mainWindow.webContents.isDevToolsOpened()
-        ? mainWindow.webContents.closeDevTools()
-        : mainWindow.webContents.openDevTools({ mode: "right" });
+      if (mainWindow.webContents.isDevToolsOpened()) {
+        mainWindow.webContents.closeDevTools();
+      } else {
+        mainWindow.webContents.openDevTools({ mode: "right" });
+      }
     }
   });
 

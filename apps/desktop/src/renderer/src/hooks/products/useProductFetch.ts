@@ -30,9 +30,7 @@ export const useProductFetch = (productId: string | null, enabled: boolean) => {
       imageUrl: data.imageUrl ?? null,
       mrp: data.mrp ? paisaToRupeeString(data.mrp) : null,
       price: paisaToRupeeString(data.price),
-      purchasePrice: data.purchasePrice
-        ? paisaToRupeeString(data.purchasePrice)
-        : null,
+      purchasePrice: data.purchasePrice ? paisaToRupeeString(data.purchasePrice) : null,
       isDisabled: data.isDisabled ?? false,
       isDeleted: data.isDeleted ?? false,
       totalQuantitySold: data.totalQuantitySold ?? null,

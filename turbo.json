@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": ["MODE", "ELECTRON_RENDERER_URL", "NODE_ENV", "APPDATA"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

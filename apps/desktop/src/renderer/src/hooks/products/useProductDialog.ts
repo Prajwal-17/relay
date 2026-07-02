@@ -187,7 +187,8 @@ export const useProductDialog = () => {
         const errorRecord: Record<string, any> = {};
 
         for (const field in formatted.fieldErrors) {
-          errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
+          errorRecord[field] =
+            (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
         }
         setErrors(errorRecord);
         return;

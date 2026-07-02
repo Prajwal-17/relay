@@ -72,9 +72,11 @@ const DashboardTableRow = ({
   }, [setIsViewModalOpen, setTransactionId, transaction]);
 
   const handleEdit = useCallback(() => {
-    pathname === "sales"
-      ? navigate(`/billing/sales/${transaction.id}/edit`)
-      : navigate(`/billing/estimates/${transaction.id}/edit`);
+    if (pathname === "sales") {
+      navigate(`/billing/sales/${transaction.id}/edit`);
+    } else {
+      navigate(`/billing/estimates/${transaction.id}/edit`);
+    }
   }, [navigate, transaction.id, pathname]);
 
   const onDelete = useCallback(() => {

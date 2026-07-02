@@ -69,9 +69,11 @@ const CustomerTableRow = ({
   }, [setIsViewModalOpen, setTransactionId, transaction.id]);
 
   const handleEdit = useCallback(() => {
-    type === TRANSACTION_TYPE.SALE
-      ? navigate(`/billing/sales/${transaction.id}/edit`)
-      : navigate(`/billing/estimates/${transaction.id}/edit`);
+    if (type === TRANSACTION_TYPE.SALE) {
+      navigate(`/billing/sales/${transaction.id}/edit`);
+    } else {
+      navigate(`/billing/estimates/${transaction.id}/edit`);
+    }
   }, [navigate, transaction.id, type]);
 
   const onDelete = useCallback(() => {
