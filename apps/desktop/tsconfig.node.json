@@ -1,6 +1,6 @@
 // tsconfig for the electron app
 {
-  "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
+  "extends": "@repo/typescript-config/base.json",
   "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*", "src/shared/**/*"],
   "compilerOptions": {
     "target": "ES2023",

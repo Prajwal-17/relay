@@ -1,11 +1,11 @@
-allowBuilds:
-  better-sqlite3: true
-  core-js: true
-  electron: true
-  electron-winstaller: true
-  esbuild: true
+packages:
+  - "apps/*"
+  - "packages/*"
+
 onlyBuiltDependencies:
   - "@tailwindcss/oxide"
   - better-sqlite3
+  - core-js
   - electron
+  - electron-winstaller
   - esbuild

@@ -1,122 +1,159 @@
-# QuickCart
+# Turborepo starter
 
-Offline first desktop billing app for managing invoices, estimates, products, and customers.
+This Turborepo starter is maintained by the Turborepo core team.
 
-## Features
+## Using this example
 
-- **Products** — Full CRUD, soft delete, image upload/crop, price history, search, filter, sort, grid/list view, enable/disable toggle.
-- **Billing** — Ring up products, assign customers, checkout. Tracks totals and payment status.
-- **Invoices** — Generate and print. Product snapshots keep past invoices accurate when prices change.
-- **Estimates** — Quotes without impacting revenue.
-- **Customers** — Directory for assigning to sales and estimates.
-- **Dashboard** — Charts and metrics.
-- **Onboarding** — First-launch wizard to set up store details.
+Run the following command:
 
-## Getting Started
-
-```bash
-git clone https://github.com/Prajwal-17/pos.git
-cd pos
-pnpm install
-pnpm dev
+```sh
+npx create-turbo@latest
 ```
 
-## Build
+## What's inside?
 
-```bash
-pnpm build:win    # Windows
-pnpm build:linux  # Linux
+This Turborepo includes the following packages/apps:
+
+### Apps and Packages
+
+- `docs`: a [Next.js](https://nextjs.org/) app
+- `web`: another [Next.js](https://nextjs.org/) app
+- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
+- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
+- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+
+Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+
+### Utilities
+
+This Turborepo has some additional tools already setup for you:
+
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+
+### Build
+
+To build all apps and packages, run the following command:
+
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+
+```sh
+cd my-turborepo
+turbo build
 ```
 
-Output in `dist/`.
+Without global `turbo`, use your package manager:
 
-## Commands
-
-| Command                | Description                    |
-| ---------------------- | ------------------------------ |
-| `pnpm dev`             | Start dev mode with hot reload |
-| `pnpm build`           | Typecheck and build            |
-| `pnpm start`           | Preview production build       |
-| `pnpm seed`            | Seed database                  |
-| `pnpm db:migrate:dev`  | Run migrations (dev)           |
-| `pnpm db:migrate:prod` | Run migrations (prod)          |
-| `pnpm db:push:dev`     | Push schema to dev DB          |
-| `pnpm db:push:prod`    | Push schema to prod DB         |
-| `pnpm db:studio:dev`   | Open Drizzle Studio (dev)      |
-| `pnpm db:studio:prod`  | Open Drizzle Studio (prod)     |
-
-## Tech Stack
-
-**Frontend:** React, Vite, Tailwind CSS, Shadcn, Zustand, TanStack Query, React Router v7, recharts, zod.
-**Backend:** Electron, Hono, better-sqlite3, Drizzle ORM.
-
-## Architecture
-
-Three directories under `src/`:
-
-- `main/` — Electron process, SQLite, Hono API server.
-- `renderer/` — React UI.
-- `shared/` — Types, constants, Zod schemas, Utils.
-
-## Database
-
-Tables: app_instance, store_profile, customers, products, product_history, sales, sale_items, estimates, estimate_items.
-
-DB file locations:
-
-- Linux: `/home/<user>/.config/quickcart/<dbname>.db`
-- Windows: `C:\Users\<username>\AppData\Roaming\quickcart\<dbname>.db`
-
-## Common Errors & Fixes
-
-### 1. Chrome Sandbox Error (Linux only)
-
-```
-FATAL:sandbox/linux/suid/client/setuid_sandbox_host.cc:169]
-The SUID sandbox helper binary was found, but is not configured correctly.
+```sh
+cd my-turborepo
+npx turbo build
+pnpm dlx turbo build
+pnpm exec turbo build
 ```
 
-Fix option 1 (set env var):
+You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
-```bash
-ELECTRON_DISABLE_SANDBOX=1 pnpm dev
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+
+```sh
+turbo build --filter=docs
 ```
 
-The dev script in package.json already includes this.
+Without global `turbo`:
 
-Fix option 2 (set permissions):
-
-```bash
-sudo chown root <path-to-electron>/chrome-sandbox
-sudo chmod 4755 <path-to-electron>/chrome-sandbox
+```sh
+npx turbo build --filter=docs
+pnpm exec turbo build --filter=docs
+pnpm exec turbo build --filter=docs
 ```
 
-Example:
+### Develop
 
-```bash
-sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+To develop all apps and packages, run the following command:
+
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+
+```sh
+cd my-turborepo
+turbo dev
 ```
 
-Example:
+Without global `turbo`, use your package manager:
 
-```bash
-sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
+```sh
+cd my-turborepo
+npx turbo dev
+pnpm exec turbo dev
+pnpm exec turbo dev
 ```
 
-### 2. better-sqlite3 NODE_MODULE_VERSION Mismatch
+You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
 
-Error: `better-sqlite3` was compiled against a different Node.js version. This happens because `better-sqlite3` is a native C++ addon. The system Node.js and Electron's embedded Node.js have different version fingerprints.
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
 
-Fix for dev (Electron runtime):
-
-```bash
-pnpm rebuild better-sqlite3
+```sh
+turbo dev --filter=web
 ```
 
-If that fails:
+Without global `turbo`:
 
-```bash
-rm -rf node_modules && pnpm install
+```sh
+npx turbo dev --filter=web
+pnpm exec turbo dev --filter=web
+pnpm exec turbo dev --filter=web
 ```
+
+### Remote Caching
+
+> [!TIP]
+> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+
+Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+
+By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+
+```sh
+cd my-turborepo
+turbo login
+```
+
+Without global `turbo`, use your package manager:
+
+```sh
+cd my-turborepo
+npx turbo login
+pnpm exec turbo login
+pnpm exec turbo login
+```
+
+This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+
+Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+
+With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+
+```sh
+turbo link
+```
+
+Without global `turbo`:
+
+```sh
+npx turbo link
+pnpm exec turbo link
+pnpm exec turbo link
+```
+
+## Useful Links
+
+Learn more about the power of Turborepo:
+
+- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
+- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
+- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
+- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
+- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
+- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
