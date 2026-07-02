@@ -6,7 +6,8 @@ import {
   type TransactionType,
   type UpdateQtyAction
 } from "@shared/types";
-import { convertToPaisa, toMilliUnits } from "@shared/utils/utils";
+import { rupeesToPaisa } from "@shared/utils/utils";
+import { toMilliUnits } from "@shared/utils/milliUnits";
 
 type NormalizedLineItem = Omit<LineItem, "price" | "quantity" | "syncStatus"> & {
   price: number;
@@ -104,7 +105,7 @@ export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] 
 
     return {
       ...rest,
-      price: convertToPaisa(parseFloat(item.price || "0")),
+      price: rupeesToPaisa(parseFloat(item.price || "0")),
       quantity: toMilliUnits(item.quantity),
       checkedQty: toMilliUnits(item.checkedQty)
     };

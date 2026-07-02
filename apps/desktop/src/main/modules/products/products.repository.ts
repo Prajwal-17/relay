@@ -1,7 +1,7 @@
 import { and, count, desc, eq, inArray, like, sql, type SQL } from "drizzle-orm";
 import { type CreateProductPayload, type UpdateProductPayload } from "../../../shared/types";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
-import { convertToRupees } from "../../../shared/utils/utils";
+import { paisaToRupees } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import {
   customers,
@@ -119,7 +119,7 @@ const createProduct = async (payload: CreateProductPayload) => {
           name: payload.name,
           weight: payload.weight ?? null,
           unit: normalizedUnit ?? null,
-          mrp: payload.mrp ? convertToRupees(payload.mrp) : null
+          mrp: payload.mrp ? paisaToRupees(payload.mrp) : null
         }),
         weight: payload.weight ?? null,
         unit: normalizedUnit ?? null,

@@ -21,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
 import { TRANSACTION_TYPE, type TransactionType, type UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
@@ -79,7 +79,7 @@ const RecentTransactionsTableRow = ({
           # {transaction.transactionNo}
         </div>
         <div className="col-span-2 flex items-center font-semibold">
-          {transaction.grandTotal ? formatToRupees(transaction.grandTotal) : "-"}
+          {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
         </div>
         <div className="col-span-2 flex items-center">
           {transaction.isPaid ? (

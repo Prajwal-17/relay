@@ -4,7 +4,7 @@ import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { useReceiptRefStore } from "@/store/useReceiptRefStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees } from "@shared/utils/utils";
+import { paisaToRupees } from "@shared/utils/utils";
 import { Check } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Navigate, useParams } from "react-router-dom";
@@ -112,7 +112,7 @@ const BillPreview = () => {
                   </div>
                   <div className="col-span-2 text-right tracking-tight">{item.price}</div>
                   <div className="col-span-2 text-right tracking-tight">
-                    {convertToRupees(item.totalPrice)}
+                    {paisaToRupees(item.totalPrice)}
                   </div>
                 </div>
               );

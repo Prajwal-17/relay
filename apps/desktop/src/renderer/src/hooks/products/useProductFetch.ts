@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/apiClient";
 import { useProductsStore, type ProductsFormType } from "@/store/productsStore";
 import type { ProductSearchItemDTO } from "@shared/types";
-import { convertToRupees } from "@shared/utils/utils";
+import { paisaToRupeeString } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -28,10 +28,10 @@ export const useProductFetch = (productId: string | null, enabled: boolean) => {
       weight: data.weight,
       unit: data.unit,
       imageUrl: data.imageUrl ?? null,
-      mrp: data.mrp ? convertToRupees(data.mrp, { asString: true }) : null,
-      price: convertToRupees(data.price, { asString: true }),
+      mrp: data.mrp ? paisaToRupeeString(data.mrp) : null,
+      price: paisaToRupeeString(data.price),
       purchasePrice: data.purchasePrice
-        ? convertToRupees(data.purchasePrice, { asString: true })
+        ? paisaToRupeeString(data.purchasePrice)
         : null,
       isDisabled: data.isDisabled ?? false,
       isDeleted: data.isDeleted ?? false,

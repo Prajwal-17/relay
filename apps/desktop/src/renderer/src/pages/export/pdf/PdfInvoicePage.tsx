@@ -6,7 +6,8 @@ import {
   type UnifiedTransctionWithItems
 } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { convertToRupees, formatINR, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
+import { formatINR, formatRupee, paisaToRupees } from "@shared/utils/utils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "react-router-dom";
 
@@ -52,8 +53,8 @@ export default function PdfInvoicePage() {
   );
 
   const totalAmount = transaction.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
-  const subtotal = formatToRupees(totalAmount);
-  const temp = Math.round(convertToRupees(totalAmount));
+  const subtotal = formatRupee(totalAmount);
+  const temp = Math.round(paisaToRupees(totalAmount));
   const grandTotal = formatINR.format(temp);
 
   return (
@@ -150,10 +151,10 @@ export default function PdfInvoicePage() {
                     {fromMilliUnits(item.quantity)}
                   </td>
                   <td className="text-invoice-text px-2 py-1.5 text-right">
-                    {formatToRupees(item.price)}
+                    {formatRupee(item.price)}
                   </td>
                   <td className="px-2 py-1.5 text-right font-semibold">
-                    {formatToRupees(item.totalPrice)}
+                    {formatRupee(item.totalPrice)}
                   </td>
                 </tr>
               ))}

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useCustomerSummary } from "@/hooks/customers/useCustomerSummary";
 import type { Customer } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { ReceiptText, ShoppingCart, TrendingUp } from "lucide-react";
 
 type Props = {
@@ -73,7 +73,7 @@ export const CustomerSummaryCard = ({ customer }: Props) => {
           <div className="grid grid-cols-3 gap-4">
             <SummaryMetricCard
               title="Total Sales"
-              value={formatToRupees(summary?.salesTotal ?? 0)}
+              value={formatRupee(summary?.salesTotal ?? 0)}
               subValue={`${summary?.salesCount ?? 0} Transactions`}
               icon={ShoppingCart}
               iconBg="bg-primary/15"
@@ -81,7 +81,7 @@ export const CustomerSummaryCard = ({ customer }: Props) => {
             />
             <SummaryMetricCard
               title="Estimates"
-              value={formatToRupees(summary?.estimatesTotal ?? 0)}
+              value={formatRupee(summary?.estimatesTotal ?? 0)}
               subValue={`${summary?.estimatesCount ?? 0} Quotations`}
               icon={ReceiptText}
               iconBg="bg-secondary"
@@ -89,7 +89,7 @@ export const CustomerSummaryCard = ({ customer }: Props) => {
             />
             <SummaryMetricCard
               title="Avg. Transaction"
-              value={formatToRupees(summary?.average ?? 0)}
+              value={formatRupee(summary?.average ?? 0)}
               subValue={`Across ${totalTransactions} transactions`}
               icon={TrendingUp}
               iconBg="bg-success/15"

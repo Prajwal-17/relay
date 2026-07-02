@@ -8,7 +8,7 @@ import {
   type TxnPayloadData,
   type UpdateQtyAction
 } from "../../../shared/types";
-import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/utils";
+import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/milliUnits";
 import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";

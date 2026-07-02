@@ -5,7 +5,7 @@ import {
   type UnifiedTransctionWithItems,
   type UpdateQtyAction
 } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -65,9 +65,9 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
       return sum + Number(currentItem.totalPrice || 0);
     }, 0) || 0;
 
-  const subtotal = formatToRupees(total);
+  const subtotal = formatRupee(total);
 
-  const grandTotal = formatToRupees(Math.round(total));
+  const grandTotal = formatRupee(Math.round(total));
 
   return { data, subtotal, grandTotal, updateQtyMutation, batchUpdateQtyMutation };
 };

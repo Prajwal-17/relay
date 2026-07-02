@@ -4,7 +4,7 @@ import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
 import { useViewModalStore } from "@/store/viewModalStore";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { IndianRupee, Plus, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +26,7 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
                 <IndianRupee className="text-success h-5 w-5" />
               </div>
               <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
-              <span className="text-2xl font-bold">{formatToRupees(totalRevenue ?? 0)}</span>
+              <span className="text-2xl font-bold">{formatRupee(totalRevenue ?? 0)}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="bg-secondary/90 flex h-10 w-10 items-center justify-center rounded-lg">

@@ -1,64 +1,76 @@
+/**
+ * Singleton Intl.NumberFormat for INR currency display.
+ * Reuse this instance via `.format(rupees)` when you already have a rupee value.
+ * @example formatINR.format(54.99) => "₹54.99"
+ */
 export const formatINR = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",
   minimumFractionDigits: 2
 });
 
-// function overloading
-export function convertToRupees(valueInPaisa: number, options: { asString: true }): string;
-export function convertToRupees(valueInPaisa: number, options: { asString: false }): number;
-export function convertToRupees(valueInPaisa: number, options?: { asString?: boolean }): number;
+// ------------
+// Conversion
+// ------------
 
-export function convertToRupees(
-  valueInPaisa: number,
-  optionsOrAsString: boolean | { asString?: boolean } = false
-): number | string {
-  const asString =
-    typeof optionsOrAsString === "boolean" ? optionsOrAsString : optionsOrAsString?.asString;
-
-  if (typeof valueInPaisa !== "number" || isNaN(valueInPaisa)) {
-    return asString ? "0" : 0;
+/**
+ * Converts paisa to rupees for arithmetic.
+ * @throws if input is not a finite number.
+ * @example paisaToRupees(5499) => 54.99
+ */
+export function paisaToRupees(valueInPaisa: number): number {
+  if (typeof valueInPaisa !== "number" || !Number.isFinite(valueInPaisa)) {
+    throw new Error(
+      `paisaToRupees: expected a finite number, got ${typeof valueInPaisa} ${JSON.stringify(valueInPaisa)}`
+    );
   }
-  const rupees = valueInPaisa / 100;
-  return asString ? rupees.toString() : rupees;
+  return valueInPaisa / 100;
 }
 
-// function overloading
-export function convertToPaisa(valueInRupees: number, options: { asString: true }): string;
-export function convertToPaisa(valueInRupees: number, options: { asString: false }): number;
-export function convertToPaisa(valueInRupees: number, options?: { asString?: boolean }): number;
-
-export function convertToPaisa(
-  valueInRupees: number,
-  optionsOrAsString: boolean | { asString?: boolean } = false
-): number | string {
-  const asString =
-    typeof optionsOrAsString === "boolean" ? optionsOrAsString : optionsOrAsString?.asString;
-
-  if (typeof valueInRupees !== "number" || isNaN(valueInRupees)) {
-    return asString ? "0" : 0;
+/**
+ * Converts rupees to paisa for storage.
+ * @throws if input is not a finite number.
+ * @example rupeesToPaisa(54.99) => 5499
+ */
+export function rupeesToPaisa(valueInRupees: number): number {
+  if (typeof valueInRupees !== "number" || !Number.isFinite(valueInRupees)) {
+    throw new Error(
+      `rupeesToPaisa: expected a finite number, got ${typeof valueInRupees} ${JSON.stringify(valueInRupees)}`
+    );
   }
-  const paisa = Math.round(valueInRupees * 100);
-  return asString ? paisa.toString() : paisa;
+  return Math.round(valueInRupees * 100);
 }
 
-export function formatToRupees(valueInPaisa: number): string {
-  if (typeof valueInPaisa !== "number" || isNaN(valueInPaisa) || !Number.isFinite(valueInPaisa)) {
-    return "N/A";
+// ------------------------
+// Formatting (displaying)
+// ------------------------
+
+/**
+ * Converts paisa to a plain decimal string (no currency symbol).
+ * - Always renders 2 decimal places.
+ * @throws if input is not a finite number.
+ * @example paisaToRupeeString(5499) => "54.99"
+ */
+export function paisaToRupeeString(valueInPaisa: number): string {
+  if (typeof valueInPaisa !== "number" || !Number.isFinite(valueInPaisa)) {
+    throw new Error(
+      `paisaToRupeeString: expected a finite number, got ${typeof valueInPaisa} ${JSON.stringify(valueInPaisa)}`
+    );
   }
-  const rupees = convertToRupees(valueInPaisa);
-  return formatINR.format(rupees);
+  return (valueInPaisa / 100).toFixed(2);
 }
 
-const MILLI_MULTIPLIER = 1000;
-
-export function toMilliUnits(value: number | string): number {
-  const num = typeof value === "string" ? parseFloat(value) : value;
-  if (isNaN(num) || !Number.isFinite(num)) return 0;
-  return Math.round(num * MILLI_MULTIPLIER);
-}
-
-export function fromMilliUnits(milliValue: number): number {
-  if (typeof milliValue !== "number" || isNaN(milliValue)) return 0;
-  return milliValue / MILLI_MULTIPLIER;
+/**
+ * Formats paisa as a currency string with rupee symbol and proper grouping.
+ * - This is the primary display function for prices.
+ * @throws if input is not a finite number.
+ * @example formatRupee(5499) => "₹54.99"
+ */
+export function formatRupee(valueInPaisa: number): string {
+  if (typeof valueInPaisa !== "number" || !Number.isFinite(valueInPaisa)) {
+    throw new Error(
+      `formatRupee: expected a finite number, got ${typeof valueInPaisa} ${JSON.stringify(valueInPaisa)}`
+    );
+  }
+  return formatINR.format(valueInPaisa / 100);
 }

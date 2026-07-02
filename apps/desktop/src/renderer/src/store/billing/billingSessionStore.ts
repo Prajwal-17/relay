@@ -1,6 +1,6 @@
 import { SYNCSTATUS } from "@/types";
 import { type BillingProductDTO, type UnifiedTransactionItem } from "@shared/types";
-import { convertToRupees } from "@shared/utils/utils";
+import { paisaToRupees } from "@shared/utils/utils";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -150,7 +150,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
               weight: newItem.weight,
               unit: newItem.unit,
               mrp: newItem.mrp,
-              price: newItem.price ? convertToRupees(newItem.price).toString() : "",
+              price: newItem.price ? paisaToRupees(newItem.price).toString() : "",
               quantity: oldItemQuantity.toString(),
               totalPrice: 0, // temporary
               checkedQty: oldItemCheckedQty,

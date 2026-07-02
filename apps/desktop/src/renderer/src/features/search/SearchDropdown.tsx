@@ -11,7 +11,7 @@ import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { ACTION_TYPE, DIALOG_MODE, PRODUCT_SORT_BY } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees } from "@shared/utils/utils";
+import { paisaToRupeeString } from "@shared/utils/utils";
 import {
   ArrowDown,
   ArrowUp,
@@ -489,14 +489,14 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                         variant="outline"
                                         className="border-search-badge-mrp-border bg-search-badge-mrp-bg text-search-badge-mrp-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
                                       >
-                                        MRP ₹{convertToRupees(product.mrp, { asString: true })}
+                                        MRP ₹{paisaToRupeeString(product.mrp)}
                                       </Badge>
                                     )}
                                   </div>
                                 </div>
                                 <div className="shrink-0 text-right">
                                   <span className="text-success text-xl font-bold">
-                                    ₹ {convertToRupees(product.price, { asString: true })}
+                                    ₹ {paisaToRupeeString(product.price)}
                                   </span>
                                 </div>
                               </div>

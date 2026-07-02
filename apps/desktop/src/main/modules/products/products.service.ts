@@ -11,7 +11,7 @@ import {
   type UpdateProductPayload
 } from "../../../shared/types";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
-import { convertToRupees } from "../../../shared/utils/utils";
+import { paisaToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { productRepository } from "./products.repository";
@@ -154,7 +154,7 @@ const updateProduct = async (
     name: updatedProduct.name,
     weight: updatedProduct.weight,
     unit: updatedProduct.unit,
-    mrp: updatedProduct.mrp ? convertToRupees(updatedProduct.mrp) : null
+    mrp: updatedProduct.mrp ? paisaToRupees(updatedProduct.mrp) : null
   });
 
   // update productSnapshot

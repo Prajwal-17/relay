@@ -1,7 +1,7 @@
 import { useProductHistory } from "@/hooks/products/useProductHistory";
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { AlertCircle, ArrowRight, Clock, Clock3, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -22,11 +22,11 @@ function DiffRow({
       <span className="text-secondary-foreground text-base font-semibold">{label}</span>
       <div className="flex items-center gap-3 text-[0.95rem]">
         <span className="text-muted-foreground decoration-muted-foreground/40 text-base font-medium line-through">
-          {oldVal ? formatToRupees(oldVal) : "N/A"}
+          {oldVal ? formatRupee(oldVal) : "N/A"}
         </span>
         <ArrowRight className="text-muted-foreground/30 h-4 w-4" strokeWidth={3} />
         <span className="text-base font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
-          {newVal ? formatToRupees(newVal) : "N/A"}
+          {newVal ? formatRupee(newVal) : "N/A"}
         </span>
       </div>
     </div>

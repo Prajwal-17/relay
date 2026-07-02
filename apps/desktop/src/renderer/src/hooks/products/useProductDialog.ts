@@ -10,7 +10,7 @@ import {
   type ProductOperation,
   type UpdateProductPayload
 } from "@shared/types";
-import { convertToPaisa } from "@shared/utils/utils";
+import { rupeesToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -108,7 +108,7 @@ export const useProductDialog = () => {
     const converted = { ...data };
     for (const [key, value] of Object.entries(data)) {
       if (CURRENCY_FIELDS.includes(key) && typeof value === "number") {
-        converted[key] = convertToPaisa(value);
+        converted[key] = rupeesToPaisa(value);
       }
     }
     return converted;

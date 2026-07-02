@@ -4,7 +4,8 @@ import { PAGE_SIZE, useProductTransactions } from "@/hooks/products/useProductTr
 import { useProductsStore } from "@/store/productsStore";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -168,11 +169,11 @@ export function ProductTransactionsTable() {
                 </div>
 
                 <div className="text-product-label col-span-1 flex items-center justify-end text-base font-medium tabular-nums">
-                  {formatToRupees(txn.price)}
+                  {formatRupee(txn.price)}
                 </div>
 
                 <div className="text-foreground col-span-2 flex items-center justify-end text-base font-bold tabular-nums">
-                  {formatToRupees(txn.totalPrice)}
+                  {formatRupee(txn.totalPrice)}
                 </div>
 
                 <div className="col-span-1 flex items-center justify-end">

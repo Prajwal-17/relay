@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS, PROTOCOL_NAME } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
-import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
@@ -239,10 +240,10 @@ export const ProductPreview = () => {
     : formData.imageUrl
       ? `${PROTOCOL_NAME}${formData.imageUrl}`
       : null;
-  const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "—";
-  const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : "—";
+  const displayPrice = formData.price ? formatRupee(Number(formData.price) * 100) : "—";
+  const displayMrp = formData.mrp ? formatRupee(Number(formData.mrp) * 100) : "—";
   const displayPurchasePrice = formData.purchasePrice
-    ? formatToRupees(Number(formData.purchasePrice) * 100)
+    ? formatRupee(Number(formData.purchasePrice) * 100)
     : "—";
   const weightStr =
     formData.weight && formData.unit && formData.unit !== "none"

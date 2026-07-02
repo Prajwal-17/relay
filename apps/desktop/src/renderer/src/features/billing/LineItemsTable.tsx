@@ -10,7 +10,7 @@ import type { LineItem } from "@/store/billing/billingSession.types";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
 import { processSyncQueue } from "@/utils/syncWorker";
-import { fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
+import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import {
   CheckCheck,
   ChevronDown,

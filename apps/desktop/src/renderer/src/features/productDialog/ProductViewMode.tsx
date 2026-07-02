@@ -2,7 +2,8 @@ import { PROTOCOL_NAME } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { generateProductSnapshot } from "@shared/utils/productSnapshot";
-import { formatToRupees, fromMilliUnits } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { Check, Copy, ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
@@ -11,10 +12,10 @@ import { StatusIndicator } from "./StatusIndicator";
 export const ProductViewMode = () => {
   const formData = useProductsStore((state) => state.formDataState);
   const productId = useProductsStore((state) => state.productId);
-  const displayPrice = formData.price ? formatToRupees(Number(formData.price) * 100) : "N/A";
-  const displayMrp = formData.mrp ? formatToRupees(Number(formData.mrp) * 100) : null;
+  const displayPrice = formData.price ? formatRupee(Number(formData.price) * 100) : "N/A";
+  const displayMrp = formData.mrp ? formatRupee(Number(formData.mrp) * 100) : null;
   const displayPurchasePrice = formData.purchasePrice
-    ? formatToRupees(Number(formData.purchasePrice) * 100)
+    ? formatRupee(Number(formData.purchasePrice) * 100)
     : null;
   const productSnapshot = generateProductSnapshot({
     name: formData.name,

@@ -1,6 +1,6 @@
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { convertToRupees, formatToRupees } from "@shared/utils/utils";
+import { formatRupee, paisaToRupees } from "@shared/utils/utils";
 
 const useTransaction = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -12,8 +12,8 @@ const useTransaction = () => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
 
-  const subtotal = formatToRupees(total);
-  const temp = Math.round(convertToRupees(total));
+  const subtotal = formatRupee(total);
+  const temp = Math.round(paisaToRupees(total));
   const grandTotal = Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",

@@ -24,7 +24,8 @@ import {
   type ProductSearchItemDTO
 } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
-import { convertToRupees, formatToRupees, fromMilliUnits } from "@shared/utils/utils";
+import { formatRupee, paisaToRupeeString } from "@shared/utils/utils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { Clock, Edit, Eye, Image, RotateCcw, Trash2 } from "lucide-react";
 
 export default function ProductListItem({ product }: { product: ProductSearchItemDTO }) {
@@ -93,7 +94,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
               variant="outline"
               className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
             >
-              MRP ₹{convertToRupees(product.mrp, { asString: true })}
+              MRP ₹{paisaToRupeeString(product.mrp)}
             </Badge>
           )}
         </div>
@@ -121,7 +122,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       </div>
 
       <div className="shrink-0 text-right">
-        <div className="text-foreground text-2xl font-bold">{formatToRupees(product.price)}</div>
+        <div className="text-foreground text-2xl font-bold">{formatRupee(product.price)}</div>
       </div>
 
       {product.isDeleted ? (

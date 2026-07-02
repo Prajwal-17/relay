@@ -20,7 +20,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { MutationVariables, StatusMutationVariables } from "@/hooks/customers/useCustomers";
 import { TRANSACTION_TYPE, type CustomerTransaction, type TransactionType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   CircleCheckBig,
@@ -120,7 +120,7 @@ const CustomerTableRow = ({
             # {transaction.transactionNo}
           </div>
           <div className="col-span-2 flex items-center font-semibold">
-            {transaction.grandTotal ? formatToRupees(transaction.grandTotal) : "-"}
+            {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
           </div>
           <div className="col-span-1 flex items-center">
             {transaction.isPaid ? (

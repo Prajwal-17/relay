@@ -6,7 +6,8 @@ import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { UPDATE_QTY_ACTION } from "@shared/types";
-import { convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
+import { paisaToRupeeString } from "@shared/utils/utils";
+import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
@@ -183,7 +184,7 @@ const LineItemRow = memo(
                 <IndianRupee size={16} />
               </span>
               <div className="bg-muted/25 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-9 text-right text-lg font-semibold">
-                {item.totalPrice ? convertToRupees(item.totalPrice, { asString: true }) : "0"}
+                {item.totalPrice ? paisaToRupeeString(item.totalPrice) : "0"}
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { SYNCSTATUS } from "@/types";
 import { BILLSTATUS, TRANSACTION_TYPE, type UnifiedTransactionItem } from "@shared/types";
-import { convertToPaisa, convertToRupees, fromMilliUnits, toMilliUnits } from "@shared/utils/utils";
+import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
+import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import { v4 as uuidv4 } from "uuid";
 import type { LineItem } from "./billingSession.types";
 
@@ -56,7 +57,7 @@ export function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     weight: item.weight,
     unit: item.unit,
     mrp: item.mrp,
-    price: item.price ? convertToRupees(Number(item.price)).toString() : "",
+    price: item.price ? paisaToRupees(Number(item.price)).toString() : "",
     quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
     checkedQty: fromMilliUnits(item.checkedQty),
@@ -71,7 +72,7 @@ export function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
 export const reCalculateLineItem = (item: LineItem): LineItem => {
   const priceInRupees = parseFloat(item.price) || 0;
   const qtyInUnits = parseFloat(item.quantity) || 0;
-  const priceInPaisa = convertToPaisa(priceInRupees);
+  const priceInPaisa = rupeesToPaisa(priceInRupees);
   const qtyInMilli = toMilliUnits(qtyInUnits);
   const totalPrice = Math.round((priceInPaisa * qtyInMilli) / 1000);
   return {

@@ -9,7 +9,7 @@ import {
   type TopProductDataPoint,
   type TransactionType
 } from "../../../shared/types";
-import { convertToRupees } from "../../../shared/utils/utils";
+import { paisaToRupees } from "../../../shared/utils/utils";
 import { dashboardRepository } from "./dashboard.repository";
 import {
   dayNames,
@@ -131,8 +131,8 @@ const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> =>
 
     chartData.push({
       label: formattedDate,
-      sales: convertToRupees(sale.total) ?? 0,
-      estimates: convertToRupees(estimate?.total as number) ?? 0
+      sales: paisaToRupees(sale.total) ?? 0,
+      estimates: paisaToRupees(estimate?.total as number) ?? 0
     });
   }
 
@@ -156,8 +156,8 @@ const getSalesEstimatesRevenueByMonth = async (): Promise<ChartDataType[]> => {
     const monthIndex = index + 1;
     return {
       label: month,
-      sales: convertToRupees(salesMap[monthIndex]) || 0,
-      estimates: convertToRupees(estimatesMap[monthIndex]) || 0
+      sales: paisaToRupees(salesMap[monthIndex]) || 0,
+      estimates: paisaToRupees(estimatesMap[monthIndex]) || 0
     };
   });
 
@@ -183,8 +183,8 @@ const getSalesEstimatesRevenueByLast7Days = async (): Promise<ChartDataType[]> =
 
     chartData.push({
       label: formattedDate,
-      sales: convertToRupees(sale.total) ?? 0,
-      estimates: convertToRupees(estimate?.total as number) ?? 0
+      sales: paisaToRupees(sale.total) ?? 0,
+      estimates: paisaToRupees(estimate?.total as number) ?? 0
     });
   }
 

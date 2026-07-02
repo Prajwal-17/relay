@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/apiClient";
 import type { MetricsSummary } from "@shared/types";
-import { formatToRupees } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle } from "lucide-react";
 import { useEffect } from "react";
@@ -34,7 +34,7 @@ export const MetricsComponent = () => {
           data && (
             <MetricCard
               label="Today's Sales"
-              value={formatToRupees(data.sales.today)}
+              value={formatRupee(data.sales.today)}
               href="/dashboard/sales"
               changePercent={data.sales.changePercent}
               trend={data.sales.trend}
@@ -52,7 +52,7 @@ export const MetricsComponent = () => {
           data && (
             <MetricCard
               label="Today's Estimates"
-              value={formatToRupees(data.estimates.today)}
+              value={formatRupee(data.estimates.today)}
               href="/dashboard/estimates"
               changePercent={data.estimates.changePercent}
               trend={data.estimates.trend}
