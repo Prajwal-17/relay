@@ -13,6 +13,7 @@ export const generateProductSnapshot = (item: SnapshotPayload) => {
   // weight && mrp && weight+unit does not equal to ignoredWeights
   if (
     item.weight !== null &&
+    item.unit !== null &&
     item.mrp &&
     !ignoredWeight.some((w) => `${item.weight}${item.unit}` === w)
   ) {
@@ -26,7 +27,7 @@ export const generateProductSnapshot = (item: SnapshotPayload) => {
   if (
     item.weight !== null &&
     item.mrp &&
-    ignoredWeight.some((w) => `${item.weight}${item.unit}` === w)
+    (item.unit === null || ignoredWeight.some((w) => `${item.weight}${item.unit}` === w))
   ) {
     if (item.mrp) {
       name += ` ${item.mrp}Rs`;
@@ -40,7 +41,9 @@ export const generateProductSnapshot = (item: SnapshotPayload) => {
 
   // weight && mrp = null
   if (item.weight !== null && !item.mrp) {
-    name += ` ${item.weight}${item.unit}`;
+    if (item.unit !== null && !ignoredWeight.some((w) => `${item.weight}${item.unit}` === w)) {
+      name += ` ${item.weight}${item.unit}`;
+    }
   }
 
   return name;
