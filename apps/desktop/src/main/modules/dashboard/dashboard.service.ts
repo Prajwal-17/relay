@@ -123,7 +123,7 @@ const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> =>
   const chartData: ChartDataType[] = [];
 
   for (let i = 0; i < saleResults.length; i++) {
-    const sale = saleResults[i];
+    const sale = saleResults[i]!;
     const estimate = estimateResults.find((e) => e.date === sale.date);
 
     const dayIndex = Number(sale.day);
@@ -156,8 +156,8 @@ const getSalesEstimatesRevenueByMonth = async (): Promise<ChartDataType[]> => {
     const monthIndex = index + 1;
     return {
       label: month,
-      sales: paisaToRupees(salesMap[monthIndex]) || 0,
-      estimates: paisaToRupees(estimatesMap[monthIndex]) || 0
+      sales: paisaToRupees(salesMap[monthIndex] ?? 0) || 0,
+      estimates: paisaToRupees(estimatesMap[monthIndex] ?? 0) || 0
     };
   });
 
@@ -175,7 +175,7 @@ const getSalesEstimatesRevenueByLast7Days = async (): Promise<ChartDataType[]> =
   const chartData: ChartDataType[] = [];
 
   for (let i = 0; i < saleResults.length; i++) {
-    const sale = saleResults[i];
+    const sale = saleResults[i]!;
     const estimate = estimateResults.find((e) => e.date === sale.date);
 
     const dayIndex = Number(sale.day);

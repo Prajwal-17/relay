@@ -100,7 +100,7 @@ export const useBillingTabsStore = create<BillingTabsStore>()(
             if (state.tabs.length > 0) {
               if (state.activeTabId === tabId) {
                 const newIndex = Math.min(tabIndex, state.tabs.length - 1);
-                state.activeTabId = state.tabs[newIndex].id;
+                state.activeTabId = state.tabs[newIndex]!.id;
               }
             } else {
               state.activeTabId = null;

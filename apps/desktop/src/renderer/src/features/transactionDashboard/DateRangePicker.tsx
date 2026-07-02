@@ -63,7 +63,7 @@ export const DateRangePicker = () => {
             <div>
               <Calendar
                 mode="range"
-                formatters={formatters}
+                formatters={formatters as any}
                 defaultMonth={tempDate?.from}
                 disabled={{ after: new Date() }}
                 selected={tempDate}

@@ -1,7 +1,7 @@
-import { dialog } from "electron";
+import { dialog, type MenuItem } from "electron";
 import { autoUpdater } from "electron-updater";
 
-let updater;
+let updater: MenuItem | null = null;
 autoUpdater.autoDownload = false;
 
 autoUpdater.on("error", (error) => {
@@ -20,7 +20,7 @@ autoUpdater.on("update-available", () => {
       if (buttonIndex.response === 0) {
         autoUpdater.downloadUpdate();
       } else {
-        updater.enabled = true;
+        if (updater) updater.enabled = true;
         updater = null;
       }
     });
@@ -31,7 +31,7 @@ autoUpdater.on("update-not-available", () => {
     title: "No Updates",
     message: "Current version is up-to-date."
   });
-  updater.enabled = true;
+  if (updater) updater.enabled = true;
   updater = null;
 });
 
@@ -46,7 +46,7 @@ autoUpdater.on("update-downloaded", () => {
     });
 });
 
-export function checkForUpdates(menuItem) {
+export function checkForUpdates(menuItem: MenuItem) {
   updater = menuItem;
   updater.enabled = false;
   autoUpdater.checkForUpdatesAndNotify();

@@ -116,7 +116,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
             const session = state.sessions[tabId];
 
             const length = session.lineItems.length;
-            if (type !== "button" && session.lineItems[length - 1].name === "") {
+            if (type !== "button" && session.lineItems[length - 1]!.name === "") {
               return;
             }
             session.lineItems.push(createInitialLineItem());
@@ -135,7 +135,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
             // get index of item at rowId
             const index = session.lineItems.findIndex((item) => item.rowId === rowId);
             if (index === -1) return;
-            const oldItem = session.lineItems[index];
+            const oldItem = session.lineItems[index]!;
 
             const oldQtyNum = parseFloat(oldItem.quantity || "0");
             const oldItemQuantity = oldQtyNum >= 1 ? oldQtyNum : 1;
@@ -174,8 +174,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
             const index = session.lineItems.findIndex((item) => item.rowId === rowId);
             if (index === -1) return;
 
-            // item to be updated
-            const item = session.lineItems[index];
+            const item = session.lineItems[index]!;
 
             let finalValue: any = value;
             let isInventoryItem = item.isInventoryItem;
@@ -187,7 +186,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
               finalValue = value;
             }
 
-            let updatedItem = { ...item };
+            let updatedItem: LineItem = { ...item };
 
             if (field === "productSnapshot") {
               updatedItem = {

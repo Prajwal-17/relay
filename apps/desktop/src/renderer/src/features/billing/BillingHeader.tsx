@@ -122,7 +122,7 @@ const BillingHeader = () => {
 
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.value === "") return;
-    const [hoursString, minutesString] = e.target.value.split(":");
+    const [hoursString = "", minutesString = ""] = e.target.value.split(":");
 
     const hours = parseInt(hoursString, 10);
     const minutes = parseInt(minutesString, 10);

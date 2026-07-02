@@ -104,10 +104,12 @@ const filterEstimateByDate = async (
 
   const nextpageNo = result.transactionsResult.length === 20 ? params.pageNo + 1 : null;
 
+  const summary = result.summaryResult[0];
+
   return {
     nextPageNo: nextpageNo,
-    totalRevenue: result.summaryResult[0].totalRevenue,
-    totalTransactions: result.summaryResult[0].totalTransactions,
+    totalRevenue: summary?.totalRevenue ?? 0,
+    totalTransactions: summary?.totalTransactions ?? 0,
     transactions
   };
 };

@@ -2,7 +2,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHomeDashboard } from "@/hooks/useHomeDashboard";
 import { apiClient } from "@/lib/apiClient";
-import { TRANSACTION_TYPE, type RecentTransactions, type TransactionType } from "@shared/types";
+import {
+  TRANSACTION_TYPE,
+  type RecentTransactions,
+  type TransactionType,
+  type UnifiedTransaction
+} from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { LoaderCircle, ReceiptIndianRupee } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -69,7 +74,7 @@ export function RecentActivitiesTable() {
                   <div key={transaction.id || index}>
                     <RecentTransactionsTableRow
                       type={type}
-                      transaction={transaction}
+                      transaction={transaction as any as UnifiedTransaction}
                       deleteMutation={deleteMutation}
                       convertMutation={convertMutation}
                     />

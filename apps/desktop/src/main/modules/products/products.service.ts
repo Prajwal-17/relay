@@ -125,7 +125,7 @@ const updateProduct = async (
   if (!existingProduct) {
     throw new AppError("Product not found", 400);
   }
-  const updatedFields = {};
+  const updatedFields: Record<string, any> = {};
 
   for (const field in payload) {
     let value = payload[field as keyof Partial<UpdateProductPayload>];
@@ -171,10 +171,6 @@ const updateProduct = async (
     existingProduct.mrp !== updatedProduct.mrp ||
     existingProduct.purchasePrice !== updatedProduct.purchasePrice
   ) {
-    function cap(s: string) {
-      return s.charAt(0).toUpperCase() + s.slice(1);
-    }
-
     const historyObj: Partial<ProductHistory> = {
       name: updatedProduct.name,
       weight: updatedProduct.weight,
@@ -182,11 +178,18 @@ const updateProduct = async (
       productId: updatedProduct.id
     };
 
+    const fieldToHistoryKey = {
+      price: { old: "oldPrice", new: "newPrice" },
+      purchasePrice: { old: "oldPurchasePrice", new: "newPurchasePrice" },
+      mrp: { old: "oldMrp", new: "newMrp" }
+    } as const;
+
     const currencyFields = ["price", "purchasePrice", "mrp"] as const;
     currencyFields.forEach((field) => {
       if (existingProduct[field] !== updatedProduct[field]) {
-        historyObj[`old${cap(field)}`] = existingProduct[field];
-        historyObj[`new${cap(field)}`] = updatedProduct[field];
+        const keys = fieldToHistoryKey[field];
+        (historyObj as any)[keys.old] = existingProduct[field];
+        (historyObj as any)[keys.new] = updatedProduct[field];
       }
     });
 

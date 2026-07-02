@@ -1,6 +1,7 @@
 import type { Calendar } from "@/components/ui/calendar";
 import { useDashboardStore } from "@/store/dashboardStore";
 import { useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
 
 export const useDateRangePicker = () => {
   const [open, setOpen] = useState(false);
@@ -40,8 +41,10 @@ export const useDateRangePicker = () => {
   };
 
   const formatters = {
-    formatWeekdayName: (date: Date, options) => {
-      const weekDayName = new Intl.DateTimeFormat(options.locale, { weekday: "long" }).format(date);
+    formatWeekdayName: (date: Date, options?: { locale?: Intl.LocalesArgument }) => {
+      const weekDayName = new Intl.DateTimeFormat(options?.locale, { weekday: "long" }).format(
+        date
+      );
       return weekDayName.charAt(0);
     }
   };
@@ -63,18 +66,20 @@ export const useDateRangePicker = () => {
     setSelectedPreset(localStorage.getItem("preset-type") || null);
   };
 
-  const handleOnDateSelect = (range) => {
+  const handleOnDateSelect = (range: DateRange) => {
     setSelectedPreset("");
 
-    if (range?.to) {
+    if (range?.from && range?.to) {
       const endofDay = new Date(range.to);
       endofDay.setHours(23, 59, 59, 999);
       setTempDate({
-        ...range,
+        from: range.from,
         to: endofDay
       });
+    } else if (range?.from) {
+      setTempDate({ from: range.from, to: undefined });
     } else {
-      setTempDate(range);
+      setTempDate(undefined);
     }
   };
 

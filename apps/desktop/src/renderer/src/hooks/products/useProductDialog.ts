@@ -77,17 +77,17 @@ export const useProductDialog = () => {
     if (!result.success) {
       const formatted = z.flattenError(result.error);
 
-      if (formatted.fieldErrors[field]) {
-        errorRecord[field] = formatted.fieldErrors[field]?.[0];
+      if ((formatted.fieldErrors as Record<string, string[]>)[field]) {
+        errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
       } else {
         delete errorRecord[field];
       }
 
       if (field === "weight" || field === "unit") {
-        if (formatted.fieldErrors.unit) errorRecord.unit = formatted.fieldErrors.unit[0];
+        if (formatted.fieldErrors.unit) errorRecord.unit = formatted.fieldErrors.unit[0]!;
         else delete errorRecord.unit;
 
-        if (formatted.fieldErrors.weight) errorRecord.weight = formatted.fieldErrors.weight[0];
+        if (formatted.fieldErrors.weight) errorRecord.weight = formatted.fieldErrors.weight[0]!;
         else delete errorRecord.weight;
       }
 
@@ -104,7 +104,7 @@ export const useProductDialog = () => {
 
   const CURRENCY_FIELDS = ["price", "purchasePrice", "mrp"];
 
-  const convertCurrencyFieldsToPaisa = (data) => {
+  const convertCurrencyFieldsToPaisa = (data: Record<string, any>) => {
     const converted = { ...data };
     for (const [key, value] of Object.entries(data)) {
       if (CURRENCY_FIELDS.includes(key) && typeof value === "number") {
@@ -170,7 +170,7 @@ export const useProductDialog = () => {
       const errorRecord: Record<string, any> = {};
 
       for (const field in formatted.fieldErrors) {
-        errorRecord[field] = formatted.fieldErrors[field]?.[0];
+        errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
       }
       setErrors(errorRecord);
       return;
@@ -187,7 +187,7 @@ export const useProductDialog = () => {
         const errorRecord: Record<string, any> = {};
 
         for (const field in formatted.fieldErrors) {
-          errorRecord[field] = formatted.fieldErrors[field]?.[0];
+          errorRecord[field] = (formatted.fieldErrors as Record<string, string[]>)[field]?.[0] ?? "";
         }
         setErrors(errorRecord);
         return;

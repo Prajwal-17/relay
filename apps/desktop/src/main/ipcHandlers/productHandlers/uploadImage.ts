@@ -25,7 +25,7 @@ export function saveProductImage() {
         const fileName = `${crypto.randomUUID()}.webp`;
         const destPath = path.join(imagesDir, fileName);
 
-        await fs.promises.writeFile(destPath, Buffer.from(base64Data, "base64"));
+        await fs.promises.writeFile(destPath, Buffer.from(base64Data!, "base64"));
 
         return {
           status: "success",
