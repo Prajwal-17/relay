@@ -18,6 +18,7 @@ export function formatDateStr(dateStr?: string): string {
  * @returns {string}
  */
 export function formatDateObjToStringMedium(dateObj: Date) {
+  if (isNaN(dateObj.getTime())) return "-";
   return dateObj.toLocaleDateString("en-IN", {
     dateStyle: "medium"
   });
@@ -48,6 +49,7 @@ export function formatDateStrToISTDateObject(dateStr: string) {
   const utcTimestamp = dateStr.replace(" ", "T") + "Z";
 
   const date = new Date(utcTimestamp);
+  if (isNaN(date.getTime())) return null;
 
   return date;
 }
@@ -59,7 +61,9 @@ export function formatDateStrToISTDateObject(dateStr: string) {
  * @returns {fullDate,timePart}
  */
 export function formatDateStrToISTDateStr(dateStr: string) {
+  if (!dateStr) return { fullDate: "-", timePart: "-" };
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return { fullDate: "-", timePart: "-" };
 
   const fullDate = date.toLocaleDateString("en-IN", {
     dateStyle: "medium",
@@ -81,7 +85,9 @@ export function formatDateStrToISTDateStr(dateStr: string) {
 }
 
 export function formatDateStrToISTDateTimeStr(dateStr: string) {
+  if (!dateStr) return "-";
   const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "-";
 
   const fullDate = date.toLocaleDateString("en-IN", {
     dateStyle: "medium",

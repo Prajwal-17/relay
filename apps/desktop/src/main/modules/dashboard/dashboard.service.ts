@@ -131,8 +131,9 @@ const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> =>
 
     chartData.push({
       label: formattedDate,
-      sales: paisaToRupees(sale.total) ?? 0,
-      estimates: paisaToRupees(estimate?.total as number) ?? 0
+      // convert to number, else throws error on undefined
+      sales: paisaToRupees(Number(sale?.total ?? 0)),
+      estimates: paisaToRupees(Number(estimate?.total ?? 0))
     });
   }
 
@@ -156,8 +157,9 @@ const getSalesEstimatesRevenueByMonth = async (): Promise<ChartDataType[]> => {
     const monthIndex = index + 1;
     return {
       label: month,
-      sales: paisaToRupees(salesMap[monthIndex] ?? 0) || 0,
-      estimates: paisaToRupees(estimatesMap[monthIndex] ?? 0) || 0
+      // convert to number, else throws error on undefined
+      sales: paisaToRupees(Number(salesMap[monthIndex] ?? 0)),
+      estimates: paisaToRupees(Number(estimatesMap[monthIndex] ?? 0))
     };
   });
 
@@ -183,8 +185,9 @@ const getSalesEstimatesRevenueByLast7Days = async (): Promise<ChartDataType[]> =
 
     chartData.push({
       label: formattedDate,
-      sales: paisaToRupees(sale.total) ?? 0,
-      estimates: paisaToRupees(estimate?.total as number) ?? 0
+      // convert to number, else throws error on undefined
+      sales: paisaToRupees(Number(sale?.total ?? 0)),
+      estimates: paisaToRupees(Number(estimate?.total ?? 0))
     });
   }
 

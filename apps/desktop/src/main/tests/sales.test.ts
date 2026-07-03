@@ -18,6 +18,10 @@ import {
   type DB
 } from "./helpers";
 
+// ----------------
+// Compile better-sqlite3 `pnpm run rebuild:node` before running this test
+// ----------------
+
 const mocks = vi.hoisted(() => {
   return {
     db: {
