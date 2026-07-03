@@ -103,15 +103,16 @@ describe("Currency Utils", () => {
   });
 
   describe("paisaToRupeeString", () => {
-    it("returns a plain decimal string with exactly 2 decimal places", () => {
+    it("returns a plain decimal string, dropping trailing .00", () => {
       expect(paisaToRupeeString(5499)).toBe("54.99");
-      expect(paisaToRupeeString(100)).toBe("1.00");
-      expect(paisaToRupeeString(5400)).toBe("54.00");
+      expect(paisaToRupeeString(100)).toBe("1");
+      expect(paisaToRupeeString(5400)).toBe("54");
       expect(paisaToRupeeString(1)).toBe("0.01");
+      expect(paisaToRupeeString(5450)).toBe("54.50");
     });
 
-    it("returns '0.00' for zero", () => {
-      expect(paisaToRupeeString(0)).toBe("0.00");
+    it("returns '0' for zero", () => {
+      expect(paisaToRupeeString(0)).toBe("0");
     });
 
     it("never includes a currency symbol", () => {
@@ -121,7 +122,7 @@ describe("Currency Utils", () => {
     });
 
     it("handles negative paisa", () => {
-      expect(paisaToRupeeString(-100)).toBe("-1.00");
+      expect(paisaToRupeeString(-100)).toBe("-1");
       expect(paisaToRupeeString(-2341)).toBe("-23.41");
     });
 

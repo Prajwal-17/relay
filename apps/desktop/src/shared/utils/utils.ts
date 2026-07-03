@@ -57,7 +57,7 @@ export function paisaToRupeeString(valueInPaisa: number): string {
       `paisaToRupeeString: expected a finite number, got ${typeof valueInPaisa} ${JSON.stringify(valueInPaisa)}`
     );
   }
-  return (valueInPaisa / 100).toFixed(2);
+  return (valueInPaisa / 100).toFixed(2).replace(/\.00$/, "");
 }
 
 /**
