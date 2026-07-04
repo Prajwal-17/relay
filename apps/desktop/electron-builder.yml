@@ -1,0 +1,60 @@
+appId: com.quickcart.app
+productName: QuickCart
+extraMetadata: # injects properties into package.json
+  name: quickcart-dev
+directories:
+  buildResources: build
+files:
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+asarUnpack:
+  - resources/**
+extraResources:
+  - from: drizzle/
+    to: drizzle/
+    filter:
+      - "**/*"
+win:
+  executableName: QuickCart
+  icon: build/icon.png
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+  artifactName: "${productName}-${version}.${ext}"
+  shortcutName: "${productName}"
+  uninstallDisplayName: "${productName}"
+  createDesktopShortcut: always
+# mac:
+#   entitlementsInherit: build/entitlements.mac.plist
+#   extendInfo:
+#     - NSCameraUsageDescription: Application requests access to the device's camera.
+#     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+#     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+#     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+#   notarize: false
+# dmg:
+#   artifactName: "${productName}-${version}.${ext}"
+linux:
+  executableName: quickcart
+  icon: build/icon.png
+  target:
+    - AppImage
+    - deb
+  maintainer: prajwalkreddy17@gmail.com
+  category: Office
+appImage:
+  artifactName: "${productName}-${version}.${ext}"
+deb:
+  artifactName: "${productName}-${version}.${ext}"
+npmRebuild: false
+publish:
+  provider: github
+  owner: Prajwal-17
+  repo: pos
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

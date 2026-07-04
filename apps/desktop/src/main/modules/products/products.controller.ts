@@ -1,0 +1,108 @@
+import { Hono } from "hono";
+import {
+  createProductSchema,
+  dirtyFieldsProductSchema
+} from "../../../shared/schemas/products.schema";
+import { validateRequest } from "../../middleware/validation";
+import { idSchema } from "../../zod";
+import { productSearchSchema, productTransactionsSchema } from "./products.schema";
+import { productService } from "./products.service";
+
+export const productsController = new Hono();
+
+// search product
+productsController.get("/search", validateRequest("query", productSearchSchema), async (c) => {
+  const rawParams = c.req.valid("query");
+  const {
+    query,
+    pageNo,
+    pageSize,
+    filterType,
+    sortBy,
+    priceMin,
+    priceMax,
+    hasMrp,
+    hasPurchasePrice,
+    billingMode
+  } = rawParams;
+
+  const result = await productService.searchProduct({
+    query,
+    pageNo,
+    pageSize,
+    filterType,
+    sortBy,
+    priceMin,
+    priceMax,
+    hasMrp,
+    hasPurchasePrice,
+    billingMode
+  });
+  return c.json(result, 200);
+});
+
+// get product by id
+productsController.get("/:id", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await productService.getProductById(id);
+  return c.json(result, 200);
+});
+
+productsController.get("/:id/history", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await productService.getHistoryEntriesById(id);
+  return c.json(result, 200);
+});
+
+productsController.get(
+  "/:id/transactions",
+  validateRequest("param", idSchema),
+  validateRequest("query", productTransactionsSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { pageNo, pageSize } = c.req.valid("query");
+    const result = await productService.getTransactionsByProductId(id, { pageNo, pageSize });
+    return c.json(result, 200);
+  }
+);
+
+// add product
+productsController.post("/", validateRequest("json", createProductSchema), async (c) => {
+  const payload = c.req.valid("json");
+  const result = await productService.addProduct(payload);
+  return c.json(result, 201);
+});
+
+// update Product
+productsController.patch(
+  "/:id",
+  validateRequest("param", idSchema),
+  validateRequest("json", dirtyFieldsProductSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await productService.updateProduct(id, payload);
+    return c.json(result, 200);
+  }
+);
+
+// delete product (soft delete)
+productsController.post("/:id/delete", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await productService.softDeleteProduct(id);
+  return c.body(null, 204);
+});
+
+// delete product (hard delete)
+productsController.delete("/:id/delete", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await productService.hardDeleteProduct(id);
+  return c.body(null, 204);
+});
+
+// restore deleted product
+productsController.post("/:id/restore", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await productService.restoreProduct(id);
+  return c.body(null, 204);
+});

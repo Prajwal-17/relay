@@ -1,0 +1,47 @@
+appId: com.quickcart-dev.app
+productName: QuickCart-Dev
+extraMetadata: # injects properties into package.json
+  name: quickcart-dev
+directories:
+  buildResources: build
+files:
+  - "!**/.vscode/*"
+  - "!src/*"
+  - "!electron.vite.config.{js,ts,mjs,cjs}"
+  - "!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}"
+  - "!{.env,.env.*,.npmrc,pnpm-lock.yaml}"
+  - "!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}"
+asarUnpack:
+  - resources/**
+extraResources:
+  - from: drizzle/
+    to: drizzle/
+    filter:
+      - "**/*"
+win:
+  executableName: QuickCart-Dev
+  icon: build/icon-dev.png
+nsis:
+  artifactName: "${productName}-${version}.${ext}"
+  shortcutName: "${productName}"
+  uninstallDisplayName: "${productName}"
+  createDesktopShortcut: always
+linux:
+  executableName: quickcart-dev
+  icon: build/icon-dev.png
+  target:
+    - AppImage
+    - deb
+  maintainer: prajwalkreddy17@gmail.com
+  category: Office
+appImage:
+  artifactName: "${productName}-${version}.${ext}"
+deb:
+  artifactName: "${productName}-${version}.${ext}"
+npmRebuild: false
+publish:
+  provider: github
+  owner: Prajwal-17
+  repo: pos
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/
