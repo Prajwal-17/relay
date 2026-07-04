@@ -1,5 +1,44 @@
 # Changelog
 
+## v4.3.0 — 04 Jul 2026
+
+**Major release — UI revamp, product images, onboarding, and event-driven sync**
+
+### Features
+
+- Products page — grid & list views, view & edit modes, version history timeline
+- Product images — upload and crop images
+- Billing page — full redesign, multi-tab support
+- Event-driven transaction sync (replaced state-driven autosave)
+- Search dropdown — product thumbnails, arrow key navigation, highlight search term
+- Sort and filter options in products page and search dropdown
+- Settings page — config for PDF export path, txn prefixes, and default customer
+- Onboarding flow & store profile management
+- Native PDF generation & preset save paths
+- Run Hono server in a child process
+- Delete and duplicate transactions in billing page
+
+### Improvements
+
+- Split dev & prod build workflows and environments
+- One-click installer (removed multiple option prompts)
+- Update license to AGPL v3.0 & add database seed script
+- Schema — add storeProfile, appPreferences tables & indexes
+- Remove redundant logic in search dropdown
+
+### Fixed
+
+- Rebuild better-sqlite3 issues
+- Windows installation clash between dev and prod builds
+- Multiple app instances bug — restrict to single instance
+- Zoom bugs — use web-based zoom (WebContents)
+- Zod validation — require unit when weight is provided
+- Transaction `updatedAt` field not updating
+- Currency conversion parameters (`convertToRupees`, `convertToPaisa`)
+- Customer transaction table UI clipping & infinite scroll
+- Product snapshot generation format
+- Summary footer UI issues
+
 ## v4.2.2 — 08 Mar 2026
 
 ### Features
