@@ -50,20 +50,20 @@ const LineItemRow = memo(
     return (
       <div key={item.rowId} className="relative">
         <div
-          className={`group ${checkedColor} border-border/70 hover:border-border grid w-full items-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 hover:shadow-[0_8px_24px_rgba(15,23,42,0.05)] ${
+          className={`group ${checkedColor} border-border/70 hover:border-border grid w-full items-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 hover:shadow-sm ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
-          <div className="col-span-2 h-full min-h-[3.3rem] px-2">
+          <div className="col-span-2 h-full min-h-11 px-2">
             <div className="flex h-full items-center justify-between gap-2">
               <GripVertical
                 className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
-                size={24}
+                size={20}
               />
-              <span className="text-foreground text-lg font-semibold">{idx + 1}</span>
+              <span className="text-foreground text-base font-semibold">{idx + 1}</span>
               <Trash2
                 className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
-                size={28}
+                size={22}
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -76,7 +76,7 @@ const LineItemRow = memo(
           <div className="col-span-7 px-1 py-1">
             <input
               value={item.productSnapshot}
-              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-11 w-full rounded-lg border px-3.5 py-2.5 text-lg font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-10 w-full rounded-lg border px-3 py-2 text-base font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -93,7 +93,7 @@ const LineItemRow = memo(
             />
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-11 w-full items-center rounded-lg border font-bold">
+            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-10 w-full items-center rounded-lg border font-bold">
               <button
                 onClick={() => {
                   const tabId = getActiveTabId();
@@ -106,9 +106,9 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-11 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
               >
-                <Plus size={22} strokeWidth={2.5} />
+                <Plus size={18} strokeWidth={2.5} />
               </button>
               <input
                 type="text"
@@ -118,12 +118,11 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity}
-                className="focus:border-ring focus:ring-ring placeholder-muted-foreground min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-lg font-semibold transition-all"
+                className="focus:border-ring focus:ring-ring placeholder-muted-foreground min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-base font-semibold tabular-nums transition-all"
                 onChange={(e) => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   const val = e.target.value;
-                  // allow only number and three decimal points
                   if (val === "" || /^\d*\.?\d{0,3}$/.test(val)) {
                     updateLineItem(tabId, item.rowId, "quantity", val);
                     processSyncQueue(tabId);
@@ -133,7 +132,7 @@ const LineItemRow = memo(
               />
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-11 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -145,7 +144,7 @@ const LineItemRow = memo(
                   }
                 }}
               >
-                <Minus size={22} strokeWidth={2.5} />
+                <Minus size={18} strokeWidth={2.5} />
               </button>
               <QuantityPresets
                 rowId={item.rowId}
@@ -156,9 +155,9 @@ const LineItemRow = memo(
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="relative h-11 w-full">
-              <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
-                <IndianRupee size={16} />
+            <div className="relative h-10 w-full">
+              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
+                <IndianRupee size={14} />
               </span>
               <input
                 type="string"
@@ -168,22 +167,21 @@ const LineItemRow = memo(
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   const val = e.target.value;
-                  // allow only number and two decimal points
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
                     updateLineItem(tabId, item.rowId, "price", val);
                     processSyncQueue(tabId);
                   }
                 }}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-lg font-semibold focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-base font-semibold tabular-nums focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
               />
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="relative h-11 w-full">
-              <span className="text-muted-foreground absolute top-1/2 left-4 -translate-y-1/2">
-                <IndianRupee size={16} />
+            <div className="relative h-10 w-full">
+              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
+                <IndianRupee size={14} />
               </span>
-              <div className="bg-muted/25 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-9 text-right text-lg font-semibold">
+              <div className="bg-muted/25 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums">
                 {item.totalPrice ? paisaToRupeeString(item.totalPrice) : "0"}
               </div>
             </div>
@@ -198,7 +196,7 @@ const LineItemRow = memo(
                 updateLineItem(tabId, item.rowId, "checkedQty", newCheckedAt);
                 processSyncQueue(tabId);
               }}
-              className={`flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
+              className={`flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
                 checked
                   ? "border-success bg-success text-background"
                   : "border-border bg-background/90 text-muted-foreground hover:border-foreground hover:text-foreground"
@@ -210,7 +208,7 @@ const LineItemRow = memo(
           {isCountColumnVisible && (
             <>
               <div className="col-span-2 flex items-center justify-center px-1 py-1">
-                <span className="text-foreground/80 text-lg font-semibold whitespace-nowrap">
+                <span className="text-foreground/80 text-base font-semibold whitespace-nowrap tabular-nums">
                   {item.checkedQty}/{item.quantity || "0"}
                 </span>
               </div>
@@ -230,7 +228,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={checked}
-                  className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
+                  className="border-border/70 bg-background/80 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
                   <Plus className="size-4" />
                 </Button>
@@ -250,7 +248,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={item.checkedQty === 0}
-                  className="border-border/70 bg-background/80 hover:bg-background flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
+                  className="border-border/70 bg-background/80 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
                   <Minus className="size-4" />
                 </Button>

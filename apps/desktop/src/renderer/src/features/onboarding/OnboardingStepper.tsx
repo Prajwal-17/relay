@@ -44,9 +44,9 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
                 )}
               >
                 {isCompleted ? (
-                  <Check className="h-4 w-4 text-white" strokeWidth={2.5} />
+                  <Check className="text-success-foreground h-4 w-4" strokeWidth={2.5} />
                 ) : (
-                  <span className={cn(isActive ? "text-black" : "text-muted-foreground")}>
+                  <span className={cn(isActive ? "text-foreground" : "text-muted-foreground")}>
                     {stepNum}
                   </span>
                 )}

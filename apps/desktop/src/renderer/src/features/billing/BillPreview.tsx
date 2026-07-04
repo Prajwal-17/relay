@@ -42,10 +42,10 @@ const BillPreview = () => {
   if (!activeTabId || !session) return null;
   return (
     <>
-      <div className="flex w-1/4 flex-col items-center justify-between overflow-y-auto border border-green-500 bg-neutral-100">
+      <div className="border-success bg-muted flex w-1/4 flex-col items-center justify-between overflow-y-auto border">
         <div
           ref={localReceiptRef}
-          className="receipt no-break font-roboto mt-0 mb-24 border border-green-500 bg-white px-1 pt-1 text-black"
+          className="receipt no-break font-roboto border-success bg-card text-foreground mt-0 mb-24 border px-1 pt-1"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -60,7 +60,7 @@ const BillPreview = () => {
               9945029729
             </p>
           </div>
-          <div className="mb-4 flex justify-between border-t border-b border-dashed border-black py-1 text-xs">
+          <div className="border-foreground mb-4 flex justify-between border-t border-b border-dashed py-1 text-xs">
             <div>
               <div>
                 <span className="font-semibold">Date:</span>{" "}
@@ -86,14 +86,14 @@ const BillPreview = () => {
               {formatDateStrToISTDateStr(billingDate.toString()).timePart}
             </div>
           </div>
-          <div className="grid grid-cols-12 border-b border-dashed border-black pb-1 text-xs font-bold">
+          <div className="border-foreground grid grid-cols-12 border-b border-dashed pb-1 text-xs font-bold">
             <div className="col-span-1">#</div>
             <div className="col-span-3">ITEM</div>
             <div className="col-span-2 text-center">QTY</div>
             <div className="col-span-3 text-right">RATE</div>
             <div className="col-span-3 text-right">AMT</div>
           </div>
-          <div className="border-b border-dashed border-black text-xs font-medium">
+          <div className="border-foreground border-b border-dashed text-xs font-medium">
             {lineItems.map((item, idx) => {
               if (item.productSnapshot === "") return;
               return (

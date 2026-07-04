@@ -9,9 +9,9 @@ import toast from "react-hot-toast";
 import { Cell, Legend, Pie, PieChart } from "recharts";
 
 const COLORS = [
-  "hsl(190, 45%, 45%)", // Deep Teal (primary)
-  "hsl(220, 30%, 55%)", // Slate Blue
-  "hsl(30, 40%, 65%)", // Muted Orange
+  "var(--chart-3)", // Deep Teal
+  "var(--chart-4)", // Slate Blue
+  "var(--chart-5)", // Muted Orange
   "hsl(140, 25%, 55%)", // Soft Sage
   "hsl(350, 30%, 65%)" // Dusty Rose
 ];

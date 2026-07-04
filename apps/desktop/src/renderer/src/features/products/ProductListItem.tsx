@@ -83,7 +83,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {showWeight && (
             <Badge
               variant="outline"
-              className="rounded-full border-slate-200 bg-slate-50 px-2.5 py-0.5 text-base font-semibold text-slate-600 shadow-sm"
+              className="border-border bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
             >
               {product.weight}
               {product.unit}
@@ -92,7 +92,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {product.mrp && (
             <Badge
               variant="outline"
-              className="rounded-full border-orange-200 bg-orange-50 px-2.5 py-0.5 text-base font-semibold text-orange-700 shadow-sm"
+              className="border-warning/30 bg-warning/10 text-warning rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
             >
               MRP ₹{paisaToRupeeString(product.mrp)}
             </Badge>

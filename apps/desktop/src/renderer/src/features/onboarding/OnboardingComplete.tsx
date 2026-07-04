@@ -84,7 +84,7 @@ export const OnboardingComplete = () => {
           {summaryItems.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
               <div className="bg-primary/10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
-                <Icon className="h-3.5 w-3.5" style={{ color: "oklch(60% 0.165 90.15)" }} />
+                <Icon className="text-onboarding-icon-dark h-3.5 w-3.5" />
               </div>
               <div className="min-w-0">
                 <p className="text-muted-foreground text-xs">{label}</p>
@@ -95,9 +95,7 @@ export const OnboardingComplete = () => {
           {formData.gstin && (
             <div className="flex items-start gap-3 py-3 pb-0">
               <div className="bg-primary/10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
-                <span className="text-[10px] font-bold" style={{ color: "oklch(60% 0.165 90.15)" }}>
-                  GST
-                </span>
+                <span className="text-onboarding-icon-dark text-[10px] font-bold">GST</span>
               </div>
               <div className="min-w-0">
                 <p className="text-muted-foreground text-xs">GSTIN</p>

@@ -71,40 +71,40 @@ const LineItemsTable = () => {
 
   return (
     <div className="mx-4 h-full">
-      <div className="border-border/70 bg-background/95 relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-[0_16px_50px_rgba(15,23,42,0.08)]">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(248,250,252,0.88))] px-4 py-3">
+      <div className="border-border/70 bg-background/95 relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
+        <div className="bg-background/95 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <Button
             variant="outline"
             size="lg"
             onClick={openNewProductDialog}
-            className="border-border bg-background hover:bg-muted/60 h-11 cursor-pointer rounded-xl px-5 text-base font-semibold shadow-none"
+            className="border-border bg-background hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
           >
             <PackagePlus className="mr-2 h-4 w-4" />
             New Product
           </Button>
 
           <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
-            <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-[1.05rem] font-medium">
+            <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-base font-medium">
               <div className="flex items-center gap-2">
-                <span className="tracking-[0.14em] uppercase">Items</span>
-                <span className="text-foreground text-xl font-semibold">{totalItems}</span>
+                <span className="tracking-wider uppercase">Items</span>
+                <span className="text-foreground text-lg font-semibold">{totalItems}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="tracking-[0.14em] uppercase">Qty</span>
-                <span className="text-foreground text-xl font-semibold">{totalQty}</span>
+                <span className="tracking-wider uppercase">Qty</span>
+                <span className="text-foreground text-lg font-semibold">{totalQty}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="tracking-[0.14em] uppercase">Checked</span>
+                <span className="tracking-wider uppercase">Checked</span>
                 {allChecked ? (
-                  <span className="text-success flex items-center gap-1.5 text-[1.05rem] font-semibold">
-                    <CheckCheck className="h-4.5 w-4.5" />
+                  <span className="text-success flex items-center gap-1.5 text-base font-semibold">
+                    <CheckCheck className="h-4 w-4" />
                     All Checked
                   </span>
                 ) : (
                   <span
-                    className={`text-[1.05rem] font-semibold ${
+                    className={`text-base font-semibold ${
                       totalChecked > 0 ? "text-warning" : "text-foreground"
                     }`}
                   >
@@ -119,10 +119,10 @@ const LineItemsTable = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-border/80 bg-background/80 hover:bg-muted/60 h-12 cursor-pointer rounded-xl px-5 text-base font-semibold shadow-none"
+                  className="border-border/80 bg-background/80 hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
                 >
                   Actions
-                  <ChevronDown className="ml-2 h-4.5 w-4.5" />
+                  <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
 
@@ -134,9 +134,9 @@ const LineItemsTable = () => {
                     setAllChecked(tabId, true);
                     processSyncQueue(tabId);
                   }}
-                  className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-base font-medium"
+                  className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-sm font-medium"
                 >
-                  <CheckCheck className="mr-2 h-4.5 w-4.5" />
+                  <CheckCheck className="mr-2 h-4 w-4" />
                   Check All
                 </DropdownMenuItem>
 
@@ -147,9 +147,9 @@ const LineItemsTable = () => {
                     setAllChecked(tabId, false);
                     processSyncQueue(tabId);
                   }}
-                  className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-base font-medium"
+                  className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-sm font-medium"
                 >
-                  <X className="mr-2 h-4.5 w-4.5" />
+                  <X className="mr-2 h-4 w-4" />
                   Uncheck All
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -162,7 +162,7 @@ const LineItemsTable = () => {
                 if (!tabId) return;
                 updateField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
               }}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 h-11 cursor-pointer rounded-xl px-4 text-base font-semibold"
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold"
               title={isCountColumnVisible ? "Hide count column" : "Show count column"}
             >
               {isCountColumnVisible ? (
@@ -176,7 +176,7 @@ const LineItemsTable = () => {
         </div>
 
         <div
-          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-[0.92rem] font-semibold tracking-[0.14em] uppercase ${
+          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold tracking-wider uppercase ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
@@ -219,7 +219,7 @@ const LineItemsTable = () => {
                 if (!tabId) return;
                 addEmptyLineItem(tabId, "button");
               }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 cursor-pointer rounded-xl px-6 text-base font-semibold shadow-[0_10px_24px_rgba(15,23,42,0.1)]"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 cursor-pointer rounded-xl px-5 text-sm font-semibold shadow-md"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Row

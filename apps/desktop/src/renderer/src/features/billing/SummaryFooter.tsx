@@ -121,7 +121,7 @@ export const SummaryFooter = () => {
             <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
               Subtotal:
             </span>
-            <span className="text-foreground text-xl font-semibold">{subtotal}</span>
+            <span className="text-foreground text-lg font-semibold">{subtotal}</span>
           </div>
 
           <div className="bg-border/60 h-8 w-px shrink-0" />
@@ -130,7 +130,7 @@ export const SummaryFooter = () => {
             <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
               Total:
             </span>
-            <span className="text-foreground text-3xl font-bold">{grandTotal}</span>
+            <span className="text-foreground text-2xl font-bold">{grandTotal}</span>
           </div>
         </div>
 
@@ -139,7 +139,7 @@ export const SummaryFooter = () => {
         <div className="flex items-center gap-3">
           <Button
             variant="default"
-            className="hover:bg-primary/90 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-semibold shadow-sm"
+            className="hover:bg-primary/90 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-semibold shadow-sm"
             disabled={loadingAction !== null}
             onClick={handleSaveAndPrint}
           >
@@ -153,7 +153,7 @@ export const SummaryFooter = () => {
 
           <Button
             variant="outline"
-            className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-medium transition-colors"
+            className="border-border/60 hover:bg-accent/50 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
             disabled={loadingAction !== null}
             onClick={handleSaveAndExit}
           >
@@ -167,7 +167,7 @@ export const SummaryFooter = () => {
 
           <Button
             variant="outline"
-            className="border-border/60 hover:bg-accent/50 h-12 cursor-pointer gap-3 rounded-lg px-6! text-lg font-medium transition-colors"
+            className="border-border/60 hover:bg-accent/50 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
             disabled={loadingAction !== null}
             onClick={handleExportPdf}
           >

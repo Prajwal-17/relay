@@ -87,6 +87,8 @@ function createWindow(): void {
 
   mainWindow = new BrowserWindow({
     show: false,
+    height: 768,
+    width: 1366,
     autoHideMenuBar: false,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
@@ -103,7 +105,7 @@ function createWindow(): void {
     const zoomFactor = store.get("zoomFactor") as number;
     mainWindow.webContents.setZoomFactor(zoomFactor);
     mainWindow.show();
-    mainWindow.maximize();
+    // mainWindow.maximize();
   });
 
   import("./setupMenu").then(({ setupMenu }) => setupMenu());

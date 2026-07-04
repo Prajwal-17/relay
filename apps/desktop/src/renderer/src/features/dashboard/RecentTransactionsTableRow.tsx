@@ -71,7 +71,7 @@ const RecentTransactionsTableRow = ({
           </span>
         </div>
         <div className="col-span-3 flex items-center gap-2 font-medium">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-200 text-purple-600">
+          <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
             {transaction.customer.name.charAt(0)}
           </div>
           <span className="truncate">{transaction.customer.name}</span>

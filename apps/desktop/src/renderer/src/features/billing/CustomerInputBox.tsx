@@ -91,13 +91,13 @@ export const CustomerNameInput = () => {
         <Button
           variant="outline"
           role="combobox"
-          className="border-border/60 hover:bg-accent/50 h-12 w-112.5 justify-between bg-transparent px-4 text-lg font-normal"
+          className="border-border/60 hover:bg-accent/50 h-10 w-96 justify-between bg-transparent px-4 text-base font-normal"
         >
           <span className="truncate">{customerName ? customerName : "Select Customer..."}</span>
           <ChevronsUpDown className="ml-3 h-5 w-5 shrink-0 opacity-40" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="z-40 w-112.5 p-0" align="start">
+      <PopoverContent className="z-40 w-96 p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search customer..."

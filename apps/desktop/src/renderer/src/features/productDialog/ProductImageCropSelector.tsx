@@ -190,7 +190,7 @@ export const ProductImageCropSelector = ({
 
       {sourceImageUrl && (
         <div className="border-border/60 bg-secondary/20 space-y-4 rounded-lg border p-3">
-          <div className="relative h-80 overflow-hidden rounded-md bg-black">
+          <div className="bg-foreground relative h-80 overflow-hidden rounded-md">
             <Cropper
               image={sourceImageUrl}
               crop={crop}

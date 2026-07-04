@@ -56,7 +56,7 @@ export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
   if (checkedQty === quantity && quantity > 0) {
     bgColor = "bg-success/25";
   } else if (checkedQty > 0 && checkedQty < quantity) {
-    bgColor = "bg-[oklch(0.8618_0.2317_65.9)]/20";
+    bgColor = "bg-warning/20";
   }
   return bgColor;
 };

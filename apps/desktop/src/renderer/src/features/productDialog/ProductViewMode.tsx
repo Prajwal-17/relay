@@ -56,7 +56,7 @@ export const ProductViewMode = () => {
 
       <div className="flex min-w-0 flex-1 flex-col gap-5">
         <div className="flex min-w-0 items-start justify-between gap-4">
-          <h3 className="text-foreground truncate text-4xl font-extrabold tracking-tight">
+          <h3 className="text-foreground truncate text-3xl font-extrabold tracking-tight">
             {productSnapshot || "Untitled Product"}
           </h3>
         </div>

@@ -127,8 +127,8 @@ export const CustomerSidebar = () => {
                   </div>
                 ) : (
                   <div className="mt-8 rounded-lg p-10 text-center">
-                    <h3 className="mt-4 text-lg font-medium text-gray-900">No customers yet</h3>
-                    <p className="mt-2 text-sm text-gray-500">
+                    <h3 className="text-foreground mt-4 text-lg font-medium">No customers yet</h3>
+                    <p className="text-muted-foreground mt-2 text-sm">
                       Get started by adding your first customer.
                     </p>
                     <div className="mt-6">

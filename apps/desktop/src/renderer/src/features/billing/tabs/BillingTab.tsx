@@ -48,11 +48,9 @@ export const BillingTab = ({
           : "text-foreground/50 hover:bg-foreground/4 hover:text-foreground/70"
       )}
     >
-      <span
-        className={cn("h-3 w-3 shrink-0 rounded-full", isSale ? "bg-success" : "bg-blue-500")}
-      />
+      <span className={cn("h-3 w-3 shrink-0 rounded-full", isSale ? "bg-success" : "bg-info")} />
 
-      <span className="max-w-34 truncate text-lg font-medium">{getTabLabel(tab)}</span>
+      <span className="max-w-34 truncate text-base font-medium">{getTabLabel(tab)}</span>
 
       <motion.span
         role="button"
@@ -74,8 +72,8 @@ export const BillingTab = ({
         <motion.div
           layoutId="activeTabAccent"
           className={cn(
-            "absolute right-3 bottom-0 left-3 h-[2.5px] rounded-t-full",
-            isSale ? "bg-success" : "bg-blue-400"
+            "absolute right-3 bottom-0 left-3 h-0.5 rounded-t-full",
+            isSale ? "bg-success" : "bg-info"
           )}
           transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
         />

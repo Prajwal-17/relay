@@ -117,7 +117,7 @@ export function ProductDialog() {
               {!isAddMode && (
                 <>
                   {formDataState.isDeleted ? (
-                    <div className="text-destructive mt-0.5 flex items-center gap-1.5 text-[0.8rem] font-semibold">
+                    <div className="text-destructive mt-0.5 flex items-center gap-1.5 text-xs font-semibold">
                       <span className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
                       <span>
                         {formDataState.deletedAt
@@ -126,7 +126,7 @@ export function ProductDialog() {
                       </span>
                     </div>
                   ) : formDataState.isDisabled ? (
-                    <div className="text-destructive mt-0.5 flex items-center gap-1.5 text-[0.8rem] font-semibold">
+                    <div className="text-destructive mt-0.5 flex items-center gap-1.5 text-xs font-semibold">
                       <span className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
                       <span>
                         {formDataState.disabledAt
@@ -135,7 +135,7 @@ export function ProductDialog() {
                       </span>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground mt-0.5 truncate text-[0.8rem]">
+                    <p className="text-muted-foreground mt-0.5 truncate text-xs">
                       {isViewMode ? "Viewing details" : "Editing"}
                     </p>
                   )}

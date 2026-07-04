@@ -19,11 +19,11 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 const chartConfig = {
   sales: {
     label: "Sales",
-    color: "#3b82f6"
+    color: "var(--chart-1)"
   },
   estimates: {
     label: "Estimates",
-    color: "#10b981"
+    color: "var(--chart-2)"
   }
 };
 
@@ -51,12 +51,12 @@ export function SalesEstimateChart() {
           <CardTitle className="text-xl">Sales vs Estimates</CardTitle>
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
-              <div className="h-3 w-3 rounded-sm bg-[#3b82f6]" />
+              <div className="bg-chart-1 h-3 w-3 rounded-sm" />
               <span className="text-muted-foreground text-base font-medium">Sales</span>
             </div>
 
             <div className="flex items-center gap-1">
-              <div className="h-3 w-3 rounded-sm bg-[#10b983]" />
+              <div className="bg-chart-2 h-3 w-3 rounded-sm" />
               <span className="text-muted-foreground text-base font-medium">Estimates</span>
             </div>
           </div>
@@ -66,7 +66,7 @@ export function SalesEstimateChart() {
           value={timePeriod}
           onValueChange={(value) => setTimePeriod(value as TimePeriodType)}
         >
-          <SelectTrigger className="w-37.5">
+          <SelectTrigger className="w-36">
             <SelectValue placeholder="Select period" />
           </SelectTrigger>
           <SelectContent>
@@ -84,7 +84,7 @@ export function SalesEstimateChart() {
           <>
             {data.length <= 0 ? (
               <div className="border-muted bg-secondary flex h-75 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
                   <ChartColumnIncreasing className="text-muted-foreground" />
                 </div>
                 <div>
@@ -113,8 +113,8 @@ export function SalesEstimateChart() {
                     <ChartTooltip
                       content={<ChartTooltipContent className="justify-between text-base" />}
                     />
-                    <Bar dataKey="sales" fill="#1b82f6" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="estimates" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="sales" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="estimates" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ChartContainer>
               </div>

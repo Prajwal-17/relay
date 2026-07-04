@@ -196,7 +196,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
         "bg-sidebar text-sidebar-foreground relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r border-r-black/8",
-        isOverlay ? "shadow-[20px_0_40px_rgba(0,0,0,0.1)]" : ""
+        isOverlay ? "shadow-xl" : ""
       )}
       style={{
         width: sidebarWidth,
@@ -206,14 +206,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex h-18.25 items-center border-b px-4">
+        <div className="flex h-14 items-center border-b px-4">
           <motion.div
             initial={false}
             whileHover={{ y: -1 }}
             transition={{ duration: 0.16, ease: "easeInOut" }}
             className="flex items-center gap-3"
           >
-            <div className="bg-primary/10 flex h-14 w-14 shrink-0 items-center justify-center rounded-xl p-2">
+            <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2">
               <img
                 src={quickcartLogo}
                 alt="QuickCart logo"
@@ -221,7 +221,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               />
             </div>
             <div className="min-w-0">
-              <span className="block truncate text-xl font-semibold">QuickCart</span>
+              <span className="block truncate text-lg font-semibold">QuickCart</span>
               <span className="text-sidebar-foreground/55 block truncate text-sm">Workspace</span>
             </div>
           </motion.div>
@@ -237,9 +237,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="default"
                 size="lg"
-                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
-                <ShoppingCart className="stroke-2.35 h-7 w-7 transition-transform duration-300 group-hover:rotate-12" />
+                <ShoppingCart className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
                 <span>New Sale</span>
               </Button>
             </Link>
@@ -252,9 +252,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="group h-11 w-full cursor-pointer justify-center gap-3 px-4 text-lg font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+                className="group h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
               >
-                <FileText className="stroke-2.35 h-7 w-7 transition-transform duration-300 group-hover:-rotate-12" />
+                <FileText className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-12" />
                 <span>New Estimate</span>
               </Button>
             </Link>
@@ -279,16 +279,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                       }
                     }}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-4 py-1.5 text-[1.05rem] font-medium transition-colors duration-150",
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-base font-medium transition-colors duration-150",
                       isActive
                         ? "bg-secondary text-sidebar-foreground font-semibold"
                         : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                     )}
                   >
-                    <span className="shrink-0 [&_svg]:h-[1.35rem] [&_svg]:w-[1.35rem]">
-                      {item.icon}
-                    </span>
-                    <span className="truncate text-lg">{item.title}</span>
+                    <span className="shrink-0 [&_svg]:size-5">{item.icon}</span>
+                    <span className="truncate text-base">{item.title}</span>
                   </Link>
                 </motion.div>
               );
@@ -320,7 +318,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
         <div
           onMouseDown={handleResizeStart}
-          className="group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5"
+          className="group hover:bg-foreground/5 absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
         >
           <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
         </div>

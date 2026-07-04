@@ -266,7 +266,7 @@ export const ProductPreview = () => {
     <div className="flex h-full flex-col">
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+          <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
           <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
             Live Preview
           </span>

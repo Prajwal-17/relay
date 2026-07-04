@@ -105,17 +105,17 @@ const BillingTabBar = () => {
 
           <DropdownMenuContent align="start" sideOffset={8} className="min-w-42.5">
             <DropdownMenuItem
-              className="cursor-pointer gap-3 py-2.5 text-lg! font-semibold"
+              className="cursor-pointer gap-3 py-2.5 text-base font-semibold"
               onClick={() => void handleNewTab(TRANSACTION_TYPE.SALE)}
             >
               <span className="bg-success h-2.5 w-2.5 rounded-full" />
               New Sale
             </DropdownMenuItem>
             <DropdownMenuItem
-              className="cursor-pointer gap-3 py-2.5 text-lg! font-semibold"
+              className="cursor-pointer gap-3 py-2.5 text-base font-semibold"
               onClick={() => void handleNewTab(TRANSACTION_TYPE.ESTIMATE)}
             >
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+              <span className="bg-info h-2.5 w-2.5 rounded-full" />
               New Estimate
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -131,7 +131,7 @@ const BillingTabBar = () => {
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.9 }}
               onClick={handleClosePage}
-              className="text-muted-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border-none transition-colors duration-150 hover:bg-red-500/10 hover:text-red-500"
+              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border-none transition-colors duration-150"
             >
               <X size={23} />
             </motion.button>

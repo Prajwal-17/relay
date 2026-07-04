@@ -44,7 +44,7 @@ export const ItemRow = ({
   if (item.checkedQty === item.quantity) {
     bgColor = "bg-success/15";
   } else if (item.checkedQty > 0 && item.checkedQty < item.quantity) {
-    bgColor = "bg-[oklch(0.8618_0.2317_65.9)]/20";
+    bgColor = "bg-warning/20";
   }
   return (
     <>

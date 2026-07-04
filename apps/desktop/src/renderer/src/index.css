@@ -1,14 +1,20 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @font-face {
   font-family: "Inter";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
   src: url("./assets/fonts/inter/Inter-Font.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/inter/Inter-Italic-Font.ttf") format("truetype");
 }
 
 @font-face {
@@ -19,9 +25,17 @@
   src: url("./assets/fonts/roboto/Roboto-Font.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Roboto";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("./assets/fonts/roboto/Roboto-Italic-Font.ttf") format("truetype");
+}
+
 :root {
   --font-sans: "Inter", sans-serif;
-  --font-serif: Merriweather, serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-roboto: "Roboto", sans-serif;
 
   --background: oklch(0.9942 0.0034 247.8575);
@@ -62,6 +76,18 @@
 
   --success: oklch(69.72% 0.209 145.47);
   --success-foreground: oklch(100% 0 0);
+
+  --warning: oklch(75% 0.16 85);
+  --warning-foreground: oklch(0.2795 0.0368 260.031);
+
+  --info: oklch(65% 0.14 250);
+  --info-foreground: oklch(100% 0 0);
+
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: hsl(190, 45%, 45%);
+  --chart-4: hsl(220, 30%, 55%);
+  --chart-5: hsl(30, 40%, 65%);
 
   /* Onboarding Flow Colors */
   --onboarding-gradient-start: oklch(25% 0.04 264);
@@ -105,20 +131,12 @@
   --invoice-table-header-bg: oklch(96% 0.01 260);
 
   --radius: 0.5rem;
-  --shadow-x: 0px;
-  --shadow-y: 4px;
-  --shadow-blur: 8px;
-  --shadow-spread: -1px;
-  --shadow-opacity: 0.1;
-  --shadow-color: hsl(0 0% 0%);
-  --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0px 4px 8px -1px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
-  --shadow: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 1px 2px -2px hsl(0 0% 0% / 0.1);
-  --shadow-md: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 2px 4px -2px hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 4px 6px -2px hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.1), 0px 8px 10px -2px hsl(0 0% 0% / 0.1);
-  --shadow-2xl: 0px 4px 8px -1px hsl(0 0% 0% / 0.25);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.05);
+  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.12);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
@@ -155,6 +173,18 @@
 
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
 
   --color-border: var(--border);
   --color-borderprimary: var(--borderprimary);
@@ -208,10 +238,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --shadow-2xs: var(--shadow-2xs);
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
-  --shadow: var(--shadow);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
@@ -219,25 +247,22 @@
 }
 
 @layer base {
-  /* Default Scroll Styles */
   ::-webkit-scrollbar {
     width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background-color: #e5e7eb;
+    background-color: var(--muted);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #9ca3af;
+    background-color: var(--border);
     border-radius: 9999px;
   }
 
   * {
     @apply border-border outline-ring/50 font-sans;
-    /*https://github.com/tailwindlabs/tailwindcss/discussions/7429#discussioncomment-4779939*/
-    /*Disable increment/decrement button on input*/
     input[type="number"].appearance-none::-webkit-inner-spin-button,
     input[type="number"].appearance-none::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -250,6 +275,17 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
   @media print {
     @page {
       size: auto; /* let printer use roll */

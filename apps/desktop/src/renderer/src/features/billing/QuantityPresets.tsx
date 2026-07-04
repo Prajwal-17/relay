@@ -84,7 +84,7 @@ const QuantityPresets = ({
           ))}
         </div>
 
-        <Separator className="my-3 w-full bg-gray-300" />
+        <Separator className="bg-border my-3 w-full" />
 
         <div className="grid max-h-48 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-2 py-1">
           {numbers.map((i) => (

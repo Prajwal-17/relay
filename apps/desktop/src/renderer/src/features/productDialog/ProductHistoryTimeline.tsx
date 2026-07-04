@@ -20,12 +20,12 @@ function DiffRow({
   return (
     <div className="flex items-center justify-between py-2">
       <span className="text-secondary-foreground text-base font-semibold">{label}</span>
-      <div className="flex items-center gap-3 text-[0.95rem]">
+      <div className="flex items-center gap-3 text-base">
         <span className="text-muted-foreground decoration-muted-foreground/40 text-base font-medium line-through">
           {oldVal ? formatRupee(oldVal) : "N/A"}
         </span>
         <ArrowRight className="text-muted-foreground/30 h-4 w-4" strokeWidth={3} />
-        <span className="text-base font-bold tracking-tight text-emerald-600 dark:text-emerald-400">
+        <span className="text-success text-base font-bold tracking-tight">
           {newVal ? formatRupee(newVal) : "N/A"}
         </span>
       </div>

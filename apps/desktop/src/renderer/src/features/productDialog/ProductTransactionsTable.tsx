@@ -149,7 +149,7 @@ export function ProductTransactionsTable() {
                 </div>
 
                 <div className="col-span-3 flex items-center gap-2.5 font-medium">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-200 text-sm font-semibold text-purple-600">
+                  <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
                     {txn.customerName.charAt(0)}
                   </div>
                   <Tooltip>

@@ -187,11 +187,11 @@ const BillingHeader = () => {
           </Tooltip>
 
           <div className="flex items-baseline gap-2.5">
-            <span className="text-foreground text-xl font-bold tracking-tight">
+            <span className="text-foreground text-lg font-bold tracking-tight">
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </span>
-            <span className="text-muted-foreground/40 text-2xl font-light">/</span>
-            <span className="text-foreground font-mono text-3xl font-extrabold tracking-tight tabular-nums">
+            <span className="text-muted-foreground/40 text-xl font-light">/</span>
+            <span className="text-foreground font-mono text-2xl font-extrabold tracking-tight tabular-nums">
               #{transactionNo ?? "New"}
             </span>
           </div>
@@ -243,23 +243,23 @@ const BillingHeader = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="border-border/60 hover:bg-accent/60 text-foreground flex h-12 w-12 shrink-0 cursor-pointer items-center justify-center rounded-xl"
+                    className="border-border/60 hover:bg-accent/60 text-foreground flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl"
                   >
-                    <MoreVertical size={20} />
+                    <MoreVertical size={18} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="min-w-40">
                   <DropdownMenuItem
                     onClick={handleDuplicate}
                     disabled={isDuplicating}
-                    className="cursor-pointer gap-2 py-2 text-lg! font-semibold"
+                    className="cursor-pointer gap-2 py-2 text-base font-semibold"
                   >
                     <Copy size={16} />
                     Duplicate
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setIsDeleteDialogOpen(true)}
-                    className="text-destructive focus:text-destructive cursor-pointer gap-2 py-2 text-lg! font-semibold"
+                    className="text-destructive focus:text-destructive cursor-pointer gap-2 py-2 text-base font-semibold"
                   >
                     <Trash2 size={16} />
                     Delete

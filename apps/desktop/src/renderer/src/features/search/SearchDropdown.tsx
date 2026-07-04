@@ -336,7 +336,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 )}
 
                 {/* img preview tail */}
-                <div className="bg-card absolute top-1/2 -right-1.25 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-[2px_-2px_4px_rgba(0,0,0,0.06)]"></div>
+                <div className="bg-card absolute top-1/2 -right-1.25 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-sm"></div>
               </div>
             </motion.div>
           )}
@@ -344,7 +344,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-[0_18px_50px_rgba(15,23,42,0.12)]"
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-xl"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
