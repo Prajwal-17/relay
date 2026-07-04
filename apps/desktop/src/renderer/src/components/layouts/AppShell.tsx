@@ -69,7 +69,7 @@ const AppShell = () => {
 
       <main className="flex min-w-0 flex-1 flex-col">
         {!isBillingPage && (
-          <header className="bg-background/95 flex h-14 items-center border-b px-6">
+          <header className="bg-background/95 flex h-14 items-center border-b border-b-frame px-6">
             <div className="flex w-full items-center justify-between gap-6">
               <div className="flex min-w-0 items-center gap-3">
                 <motion.button

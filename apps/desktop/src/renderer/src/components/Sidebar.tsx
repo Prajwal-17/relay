@@ -195,7 +195,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       ref={sidebarRef}
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
-        "linear-light bg-sidebar text-sidebar-foreground border-r-border/15 relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r",
+        "linear-light bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r",
         isOverlay ? "shadow-xl" : ""
       )}
       style={{

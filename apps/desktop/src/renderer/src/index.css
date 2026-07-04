@@ -62,6 +62,7 @@
      luminance delta between canvas (0.965) and sheet (0.992) plus a 1px
      hairline-shadow. Borders therefore only need to whisper. */
   --hairline: oklch(0.87 0.004 255); /* default separators — card edges, table rows. */
+  --frame: oklch(0.82 0.005 255); /* STRUCTURAL edge — sidebar↔content, topbar↔content. One step darker than hairline so app-chrome reads as a deliberate frame; lighter than an input affordance. */
   --hairline-strong: oklch(0.78 0.005 255); /* input affordance, focused structure. */
 
   /* ── TEXT ──
@@ -254,6 +255,7 @@
   --color-chart-5: var(--chart-5);
 
   --color-border: var(--border);
+  --color-frame: var(--frame);
   --color-borderprimary: var(--borderprimary);
   --color-input: var(--input);
 
