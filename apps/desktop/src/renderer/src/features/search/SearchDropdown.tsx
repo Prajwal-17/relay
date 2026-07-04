@@ -315,7 +315,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               style={previewStyle}
             >
               <div className="relative h-36 w-36">
-                <div className="h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1 ring-black/6">
+                <div className="ring-border h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1">
                   <img
                     src={`${PROTOCOL_NAME}${delayedPreviewProduct.imageUrl}`}
                     alt="Preview"
@@ -348,7 +348,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
-              <div className="bg-muted/50 mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
+              <div className="bg-muted/70 mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
                 <Search className="h-6 w-6 opacity-60" />
               </div>
               <h3 className="text-foreground mb-1.5 text-lg font-semibold">No products found</h3>
@@ -450,7 +450,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             onMouseEnter={() => setHoveredIndex(virtualRow.index)}
                             onMouseLeave={() => setHoveredIndex(null)}
                           >
-                            <div className="bg-muted/30 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
+                            <div className="bg-muted/50 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
                               {product.imageUrl ? (
                                 <img
                                   src={`${PROTOCOL_NAME}${product.imageUrl}`}
@@ -478,7 +478,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       ) && (
                                         <Badge
                                           variant="outline"
-                                          className="border-search-badge-weight-border bg-search-badge-weight-bg text-search-badge-weight-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+                                          className="border-border/60 bg-secondary/50 text-muted-foreground rounded-md px-2 py-0 text-xs font-medium tracking-normal"
                                         >
                                           {product.weight}
                                           {product.unit}
@@ -487,7 +487,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     {product.mrp && (
                                       <Badge
                                         variant="outline"
-                                        className="border-search-badge-mrp-border bg-search-badge-mrp-bg text-search-badge-mrp-text rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+                                        className="border-primary/30 bg-primary/8 text-primary rounded-full px-2.5 py-0.5 text-sm font-semibold tracking-normal"
                                       >
                                         MRP ₹{paisaToRupeeString(product.mrp)}
                                       </Badge>

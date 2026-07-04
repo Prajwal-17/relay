@@ -56,7 +56,7 @@ export const ProductEditForm = () => {
               <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
                 Status
               </Label>
-              <div className="bg-secondary/40 border-border/50 flex items-center gap-5 rounded-2xl border px-5 py-2 shadow-sm">
+              <div className="bg-secondary/60 border-border/50 flex items-center gap-5 rounded-2xl border px-5 py-2 shadow-sm">
                 <StatusIndicator size="lg" isDisabled={formDataState.isDisabled} />
                 <div className="bg-border/80 h-6 w-px" />
                 <Switch

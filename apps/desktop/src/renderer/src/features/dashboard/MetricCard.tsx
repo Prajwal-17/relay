@@ -47,7 +47,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
           {href ? (
             <div
               onClick={handleLink}
-              className="bg-secondary/60 text-foreground/70 border-border hover:bg-secondary/80 hover:text-foreground inline-flex items-center justify-center rounded-full border p-1 transition-transform hover:scale-105"
+              className="bg-secondary/70 text-foreground/70 border-border hover:bg-secondary/90 hover:text-foreground inline-flex items-center justify-center rounded-full border p-1 transition-transform hover:scale-105"
             >
               <ArrowUpRight size={25} />
             </div>

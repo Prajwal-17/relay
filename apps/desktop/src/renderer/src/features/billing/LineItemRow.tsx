@@ -93,7 +93,7 @@ const LineItemRow = memo(
             />
           </div>
           <div className="col-span-3 px-1 py-1">
-            <div className="bg-muted/30 border-border/70 relative mx-auto flex h-10 w-full items-center rounded-lg border font-bold">
+            <div className="bg-muted/60 border-border/70 relative mx-auto flex h-10 w-full items-center rounded-lg border font-bold">
               <button
                 onClick={() => {
                   const tabId = getActiveTabId();
@@ -181,7 +181,7 @@ const LineItemRow = memo(
               <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={14} />
               </span>
-              <div className="bg-muted/25 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums">
+              <div className="bg-muted/40 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums">
                 {item.totalPrice ? paisaToRupeeString(item.totalPrice) : "0"}
               </div>
             </div>
@@ -199,7 +199,7 @@ const LineItemRow = memo(
               className={`flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border transition-all ${
                 checked
                   ? "border-success bg-success text-background"
-                  : "border-border bg-background/90 text-muted-foreground hover:border-foreground hover:text-foreground"
+                  : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
               }`}
             >
               {checked && <Check className="text-background" strokeWidth={3} size={18} />}
@@ -228,7 +228,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={checked}
-                  className="border-border/70 bg-background/80 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
+                  className="border-border/70 bg-muted/60 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
                   <Plus className="size-4" />
                 </Button>
@@ -248,7 +248,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={item.checkedQty === 0}
-                  className="border-border/70 bg-background/80 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
+                  className="border-border/70 bg-muted/60 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg p-0 shadow-none"
                 >
                   <Minus className="size-4" />
                 </Button>

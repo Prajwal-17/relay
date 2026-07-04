@@ -12,8 +12,8 @@ const COLORS = [
   "var(--chart-3)", // Deep Teal
   "var(--chart-4)", // Slate Blue
   "var(--chart-5)", // Muted Orange
-  "hsl(140, 25%, 55%)", // Soft Sage
-  "hsl(350, 30%, 65%)" // Dusty Rose
+  "var(--chart-1)", // Lavender
+  "var(--chart-2)" // Green
 ];
 
 const chartConfig = {

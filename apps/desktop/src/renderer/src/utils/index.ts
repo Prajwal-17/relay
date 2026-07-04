@@ -54,9 +54,9 @@ export const updateCheckedQuantity = (
 export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
   let bgColor = "bg-background";
   if (checkedQty === quantity && quantity > 0) {
-    bgColor = "bg-success/25";
+    bgColor = "bg-success/15";
   } else if (checkedQty > 0 && checkedQty < quantity) {
-    bgColor = "bg-warning/20";
+    bgColor = "bg-warning/15";
   }
   return bgColor;
 };

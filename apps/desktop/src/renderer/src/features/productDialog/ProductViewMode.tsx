@@ -33,7 +33,7 @@ export const ProductViewMode = () => {
       className="flex flex-col gap-9 md:flex-row md:items-start"
     >
       <div className="flex w-full shrink-0 flex-col gap-6 md:w-76">
-        <div className="bg-secondary/40 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-4xl border shadow-sm">
+        <div className="bg-secondary/60 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-4xl border shadow-sm">
           {formData.imageUrl ? (
             <img
               src={`${PROTOCOL_NAME}${formData.imageUrl}`}

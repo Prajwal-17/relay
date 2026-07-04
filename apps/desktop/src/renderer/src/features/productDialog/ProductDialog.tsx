@@ -144,24 +144,24 @@ export function ProductDialog() {
             </div>
 
             <div className="flex shrink-0 justify-center">
-              <TabsList className="bg-secondary/40 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] sm:w-fit">
+              <TabsList className="bg-secondary/60 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-xs sm:w-fit">
                 <TabsTrigger
                   value={INITIAL_TAB.INFO}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
                 >
                   <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   Product Info
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.HISTORY}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
                 >
                   <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   History
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.TRANSACTIONS}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-[0_2px_12px_rgba(0,0,0,0.06)] sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
                 >
                   <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   Transactions

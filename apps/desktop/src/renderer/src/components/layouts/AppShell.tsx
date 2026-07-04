@@ -34,6 +34,10 @@ const getPageTitle = (pathname: string) => {
     return "Settings";
   }
 
+  if (matchPath("/palette-demo", pathname)) {
+    return "Palette Demo";
+  }
+
   return "Workspace";
 };
 
@@ -93,7 +97,7 @@ const AppShell = () => {
                 <Input
                   type="text"
                   placeholder="Search anything..."
-                  className="bg-muted/40 h-10 pl-12 text-base"
+                  className="bg-muted/60 h-10 pl-12 text-base"
                 />
               </div>
             </div>

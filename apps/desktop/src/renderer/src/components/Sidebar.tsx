@@ -195,7 +195,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       ref={sidebarRef}
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
-        "bg-sidebar text-sidebar-foreground relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r border-r-black/8",
+        "linear-light bg-sidebar text-sidebar-foreground border-r-border/15 relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r",
         isOverlay ? "shadow-xl" : ""
       )}
       style={{
@@ -300,7 +300,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="border-border bg-background/80 hover:bg-background/90 flex cursor-pointer items-center gap-3 rounded-xl border p-3 backdrop-blur-md transition-colors duration-200"
+            className="border-border bg-sidebar-accent/80 hover:bg-sidebar-accent flex cursor-pointer items-center gap-3 rounded-xl border p-3 backdrop-blur-md transition-colors duration-200"
           >
             <div className="bg-success/20 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
               MS

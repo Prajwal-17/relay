@@ -69,7 +69,7 @@ export default function ProductHeader() {
             placeholder="Search products…"
             value={productsSearchParam}
             onChange={(e) => setProductsSearchParam(e.target.value)}
-            className="bg-muted/40 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-xl font-medium shadow-none transition-colors"
+            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-xl font-medium shadow-none transition-colors"
           />
           {productsSearchParam && (
             <button
@@ -89,7 +89,7 @@ export default function ProductHeader() {
             <Button
               variant="outline"
               size="lg"
-              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 relative cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
+              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 relative cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
             >
               <SlidersHorizontal className="h-5 w-5" />
               Filter
@@ -219,7 +219,7 @@ export default function ProductHeader() {
             <Button
               variant="outline"
               size="lg"
-              className="border-border bg-muted/30 text-foreground hover:bg-muted/60 cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
+              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
             >
               <ArrowDownAZ className="h-5 w-5" />
               {activeSortLabel ?? "Sort"}
@@ -387,7 +387,7 @@ function FilterChip({
   onRemove?: () => void;
 }) {
   return (
-    <span className="border-border bg-muted/40 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-lg font-medium transition-all">
+    <span className="border-border bg-muted/60 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-lg font-medium transition-all">
       <span className="text-muted-foreground text-base">{label}:</span>
       <span className="font-semibold">{value}</span>
       {onRemove && (
