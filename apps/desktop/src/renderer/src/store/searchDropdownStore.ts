@@ -84,7 +84,7 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
             itemQuery: "",
             availableProducts: [],
             activeRowId: null,
-            isDropDownOpen: false,
+            isDropdownOpen: false,
             sortBy: null
           }),
           false,

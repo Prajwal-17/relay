@@ -194,9 +194,9 @@ export function ProductDialog() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="destructive"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
-                                className="border-destructive/30 text-destructive hover:bg-destructive/10 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                                className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 <span className="hidden sm:inline">Delete</span>
@@ -218,9 +218,9 @@ export function ProductDialog() {
                             Edit
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="destructive"
                             onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
-                            className="border-destructive/30 text-destructive hover:bg-destructive/10 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                            className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="hidden sm:inline">Delete</span>

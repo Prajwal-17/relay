@@ -69,7 +69,7 @@ export default function ProductHeader() {
             placeholder="Search products…"
             value={productsSearchParam}
             onChange={(e) => setProductsSearchParam(e.target.value)}
-            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-xl font-medium shadow-none transition-colors"
+            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-lg! font-medium shadow-none transition-colors"
           />
           {productsSearchParam && (
             <button

@@ -62,7 +62,9 @@
      luminance delta between canvas (0.965) and sheet (0.992) plus a 1px
      hairline-shadow. Borders therefore only need to whisper. */
   --hairline: oklch(0.87 0.004 255); /* default separators — card edges, table rows. */
-  --frame: oklch(0.82 0.005 255); /* STRUCTURAL edge — sidebar↔content, topbar↔content. One step darker than hairline so app-chrome reads as a deliberate frame; lighter than an input affordance. */
+  --frame: oklch(
+    0.82 0.005 255
+  ); /* STRUCTURAL edge — sidebar↔content, topbar↔content. One step darker than hairline so app-chrome reads as a deliberate frame; lighter than an input affordance. */
   --hairline-strong: oklch(0.78 0.005 255); /* input affordance, focused structure. */
 
   /* ── TEXT ──
@@ -170,7 +172,7 @@
   --product-badge-text: oklch(0.33 0.07 258);
 
   /* ── Search Dropdown ── */
-  --search-highlight: oklch(0.43 0.08 258 / 0.15);
+  --search-highlight: oklch(0.85 0.16 80); /* Chrome-style find highlight — warm amber/yellow for text matches. */
   --search-icon-bg-from: var(--surface-1);
   --search-icon-bg-to: var(--surface-3);
   --search-icon-fg: var(--primary);
