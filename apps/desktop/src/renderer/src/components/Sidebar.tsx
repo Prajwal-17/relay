@@ -13,6 +13,9 @@ const MAX_SIDEBAR_WIDTH = 400;
 const DEFAULT_SIDEBAR_WIDTH = 288;
 const SIDEBAR_WIDTH_STORAGE_KEY = "quickcart-sidebar-width";
 
+const mainLinks = navLinks.filter((item) => item.href !== "/settings");
+const systemLinks = navLinks.filter((item) => item.href === "/settings");
+
 type SidebarProps = {
   variant?: "docked" | "overlay";
 };
@@ -142,11 +145,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
       setSidebarWidth(sidebarWidthRef.current);
-
-      // If user let go of drag while mouse is outside sidebar, we might need to close it (for overlay mode)
-      if (isOverlay && !isSidebarPinned) {
-        // It's tricky to rely on mouseleave here since we've captured events, but let's assume if it's left open they can click outside to close
-      }
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -160,7 +158,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-    // eslint-disable-next-line
   }, []);
 
   const handleResizeStart = (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -190,13 +187,54 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     setIsSidebarOpen(false);
   };
 
+  const renderNavItem = (item: (typeof navLinks)[number]) => {
+    const isActive = pathname === item.href;
+
+    return (
+      <motion.div
+        key={item.href}
+        whileHover={{ x: 2 }}
+        transition={{ duration: 0.12, ease: "easeOut" }}
+      >
+        <Link
+          to={item.href}
+          onClick={() => {
+            if (isOverlay) {
+              setIsSidebarOpen(false);
+            }
+          }}
+          className={cn(
+            "relative flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-base font-medium transition-colors duration-150",
+            isActive
+              ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
+              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+          )}
+        >
+          <AnimatePresence>
+            {isActive && (
+              <motion.span
+                initial={{ opacity: 0, scaleY: 0.4 }}
+                animate={{ opacity: 1, scaleY: 1 }}
+                exit={{ opacity: 0, scaleY: 0.4 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="bg-sidebar-primary absolute top-1/2 left-0 -mt-2 h-4 w-0.5 origin-center rounded-full"
+              />
+            )}
+          </AnimatePresence>
+          <span className="shrink-0 [&_svg]:size-5">{item.icon}</span>
+          <span className="truncate text-base">{item.title}</span>
+        </Link>
+      </motion.div>
+    );
+  };
+
   const shell = (
     <aside
       ref={sidebarRef}
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
-        "linear-light bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-x-hidden overflow-y-auto border-r",
-        isOverlay ? "shadow-xl" : ""
+        "linear-light bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-hidden border-r",
+        isOverlay && "shadow-xl"
       )}
       style={{
         width: sidebarWidth,
@@ -206,11 +244,15 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex h-14 items-center border-b px-4">
-          <motion.div
-            initial={false}
-            whileHover={{ y: -1 }}
-            transition={{ duration: 0.16, ease: "easeInOut" }}
+        {/* ── Brand ── */}
+        <div className="border-b-frame flex h-14 shrink-0 items-center border-b px-4">
+          <Link
+            to="/"
+            onClick={() => {
+              if (isOverlay) {
+                setIsSidebarOpen(false);
+              }
+            }}
             className="flex items-center gap-3"
           >
             <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2">
@@ -224,10 +266,11 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <span className="block truncate text-lg font-semibold">QuickCart</span>
               <span className="text-sidebar-foreground/55 block truncate text-sm">Workspace</span>
             </div>
-          </motion.div>
+          </Link>
         </div>
 
-        <div className="flex flex-1 flex-col px-4 py-5 pb-24">
+        {/* ── Scrollable middle: actions + nav ── */}
+        <div className="flex flex-1 flex-col overflow-y-auto px-4 py-5">
           <div className="flex flex-col gap-3">
             <Link
               to="/billing/sales/create"
@@ -237,9 +280,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="default"
                 size="lg"
-                className="group bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
               >
-                <ShoppingCart className="h-5 w-5 transition-transform duration-300 group-hover:rotate-12" />
+                <ShoppingCart className="h-5 w-5" />
                 <span>New Sale</span>
               </Button>
             </Link>
@@ -252,75 +295,63 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="group h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-all duration-150 hover:shadow-md active:scale-[0.97]"
+                className="h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
               >
-                <FileText className="h-5 w-5 transition-transform duration-300 group-hover:-rotate-12" />
+                <FileText className="h-5 w-5" />
                 <span>New Estimate</span>
               </Button>
             </Link>
           </div>
 
-          <nav className="mt-7 flex-1 space-y-2">
-            {navLinks.map((item) => {
-              const isActive = pathname === item.href;
+          <nav className="mt-6 flex flex-col">
+            <div className="flex flex-col">
+              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
+                Main
+              </span>
+              <div className="flex flex-col gap-0.5">{mainLinks.map(renderNavItem)}</div>
+            </div>
 
-              return (
-                <motion.div
-                  key={item.href}
-                  whileHover={{ x: 3 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                >
-                  <Link
-                    to={item.href}
-                    onClick={() => {
-                      if (isOverlay) {
-                        setIsSidebarOpen(false);
-                      }
-                    }}
-                    className={cn(
-                      "flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-base font-medium transition-colors duration-150",
-                      isActive
-                        ? "bg-secondary text-sidebar-foreground font-semibold"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                    )}
-                  >
-                    <span className="shrink-0 [&_svg]:size-5">{item.icon}</span>
-                    <span className="truncate text-base">{item.title}</span>
-                  </Link>
-                </motion.div>
-              );
-            })}
+            <div className="mt-6 flex flex-col">
+              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
+                System
+              </span>
+              <div className="flex flex-col gap-0.5">{systemLinks.map(renderNavItem)}</div>
+            </div>
           </nav>
         </div>
 
-        <div className="absolute bottom-0 left-0 w-full px-4 pb-4">
-          <motion.div
-            initial={false}
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-            className="border-border bg-sidebar-accent/80 hover:bg-sidebar-accent flex cursor-pointer items-center gap-3 rounded-xl border p-3 backdrop-blur-md transition-colors duration-200"
+        {/* ── Store profile footer ── */}
+        <div className="border-t-frame shrink-0 border-t px-4 py-3">
+          {/* TODO: wire to /api/store-profile — name, email, initials are placeholder */}
+          <Link
+            to="/settings"
+            onClick={() => {
+              if (isOverlay) {
+                setIsSidebarOpen(false);
+              }
+            }}
+            className="hover:bg-sidebar-accent flex items-center gap-3 rounded-xl p-2 transition-colors duration-150"
           >
-            <div className="bg-success/20 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+            <div className="bg-success/15 text-success flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
               MS
             </div>
             <div className="min-w-0">
               <span className="block truncate text-sm font-semibold">
                 Sri Manjunatheshwara Stores
               </span>
-              <span className="text-muted-foreground block truncate text-xs">
+              <span className="text-sidebar-foreground/55 block truncate text-xs">
                 kumarkrwelcome@gmail.com
               </span>
             </div>
-          </motion.div>
+          </Link>
         </div>
 
+        {/* ── Resize handle ── */}
         <div
           onMouseDown={handleResizeStart}
           className="group hover:bg-foreground/5 absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
         >
-          <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity group-hover:opacity-100" />
+          <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
       </div>
     </aside>
@@ -346,12 +377,11 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         <AnimatePresence initial={false}>
           {isSidebarOpen && (
             <motion.div
-              initial={{ x: -28, opacity: 0.5, scale: 0.98 }}
-              animate={{ x: 0, opacity: 1, scale: 1 }}
-              exit={{ x: -28, opacity: 0, scale: 0.98 }}
-              transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              initial={{ x: -28, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -28, opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
               className="fixed inset-y-0 left-0 z-50 transform-gpu"
-              style={{ transformOrigin: "left center" }}
             >
               {shell}
             </motion.div>
