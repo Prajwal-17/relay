@@ -61,7 +61,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
 
   return (
     <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-2.5 transition-colors">
-      <div className="border-border bg-muted/30 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm">
+      <div className="border-border bg-muted/50 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm">
         {product.imageUrl ? (
           <img
             src={`${PROTOCOL_NAME}${product.imageUrl}`}
@@ -83,7 +83,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {showWeight && (
             <Badge
               variant="outline"
-              className="border-border bg-muted text-muted-foreground rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+              className="border-border bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
             >
               {product.weight}
               {product.unit}
@@ -92,7 +92,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {product.mrp && (
             <Badge
               variant="outline"
-              className="border-warning/30 bg-warning/10 text-warning rounded-full px-2.5 py-0.5 text-base font-semibold shadow-sm"
+              className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
             >
               MRP ₹{paisaToRupeeString(product.mrp)}
             </Badge>

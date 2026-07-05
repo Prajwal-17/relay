@@ -198,7 +198,7 @@ const BillingHeader = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <div className="bg-muted/30 border-border/50 flex items-center rounded-xl border p-1.5">
+          <div className="bg-muted/60 border-border/50 flex items-center rounded-xl border p-1.5">
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button

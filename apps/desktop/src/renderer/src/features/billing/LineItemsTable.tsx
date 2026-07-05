@@ -71,8 +71,8 @@ const LineItemsTable = () => {
 
   return (
     <div className="mx-4 h-full">
-      <div className="border-border/70 bg-background/95 relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
-        <div className="bg-background/95 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
+      <div className="border-border/70 bg-background relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
+        <div className="bg-muted/60 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <Button
             variant="outline"
             size="lg"
@@ -119,7 +119,7 @@ const LineItemsTable = () => {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="border-border/80 bg-background/80 hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
+                  className="border-border/80 bg-muted/60 hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
                 >
                   Actions
                   <ChevronDown className="ml-2 h-4 w-4" />

@@ -2,148 +2,221 @@
 @import "tw-animate-css";
 
 @font-face {
-  font-family: "Inter";
+  font-family: "InterVariable";
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("./assets/fonts/inter/Inter-Font.ttf") format("truetype");
+  src: url("./assets/fonts/InterVariable.woff2") format("woff2");
 }
 
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./assets/fonts/inter/Inter-Italic-Font.ttf") format("truetype");
-}
+/* ════════════════════════════════════════════════════════════════════════
+   QUICKCART — GLOBAL DESIGN LANGUAGE
+   "Bloomberg Terminal meets Linear."
 
-@font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./assets/fonts/roboto/Roboto-Font.ttf") format("truetype");
-}
+   Goal: a calm, expensive, dense, desktop-first tool for people who issue
+   hundreds of invoices a day. Separation comes from SURFACES + ELEVATION,
+   not from borders. Borders whisper. Hierarchy comes from TYPE WEIGHT and
+   SURFACE LUMINANCE, never from color.
 
-@font-face {
-  font-family: "Roboto";
-  font-style: italic;
-  font-weight: 100 900;
-  font-display: swap;
-  src: url("./assets/fonts/roboto/Roboto-Italic-Font.ttf") format("truetype");
-}
+   ELEVATION MODEL  (surface + shadow + border move together)
+   ───────────────────────────────────────────────────────
+   E0  Canvas          page "desk"            no border, no shadow
+   E1  Inline          content on canvas      transparent / optional hairline
+   E2  Card            default container      surface-1, shadow-xs, hairline
+   E3  Inset band      table head, skeleton   surface-3 (recessed), no shadow
+   E4  Popover         dropdown / tooltip     surface-1, shadow-md, hairline
+   E5  Dialog          modal sheet            surface-1, shadow-lg, hairline
+   E6  Overlay         command palette        surface-1, shadow-xl, hairline
+
+   DESIGN PRINCIPLES
+   ─────────────────
+   • One cool neutral family (hue 255). Primary lives one notch warmer (258).
+   • Surfaces separate by luminance delta + whisper shadow, NOT by borders.
+   • Two border tokens only: hairline (whisper) + hairline-strong (affordance).
+   • Typography: regular body, semibold headings, tabular figures in all tables.
+   • Shadows are tight, slate-tinted, negative-spread — "desktop window",
+     never "floating SaaS card".
+   ════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  --font-sans: "Inter", sans-serif;
+  /* enforced light color-scheme so native controls & scrollbars render correctly */
+  color-scheme: light;
+
+  --font-sans: "InterVariable", system-ui, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-roboto: "Roboto", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
+  /* legacy alias — retained so any `font-roboto` utility keeps resolving */
+  --font-roboto: var(--font-sans);
 
-  --background: oklch(0.9942 0.0034 247.8575);
-  --background-secondary: oklch(95.46% 0.004 264.37);
-  --foreground: oklch(0.2795 0.0368 260.031);
+  /* ── SURFACE LADDER ──
+     Each step has ONE job. Lightness deltas are tuned to register on
+     100 PPI TN panels at 1366×768 while staying whisper-quiet. */
+  --canvas: oklch(0.965 0.003 255); /* E0 — app desk. Cool, calm, recessed. */
+  --surface-1: oklch(0.992 0.002 255); /* E2/E4/E5 — raised sheet (cards, popovers, dialogs). */
+  --surface-2: oklch(0.94 0.004 255); /* neutral FILL — secondary buttons, active nav, chips. */
+  --surface-3: oklch(0.955 0.003 255); /* E3 — INSET band (table heads, skeletons, code). */
+  --surface-4: oklch(0.992 0.002 255); /* overlay alias (same value as sheet, semantic label). */
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2795 0.0368 260.031);
+  /* ── BORDERS ──
+     Borders are a SECONDARY separator here. The primary separator is the
+     luminance delta between canvas (0.965) and sheet (0.992) plus a 1px
+     hairline-shadow. Borders therefore only need to whisper. */
+  --hairline: oklch(0.87 0.004 255); /* default separators — card edges, table rows. */
+  --frame: oklch(
+    0.82 0.005 255
+  ); /* STRUCTURAL edge — sidebar↔content, topbar↔content. One step darker than hairline so app-chrome reads as a deliberate frame; lighter than an input affordance. */
+  --hairline-strong: oklch(0.78 0.005 255); /* input affordance, focused structure. */
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2795 0.0368 260.031);
+  /* ── TEXT ──
+     Low chroma = neutral charcoal, not "blue" text. Calm and high-contrast.
+     ink-muted lifted to 0.42 for AA legibility on cheap office monitors. */
+  --ink: oklch(0.21 0.02 255); /* primary text — deep cool charcoal. */
+  --ink-muted: oklch(0.42 0.018 255); /* secondary text — meta, timestamps. */
+  --ink-subtle: oklch(0.52 0.014 255); /* placeholder, disabled, deselected. */
+  --ink-tertiary: oklch(0.62 0.012 255); /* decorative, far-background. */
 
-  --primary: oklch(87.67% 0.165 90.15);
-  --primary-foreground: oklch(0% 0 0);
+  /* ── BRAND / PRIMARY ──
+     A confident slate-indigo. Chroma 0.08 (vs the old muddy 0.06) gives the
+     "Complete Sale" CTA — pressed 200× a day — real presence without becoming
+     colourful. Deeper L for stronger contrast on white. */
+  --primary: oklch(0.43 0.08 258);
+  --primary-hover: oklch(0.37 0.08 258); /* pressed/engaged CTA. */
+  --primary-focus: oklch(0.43 0.08 258 / 0.4); /* soft focus wash (direct use). */
+  --on-primary: #ffffff;
 
-  --secondary: oklch(0.9276 0.0058 264.5313);
-  --secondary-foreground: oklch(33.43% 0 0);
+  /* ── SIDEBAR ──
+     The sidebar is an INSET panel of the app chrome — same family as a recessed
+     table-head band, not a dark rail. It reads as a quiet frame so content
+     wins attention. Hover/selected surfaces carry a faint primary tint to
+     signal "engaged" rather than just "grey". */
+  --sidebar: oklch(0.955 0.003 255); /* recessed panel — a half-step below canvas. */
+  --sidebar-foreground: oklch(0.25 0.02 255); /* readable, a hair softer than body ink. */
+  --sidebar-primary: var(--primary); /* active indicator / logo mark. */
+  --sidebar-primary-foreground: var(--on-primary);
+  --sidebar-accent: oklch(0.945 0.005 258); /* hover/selected surface — primary-tinted. */
+  --sidebar-accent-foreground: var(--ink);
 
-  --accent: oklch(0.9519 0.0013 106.4244);
-  --accent-foreground: oklch(0.3729 0.0306 259.7328);
+  /* ── SEMANTIC STATES ──
+     All in OKLCH for one coherent system. Calmer than the old hex values —
+     enterprise alerting, not sportswear. */
+  --success: oklch(0.55 0.12 150);
+  --success-foreground: #ffffff;
+  --warning: oklch(0.72 0.13 70);
+  --warning-foreground: var(--ink);
+  --destructive: oklch(0.52 0.18 25);
+  --destructive-foreground: #ffffff;
+  --info: oklch(0.5 0.13 250);
+  --info-foreground: #ffffff;
 
-  --muted: oklch(0.967 0.0029 264.5419);
-  --muted-foreground: oklch(0.551 0.0234 264.3637);
+  /* ── CHARTS ──
+     One LEAD color (primary), one CONTRAST (teal), one WARM counter (amber),
+     then two RECEDING supports. Distinct enough to scan multi-series at a
+     glance; never a rainbow. (chart-6/7/8 removed: they were unmapped &
+     unused — dead tokens.) */
+  --chart-1: oklch(0.48 0.085 258); /* lead — primary slate-indigo. */
+  --chart-2: oklch(0.55 0.09 195); /* contrast — teal. */
+  --chart-3: oklch(0.62 0.085 70); /* warm counter — amber. */
+  --chart-4: oklch(0.55 0.07 150); /* support — sage. */
+  --chart-5: oklch(0.5 0.06 230); /* support — slate-blue. */
 
-  --destructive: oklch(64.69% 0.238 29.23);
-  --destructive-foreground: oklch(100% 0 0);
+  /* ══ SEMANTIC TOKEN MAP (backward-compatible — do NOT rename) ══
+     Existing components consume these names. The primitive values above are
+     the only thing that changes; everything below is wiring. */
 
-  --border: oklch(82% 0.006 286.286);
-  --borderprimary: oklch(0.8475 0.173193 89.8358);
-  --input: oklch(0.8717 0.0093 258.3382);
+  --background: var(--canvas);
+  --background-secondary: var(--canvas);
+  --foreground: var(--ink);
 
-  --sidebar: oklch(95.46% 0.004 264.37);
-  --sidebar-foreground: oklch(0.2795 0.0368 260.031);
-  --sidebar-primary: oklch(0.5854 0.2041 277.1173);
-  --sidebar-primary-foreground: oklch(0.9519 0.0013 106.4244);
-  --sidebar-accent: oklch(0.9519 0.0013 106.4244);
-  --sidebar-accent-foreground: oklch(0.3729 0.0306 259.7328);
+  --card: var(--surface-1);
+  --card-foreground: var(--ink);
 
-  --success: oklch(69.72% 0.209 145.47);
-  --success-foreground: oklch(100% 0 0);
+  --popover: var(--surface-1);
+  --popover-foreground: var(--ink);
 
-  --warning: oklch(75% 0.16 85);
-  --warning-foreground: oklch(0.2795 0.0368 260.031);
+  --primary-foreground: var(--on-primary);
 
-  --info: oklch(65% 0.14 250);
-  --info-foreground: oklch(100% 0 0);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--ink);
 
-  --chart-1: #3b82f6;
-  --chart-2: #10b981;
-  --chart-3: hsl(190, 45%, 45%);
-  --chart-4: hsl(220, 30%, 55%);
-  --chart-5: hsl(30, 40%, 65%);
+  --accent: oklch(0.958 0.006 258); /* hover/selected wash — faint primary tint. */
+  --accent-foreground: var(--ink-muted);
 
-  /* Onboarding Flow Colors */
-  --onboarding-gradient-start: oklch(25% 0.04 264);
-  --onboarding-gradient-mid: oklch(18% 0.03 264);
-  --onboarding-gradient-end: oklch(12% 0.02 255);
-  --onboarding-text-muted: oklch(70% 0.01 264);
-  --onboarding-text-footer: oklch(45% 0.01 264);
-  --onboarding-icon-bg: oklch(87.67% 0.165 90.15 / 0.15);
-  --onboarding-feature-text: oklch(80% 0.01 264);
-  --onboarding-icon-dark: oklch(60% 0.165 90.15);
+  --muted: var(--surface-3); /* inset/recessed band — table heads, skeletons. */
+  --muted-foreground: var(--ink-muted);
 
-  --ring: oklch(77.55% 0.174 90.04);
+  --border: var(--hairline);
+  --borderprimary: var(--primary);
+  --input: var(--hairline-strong);
 
-  /* Product Dialog - hierarchy colors */
-  --product-label: oklch(55% 0.02 264);
-  --product-value: oklch(28% 0.04 260);
-  --product-surface: oklch(97% 0.003 264);
-  --product-surface-hover: oklch(95% 0.005 264);
-  --product-divider: oklch(90% 0.005 264);
-  --product-badge-bg: oklch(94% 0.02 90);
-  --product-badge-text: oklch(45% 0.12 80);
+  /* Solid primary so the `ring-ring/50` utilities (used across Shadcn) resolve
+     to a clear, visible halo — critical for keyboard users on long shifts. */
+  --ring: var(--primary);
 
-  /* Search Dropdown */
-  --search-highlight: oklch(93% 0.14 95);
-  --search-icon-bg-from: oklch(97% 0.01 90);
-  --search-icon-bg-to: oklch(94% 0.03 90);
-  --search-icon-fg: oklch(55% 0.15 85);
-  --search-badge-weight-border: oklch(88% 0.005 264);
-  --search-badge-weight-bg: oklch(96% 0.003 264);
-  --search-badge-weight-text: oklch(50% 0.015 264);
-  --search-badge-mrp-border: oklch(85% 0.06 70);
-  --search-badge-mrp-bg: oklch(95% 0.03 80);
-  --search-badge-mrp-text: oklch(48% 0.12 55);
+  /* ── Onboarding (dark rail — intentionally dark, tuned to hue 255) ── */
+  --onboarding-gradient-start: oklch(0.25 0.04 255);
+  --onboarding-gradient-mid: oklch(0.18 0.03 255);
+  --onboarding-gradient-end: oklch(0.12 0.02 255);
+  --onboarding-text-muted: oklch(0.7 0.012 255);
+  --onboarding-text-footer: oklch(0.45 0.012 255);
+  --onboarding-icon-bg: oklch(0.43 0.08 258 / 0.15);
+  --onboarding-feature-text: oklch(0.8 0.01 255);
+  --onboarding-icon-dark: oklch(0.43 0.08 258);
 
-  /* Invoice Template */
-  --invoice-bg: oklch(100% 0 0);
-  --invoice-text: oklch(20% 0.02 260);
-  --invoice-text-muted: oklch(45% 0.02 260);
-  --invoice-accent: oklch(55% 0.12 160);
-  --invoice-border: oklch(90% 0.01 260);
-  --invoice-table-header-bg: oklch(96% 0.01 260);
+  /* ── Product Dialog ── */
+  --product-label: var(--ink-muted);
+  --product-value: var(--ink);
+  --product-surface: var(--surface-1);
+  --product-surface-hover: var(--surface-3);
+  --product-divider: var(--hairline);
+  --product-badge-bg: oklch(0.33 0.07 258 / 0.08);
+  --product-badge-text: oklch(0.33 0.07 258);
 
-  --radius: 0.5rem;
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 4px 8px rgba(0, 0, 0, 0.04);
-  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.1), 0 6px 12px rgba(0, 0, 0, 0.05);
-  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.12);
-  --tracking-normal: 0em;
+  /* ── Search Dropdown ── */
+  --search-highlight: oklch(
+    0.85 0.16 80
+  ); /* Chrome-style find highlight — warm amber/yellow for text matches. */
+  --search-icon-bg-from: var(--surface-1);
+  --search-icon-bg-to: var(--surface-3);
+  --search-icon-fg: var(--primary);
+
+  /* ── Product Badges ──
+     Dedicated amber-gold for MRP — a more sophisticated take on the old
+     warning hue (was oklch(75% 0.16 85)). Weight tags use generic muted. */
+  --badge-mrp-border: oklch(0.68 0.12 75 / 0.35);
+  --badge-mrp-bg: oklch(0.68 0.12 75 / 0.1);
+  --badge-mrp-text: oklch(0.54 0.12 75);
+
+  /* ── Invoice Template (PDF/print) ── */
+  --invoice-bg: var(--surface-1);
+  --invoice-text: var(--ink);
+  --invoice-text-muted: var(--ink-muted);
+  --invoice-accent: var(--primary);
+  --invoice-border: var(--hairline);
+  --invoice-table-header-bg: var(--surface-3);
+
+  /* ── SHADOWS ──
+     Tight, slate-tinted, negative spread. Layered pairs give a crisp edge
+     without a soft balloon. This is what makes a panel read as a "desktop
+     window" instead of a floating web card. */
+  --shadow-xs: 0 1px 0 0 rgb(15 23 42 / 0.05);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05), 0 1px 1px 0 rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-lg: 0 12px 24px -6px rgb(15 23 42 / 0.1), 0 4px 8px -4px rgb(15 23 42 / 0.06);
+  --shadow-xl: 0 20px 40px -8px rgb(15 23 42 / 0.14), 0 8px 16px -6px rgb(15 23 42 / 0.08);
+  --shadow-2xl: 0 32px 64px -12px rgb(15 23 42 / 0.18), 0 12px 24px -8px rgb(15 23 42 / 0.1);
+
+  /* ── RADIUS ──
+     A single anchor with stepped offsets. The TOP end is compressed
+     (xl 12→10, 2xl 16→12, 3xl 24→16) to kill the "rounded startup" look while
+     keeping controls and cards precise. */
+  --radius: 0.5rem; /* 8px anchor */
   --spacing: 0.25rem;
 }
 
 @theme inline {
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
   --font-roboto: var(--font-roboto);
 
   --color-background: var(--background);
@@ -187,6 +260,7 @@
   --color-chart-5: var(--chart-5);
 
   --color-border: var(--border);
+  --color-frame: var(--frame);
   --color-borderprimary: var(--borderprimary);
   --color-input: var(--input);
 
@@ -220,12 +294,9 @@
   --color-search-icon-bg-from: var(--search-icon-bg-from);
   --color-search-icon-bg-to: var(--search-icon-bg-to);
   --color-search-icon-fg: var(--search-icon-fg);
-  --color-search-badge-weight-border: var(--search-badge-weight-border);
-  --color-search-badge-weight-bg: var(--search-badge-weight-bg);
-  --color-search-badge-weight-text: var(--search-badge-weight-text);
-  --color-search-badge-mrp-border: var(--search-badge-mrp-border);
-  --color-search-badge-mrp-bg: var(--search-badge-mrp-bg);
-  --color-search-badge-mrp-text: var(--search-badge-mrp-text);
+  --color-badge-mrp-border: var(--badge-mrp-border);
+  --color-badge-mrp-bg: var(--badge-mrp-bg);
+  --color-badge-mrp-text: var(--badge-mrp-text);
 
   --color-invoice-bg: var(--invoice-bg);
   --color-invoice-text: var(--invoice-text);
@@ -237,7 +308,9 @@
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 2px);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-3xl: calc(var(--radius) + 8px);
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -247,33 +320,82 @@
 }
 
 @layer base {
+  /* ── Scrollbar ──
+     Compact, inset, desktop-tool. A 10px track with a 6px thumb floated on
+     transparent padding — not a macOS glass pill. */
   ::-webkit-scrollbar {
-    width: 8px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    background-color: var(--muted);
-    border-radius: 9999px;
+    background-color: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--border);
-    border-radius: 9999px;
+    background-color: var(--hairline);
+    border-radius: var(--radius-sm);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--hairline-strong);
+    background-clip: content-box;
   }
 
   * {
     @apply border-border outline-ring/50 font-sans;
+
     input[type="number"].appearance-none::-webkit-inner-spin-button,
     input[type="number"].appearance-none::-webkit-outer-spin-button {
       -webkit-appearance: none;
       margin: 0;
     }
+
     input[type="number"].appearance-none {
       -moz-appearance: textfield;
     }
   }
+
   body {
     @apply bg-background text-foreground;
+    /* body weight is REGULAR (was 500). Medium-everything flattened hierarchy;
+       regular body lets semibold headings breathe and reduces long-shift
+       visual fatigue. Components that need medium apply `font-medium`. */
+    font-weight: 400;
+    font-size: 14px;
+    /* cv05 disambiguates lowercase-L from digit-1 — essential in billing data
+       full of mixed SKUs, quantities and prices. */
+    font-feature-settings: "cv05" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-kerning: normal;
+  }
+
+  /* Headings tightened for the refined, "designed" feel Inter is built for.
+     Body tracking stays at 0 to protect dense-table legibility on cheap TN. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
+  }
+
+  /* Tabular figures everywhere numbers stack — the single biggest scannability
+     win for a billing tool. Aligns price columns and quantity grids. */
+  table {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings:
+      "tnum" 1,
+      "cv05" 1;
+  }
+
+  /* Calm, primary-tinted text selection (Apple/Linear-style), not a hard block. */
+  ::selection {
+    background-color: oklch(0.43 0.08 258 / 0.16);
+    color: var(--ink);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -288,8 +410,10 @@
 
   @media print {
     @page {
-      size: auto; /* let printer use roll */
-      margin: 0mm; /* remove browser default margins */
+      size: auto;
+      /* let printer use roll */
+      margin: 0mm;
+      /* remove browser default margins */
     }
 
     body {
@@ -298,7 +422,8 @@
     }
 
     .receipt {
-      width: 80mm; /* common thermal printer width */
+      width: 80mm;
+      /* common thermal printer width */
     }
 
     .no-break {

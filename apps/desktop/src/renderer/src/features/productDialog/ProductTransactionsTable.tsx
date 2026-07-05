@@ -178,7 +178,7 @@ export function ProductTransactionsTable() {
 
                 <div className="col-span-1 flex items-center justify-end">
                   <Tooltip>
-                    <TooltipTrigger className="bg-secondary/40 text-muted-foreground/80 border-border/50 hover:bg-secondary hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105">
+                    <TooltipTrigger className="bg-secondary/60 text-muted-foreground/80 border-border/50 hover:bg-secondary hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105">
                       <ArrowUpRight className="h-5 w-5" />
                     </TooltipTrigger>
                     <TooltipContent>

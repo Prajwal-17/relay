@@ -44,7 +44,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
             </div>
 
             <div className="flex-1 space-y-4 overflow-y-auto p-6">
-              <div className="bg-secondary/30 border-border rounded-lg border p-4">
+              <div className="bg-secondary/50 border-border rounded-lg border p-4">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                   <div>
                     <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">

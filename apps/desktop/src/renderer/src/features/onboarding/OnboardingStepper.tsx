@@ -3,6 +3,18 @@ import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";
 
+// Mirrors index.css tokens (motion cannot tween CSS vars directly, so values
+// are duplicated — keep in sync with :root when tokens change).
+const STEP_COLORS = {
+  completed: "oklch(0.550 0.120 150)", // --success
+  active: "oklch(0.430 0.080 258)", // --primary
+  inactive: "oklch(0.940 0.004 255)", // --surface-2
+  activeBorder: "oklch(0.430 0.080 258 / 0.5)", // --ring
+  inactiveBorder: "oklch(0.870 0.004 255)", // --hairline
+  activeText: "oklch(0.210 0.020 255)", // --ink
+  inactiveText: "oklch(0.520 0.014 255)" // --ink-subtle
+};
+
 type OnboardingStepperProps = {
   currentStep: number;
   totalSteps: number;
@@ -27,16 +39,16 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
               <motion.div
                 animate={{
                   backgroundColor: isCompleted
-                    ? "oklch(69.72% 0.209 145.47)"
+                    ? STEP_COLORS.completed
                     : isActive
-                      ? "oklch(87.67% 0.165 90.15)"
-                      : "oklch(0.967 0.0029 264.5419)",
+                      ? STEP_COLORS.active
+                      : STEP_COLORS.inactive,
                   scale: isActive ? 1.1 : 1,
                   borderColor: isCompleted
-                    ? "oklch(69.72% 0.209 145.47)"
+                    ? STEP_COLORS.completed
                     : isActive
-                      ? "oklch(77.55% 0.174 90.04)"
-                      : "oklch(82% 0.006 286.286)"
+                      ? STEP_COLORS.activeBorder
+                      : STEP_COLORS.inactiveBorder
                 }}
                 transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 className={cn(
@@ -53,7 +65,7 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
               </motion.div>
               <motion.span
                 animate={{
-                  color: isActive ? "oklch(0.2795 0.0368 260.031)" : "oklch(0.551 0.0234 264.3637)"
+                  color: isActive ? STEP_COLORS.activeText : STEP_COLORS.inactiveText
                 }}
                 className="text-sm font-medium whitespace-nowrap"
               >

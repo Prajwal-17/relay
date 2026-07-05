@@ -34,6 +34,10 @@ const getPageTitle = (pathname: string) => {
     return "Settings";
   }
 
+  if (matchPath("/palette-demo", pathname)) {
+    return "Palette Demo";
+  }
+
   return "Workspace";
 };
 
@@ -65,7 +69,7 @@ const AppShell = () => {
 
       <main className="flex min-w-0 flex-1 flex-col">
         {!isBillingPage && (
-          <header className="bg-background/95 flex h-14 items-center border-b px-6">
+          <header className="bg-background/95 flex h-14 items-center border-b border-b-frame px-6">
             <div className="flex w-full items-center justify-between gap-6">
               <div className="flex min-w-0 items-center gap-3">
                 <motion.button
@@ -93,7 +97,7 @@ const AppShell = () => {
                 <Input
                   type="text"
                   placeholder="Search anything..."
-                  className="bg-muted/40 h-10 pl-12 text-base"
+                  className="bg-muted/60 h-10 pl-12 text-base"
                 />
               </div>
             </div>
