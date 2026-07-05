@@ -478,7 +478,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       ) && (
                                         <Badge
                                           variant="outline"
-                                          className="border-border/60 bg-secondary/50 text-muted-foreground rounded-md px-2 py-0 text-xs font-medium tracking-normal"
+                                          className="border-border bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
                                         >
                                           {product.weight}
                                           {product.unit}
@@ -487,7 +487,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     {product.mrp && (
                                       <Badge
                                         variant="outline"
-                                        className="border-primary/30 bg-primary/8 text-primary rounded-full px-2.5 py-0.5 text-sm font-semibold tracking-normal"
+                                        className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
                                       >
                                         MRP ₹{paisaToRupeeString(product.mrp)}
                                       </Badge>
