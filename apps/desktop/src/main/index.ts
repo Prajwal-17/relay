@@ -5,6 +5,7 @@ import path, { join, resolve } from "node:path";
 import { initDb } from "./db/db";
 import { initMainEnv } from "./loadEnv";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
+import { registerZoomController, restoreZoom, type ZoomStore } from "./zoom";
 
 const mode = initMainEnv();
 const isDevBuild = mode === "development";
@@ -28,6 +29,7 @@ if (isDevBuild) {
 }
 
 let mainWindow: BrowserWindow;
+let appStore: ZoomStore | undefined;
 const gotTheLock = app.requestSingleInstanceLock();
 
 // prevent creating multiple instances
@@ -49,7 +51,11 @@ if (!gotTheLock) {
      * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
      * this ensures the db path is valid & in exact location
      */
-    const [{ setupIpcHandlers }] = await Promise.all([import("./setupIpcHandlers")]);
+    const [{ setupIpcHandlers }, { store }] = await Promise.all([
+      import("./setupIpcHandlers"),
+      import("./electronStore")
+    ]);
+    appStore = store;
     setupIpcHandlers();
 
     // pass to forked server process (electron's app isnt available there)
@@ -84,6 +90,8 @@ if (!gotTheLock) {
 
 function createWindow(): void {
   const apiPort = isDevBuild ? 4723 : 4722;
+  const store = appStore;
+  const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
 
   mainWindow = new BrowserWindow({
     show: false,
@@ -95,15 +103,28 @@ function createWindow(): void {
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
+      zoomFactor: initialZoom,
       additionalArguments: [`--api-port=${apiPort}`]
     } as Electron.WebPreferences
   });
 
-  mainWindow.once("ready-to-show", async () => {
-    // lazy import - electronStore must only load after app.setPath() has run
-    const { store } = await import("./electronStore");
-    const zoomFactor = store.get("zoomFactor") as number;
-    mainWindow.webContents.setZoomFactor(zoomFactor);
+  const web = mainWindow.webContents;
+
+  if (store) {
+    registerZoomController(web, store);
+
+    // Re-apply the persisted zoom after every load/reload (Chromium reverts to the
+    // host default on navigation, which is what caused the silent reset to 1.0).
+    web.on("did-finish-load", () => restoreZoom(web, store));
+
+    // Re-apply when the window is shown/restored/focused to cover the Linux
+    // window-switch / occlusion case where Chromium re-evaluates the zoom.
+    mainWindow.on("show", () => restoreZoom(web, store));
+    mainWindow.on("restore", () => restoreZoom(web, store));
+  }
+
+  mainWindow.once("ready-to-show", () => {
+    if (store) restoreZoom(web, store);
     mainWindow.show();
     // mainWindow.maximize();
   });

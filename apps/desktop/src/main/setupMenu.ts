@@ -1,6 +1,7 @@
 import { BrowserWindow, Menu } from "electron";
 import { store } from "./electronStore";
 import { checkForUpdates } from "./updater";
+import { setZoom } from "./zoom";
 
 // Menu setup examples
 // - https://www.electronjs.org/docs/latest/api/menu#examples
@@ -20,10 +21,7 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            const zoom = web.getZoomFactor();
-            store.set("zoomFactor", zoom + 0.1);
-            web.setZoomFactor(zoom + 0.1);
+            setZoom(win.webContents, store, win.webContents.getZoomFactor() + 0.1);
           }
         },
         {
@@ -32,10 +30,7 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            const zoom = web.getZoomFactor();
-            store.set("zoomFactor", zoom - 0.1);
-            web.setZoomFactor(zoom - 0.1);
+            setZoom(win.webContents, store, win.webContents.getZoomFactor() - 0.1);
           }
         },
         {
@@ -44,9 +39,7 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            store.set("zoomFactor", 1);
-            web.setZoomFactor(1);
+            setZoom(win.webContents, store, 1);
           }
         }
       ]
