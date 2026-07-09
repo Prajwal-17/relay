@@ -56,6 +56,7 @@ const getCustomersPaginated = async (
     customersRepository.getCustomersPaginated({
       searchTerm: params.query,
       whereClause,
+      sort: params.sort,
       limit: params.pageSize,
       offset
     }),

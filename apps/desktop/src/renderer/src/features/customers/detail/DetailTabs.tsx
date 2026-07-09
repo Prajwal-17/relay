@@ -1,13 +1,13 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { CustomerMock } from "../_mock/types";
-import { OverviewTab } from "./tabs/OverviewTab";
-import { AccountingTab } from "./tabs/AccountingTab";
-import { SalesTab } from "./tabs/SalesTab";
-import { EstimatesTab } from "./tabs/EstimatesTab";
-import { ActivityTab } from "./tabs/ActivityTab";
 import { AboutTab } from "./tabs/AboutTab";
+import { AccountingTab } from "./tabs/AccountingTab";
+import { ActivityTab } from "./tabs/ActivityTab";
 import { AttachmentsTab } from "./tabs/AttachmentsTab";
+import { EstimatesTab } from "./tabs/EstimatesTab";
 import { NotesTab } from "./tabs/NotesTab";
+import { OverviewTab } from "./tabs/OverviewTab";
+import { SalesTab } from "./tabs/SalesTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 
 export const TAB_VALUES = [
@@ -36,10 +36,6 @@ const TAB_LABELS: Record<TabValue, string> = {
   settings: "Settings"
 };
 
-/**
- * Pinned tab rail (TabsList stays visible) + independently scrolling tab body.
- * The parent constrains height so each TabsContent scrolls in place.
- */
 const TAB_CONTENT_CLASS = "min-h-0 flex-1 overflow-y-auto";
 
 export function DetailTabs({

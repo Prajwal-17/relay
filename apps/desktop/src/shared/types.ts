@@ -329,6 +329,13 @@ export const PRODUCT_SORT_BY = {
   MRP_HIGH_LOW: "mrp_high_low"
 } as const;
 
+export const CUSTOMER_SORT_BY = {
+  NAME_ASC: "name_asc",
+  NAME_DESC: "name_desc",
+  NEWEST: "newest",
+  OLDEST: "oldest"
+} as const;
+
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"
@@ -341,6 +348,8 @@ export type CustomerType = (typeof CUSTOMER_TYPE)[keyof typeof CUSTOMER_TYPE];
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SORT_BY];
+
+export type CustomerSortByType = (typeof CUSTOMER_SORT_BY)[keyof typeof CUSTOMER_SORT_BY];
 
 export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 

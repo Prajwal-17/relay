@@ -1,4 +1,10 @@
-import { PRODUCT_FILTER, PRODUCT_SORT_BY, SortOption, TIME_PERIOD } from "@shared/types";
+import {
+  CUSTOMER_SORT_BY,
+  PRODUCT_FILTER,
+  PRODUCT_SORT_BY,
+  SortOption,
+  TIME_PERIOD
+} from "@shared/types";
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -43,6 +49,12 @@ export const ignoredWeight = ["", "1ml", "1g", "none", "1pc", "1kg"];
 // Customers Page
 export const CUSTOMERS_SEARCH_DELAY = 300;
 export const CUSTOMERS_PAGE_SIZE = 20;
+export const CUSTOMER_SORT_OPTIONS = [
+  { value: CUSTOMER_SORT_BY.NAME_ASC, label: "Name: A → Z", icon: ArrowDownAZ },
+  { value: CUSTOMER_SORT_BY.NAME_DESC, label: "Name: Z → A", icon: ArrowUpAZ },
+  { value: CUSTOMER_SORT_BY.NEWEST, label: "Newest first", icon: CalendarArrowDown },
+  { value: CUSTOMER_SORT_BY.OLDEST, label: "Oldest first", icon: CalendarArrowUp }
+] as const;
 
 // Products Page
 export const PRODUCTS_SEARCH_DELAY = 400;

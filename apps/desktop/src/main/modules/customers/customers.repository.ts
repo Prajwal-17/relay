@@ -1,5 +1,10 @@
-import { and, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
-import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
+import { and, asc, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
+import {
+  CUSTOMER_SORT_BY,
+  type CreateCustomerPayload,
+  type CustomerSortByType,
+  type UpdateCustomerPayload
+} from "../../../shared/types";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
@@ -26,11 +31,21 @@ const getCustomers = async (searchTerm: string) => {
 const getCustomersPaginated = async (params: {
   searchTerm: string;
   whereClause: SQL | undefined;
+  sort: CustomerSortByType;
   limit: number;
   offset: number;
 }) => {
+  const sortClause: SQL =
+    params.sort === CUSTOMER_SORT_BY.NAME_DESC
+      ? desc(customers.name)
+      : params.sort === CUSTOMER_SORT_BY.NEWEST
+        ? desc(customers.createdAt)
+        : params.sort === CUSTOMER_SORT_BY.OLDEST
+          ? asc(customers.createdAt)
+          : asc(customers.name);
+
   if (params.searchTerm === "") {
-    const query = db.select().from(customers).orderBy(customers.name);
+    const query = db.select().from(customers).orderBy(sortClause);
     if (params.whereClause) {
       return query.where(params.whereClause).limit(params.limit).offset(params.offset);
     }
@@ -45,7 +60,7 @@ const getCustomersPaginated = async (params: {
     .select()
     .from(customers)
     .where(where)
-    .orderBy(customers.name)
+    .orderBy(sortClause)
     .limit(params.limit)
     .offset(params.offset);
 };

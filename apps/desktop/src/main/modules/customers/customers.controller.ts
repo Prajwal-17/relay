@@ -15,12 +15,13 @@ import { customersService } from "./customers.service";
 export const customersController = new Hono();
 
 customersController.get("/", validateRequest("query", listCustomersSchema), async (c) => {
-  const { pageNo, pageSize, query, type } = c.req.valid("query");
+  const { pageNo, pageSize, query, type, sort } = c.req.valid("query");
   const result = await customersService.getCustomersPaginated({
     pageNo,
     pageSize,
     query,
-    type
+    type,
+    sort
   });
   return c.json(result, 200);
 });
