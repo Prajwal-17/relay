@@ -41,10 +41,6 @@ const emptyForm: FormState = {
   creditLimit: ""
 };
 
-/**
- * Extended create/edit dialog (plan §7). Validation + submit are UI-only —
- * Save is wired to no mutation. Footer Cancel + Save (disabled state visual).
- */
 export function CustomerFormDialog({
   mode,
   customer,

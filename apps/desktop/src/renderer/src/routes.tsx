@@ -33,6 +33,10 @@ export const router = createHashRouter([
         element: <CustomersPage />
       },
       {
+        path: "customers/:customerId",
+        element: <CustomersPage />
+      },
+      {
         path: "dashboard/:type",
         element: <DashboardPage />
       },

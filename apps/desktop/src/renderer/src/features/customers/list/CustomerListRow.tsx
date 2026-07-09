@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import { Inbox } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import type { CustomerMock } from "../_mock/types";
 import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
 
@@ -13,16 +14,16 @@ const typeBadgeClass: Record<CustomerMock["customerType"], string> = {
 };
 
 export function CustomerListRow({
-  customer,
-  onSelect
+  customer
 }: {
   customer: CustomerMock;
-  onSelect: (id: string) => void;
 }) {
+  const navigate = useNavigate();
+
   return (
     <button
       type="button"
-      onClick={() => onSelect(customer.id)}
+      onClick={() => navigate(`/customers/${customer.id}`)}
       className={cn(
         "border-border/70 hover:bg-accent grid w-full cursor-pointer grid-cols-12 items-center gap-2",
         "border-b px-4 py-3 text-left transition-colors last:border-b-0"

@@ -5,11 +5,9 @@ import { CustomerListRow } from "./CustomerListRow";
 const gridTemplate = "grid-cols-12";
 
 export function CustomerListTable({
-  customers,
-  onSelect
+  customers
 }: {
   customers: CustomerMock[];
-  onSelect: (id: string) => void;
 }) {
   return (
     <div className="bg-card border-border flex flex-col overflow-hidden rounded-xl border shadow-xs">
@@ -39,7 +37,7 @@ export function CustomerListTable({
               visible: { opacity: 1, transition: { duration: 0.12, ease: "easeOut" } }
             }}
           >
-            <CustomerListRow customer={customer} onSelect={onSelect} />
+            <CustomerListRow customer={customer} />
           </motion.div>
         ))}
       </motion.div>

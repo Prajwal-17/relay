@@ -24,7 +24,7 @@ export function OutstandingBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border font-medium tabular-nums",
+        "inline-flex items-center gap-1.5 rounded-lg border font-medium tabular-nums",
         size === "md" ? "px-3 py-1 text-sm" : "px-2.5 py-0.5 text-xs",
         isZero
           ? "bg-muted text-muted-foreground border-border"
