@@ -12,6 +12,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  TXN_TABLE_PAGE_SIZE,
+  TXN_TABLE_SEARCH_DEBOUNCE_MS,
+  TXN_TABLE_SORT_OPTIONS,
+  TXN_TABLE_STATUS_OPTIONS
+} from "@/constants";
+import {
   useCustomerTransactions,
   type CustomerTxn,
   type TxnSortBy,
@@ -23,6 +29,7 @@ import type {
 } from "@/hooks/customers/useCustomerTxnMutations";
 import { useCustomerTxnMutations } from "@/hooks/customers/useCustomerTxnMutations";
 import { cn } from "@/lib/utils";
+import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types";
 import {
   CUSTOMER_TXN_SORT,
   CUSTOMER_TXN_STATUS,
@@ -48,29 +55,6 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TxnRowActions } from "./TxnRowActions";
 
-type Align = "left" | "right" | "center";
-
-type ColMeta = {
-  align?: Align;
-  width?: string;
-};
-
-const SORT_OPTIONS: { value: TxnSortBy; label: string }[] = [
-  { value: CUSTOMER_TXN_SORT.DATE_DESC, label: "Date: newest" },
-  { value: CUSTOMER_TXN_SORT.DATE_ASC, label: "Date: oldest" },
-  { value: CUSTOMER_TXN_SORT.AMOUNT_DESC, label: "Amount: high to low" },
-  { value: CUSTOMER_TXN_SORT.AMOUNT_ASC, label: "Amount: low to high" }
-];
-
-const STATUS_OPTIONS: { value: TxnStatusFilter; label: string }[] = [
-  { value: CUSTOMER_TXN_STATUS.ALL, label: "All" },
-  { value: CUSTOMER_TXN_STATUS.PAID, label: "Paid" },
-  { value: CUSTOMER_TXN_STATUS.UNPAID, label: "Unpaid" }
-];
-
-const DEFAULT_PAGE_SIZE = 10;
-const SEARCH_DEBOUNCE_MS = 400;
-
 type ColumnsOptions = {
   type: TransactionType;
   numberLabel: string;
@@ -81,6 +65,9 @@ type ColumnsOptions = {
   txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
   duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
 };
+
+const TXN_TABLE_NUMBER_INPUT_CLASS =
+  "h-8 w-14 border-border bg-muted/50 text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
 
 function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
   const { type, numberLabel, pageNo, pageSize, ...mutations } = opts;
@@ -93,7 +80,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
       cell: ({ row }) => (
         <span className="text-muted-foreground tabular-nums">{rowOffset + row.index + 1}</span>
       ),
-      meta: { align: "left", width: "w-12" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-12" } as TxnTableColMeta
     },
     {
       accessorKey: "createdAt",
@@ -114,7 +101,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
           </div>
         );
       },
-      meta: { align: "left" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
     },
     {
       accessorKey: "transactionNo",
@@ -124,7 +111,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
           # {row.original.transactionNo}
         </span>
       ),
-      meta: { align: "left" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
     },
     {
       accessorKey: "totalQuantity",
@@ -134,7 +121,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
           {row.original.totalQuantity ?? "—"}
         </span>
       ),
-      meta: { align: "right" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.RIGHT } as TxnTableColMeta
     },
     {
       accessorKey: "grandTotal",
@@ -144,7 +131,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
           {row.original.grandTotal != null ? formatRupee(row.original.grandTotal) : "—"}
         </span>
       ),
-      meta: { align: "right" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.RIGHT } as TxnTableColMeta
     },
     {
       accessorKey: "isPaid",
@@ -165,20 +152,17 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
           </Badge>
         );
       },
-      meta: { align: "left" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
     },
     {
       id: "actions",
       header: "Actions",
       enableSorting: false,
       cell: ({ row }) => <TxnRowActions txn={row.original} type={type} {...mutations} />,
-      meta: { align: "center", width: "w-44" } as ColMeta
+      meta: { align: TXN_TABLE_ALIGN.CENTER, width: "w-44" } as TxnTableColMeta
     }
   ];
 }
-
-const NUMBER_INPUT_CLASS =
-  "h-8 w-14 border-border bg-muted/50 text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
 
 export function CustomerTxnTable({
   customerId,
@@ -196,20 +180,20 @@ export function CustomerTxnTable({
   const navigate = useNavigate();
 
   const [pageNo, setPageNo] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(TXN_TABLE_PAGE_SIZE);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<TxnStatusFilter>(CUSTOMER_TXN_STATUS.ALL);
   const [sortValue, setSortValue] = useState<TxnSortBy>(CUSTOMER_TXN_SORT.DATE_DESC);
 
-  const [pageSizeInput, setPageSizeInput] = useState(String(DEFAULT_PAGE_SIZE));
+  const [pageSizeInput, setPageSizeInput] = useState(String(TXN_TABLE_PAGE_SIZE));
   const [pageNoInput, setPageNoInput] = useState("1");
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchInput.trim());
       setPageNo(1);
-    }, SEARCH_DEBOUNCE_MS);
+    }, TXN_TABLE_SEARCH_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [searchInput]);
 
@@ -309,8 +293,9 @@ export function CustomerTxnTable({
 
   const addRoute =
     type === TRANSACTION_TYPE.SALE ? "/billing/sales/create" : "/billing/estimates/create";
-  const activeSortLabel = SORT_OPTIONS.find((o) => o.value === sortValue)?.label ?? "Sort";
-  const activeStatus = STATUS_OPTIONS.find((s) => s.value === statusFilter)!;
+  const activeSortLabel =
+    TXN_TABLE_SORT_OPTIONS.find((o) => o.value === sortValue)?.label ?? "Sort";
+  const activeStatus = TXN_TABLE_STATUS_OPTIONS.find((s) => s.value === statusFilter)!;
   const hasFilters = searchInput.trim() !== "" || statusFilter !== CUSTOMER_TXN_STATUS.ALL;
   const isFirstLoad = status === "pending" && transactions.length === 0;
   const isEmpty = !isFirstLoad && transactions.length === 0;
@@ -359,7 +344,7 @@ export function CustomerTxnTable({
               value={statusFilter}
               onValueChange={(v) => applyStatus(v as TxnStatusFilter)}
             >
-              {STATUS_OPTIONS.map((option) => (
+              {TXN_TABLE_STATUS_OPTIONS.map((option) => (
                 <DropdownMenuRadioItem
                   key={option.value}
                   value={option.value}
@@ -391,7 +376,7 @@ export function CustomerTxnTable({
               value={sortValue}
               onValueChange={(v) => applySort(v as TxnSortBy)}
             >
-              {SORT_OPTIONS.map((option) => (
+              {TXN_TABLE_SORT_OPTIONS.map((option) => (
                 <DropdownMenuRadioItem
                   key={option.value}
                   value={option.value}
@@ -469,7 +454,7 @@ export function CustomerTxnTable({
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
-                      const meta = header.column.columnDef.meta as ColMeta | undefined;
+                      const meta = header.column.columnDef.meta as TxnTableColMeta | undefined;
                       return (
                         <th
                           key={header.id}
@@ -504,7 +489,7 @@ export function CustomerTxnTable({
                     className="group border-border/70 hover:bg-accent border-b transition-colors last:border-b-0"
                   >
                     {row.getVisibleCells().map((cell) => {
-                      const meta = cell.column.columnDef.meta as ColMeta | undefined;
+                      const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;
                       return (
                         <td
                           key={cell.id}
@@ -539,7 +524,7 @@ export function CustomerTxnTable({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") e.currentTarget.blur();
                 }}
-                className={NUMBER_INPUT_CLASS}
+                className={TXN_TABLE_NUMBER_INPUT_CLASS}
               />
             </div>
 
@@ -570,7 +555,7 @@ export function CustomerTxnTable({
                   onKeyDown={(e) => {
                     if (e.key === "Enter") e.currentTarget.blur();
                   }}
-                  className={NUMBER_INPUT_CLASS}
+                  className={TXN_TABLE_NUMBER_INPUT_CLASS}
                 />
                 <span>
                   of <span className="text-foreground font-medium">{totalPages}</span>
