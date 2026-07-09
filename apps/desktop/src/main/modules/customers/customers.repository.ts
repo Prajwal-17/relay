@@ -9,7 +9,9 @@ import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
+import { CUSTOMER_TXN_SORT } from "../../../shared/types";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
+import { buildEstimatesWhere, buildSalesWhere } from "./customers.utils";
 
 const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
@@ -99,23 +101,55 @@ const createDefaultCustomer = (storeId: string, tx: any) => {
 const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
   const offset = (params.pageNo - 1) * params.pageSize;
 
+  const sortClause: SQL =
+    params.sort === CUSTOMER_TXN_SORT.DATE_ASC
+      ? asc(sales.createdAt)
+      : params.sort === CUSTOMER_TXN_SORT.AMOUNT_DESC
+        ? desc(sales.grandTotal)
+        : params.sort === CUSTOMER_TXN_SORT.AMOUNT_ASC
+          ? asc(sales.grandTotal)
+          : desc(sales.createdAt);
+
   return await db.query.sales.findMany({
-    where: eq(sales.customerId, params.customerId),
-    orderBy: desc(sales.createdAt),
-    limit: 20,
+    where: buildSalesWhere(params),
+    orderBy: sortClause,
+    limit: params.pageSize,
     offset: offset
   });
+};
+
+const countSalesByCustomerId = async (params: SalesByCustomerParams) => {
+  const result = db.select({ count: count() }).from(sales).where(buildSalesWhere(params)).get();
+  return result?.count ?? 0;
 };
 
 const getEstimatesByCustomerId = async (params: EstimatesByCustomerParams) => {
   const offset = (params.pageNo - 1) * params.pageSize;
 
+  const sortClause: SQL =
+    params.sort === CUSTOMER_TXN_SORT.DATE_ASC
+      ? asc(estimates.createdAt)
+      : params.sort === CUSTOMER_TXN_SORT.AMOUNT_DESC
+        ? desc(estimates.grandTotal)
+        : params.sort === CUSTOMER_TXN_SORT.AMOUNT_ASC
+          ? asc(estimates.grandTotal)
+          : desc(estimates.createdAt);
+
   return await db.query.estimates.findMany({
-    where: eq(estimates.customerId, params.customerId),
-    orderBy: desc(estimates.createdAt),
-    limit: 20,
+    where: buildEstimatesWhere(params),
+    orderBy: sortClause,
+    limit: params.pageSize,
     offset: offset
   });
+};
+
+const countEstimatesByCustomerId = async (params: EstimatesByCustomerParams) => {
+  const result = db
+    .select({ count: count() })
+    .from(estimates)
+    .where(buildEstimatesWhere(params))
+    .get();
+  return result?.count ?? 0;
 };
 
 const getCustomerSummary = async (id: string) => {
@@ -211,7 +245,9 @@ export const customersRepository = {
   getDefaultCustomer,
   createDefaultCustomer,
   getSalesByCustomerId,
+  countSalesByCustomerId,
   getEstimatesByCustomerId,
+  countEstimatesByCustomerId,
   getCustomerSummary,
   createCustomer,
   updateById,

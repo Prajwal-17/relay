@@ -1,24 +1,15 @@
 import { Receipt } from "lucide-react";
-import { mockSales } from "../../_mock/data";
-import { TransactionTable } from "./TransactionTable";
+import { TRANSACTION_TYPE } from "@shared/types";
+import { CustomerTxnTable } from "./CustomerTxnTable";
 
-export function SalesTab() {
-  const items = mockSales.map((s) => ({
-    id: s.id,
-    number: s.invoiceNo,
-    date: s.date,
-    status: s.status,
-    amount: s.amount
-  }));
-
+export function SalesTab({ customerId }: { customerId: string }) {
   return (
-    <TransactionTable
-      items={items}
+    <CustomerTxnTable
+      customerId={customerId}
+      type={TRANSACTION_TYPE.SALE}
       numberLabel="Invoice #"
-      newLabel="New Invoice"
+      addLabel="Add Sale"
       emptyIcon={Receipt}
-      emptyTitle="No sales yet"
-      emptyDescription="Invoices raised for this customer will appear here."
     />
   );
 }

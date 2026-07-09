@@ -20,12 +20,7 @@ const typeBadgeClass: Record<CustomerMock["customerType"], string> = {
   hotel: "bg-primary/10 text-primary border-primary/25"
 };
 
-/**
- * Pinned, slim customer toolbar. Stays visible while tab content scrolls below.
- * Single row: breadcrumb (All customers / {name} switcher) · badges · actions.
- * The name segment is a combobox-style switcher (chevron) so the customer
- * search palette is discoverable. Contact/GSTIN live in the About/Overview tabs.
- */
+// pinned slim tabs toolbar in customer workspace
 export function DetailHeader({
   customer,
   onEdit,
@@ -41,7 +36,6 @@ export function DetailHeader({
 
   return (
     <header className="bg-background border-frame flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5">
-      {/* Breadcrumb + identity */}
       <div className="flex min-w-0 items-center gap-2">
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
           <button
@@ -79,7 +73,6 @@ export function DetailHeader({
         <OutstandingBadge outstanding={customer.outstanding} size="md" className="shrink-0" />
       </div>
 
-      {/* Actions */}
       <div className="flex shrink-0 items-center gap-2">
         <Button variant="outline" size="sm" className="cursor-pointer" onClick={onEdit}>
           Edit
@@ -106,7 +99,12 @@ export function DetailHeader({
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <Button variant="outline" size="sm" className="cursor-pointer">
+        <Button
+          variant="outline"
+          size="sm"
+          className="cursor-pointer"
+          onClick={() => navigate("/billing/sales/create")}
+        >
           New Sale
         </Button>
 

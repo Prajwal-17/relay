@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
-import { MoreVertical } from "lucide-react";
 import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
 import type { CustomerListRow } from "./types";
 
@@ -72,23 +71,4 @@ export function renderLastPurchaseAmtCell(row: CustomerListRow) {
     );
   }
   return <span className="text-muted-foreground/60 text-sm">{"\u2014"}</span>;
-}
-
-export function renderActionsCell(
-  row: CustomerListRow,
-  onView: (row: CustomerListRow) => void,
-  onEdit: (row: CustomerListRow) => void,
-  onDelete: (row: CustomerListRow) => void
-) {
-  const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-  };
-
-  return (
-    <div className="flex justify-end" onClick={handleClick}>
-      <span className="hover:bg-accent hover:text-accent-foreground text-muted-foreground cursor-pointer rounded-md p-1.5">
-        <MoreVertical className="size-4" />
-      </span>
-    </div>
-  );
 }

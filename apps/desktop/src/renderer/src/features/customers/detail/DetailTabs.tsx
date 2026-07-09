@@ -1,4 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types";
 import type { CustomerMock } from "../_mock/types";
 import { AboutTab } from "./tabs/AboutTab";
 import { AccountingTab } from "./tabs/AccountingTab";
@@ -10,43 +11,42 @@ import { OverviewTab } from "./tabs/OverviewTab";
 import { SalesTab } from "./tabs/SalesTab";
 import { SettingsTab } from "./tabs/SettingsTab";
 
-export const TAB_VALUES = [
-  "overview",
-  "accounting",
-  "sales",
-  "estimates",
-  "activity",
-  "about",
-  "attachments",
-  "notes",
-  "settings"
-] as const;
+export type TabValue = CustomerDetailTab;
 
-export type TabValue = (typeof TAB_VALUES)[number];
+const TAB_VALUES = Object.values(CUSTOMER_DETAIL_TAB);
 
 const TAB_LABELS: Record<TabValue, string> = {
-  overview: "Overview",
-  accounting: "Accounting",
-  sales: "Sales",
-  estimates: "Estimates",
-  activity: "Activity",
-  about: "About",
-  attachments: "Attachments",
-  notes: "Notes",
-  settings: "Settings"
+  [CUSTOMER_DETAIL_TAB.OVERVIEW]: "Overview",
+  [CUSTOMER_DETAIL_TAB.ACCOUNTING]: "Accounting",
+  [CUSTOMER_DETAIL_TAB.SALES]: "Sales",
+  [CUSTOMER_DETAIL_TAB.ESTIMATES]: "Estimates",
+  [CUSTOMER_DETAIL_TAB.ACTIVITY]: "Activity",
+  [CUSTOMER_DETAIL_TAB.ABOUT]: "About",
+  [CUSTOMER_DETAIL_TAB.ATTACHMENTS]: "Attachments",
+  [CUSTOMER_DETAIL_TAB.NOTES]: "Notes",
+  [CUSTOMER_DETAIL_TAB.SETTINGS]: "Settings"
 };
 
 const TAB_CONTENT_CLASS = "min-h-0 flex-1 overflow-y-auto";
+const TAB_CONTENT_TABLE_CLASS = "flex min-h-0 flex-1 flex-col";
 
 export function DetailTabs({
+  customerId,
   customer,
-  onRecordPayment
+  onRecordPayment,
+  onActiveTabChange
 }: {
+  customerId: string;
   customer: CustomerMock;
   onRecordPayment: () => void;
+  onActiveTabChange?: (tab: TabValue) => void;
 }) {
   return (
-    <Tabs defaultValue="overview" className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3">
+    <Tabs
+      defaultValue={CUSTOMER_DETAIL_TAB.OVERVIEW}
+      onValueChange={(v) => onActiveTabChange?.(v as TabValue)}
+      className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3"
+    >
       <TabsList className="bg-muted h-9 w-fit shrink-0 flex-wrap gap-0.5 p-1">
         {TAB_VALUES.map((value) => (
           <TabsTrigger
@@ -59,31 +59,31 @@ export function DetailTabs({
         ))}
       </TabsList>
 
-      <TabsContent value="overview" className={TAB_CONTENT_CLASS}>
-        <OverviewTab customer={customer} />
+      <TabsContent value={CUSTOMER_DETAIL_TAB.OVERVIEW} className={TAB_CONTENT_CLASS}>
+        <OverviewTab customerId={customerId} customer={customer} />
       </TabsContent>
-      <TabsContent value="accounting" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={TAB_CONTENT_CLASS}>
         <AccountingTab customer={customer} onRecordPayment={onRecordPayment} />
       </TabsContent>
-      <TabsContent value="sales" className={TAB_CONTENT_CLASS}>
-        <SalesTab />
+      <TabsContent value={CUSTOMER_DETAIL_TAB.SALES} className={TAB_CONTENT_TABLE_CLASS}>
+        <SalesTab customerId={customerId} />
       </TabsContent>
-      <TabsContent value="estimates" className={TAB_CONTENT_CLASS}>
-        <EstimatesTab />
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ESTIMATES} className={TAB_CONTENT_TABLE_CLASS}>
+        <EstimatesTab customerId={customerId} />
       </TabsContent>
-      <TabsContent value="activity" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ACTIVITY} className={TAB_CONTENT_CLASS}>
         <ActivityTab />
       </TabsContent>
-      <TabsContent value="about" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ABOUT} className={TAB_CONTENT_CLASS}>
         <AboutTab customer={customer} />
       </TabsContent>
-      <TabsContent value="attachments" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ATTACHMENTS} className={TAB_CONTENT_CLASS}>
         <AttachmentsTab />
       </TabsContent>
-      <TabsContent value="notes" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.NOTES} className={TAB_CONTENT_CLASS}>
         <NotesTab />
       </TabsContent>
-      <TabsContent value="settings" className={TAB_CONTENT_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.SETTINGS} className={TAB_CONTENT_CLASS}>
         <SettingsTab customer={customer} />
       </TabsContent>
     </Tabs>

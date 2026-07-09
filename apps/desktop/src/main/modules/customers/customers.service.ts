@@ -6,7 +6,6 @@ import {
   type Customer,
   type CustomerSummary,
   type CustomerTransaction,
-  type Estimate,
   type PaginatedApiResponse,
   type UpdateProductPayload
 } from "../../../shared/types";
@@ -88,15 +87,19 @@ const getDefaultCustomer = async (): Promise<Customer> => {
 const getSalesByCustomerId = async (
   params: SalesByCustomerParams
 ): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
-  const sales = await customersRepository.getSalesByCustomerId(params);
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getSalesByCustomerId(params),
+    customersRepository.countSalesByCustomerId(params)
+  ]);
 
-  const nextPageNo = sales.length === 20 ? params.pageNo + 1 : null;
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
 
   return {
-    nextPageNo: nextPageNo,
+    nextPageNo,
+    totalCount,
     data:
-      sales.length > 0
-        ? sales.map((s) => ({
+      rows.length > 0
+        ? rows.map((s) => ({
             type: TRANSACTION_TYPE.SALE,
             transactionNo: s.invoiceNo,
             ...s
@@ -107,16 +110,20 @@ const getSalesByCustomerId = async (
 
 const getEstimatesByCustomerId = async (
   params: EstimatesByCustomerParams
-): Promise<PaginatedApiResponse<{ data: Estimate[] | [] }>> => {
-  const estimates = await customersRepository.getEstimatesByCustomerId(params);
+): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getEstimatesByCustomerId(params),
+    customersRepository.countEstimatesByCustomerId(params)
+  ]);
 
-  const nextPageNo = estimates.length === 20 ? params.pageNo + 1 : null;
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
 
   return {
-    nextPageNo: nextPageNo,
+    nextPageNo,
+    totalCount,
     data:
-      estimates.length > 0
-        ? estimates.map((e) => ({
+      rows.length > 0
+        ? rows.map((e) => ({
             type: TRANSACTION_TYPE.ESTIMATE,
             transactionNo: e.estimateNo,
             ...e

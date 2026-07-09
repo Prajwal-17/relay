@@ -336,6 +336,19 @@ export const CUSTOMER_SORT_BY = {
   OLDEST: "oldest"
 } as const;
 
+export const CUSTOMER_TXN_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc",
+  AMOUNT_DESC: "amount_desc",
+  AMOUNT_ASC: "amount_asc"
+} as const;
+
+export const CUSTOMER_TXN_STATUS = {
+  ALL: "all",
+  PAID: "paid",
+  UNPAID: "unpaid"
+} as const;
+
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"
@@ -350,6 +363,10 @@ export type SortType = (typeof SortOption)[keyof typeof SortOption];
 export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SORT_BY];
 
 export type CustomerSortByType = (typeof CUSTOMER_SORT_BY)[keyof typeof CUSTOMER_SORT_BY];
+
+export type CustomerTxnSort = (typeof CUSTOMER_TXN_SORT)[keyof typeof CUSTOMER_TXN_SORT];
+
+export type CustomerTxnStatus = (typeof CUSTOMER_TXN_STATUS)[keyof typeof CUSTOMER_TXN_STATUS];
 
 export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 

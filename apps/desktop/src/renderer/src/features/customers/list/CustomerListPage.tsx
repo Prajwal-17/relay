@@ -75,10 +75,6 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
     navigate(`/customers/${row.id}`);
   };
 
-  const handleEdit = (row: { id: string }) => {
-    navigate(`/customers/${row.id}`);
-  };
-
   const activeTypeLabel = TYPE_FILTERS.find((f) => f.key === typeFilter)?.label ?? "All";
   const activeSortLabel = CUSTOMER_SORT_OPTIONS.find((s) => s.value === sortBy)?.label;
   const hasTypeFilter = typeFilter !== CUSTOMER_TYPE.ALL;

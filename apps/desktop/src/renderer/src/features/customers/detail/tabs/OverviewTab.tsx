@@ -1,11 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { SectionCard } from "../shared/SectionCard";
-import { MetricTile } from "../shared/MetricTile";
+import { useCustomerSummary } from "@/hooks/customers/useCustomerSummary";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
-import { CalendarClock, FileClock, Receipt, ShoppingCart, TrendingUp } from "lucide-react";
-import type { CustomerMock } from "../../_mock/types";
+import { FileClock, Receipt, ShoppingCart, TrendingUp } from "lucide-react";
 import { mockActivity, mockEstimates, mockNotes, mockSales } from "../../_mock/data";
+import type { CustomerMock } from "../../_mock/types";
+import { MetricTile } from "../shared/MetricTile";
+import { SectionCard } from "../shared/SectionCard";
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -16,19 +17,28 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
   );
 }
 
-export function OverviewTab({ customer }: { customer: CustomerMock }) {
-  const pendingEstimates = mockEstimates.filter((e) => e.status === "unpaid").length;
-  const avgInvoice =
-    mockSales.length > 0
-      ? Math.round(mockSales.reduce((s, x) => s + x.amount, 0) / mockSales.length)
-      : 0;
+export function OverviewTab({
+  customerId,
+  customer
+}: {
+  customerId: string;
+  customer: CustomerMock;
+}) {
+  const { summary } = useCustomerSummary(customerId);
+
+  // Real summary where available, mock fallback otherwise.
+  const salesTotal = summary?.salesTotal ?? customer.totalSales;
+  const estimatesCount =
+    summary?.estimatesCount ?? mockEstimates.filter((e) => e.status === "unpaid").length;
+  const avgInvoice = summary?.average ?? 0;
+  const salesCount = summary?.salesCount ?? mockSales.length;
+
   const recentSales = mockSales.slice(0, 5);
   const recentActivity = mockActivity.slice(0, 4);
   const pinnedNote = mockNotes.find((n) => n.pinned);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-      {/* Left 25% — customer info + quick notes */}
       <div className="flex flex-col gap-4 lg:col-span-1">
         <SectionCard title="Customer Info">
           <dl className="divide-border/70 divide-y">
@@ -58,28 +68,27 @@ export function OverviewTab({ customer }: { customer: CustomerMock }) {
         </SectionCard>
       </div>
 
-      {/* Right 75% — metrics + recent sales + activity */}
       <div className="flex flex-col gap-4 lg:col-span-3">
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <MetricTile
             label="Total Sales"
-            value={formatRupee(customer.totalSales)}
+            value={formatRupee(salesTotal)}
             icon={<ShoppingCart className="size-3.5" />}
           />
           <MetricTile
-            label="Pending Estimates"
-            value={String(pendingEstimates)}
+            label="Total Invoices"
+            value={String(salesCount)}
+            icon={<Receipt className="size-3.5" />}
+          />
+          <MetricTile
+            label="Estimates"
+            value={String(estimatesCount)}
             icon={<FileClock className="size-3.5" />}
           />
           <MetricTile
             label="Avg Invoice"
             value={formatRupee(avgInvoice)}
             icon={<TrendingUp className="size-3.5" />}
-          />
-          <MetricTile
-            label="Last Purchase"
-            value={customer.lastPurchase ? formatDateStr(customer.lastPurchase) : "—"}
-            icon={<CalendarClock className="size-3.5" />}
           />
         </div>
 

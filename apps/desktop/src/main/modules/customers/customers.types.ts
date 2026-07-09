@@ -1,4 +1,9 @@
-import type { CustomerSortByType, CustomerType } from "../../../shared/types";
+import type {
+  CustomerSortByType,
+  CustomerTxnSort,
+  CustomerTxnStatus,
+  CustomerType
+} from "../../../shared/types";
 
 export type PaginatedQuery = {
   pageNo: number;
@@ -13,10 +18,15 @@ export type ListCustomersParams = {
   sort: CustomerSortByType;
 };
 
-export type SalesByCustomerParams = PaginatedQuery & {
+export type TxnByCustomerParams = {
   customerId: string;
+  pageNo: number;
+  pageSize: number;
+  search: string;
+  status: CustomerTxnStatus;
+  sort: CustomerTxnSort;
 };
 
-export type EstimatesByCustomerParams = PaginatedQuery & {
-  customerId: string;
-};
+export type SalesByCustomerParams = TxnByCustomerParams;
+
+export type EstimatesByCustomerParams = TxnByCustomerParams;

@@ -1,24 +1,15 @@
+import { TRANSACTION_TYPE } from "@shared/types";
 import { FileText } from "lucide-react";
-import { mockEstimates } from "../../_mock/data";
-import { TransactionTable } from "./TransactionTable";
+import { CustomerTxnTable } from "./CustomerTxnTable";
 
-export function EstimatesTab() {
-  const items = mockEstimates.map((e) => ({
-    id: e.id,
-    number: e.estimateNo,
-    date: e.date,
-    status: e.status,
-    amount: e.amount
-  }));
-
+export function EstimatesTab({ customerId }: { customerId: string }) {
   return (
-    <TransactionTable
-      items={items}
+    <CustomerTxnTable
+      customerId={customerId}
+      type={TRANSACTION_TYPE.ESTIMATE}
       numberLabel="Estimate #"
-      newLabel="New Estimate"
+      addLabel="Add Estimate"
       emptyIcon={FileText}
-      emptyTitle="No estimates yet"
-      emptyDescription="Quotations raised for this customer will appear here."
     />
   );
 }
