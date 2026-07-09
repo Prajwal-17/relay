@@ -1,6 +1,15 @@
+import type { CustomerType } from "../../../shared/types";
+
 export type PaginatedQuery = {
   pageNo: number;
   pageSize: number;
+};
+
+export type ListCustomersParams = {
+  pageNo: number;
+  pageSize: number;
+  query: string;
+  type: CustomerType;
 };
 
 export type SalesByCustomerParams = PaginatedQuery & {

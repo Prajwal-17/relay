@@ -1,4 +1,6 @@
+import { eq, type SQL } from "drizzle-orm";
 import {
+  CUSTOMER_TYPE,
   TRANSACTION_TYPE,
   type CreateCustomerPayload,
   type Customer,
@@ -8,9 +10,15 @@ import {
   type PaginatedApiResponse,
   type UpdateProductPayload
 } from "../../../shared/types";
+import { CustomerRole } from "../../db/enum";
+import { customers } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { customersRepository } from "./customers.repository";
-import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
+import type {
+  EstimatesByCustomerParams,
+  ListCustomersParams,
+  SalesByCustomerParams
+} from "./customers.types";
 
 const findById = async (id: string): Promise<Customer> => {
   const customer = await customersRepository.findById(id);
@@ -25,6 +33,45 @@ const findById = async (id: string): Promise<Customer> => {
 const getCustomers = async (searchTerm: string): Promise<Customer[]> => {
   const customerResult = await customersRepository.getCustomers(searchTerm);
   return customerResult;
+};
+
+const getCustomersPaginated = async (
+  params: ListCustomersParams
+): Promise<PaginatedApiResponse<{ data: Customer[] }>> => {
+  let whereClause: SQL | undefined = undefined;
+
+  if (params.type !== CUSTOMER_TYPE.ALL) {
+    const role =
+      params.type === CUSTOMER_TYPE.CASH
+        ? CustomerRole.CASH
+        : params.type === CUSTOMER_TYPE.ACCOUNT
+          ? CustomerRole.ACCOUNT
+          : CustomerRole.HOTEL;
+    whereClause = eq(customers.customerType, role);
+  }
+
+  const offset = (params.pageNo - 1) * params.pageSize;
+
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getCustomersPaginated({
+      searchTerm: params.query,
+      whereClause,
+      limit: params.pageSize,
+      offset
+    }),
+    customersRepository.countCustomers({
+      searchTerm: params.query,
+      whereClause
+    })
+  ]);
+
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+
+  return {
+    nextPageNo,
+    totalCount,
+    data: rows
+  };
 };
 
 const getDefaultCustomer = async (): Promise<Customer> => {
@@ -121,6 +168,7 @@ const deleteCustomerById = async (id: string): Promise<void> => {
 export const customersService = {
   findById,
   getCustomers,
+  getCustomersPaginated,
   getDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,

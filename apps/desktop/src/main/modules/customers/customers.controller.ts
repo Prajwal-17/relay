@@ -5,15 +5,23 @@ import {
 } from "../../../shared/schemas/customers.schema";
 import { validateRequest } from "../../middleware/validation";
 import { idSchema } from "../../zod";
-import { getEstimatesByCustomerSchema, getSalesByCustomerSchema } from "./customers.schema";
+import {
+  getEstimatesByCustomerSchema,
+  getSalesByCustomerSchema,
+  listCustomersSchema
+} from "./customers.schema";
 import { customersService } from "./customers.service";
 
 export const customersController = new Hono();
 
-// get all customers or search
-customersController.get("/", async (c) => {
-  const searchTerm = c.req.query("query");
-  const result = await customersService.getCustomers(searchTerm ?? "");
+customersController.get("/", validateRequest("query", listCustomersSchema), async (c) => {
+  const { pageNo, pageSize, query, type } = c.req.valid("query");
+  const result = await customersService.getCustomersPaginated({
+    pageNo,
+    pageSize,
+    query,
+    type
+  });
   return c.json(result, 200);
 });
 

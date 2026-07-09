@@ -1,4 +1,4 @@
-import { count, desc, eq, like, sql } from "drizzle-orm";
+import { and, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
 import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
@@ -12,32 +12,57 @@ const findById = async (id: string) => {
 
 const getCustomers = async (searchTerm: string) => {
   if (searchTerm === "") {
-    return await db
-      .select({
-        id: customers.id,
-        name: customers.name,
-        contact: customers.contact,
-        customerType: customers.customerType,
-        createdAt: customers.createdAt,
-        updatedAt: customers.updatedAt
-      })
-      .from(customers)
-      .orderBy(customers.name);
+    return await db.select().from(customers).orderBy(customers.name);
   }
 
   const searchQuery = `${searchTerm}%`;
   return await db
-    .select({
-      id: customers.id,
-      name: customers.name,
-      contact: customers.contact,
-      customerType: customers.customerType,
-      createdAt: customers.createdAt,
-      updatedAt: customers.updatedAt
-    })
+    .select()
     .from(customers)
     .where(like(customers.name, searchQuery))
     .orderBy(customers.name);
+};
+
+const getCustomersPaginated = async (params: {
+  searchTerm: string;
+  whereClause: SQL | undefined;
+  limit: number;
+  offset: number;
+}) => {
+  if (params.searchTerm === "") {
+    const query = db.select().from(customers).orderBy(customers.name);
+    if (params.whereClause) {
+      return query.where(params.whereClause).limit(params.limit).offset(params.offset);
+    }
+    return query.limit(params.limit).offset(params.offset);
+  }
+
+  const where = params.whereClause
+    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
+    : like(customers.name, `${params.searchTerm}%`);
+
+  return db
+    .select()
+    .from(customers)
+    .where(where)
+    .orderBy(customers.name)
+    .limit(params.limit)
+    .offset(params.offset);
+};
+
+const countCustomers = async (params: { searchTerm: string; whereClause: SQL | undefined }) => {
+  if (params.searchTerm === "") {
+    const query = db.select({ count: count() }).from(customers);
+    const result = params.whereClause ? query.where(params.whereClause).get() : query.get();
+    return result?.count ?? 0;
+  }
+
+  const where = params.whereClause
+    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
+    : like(customers.name, `${params.searchTerm}%`);
+
+  const result = db.select({ count: count() }).from(customers).where(where).get();
+  return result?.count ?? 0;
 };
 
 const getDefaultCustomer = async () => {
@@ -166,6 +191,8 @@ const deleteById = async (id: string) => {
 export const customersRepository = {
   findById,
   getCustomers,
+  getCustomersPaginated,
+  countCustomers,
   getDefaultCustomer,
   createDefaultCustomer,
   getSalesByCustomerId,

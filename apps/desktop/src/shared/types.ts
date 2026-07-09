@@ -14,11 +14,16 @@ export type UsersType = {
   role: string;
 };
 
+// TODO: add new fields
 export type Customer = {
   id: string;
   name: string;
   contact: string | null;
   customerType: string;
+  notes: string | null;
+  address: string | null;
+  outstandingBalance: number | null; // TODO: rm null
+  creditLimit: number | null; // TODO: rm null
   updatedAt?: string;
   createdAt?: string;
 };
@@ -301,6 +306,13 @@ export const PRODUCT_FILTER = {
   DELETED: "deleted"
 } as const;
 
+export const CUSTOMER_TYPE = {
+  ALL: "all",
+  CASH: "cash",
+  ACCOUNT: "account",
+  HOTEL: "hotel"
+} as const;
+
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
   DATE_OLDEST_FIRST: "date_oldest_first",
@@ -323,6 +335,8 @@ export const PROPERTY_FILTER = {
 } as const;
 
 export type ProductFilterType = (typeof PRODUCT_FILTER)[keyof typeof PRODUCT_FILTER];
+
+export type CustomerType = (typeof CUSTOMER_TYPE)[keyof typeof CUSTOMER_TYPE];
 
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
