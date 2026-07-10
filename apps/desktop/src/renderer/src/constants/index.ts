@@ -73,7 +73,6 @@ export const TXN_TABLE_STATUS_OPTIONS = [
   { value: CUSTOMER_TXN_STATUS.UNPAID, label: "Unpaid" }
 ] as const;
 
-
 // Products Page
 export const PRODUCTS_SEARCH_DELAY = 400;
 export const PRODUCTS_SEARCH_PAGE_SIZE = 20;
@@ -151,4 +150,3 @@ export const timePeriodOptions = [
     label: "Last 7 Days"
   }
 ];
-

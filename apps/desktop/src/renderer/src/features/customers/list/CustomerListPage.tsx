@@ -21,15 +21,7 @@ import {
   type CustomerSortByType,
   type CustomerType
 } from "@shared/types";
-import {
-  ArrowDownAZ,
-  Check,
-  ChevronDown,
-  Plus,
-  Search,
-  SlidersHorizontal,
-  X
-} from "lucide-react";
+import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
