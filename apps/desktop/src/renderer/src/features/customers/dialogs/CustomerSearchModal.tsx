@@ -8,13 +8,16 @@ import { LoaderCircle, Search, Users, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+function rowHeight() {
+  return 44;
+}
+
 export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const {
-    parentRef,
-    rowVirtualizer,
     customersData,
     status,
     hasNextPage,
@@ -62,10 +65,16 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
-    if (customersData.length > 0) {
-      rowVirtualizer.scrollToIndex(activeIndex, { align: "auto" });
+    if (customersData.length > 0 && scrollRef.current) {
+      const el = scrollRef.current;
+      const targetTop = activeIndex * rowHeight();
+      const visibleStart = el.scrollTop;
+      const visibleEnd = visibleStart + el.clientHeight;
+      if (targetTop < visibleStart || targetTop + rowHeight() > visibleEnd) {
+        el.scrollTop = Math.max(0, targetTop - el.clientHeight / 2 + rowHeight() / 2);
+      }
     }
-  }, [activeIndex, rowVirtualizer, customersData.length]);
+  }, [activeIndex, customersData.length]);
 
   const isPending = status === "pending";
   const isEmpty = !isPending && customersData.length === 0;
@@ -112,7 +121,7 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div ref={parentRef} onScroll={handleScroll} className="h-80 shrink-0 overflow-auto">
+        <div ref={scrollRef} onScroll={handleScroll} className="h-80 shrink-0 overflow-auto">
           {isPending ? (
             <div className="flex items-center justify-center py-12">
               <LoaderCircle className="text-muted-foreground size-5 animate-spin" />

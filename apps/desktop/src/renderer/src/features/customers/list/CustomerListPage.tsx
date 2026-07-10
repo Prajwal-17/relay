@@ -25,11 +25,9 @@ import {
   ArrowDownAZ,
   Check,
   ChevronDown,
-  LoaderCircle,
   Plus,
   Search,
   SlidersHorizontal,
-  Users,
   X
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -51,18 +49,21 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
   const [filterOpen, setFilterOpen] = useState(false);
 
   const {
-    parentRef,
-    rowVirtualizer,
     customersData,
     status,
+    isFetchingNextPage,
+    isFetching,
+    isPlaceholderData,
     hasNextPage,
+    fetchNextPage,
     totalCount,
     search,
     setSearch,
     typeFilter,
     setTypeFilter,
     sortBy,
-    setSortBy
+    setSortBy,
+    debouncedQuery
   } = useCustomersInfinite();
 
   useEffect(() => {
@@ -70,6 +71,11 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
   }, []);
 
   const rows = useMemo(() => customersData.map(toCustomerListRow), [customersData]);
+
+  const dataKey = useMemo(
+    () => `${debouncedQuery}::${typeFilter}::${sortBy}`,
+    [debouncedQuery, typeFilter, sortBy]
+  );
 
   const handleRowClick = (row: { id: string }) => {
     navigate(`/customers/${row.id}`);
@@ -278,49 +284,20 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
-        {status === "pending" ? (
-          <div className="border-border bg-card flex h-full min-h-64 flex-col items-center justify-center rounded-xl border px-6 py-16 shadow-xs">
-            <LoaderCircle className="text-muted-foreground size-8 animate-spin" />
-            <p className="text-muted-foreground mt-4 text-sm">Loading customers…</p>
-          </div>
-        ) : rows.length === 0 ? (
-          <div className="border-border bg-card flex h-full min-h-64 flex-col items-center justify-center rounded-xl border px-6 py-16 text-center shadow-xs">
-            <span className="bg-muted text-muted-foreground mb-5 flex size-12 items-center justify-center rounded-xl">
-              <Users className="size-6" />
-            </span>
-            <h3 className="text-foreground text-base font-semibold">
-              {hasFilters
-                ? `No ${activeTypeLabel.toLowerCase()} customers found`
-                : "No customers yet"}
-            </h3>
-            <p className="text-muted-foreground mt-1.5 max-w-sm text-sm">
-              {hasFilters
-                ? "Try adjusting your search or filters."
-                : "Get started by adding your first customer."}
-            </p>
-            {hasFilters ? (
-              <Button variant="outline" className="mt-5 h-9 cursor-pointer" onClick={clearFilters}>
-                Clear filters
-              </Button>
-            ) : (
-              <Button
-                className="hover:bg-primary-hover mt-5 h-9 cursor-pointer"
-                onClick={onNewCustomer}
-              >
-                <Plus className="size-4" />
-                New Customer
-              </Button>
-            )}
-          </div>
-        ) : (
-          <CustomerListTable
-            rows={rows}
-            parentRef={parentRef}
-            rowVirtualizer={rowVirtualizer}
-            hasNextPage={hasNextPage}
-            onRowClick={handleRowClick}
-          />
-        )}
+        <CustomerListTable
+          key={dataKey}
+          rows={rows}
+          hasNextPage={hasNextPage}
+          hasFilters={hasFilters}
+          status={status}
+          isFetchingNextPage={isFetchingNextPage}
+          isFetching={isFetching}
+          isPlaceholderData={isPlaceholderData}
+          fetchNextPage={fetchNextPage}
+          onRowClick={handleRowClick}
+          clearFilters={clearFilters}
+          onNewCustomer={onNewCustomer}
+        />
       </div>
     </div>
   );
