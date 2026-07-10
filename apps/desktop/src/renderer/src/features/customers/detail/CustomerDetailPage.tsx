@@ -3,11 +3,13 @@ import { useViewModalStore } from "@/store/viewModalStore";
 import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { UserX } from "lucide-react";
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { CustomerMock } from "../_mock/types";
 import { DetailHeader } from "./DetailHeader";
 import { DetailTabs } from "./DetailTabs";
 import { EmptyTab } from "./shared/EmptyTab";
+
+const VALID_TABS = Object.values(CUSTOMER_DETAIL_TAB);
 
 export function CustomerDetailPage({
   customerId,
@@ -25,7 +27,15 @@ export function CustomerDetailPage({
   const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
   const transactionId = useViewModalStore((state) => state.transactionId);
 
-  const [activeTab, setActiveTab] = useState<CustomerDetailTab>(CUSTOMER_DETAIL_TAB.OVERVIEW);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const activeTab: CustomerDetailTab = VALID_TABS.includes(tabParam as CustomerDetailTab)
+    ? (tabParam as CustomerDetailTab)
+    : CUSTOMER_DETAIL_TAB.OVERVIEW;
+
+  const handleTabChange = (tab: CustomerDetailTab) => {
+    setSearchParams({ tab }, { replace: true });
+  };
 
   const viewModalType: DashboardType =
     activeTab === CUSTOMER_DETAIL_TAB.ESTIMATES ? DASHBOARD_TYPE.ESTIMATES : DASHBOARD_TYPE.SALES;
@@ -53,8 +63,9 @@ export function CustomerDetailPage({
       <DetailTabs
         customerId={customerId}
         customer={customer}
+        value={activeTab}
         onRecordPayment={onRecordPayment}
-        onActiveTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
       {isViewModalOpen && <ViewModal type={viewModalType} id={transactionId} />}
     </div>

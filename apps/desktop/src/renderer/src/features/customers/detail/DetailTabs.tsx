@@ -33,18 +33,20 @@ const TAB_CONTENT_TABLE_CLASS = "flex min-h-0 flex-1 flex-col";
 export function DetailTabs({
   customerId,
   customer,
+  value,
   onRecordPayment,
-  onActiveTabChange
+  onTabChange
 }: {
   customerId: string;
   customer: CustomerMock;
+  value: TabValue;
   onRecordPayment: () => void;
-  onActiveTabChange?: (tab: TabValue) => void;
+  onTabChange: (tab: TabValue) => void;
 }) {
   return (
     <Tabs
-      defaultValue={CUSTOMER_DETAIL_TAB.OVERVIEW}
-      onValueChange={(v) => onActiveTabChange?.(v as TabValue)}
+      value={value}
+      onValueChange={(v) => onTabChange(v as TabValue)}
       className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3"
     >
       <TabsList className="bg-muted h-9 w-fit shrink-0 flex-wrap gap-0.5 p-1">
