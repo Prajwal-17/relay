@@ -1,90 +1,214 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCustomersInfinite } from "@/hooks/customers/useCustomersInfinite";
+import { cn } from "@/lib/utils";
+import type { Customer } from "@shared/types";
+import { formatRupee } from "@shared/utils/utils";
+import { LoaderCircle, Search, Users, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { mockCustomers } from "../_mock/data";
-import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
 
 export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const {
+    parentRef,
+    rowVirtualizer,
+    customersData,
+    status,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+    totalCount,
+    search,
+    setSearch
+  } = useCustomersInfinite();
+
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return mockCustomers;
-    return mockCustomers.filter(
-      (c) =>
-        c.name.toLowerCase().includes(q) ||
-        (c.contact ?? "").toLowerCase().includes(q) ||
-        (c.gstin ?? "").toLowerCase().includes(q)
-    );
-  }, [query]);
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [search]);
+
+  const select = (customer: Customer) => {
+    navigate(`/customers/${customer.id}`);
+    onClose();
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+
+    if (customersData.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, customersData.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const customer = customersData[activeIndex];
+      if (customer) select(customer);
+    }
+  };
+
+  useEffect(() => {
+    if (customersData.length > 0) {
+      rowVirtualizer.scrollToIndex(activeIndex, { align: "auto" });
+    }
+  }, [activeIndex, rowVirtualizer, customersData.length]);
+
+  const isPending = status === "pending";
+  const isEmpty = !isPending && customersData.length === 0;
+
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
+    const reachedEnd = scrollHeight - scrollTop - clientHeight < 80;
+
+    if (reachedEnd && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="bg-popover border-border overflow-hidden rounded-2xl p-0 shadow-xl sm:max-w-lg"
+        onKeyDown={onKeyDown}
+        className="border-border bg-popover flex max-h-[85vh] flex-col overflow-hidden rounded-2xl p-0 shadow-xl sm:max-w-xl"
       >
-        <div className="border-border/70 flex items-center gap-2 border-b px-3">
-          <Search className="text-muted-foreground size-4 shrink-0" />
-          <Input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type a customer name, contact, or GSTIN…"
-            className="h-12 border-0 bg-transparent px-0 shadow-none focus-visible:ring-0"
-          />
-          <kbd className="bg-muted text-muted-foreground rounded-md border px-1.5 py-0.5 text-xs font-medium">
-            Esc
-          </kbd>
+        <div className="border-border/70 shrink-0 border-b px-4 py-3">
+          <div className="relative">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              ref={inputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search customers by name or contact…"
+              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-10 rounded-lg pr-10 pl-9 text-sm shadow-none transition-colors"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  inputRef.current?.focus();
+                }}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+                aria-label="Clear customer search"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="max-h-80 overflow-auto">
-          {results.length === 0 ? (
-            <p className="text-muted-foreground px-4 py-10 text-center text-sm font-medium">
-              No customers match &ldquo;{query}&rdquo;.
-            </p>
+        <div ref={parentRef} onScroll={handleScroll} className="h-80 shrink-0 overflow-auto">
+          {isPending ? (
+            <div className="flex items-center justify-center py-12">
+              <LoaderCircle className="text-muted-foreground size-5 animate-spin" />
+            </div>
+          ) : isEmpty ? (
+            <div className="flex h-full flex-col items-center justify-center px-6 pb-8 text-center">
+              <span className="border-border/70 bg-muted/60 text-muted-foreground mb-3 flex size-11 items-center justify-center rounded-full border">
+                <Users className="size-5" />
+              </span>
+              <p className="text-foreground text-sm font-semibold">
+                {search.trim() ? "No customers found" : "No customers yet"}
+              </p>
+              <p className="text-muted-foreground mt-1 max-w-56 text-sm leading-5">
+                {search.trim()
+                  ? "Try a different name or contact."
+                  : "Add a customer to get started."}
+              </p>
+            </div>
           ) : (
-            <ul className="py-1">
-              {results.map((c) => (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigate(`/customers/${c.id}`);
-                      onClose();
-                    }}
-                    className="hover:bg-accent flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-foreground truncate text-sm font-medium">{c.name}</p>
-                      <p className="text-muted-foreground truncate text-xs font-medium">
-                        {c.contact ?? "No contact"}
-                        {c.gstin ? ` · ${c.gstin}` : ""}
-                      </p>
-                    </div>
-                    <OutstandingBadge outstanding={c.outstanding} size="sm" />
-                  </button>
-                </li>
+            <>
+              {customersData.map((customer, index) => (
+                <CustomerRow
+                  key={customer.id}
+                  customer={customer}
+                  isActive={index === activeIndex}
+                  onSelect={() => select(customer)}
+                  onHover={() => setActiveIndex(index)}
+                />
               ))}
-            </ul>
+              {isFetchingNextPage && (
+                <div className="flex items-center justify-center py-4">
+                  <LoaderCircle className="text-muted-foreground size-5 animate-spin" />
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        <div className="border-border/70 text-muted-foreground flex items-center justify-between border-t px-3 py-2 text-xs font-medium">
-          <span>
-            {results.length} result{results.length === 1 ? "" : "s"}
+        <div className="border-border/70 text-muted-foreground flex shrink-0 items-center justify-between border-t px-3 py-2 text-xs font-medium">
+          <span className="tabular-nums">
+            {totalCount > 0
+              ? `${totalCount} ${totalCount === 1 ? "customer" : "customers"}`
+              : "0 customers"}
           </span>
-          <span>↑ ↓ to navigate · ↵ to select</span>
+          <span>↑ ↓ navigate · ↵ select</span>
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function CustomerRow({
+  customer,
+  isActive,
+  onSelect,
+  onHover
+}: {
+  customer: Customer;
+  isActive: boolean;
+  onSelect: () => void;
+  onHover: () => void;
+}) {
+  const outstanding = customer.outstandingBalance ?? 0;
+  const isDebit = outstanding > 0;
+
+  return (
+    <button
+      type="button"
+      onMouseEnter={onHover}
+      onClick={onSelect}
+      className={cn(
+        "relative flex w-full items-center justify-between gap-3 py-2.5 pr-3 pl-4 text-left transition-colors",
+        "hover:bg-accent",
+        isActive && "bg-accent"
+      )}
+    >
+      <span
+        className={cn(
+          "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
+          isActive ? "opacity-100" : "opacity-0"
+        )}
+      />
+      <div className="min-w-0">
+        <p className="text-foreground truncate text-sm font-medium">{customer.name}</p>
+        <p className="text-muted-foreground truncate text-xs font-medium">
+          {customer.contact ? customer.contact : "No contact"}
+        </p>
+      </div>
+      <span
+        className={cn(
+          "shrink-0 text-sm font-semibold tabular-nums",
+          isDebit ? "text-destructive" : "text-muted-foreground"
+        )}
+      >
+        {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}
+      </span>
+    </button>
   );
 }
