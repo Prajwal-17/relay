@@ -58,7 +58,7 @@ export function CustomerModule() {
       {formOpen && (
         <CustomerFormDialog
           mode={formMode}
-          customer={formMode === "edit" ? selected : null}
+          customer={formMode === "edit" ? (customer ?? null) : null}
           onClose={() => setFormOpen(false)}
         />
       )}

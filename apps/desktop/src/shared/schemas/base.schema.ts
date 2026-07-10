@@ -12,6 +12,9 @@ export const CustomerSchema = z.object({
     .length(10, { error: "Contact must contain 10 digits" })
     .nullable(),
   customerType: z.enum(CustomerRole),
+  address: z.string().trim().nullable().optional(),
+  creditLimit: z.number().int().nonnegative().nullable().optional(),
+  outstandingBalance: z.number().int().nullable().optional(),
   createdAt: z.iso.datetime().nullable(),
   updatedAt: z.iso.datetime().nullable()
 });

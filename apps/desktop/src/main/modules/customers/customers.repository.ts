@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
 import {
   CUSTOMER_SORT_BY,
+  CUSTOMER_TXN_SORT,
   type CreateCustomerPayload,
   type CustomerSortByType,
   type UpdateCustomerPayload
@@ -9,7 +10,6 @@ import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
-import { CUSTOMER_TXN_SORT } from "../../../shared/types";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
 import { buildEstimatesWhere, buildSalesWhere } from "./customers.utils";
 

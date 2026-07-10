@@ -1,6 +1,6 @@
 // types used globally for both frontend & api service
 import type z from "zod";
-import type { createCustomerSchema } from "./schemas/customers.schema";
+import type { createCustomerSchema, updateCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
 import type {
   lineItemSchema,
@@ -261,7 +261,7 @@ export type EstimatePayloadItem = {
 };
 
 export type CreateCustomerPayload = z.infer<typeof createCustomerSchema>;
-export type UpdateCustomerPayload = z.infer<typeof updateProductSchema>;
+export type UpdateCustomerPayload = z.infer<typeof updateCustomerSchema>;
 
 export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;

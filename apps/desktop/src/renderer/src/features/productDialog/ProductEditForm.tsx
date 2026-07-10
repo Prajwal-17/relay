@@ -12,14 +12,13 @@ import { Switch } from "@/components/ui/switch";
 import { PRODUCT_UNITS, PROTOCOL_NAME } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
-import { formatRupee } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
+import { formatRupee } from "@shared/utils/utils";
 import { ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { ProductImageCropSelector } from "./ProductImageCropSelector";
 import { StatusIndicator } from "./StatusIndicator";
-import { ACTION_TYPE, DIALOG_MODE } from "@shared/types";
 
 export const ProductEditForm = () => {
   const formDataState = useProductsStore((state) => state.formDataState);

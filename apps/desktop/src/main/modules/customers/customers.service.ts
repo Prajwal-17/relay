@@ -7,7 +7,7 @@ import {
   type CustomerSummary,
   type CustomerTransaction,
   type PaginatedApiResponse,
-  type UpdateProductPayload
+  type UpdateCustomerPayload
 } from "../../../shared/types";
 import { CustomerRole } from "../../db/enum";
 import { customers } from "../../db/schema";
@@ -149,7 +149,7 @@ const createCustomer = async (payload: CreateCustomerPayload): Promise<Customer>
 
 const updateCustomerById = async (
   customerId: string,
-  payload: Partial<UpdateProductPayload>
+  payload: Partial<UpdateCustomerPayload>
 ): Promise<Customer> => {
   const existingCustomer = await customersRepository.findById(customerId);
 

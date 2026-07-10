@@ -77,7 +77,7 @@ export function DetailTabs({
         <ActivityTab />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.ABOUT} className={TAB_CONTENT_CLASS}>
-        <AboutTab customer={customer} />
+        <AboutTab customerId={customerId} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.ATTACHMENTS} className={TAB_CONTENT_CLASS}>
         <AttachmentsTab />
