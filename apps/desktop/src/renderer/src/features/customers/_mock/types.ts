@@ -6,30 +6,6 @@
  * ALL monetary values are integers in **paisa** (per AGENTS.md).
  */
 
-export type LedgerEntryType = "opening" | "sale" | "payment" | "estimate" | "adjustment";
-
-export type LedgerEntry = {
-  id: string;
-  date: string;
-  type: LedgerEntryType;
-  ref: string;
-  description: string;
-  debit: number;
-  credit: number;
-  runningBalance: number;
-};
-
-export type PaymentMode = "cash" | "upi" | "card" | "cheque" | "bank";
-
-export type Payment = {
-  id: string;
-  date: string;
-  amount: number;
-  mode: PaymentMode;
-  ref: string;
-  note?: string;
-};
-
 export type CustomerType = "cash" | "account" | "hotel";
 
 export type CustomerMock = {

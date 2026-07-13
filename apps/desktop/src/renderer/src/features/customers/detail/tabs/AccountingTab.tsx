@@ -1,80 +1,120 @@
-import { Button } from "@/components/ui/button";
-import { MetricTile } from "../shared/MetricTile";
-import { SectionCard } from "../shared/SectionCard";
+import { useCustomerLedgerSummary } from "@/hooks/customers/useCustomerLedger";
+import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
-import { Download, Wallet } from "lucide-react";
-import type { CustomerMock } from "../../_mock/types";
-import { mockLedger } from "../../_mock/ledger";
-import { mockPayments } from "../../_mock/payments";
+import { ArrowDownLeft, TrendingUp, Wallet } from "lucide-react";
 import { LedgerTable } from "./LedgerTable";
 
-export function AccountingTab({
-  customer,
-  onRecordPayment
-}: {
-  customer: CustomerMock;
-  onRecordPayment: () => void;
-}) {
-  const opening = mockLedger.find((e) => e.type === "opening");
-  const lastPayment = mockPayments[0];
-  const currentBalance = mockLedger.at(-1)?.runningBalance ?? customer.outstanding;
+export function AccountingTab({ customerId }: { customerId: string }) {
+  const { summary } = useCustomerLedgerSummary(customerId);
+
+  const currentBalance = summary?.currentBalance ?? 0;
+  const avgSale = summary?.avgSale ?? 0;
+  const salesCount = summary?.salesCount ?? 0;
+  const lastPayment = summary?.lastPayment ?? null;
+
+  const isSettled = currentBalance === 0;
+  const isDebit = currentBalance > 0;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Summary bar */}
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
-          <MetricTile
-            label="Current Balance"
-            value={formatRupee(currentBalance)}
-            subValue={currentBalance >= 0 ? "Debit (receivable)" : "Credit (payable)"}
-            tone={currentBalance >= 0 ? "destructive" : "success"}
-            icon={<Wallet className="size-3.5" />}
-          />
-          <MetricTile
-            label="Carry Forward"
-            value={opening ? formatRupee(opening.debit) : "—"}
-            subValue="Opening balance"
-          />
-          <MetricTile
-            label="Last Payment"
-            value={lastPayment ? formatRupee(lastPayment.amount) : "—"}
-            subValue={
-              lastPayment
-                ? `${lastPayment.mode.toUpperCase()} · ${formatDateStr(lastPayment.date)}`
-                : undefined
-            }
-            tone="success"
-          />
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
+      {summary && (
+        <div className="border-border bg-card divide-border/70 grid shrink-0 grid-cols-3 divide-x overflow-hidden rounded-xl border shadow-xs">
+          <div
+            className={cn(
+              "relative flex items-center gap-3 px-4 py-3",
+              !isSettled && (isDebit ? "bg-destructive/[0.04]" : "bg-success/[0.05]")
+            )}
+          >
+            <span
+              className={cn(
+                "absolute inset-y-0 left-0 w-1",
+                isSettled ? "bg-border" : isDebit ? "bg-destructive" : "bg-success"
+              )}
+            />
+            <span
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                isSettled
+                  ? "bg-muted text-muted-foreground"
+                  : isDebit
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-success/15 text-success"
+              )}
+            >
+              <Wallet className="size-4.5" />
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                Balance
+              </span>
+              <span
+                className={cn(
+                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
+                  isSettled ? "text-foreground" : isDebit ? "text-destructive" : "text-success"
+                )}
+              >
+                {isSettled ? "Settled" : formatRupee(Math.abs(currentBalance))}
+              </span>
+              {!isSettled && (
+                <span className="text-muted-foreground text-[11px] font-medium">
+                  {isDebit ? "Receivable (Dr)" : "Advance (Cr)"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
+              <TrendingUp className="size-4.5" />
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                Avg Sale
+              </span>
+              <span className="text-foreground truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums">
+                {avgSale > 0 ? formatRupee(avgSale) : "—"}
+              </span>
+              <span className="text-muted-foreground text-[11px] font-medium tabular-nums">
+                {salesCount > 0
+                  ? `Across ${salesCount} ${salesCount === 1 ? "sale" : "sales"}`
+                  : "No sales yet"}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span
+              className={cn(
+                "flex size-9 shrink-0 items-center justify-center rounded-lg",
+                lastPayment ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
+              )}
+            >
+              <ArrowDownLeft className="size-4.5" />
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+                Last Payment
+              </span>
+              <span
+                className={cn(
+                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
+                  lastPayment ? "text-success" : "text-muted-foreground"
+                )}
+              >
+                {lastPayment ? formatRupee(lastPayment.amount) : "—"}
+              </span>
+              <span className="text-muted-foreground truncate text-[11px] font-medium capitalize">
+                {lastPayment
+                  ? `${lastPayment.mode} · ${formatDateStr(lastPayment.date)}`
+                  : "No payments yet"}
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" className="h-9 cursor-pointer">
-          <Download className="size-4" />
-          Export Ledger
-        </Button>
-        <Button variant="outline" className="h-9 cursor-pointer">
-          Adjust Balance
-        </Button>
-      </div>
-
-      {/* Ledger */}
-      <SectionCard
-        title="Ledger"
-        description="Account statement with running balance"
-        bodyClassName="p-0"
-      >
-        <LedgerTable entries={mockLedger} />
-      </SectionCard>
-
-      {/* Spacer + record payment CTA at bottom */}
-      <div className="flex justify-end">
-        <Button className="hover:bg-primary-hover h-9 cursor-pointer" onClick={onRecordPayment}>
-          Record Payment
-        </Button>
-      </div>
+      <LedgerTable customerId={customerId} />
     </div>
   );
 }

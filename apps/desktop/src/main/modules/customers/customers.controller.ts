@@ -6,6 +6,14 @@ import {
 import { validateRequest } from "../../middleware/validation";
 import { idSchema } from "../../zod";
 import {
+  createAdjustmentSchema,
+  createOpeningBalanceSchema,
+  createPaymentSchema,
+  createQuickSaleSchema,
+  getLedgerSchema
+} from "../ledger/ledger.schema";
+import { ledgerService } from "../ledger/ledger.service";
+import {
   getEstimatesByCustomerSchema,
   getSalesByCustomerSchema,
   listCustomersSchema
@@ -100,6 +108,73 @@ customersController.post(
     const result = await customersService.updateCustomerById(id, payload);
 
     return c.json(result, 200);
+  }
+);
+
+// ledger (accounting)
+customersController.get(
+  "/:id/ledger",
+  validateRequest("param", idSchema),
+  validateRequest("query", getLedgerSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const query = c.req.valid("query");
+    const result = await ledgerService.getLedgerByCustomerId({ customerId: id, ...query });
+    return c.json(result, 200);
+  }
+);
+
+customersController.get("/:id/ledger-summary", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await ledgerService.getLedgerSummary(id);
+  return c.json(result, 200);
+});
+
+customersController.post(
+  "/:id/payments",
+  validateRequest("param", idSchema),
+  validateRequest("json", createPaymentSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createPayment({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.post(
+  "/:id/adjustments",
+  validateRequest("param", idSchema),
+  validateRequest("json", createAdjustmentSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createAdjustment({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.post(
+  "/:id/quick-sales",
+  validateRequest("param", idSchema),
+  validateRequest("json", createQuickSaleSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createQuickSale({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.post(
+  "/:id/opening-balance",
+  validateRequest("param", idSchema),
+  validateRequest("json", createOpeningBalanceSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createOpeningBalance({ customerId: id, payload });
+    return c.json(result, 201);
   }
 );
 

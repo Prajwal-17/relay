@@ -13,16 +13,10 @@ const VALID_TABS = Object.values(CUSTOMER_DETAIL_TAB);
 
 export function CustomerDetailPage({
   customerId,
-  customer,
-  onEdit,
-  onRecordPayment,
-  onOpenSearch
+  customer
 }: {
   customerId: string;
   customer: CustomerMock | null;
-  onEdit: () => void;
-  onRecordPayment: () => void;
-  onOpenSearch: () => void;
 }) {
   const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
   const transactionId = useViewModalStore((state) => state.transactionId);
@@ -54,19 +48,8 @@ export function CustomerDetailPage({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <DetailHeader
-        customer={customer}
-        onEdit={onEdit}
-        onRecordPayment={onRecordPayment}
-        onOpenSearch={onOpenSearch}
-      />
-      <DetailTabs
-        customerId={customerId}
-        customer={customer}
-        value={activeTab}
-        onRecordPayment={onRecordPayment}
-        onTabChange={handleTabChange}
-      />
+      <DetailHeader customer={customer} />
+      <DetailTabs customerId={customerId} customer={customer} value={activeTab} onTabChange={handleTabChange} />
       {isViewModalOpen && <ViewModal type={viewModalType} id={transactionId} />}
     </div>
   );

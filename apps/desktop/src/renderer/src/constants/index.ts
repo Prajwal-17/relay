@@ -2,6 +2,8 @@ import {
   CUSTOMER_SORT_BY,
   CUSTOMER_TXN_SORT,
   CUSTOMER_TXN_STATUS,
+  LEDGER_SORT,
+  LEDGER_TYPE_FILTER,
   PRODUCT_FILTER,
   PRODUCT_SORT_BY,
   SortOption,
@@ -71,6 +73,23 @@ export const TXN_TABLE_STATUS_OPTIONS = [
   { value: CUSTOMER_TXN_STATUS.ALL, label: "All" },
   { value: CUSTOMER_TXN_STATUS.PAID, label: "Paid" },
   { value: CUSTOMER_TXN_STATUS.UNPAID, label: "Unpaid" }
+] as const;
+
+// Customer Ledger Table
+export const LEDGER_TABLE_PAGE_SIZE = 15;
+export const LEDGER_TABLE_SEARCH_DEBOUNCE_MS = 400;
+export const LEDGER_SORT_OPTIONS = [
+  { value: LEDGER_SORT.DATE_DESC, label: "Newest first" },
+  { value: LEDGER_SORT.DATE_ASC, label: "Oldest first" }
+] as const;
+
+export const LEDGER_TYPE_OPTIONS = [
+  { value: LEDGER_TYPE_FILTER.ALL, label: "All" },
+  { value: LEDGER_TYPE_FILTER.SALE, label: "Sales" },
+  { value: LEDGER_TYPE_FILTER.QUICK_SALE, label: "Quick Sales" },
+  { value: LEDGER_TYPE_FILTER.PAYMENT, label: "Payments" },
+  { value: LEDGER_TYPE_FILTER.ADJUSTMENT, label: "Adjustments" },
+  { value: LEDGER_TYPE_FILTER.OPENING_BALANCE, label: "Opening" }
 ] as const;
 
 // Products Page

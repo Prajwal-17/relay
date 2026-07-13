@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCustomerActions } from "../CustomerActionsContext";
 import type { CustomerMock } from "../_mock/types";
 import { OutstandingBadge } from "./shared/OutstandingBadge";
 
@@ -21,18 +22,9 @@ const typeBadgeClass: Record<CustomerMock["customerType"], string> = {
 };
 
 // pinned slim tabs toolbar in customer workspace
-export function DetailHeader({
-  customer,
-  onEdit,
-  onRecordPayment,
-  onOpenSearch
-}: {
-  customer: CustomerMock;
-  onEdit: () => void;
-  onRecordPayment: () => void;
-  onOpenSearch: () => void;
-}) {
+export function DetailHeader({ customer }: { customer: CustomerMock }) {
   const navigate = useNavigate();
+  const { openEditForm, openPayment, openSearch } = useCustomerActions();
 
   return (
     <header className="bg-background border-frame flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5">
@@ -50,7 +42,7 @@ export function DetailHeader({
           </span>
           <button
             type="button"
-            onClick={onOpenSearch}
+            onClick={openSearch}
             title="Switch customer"
             aria-current="page"
             className="text-foreground hover:bg-accent flex min-w-0 cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors"
@@ -74,7 +66,7 @@ export function DetailHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
-        <Button variant="outline" size="sm" className="cursor-pointer" onClick={onEdit}>
+        <Button variant="outline" size="sm" className="cursor-pointer" onClick={openEditForm}>
           Edit
         </Button>
 
@@ -111,7 +103,7 @@ export function DetailHeader({
         <Button
           size="sm"
           className="hover:bg-primary-hover cursor-pointer"
-          onClick={onRecordPayment}
+          onClick={openPayment}
         >
           Record Payment
         </Button>

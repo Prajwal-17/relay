@@ -34,13 +34,11 @@ export function DetailTabs({
   customerId,
   customer,
   value,
-  onRecordPayment,
   onTabChange
 }: {
   customerId: string;
   customer: CustomerMock;
   value: TabValue;
-  onRecordPayment: () => void;
   onTabChange: (tab: TabValue) => void;
 }) {
   return (
@@ -64,8 +62,8 @@ export function DetailTabs({
       <TabsContent value={CUSTOMER_DETAIL_TAB.OVERVIEW} className={TAB_CONTENT_CLASS}>
         <OverviewTab customerId={customerId} customer={customer} />
       </TabsContent>
-      <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={TAB_CONTENT_CLASS}>
-        <AccountingTab customer={customer} onRecordPayment={onRecordPayment} />
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={TAB_CONTENT_TABLE_CLASS}>
+        <AccountingTab customerId={customerId} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.SALES} className={TAB_CONTENT_TABLE_CLASS}>
         <SalesTab customerId={customerId} />

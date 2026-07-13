@@ -16,107 +16,94 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { formatRupee } from "@shared/utils/utils";
-import { useEffect, useState } from "react";
-import type { CustomerMock, PaymentMode } from "../_mock/types";
+import { useCreatePayment } from "@/hooks/customers/useLedgerMutations";
+import type { PaymentMode } from "@shared/types";
+import { PAYMENT_MODE } from "@shared/types";
+import { formatRupee, paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
+import { useState } from "react";
 import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
 
-const modes: PaymentMode[] = ["cash", "upi", "card", "cheque", "bank"];
+const modes: PaymentMode[] = [PAYMENT_MODE.CASH, PAYMENT_MODE.UPI, PAYMENT_MODE.CARD];
 
 export function PaymentDialog({
-  customer,
+  customerId,
+  customerName,
+  outstanding,
   onClose
 }: {
-  customer: CustomerMock;
+  customerId: string;
+  customerName: string;
+  outstanding: number;
   onClose: () => void;
 }) {
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [mode, setMode] = useState<PaymentMode>("upi");
-  const [reference, setReference] = useState("");
+  const [mode, setMode] = useState<PaymentMode>(PAYMENT_MODE.CASH);
   const [note, setNote] = useState("");
 
-  useEffect(() => {
-    if (customer.outstanding > 0) {
-      setAmount((customer.outstanding / 100).toString());
-    }
-  }, [customer]);
+  const createPayment = useCreatePayment(customerId);
 
-  const canSave = Number(amount) > 0;
+  const canSave = Number(amount) > 0 && !createPayment.isPending;
+
+  const handleSave = () => {
+    const paisa = rupeesToPaisa(Number(amount));
+
+    createPayment.mutate(
+      {
+        amount: paisa,
+        mode,
+        notes: note.trim() || undefined
+      },
+      { onSuccess: onClose }
+    );
+  };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card shadow-lg sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Record Payment</DialogTitle>
-          <DialogDescription>Log a payment received from {customer.name}.</DialogDescription>
+          <DialogDescription>Log a payment received from {customerName}.</DialogDescription>
         </DialogHeader>
-
-        {/* Outstanding context */}
-        <div className="bg-muted/40 border-border/70 flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-              Current Outstanding
-            </span>
-            <span className="text-foreground text-sm font-semibold tabular-nums">
-              {customer.outstanding === 0 ? "Settled" : formatRupee(Math.abs(customer.outstanding))}
-            </span>
-          </div>
-          <OutstandingBadge outstanding={customer.outstanding} />
-        </div>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="pay-amount">Amount Received (₹)</Label>
-            <Input
-              id="pay-amount"
-              type="number"
-              inputMode="decimal"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              className="h-9 tabular-nums"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="pay-date">Date</Label>
+            <div className="relative">
               <Input
-                id="pay-date"
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="h-9 tabular-nums"
+                id="pay-amount"
+                type="number"
+                inputMode="decimal"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder=""
+                className="border-ring/20 focus-visible:border-ring h-14 [appearance:textfield] overflow-hidden border-2 pr-20 text-2xl! font-semibold tracking-[-0.02em] text-ellipsis tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="pay-mode">Payment Mode</Label>
-              <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
-                <SelectTrigger id="pay-mode" className="h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {modes.map((m) => (
-                    <SelectItem key={m} value={m} className="capitalize">
-                      {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {outstanding > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setAmount(String(paisaToRupees(outstanding)))}
+                  className="border-ring/20 bg-muted/60 text-primary hover:bg-primary/10 focus-visible:ring-ring/50 absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded-md border px-2.5 py-1 text-xs font-semibold tracking-wide uppercase transition-colors outline-none focus-visible:ring-[3px]"
+                >
+                  Full
+                </button>
+              )}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pay-ref">Reference</Label>
-            <Input
-              id="pay-ref"
-              value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              placeholder="Cheque no, UPI ID, txn ID…"
-              className="h-9 tabular-nums"
-            />
+            <Label htmlFor="pay-mode">Payment Mode</Label>
+            <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
+              <SelectTrigger id="pay-mode" className="h-12">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {modes.map((m) => (
+                  <SelectItem key={m} value={m} className="capitalize">
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-1.5">
@@ -129,18 +116,35 @@ export function PaymentDialog({
               className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-14 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
             />
           </div>
+
+          <div className="bg-muted/40 border-border/70 flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+                Outstanding
+              </span>
+              <span className="text-foreground text-sm font-semibold tabular-nums">
+                {outstanding === 0 ? "Settled" : formatRupee(Math.abs(outstanding))}
+              </span>
+            </div>
+            <OutstandingBadge outstanding={outstanding} />
+          </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" className="cursor-pointer" onClick={onClose}>
+          <Button
+            variant="outline"
+            className="cursor-pointer"
+            onClick={onClose}
+            disabled={createPayment.isPending}
+          >
             Cancel
           </Button>
           <Button
             className="hover:bg-primary-hover cursor-pointer"
             disabled={!canSave}
-            onClick={onClose}
+            onClick={handleSave}
           >
-            Record Payment
+            {createPayment.isPending ? "Saving…" : "Record Payment"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -76,11 +76,9 @@ export const customerLedger = sqliteTable("customer_ledger", {
   customerId: text("customer_id")
     .references(() => customers.id)
     .notNull(),
-  storeId: text("store_id")
-    .references(() => storeProfile.id, {
-      onDelete: "cascade"
-    })
-    .notNull(),
+  storeId: text("store_id").references(() => storeProfile.id, {
+    onDelete: "cascade"
+  }),
   type: text("type").notNull(),
   saleId: text("sale_id").references(() => sales.id),
   debit: integer("debit").default(0),
@@ -303,7 +301,23 @@ export const salesRelations = relations(sales, ({ one, many }) => ({
     fields: [sales.customerId],
     references: [customers.id]
   }),
-  saleItems: many(saleItems)
+  saleItems: many(saleItems),
+  customerLedgerEntries: many(customerLedger)
+}));
+
+export const customerLedgerRelations = relations(customerLedger, ({ one }) => ({
+  customer: one(customers, {
+    fields: [customerLedger.customerId],
+    references: [customers.id]
+  }),
+  sale: one(sales, {
+    fields: [customerLedger.saleId],
+    references: [sales.id]
+  }),
+  storeProfile: one(storeProfile, {
+    fields: [customerLedger.storeId],
+    references: [storeProfile.id]
+  })
 }));
 
 export const saleItemsRelations = relations(saleItems, ({ one }) => ({

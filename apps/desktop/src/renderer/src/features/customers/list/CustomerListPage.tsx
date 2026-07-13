@@ -25,6 +25,7 @@ import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } f
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCustomerActions } from "../CustomerActionsContext";
 import { CustomerListTable } from "./CustomerListTable";
 import { toCustomerListRow } from "./types";
 
@@ -35,8 +36,9 @@ const TYPE_FILTERS: { key: CustomerType; label: string }[] = [
   { key: CUSTOMER_TYPE.HOTEL, label: "Hotel" }
 ];
 
-export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void }) {
+export function CustomerListPage() {
   const navigate = useNavigate();
+  const { openAddForm } = useCustomerActions();
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -236,7 +238,7 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
           </div>
 
           <Button
-            onClick={onNewCustomer}
+            onClick={openAddForm}
             className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
           >
             <Plus className="size-4" />
@@ -288,7 +290,6 @@ export function CustomerListPage({ onNewCustomer }: { onNewCustomer: () => void 
           fetchNextPage={fetchNextPage}
           onRowClick={handleRowClick}
           clearFilters={clearFilters}
-          onNewCustomer={onNewCustomer}
         />
       </div>
     </div>

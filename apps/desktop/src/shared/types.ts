@@ -349,6 +349,84 @@ export const CUSTOMER_TXN_STATUS = {
   UNPAID: "unpaid"
 } as const;
 
+export const LEDGER_ENTRY_TYPE = {
+  SALE: "sale",
+  QUICK_SALE: "quick_sale",
+  PAYMENT: "payment",
+  ADJUSTMENT: "adjustment",
+  OPENING_BALANCE: "opening_balance"
+} as const;
+
+export type LedgerEntryType = (typeof LEDGER_ENTRY_TYPE)[keyof typeof LEDGER_ENTRY_TYPE];
+
+export const LEDGER_TYPE_FILTER = {
+  ALL: "all",
+  ...LEDGER_ENTRY_TYPE
+} as const;
+
+export type LedgerTypeFilter = (typeof LEDGER_TYPE_FILTER)[keyof typeof LEDGER_TYPE_FILTER];
+
+export const LEDGER_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc"
+} as const;
+
+export type LedgerSort = (typeof LEDGER_SORT)[keyof typeof LEDGER_SORT];
+
+export const PAYMENT_MODE = {
+  CASH: "cash",
+  UPI: "upi",
+  CARD: "card"
+} as const;
+
+export type PaymentMode = (typeof PAYMENT_MODE)[keyof typeof PAYMENT_MODE];
+
+export type LedgerEntry = {
+  id: string;
+  customerId: string;
+  type: LedgerEntryType;
+  saleId: string | null;
+  invoiceNo: number | null;
+  debit: number;
+  credit: number;
+  paymentMode: string | null;
+  notes: string | null;
+  runningBalance: number;
+  createdAt: string;
+};
+
+export type LedgerSummary = {
+  currentBalance: number;
+  totalDebit: number;
+  totalCredit: number;
+  openingBalance: number;
+  avgSale: number;
+  salesCount: number;
+  lastPayment: { amount: number; mode: string; date: string } | null;
+};
+
+export type CreatePaymentPayload = {
+  amount: number;
+  mode: PaymentMode;
+  notes?: string;
+};
+
+export type CreateAdjustmentPayload = {
+  amount: number;
+  direction: "debit" | "credit";
+  notes?: string;
+};
+
+export type CreateQuickSalePayload = {
+  amount: number;
+  notes?: string;
+};
+
+export type CreateOpeningBalancePayload = {
+  amount: number;
+  notes?: string;
+};
+
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"

@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LoaderCircle, Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
+import { useCustomerActions } from "../CustomerActionsContext";
 import type { CustomerListRow } from "./types";
 
 type CustomerListTableProps = {
@@ -16,7 +17,6 @@ type CustomerListTableProps = {
   fetchNextPage: () => void;
   onRowClick: (row: CustomerListRow) => void;
   clearFilters: () => void;
-  onNewCustomer: () => void;
 };
 
 import {
@@ -37,10 +37,10 @@ export function CustomerListTable({
   isPlaceholderData,
   fetchNextPage,
   onRowClick,
-  clearFilters,
-  onNewCustomer
+  clearFilters
 }: CustomerListTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const { openAddForm } = useCustomerActions();
 
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? rows.length + 1 : rows.length,
@@ -140,7 +140,7 @@ export function CustomerListTable({
             ) : (
               <Button
                 className="hover:bg-primary-hover mt-5 h-9 cursor-pointer"
-                onClick={onNewCustomer}
+                onClick={openAddForm}
               >
                 <Plus className="size-4" />
                 New Customer

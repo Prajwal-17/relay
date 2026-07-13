@@ -10,6 +10,7 @@ import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
+import { ledgerRepository } from "../ledger/ledger.repository";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
 import { buildEstimatesWhere, buildSalesWhere } from "./customers.utils";
 
@@ -194,7 +195,17 @@ const getCustomerSummary = async (id: string) => {
 };
 
 const createCustomer = async (payload: CreateCustomerPayload) => {
-  return db.insert(customers).values(payload).returning().get();
+  return db.transaction((tx) => {
+    const { openingBalance, ...customerData } = payload;
+    const customer = tx.insert(customers).values(customerData).returning().get();
+
+    if (customer && openingBalance && openingBalance > 0) {
+      ledgerRepository.insertOpeningBalance(tx, customer.id, { amount: openingBalance });
+      ledgerRepository.recomputeOutstanding(tx, customer.id);
+    }
+
+    return customer;
+  });
 };
 
 const updateById = async (customerId: string, payload: Partial<UpdateCustomerPayload>) => {
