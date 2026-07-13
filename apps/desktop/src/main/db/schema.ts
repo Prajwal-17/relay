@@ -69,6 +69,32 @@ export const customers = sqliteTable(
   (table) => [index("customer_store_id_idx").on(table.storeId)]
 );
 
+export const customerLedger = sqliteTable("customer_ledger", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
+  customerId: text("customer_id")
+    .references(() => customers.id)
+    .notNull(),
+  storeId: text("store_id")
+    .references(() => storeProfile.id, {
+      onDelete: "cascade"
+    })
+    .notNull(),
+  type: text("type").notNull(),
+  saleId: text("sale_id").references(() => sales.id),
+  debit: integer("debit").default(0),
+  credit: integer("credit").default(0),
+  paymentMode: text("payment_mode"),
+  notes: text("notes"),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
 export const products = sqliteTable(
   "products",
   {
