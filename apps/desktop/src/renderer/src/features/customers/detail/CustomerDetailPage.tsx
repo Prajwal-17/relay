@@ -49,7 +49,12 @@ export function CustomerDetailPage({
   return (
     <div className="flex h-full w-full flex-col">
       <DetailHeader customer={customer} />
-      <DetailTabs customerId={customerId} customer={customer} value={activeTab} onTabChange={handleTabChange} />
+      <DetailTabs
+        customerId={customerId}
+        customer={customer}
+        value={activeTab}
+        onTabChange={handleTabChange}
+      />
       {isViewModalOpen && <ViewModal type={viewModalType} id={transactionId} />}
     </div>
   );

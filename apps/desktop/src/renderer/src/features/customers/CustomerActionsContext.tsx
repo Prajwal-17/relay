@@ -1,15 +1,5 @@
-import { createContext, useContext, type ReactNode } from "react";
-
-export type CustomerActions = {
-  openAddForm: () => void;
-  openEditForm: () => void;
-  openPayment: () => void;
-  openAdjust: () => void;
-  openQuickSale: () => void;
-  openSearch: () => void;
-};
-
-const CustomerActionsContext = createContext<CustomerActions | null>(null);
+import { type ReactNode } from "react";
+import { CustomerActionsContext, type CustomerActions } from "./customerActions";
 
 export function CustomerActionsProvider({
   value,
@@ -21,12 +11,4 @@ export function CustomerActionsProvider({
   return (
     <CustomerActionsContext.Provider value={value}>{children}</CustomerActionsContext.Provider>
   );
-}
-
-export function useCustomerActions(): CustomerActions {
-  const context = useContext(CustomerActionsContext);
-  if (context === null) {
-    throw new Error("useCustomerActions must be used within a CustomerActionsProvider");
-  }
-  return context;
 }

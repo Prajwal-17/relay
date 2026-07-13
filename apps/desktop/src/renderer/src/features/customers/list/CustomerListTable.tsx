@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { LoaderCircle, Plus, Users } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
-import { useCustomerActions } from "../CustomerActionsContext";
+import { useCustomerActions } from "../customerActions";
 import type { CustomerListRow } from "./types";
 
 type CustomerListTableProps = {

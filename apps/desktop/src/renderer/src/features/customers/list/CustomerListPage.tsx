@@ -25,7 +25,7 @@ import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } f
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCustomerActions } from "../CustomerActionsContext";
+import { useCustomerActions } from "../customerActions";
 import { CustomerListTable } from "./CustomerListTable";
 import { toCustomerListRow } from "./types";
 

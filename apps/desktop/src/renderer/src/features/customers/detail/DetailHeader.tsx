@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useCustomerActions } from "../CustomerActionsContext";
+import { useCustomerActions } from "../customerActions";
 import type { CustomerMock } from "../_mock/types";
 import { OutstandingBadge } from "./shared/OutstandingBadge";
 
@@ -100,11 +100,7 @@ export function DetailHeader({ customer }: { customer: CustomerMock }) {
           New Sale
         </Button>
 
-        <Button
-          size="sm"
-          className="hover:bg-primary-hover cursor-pointer"
-          onClick={openPayment}
-        >
+        <Button size="sm" className="hover:bg-primary-hover cursor-pointer" onClick={openPayment}>
           Record Payment
         </Button>
       </div>

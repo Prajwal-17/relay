@@ -23,7 +23,7 @@ export function AccountingTab({ customerId }: { customerId: string }) {
           <div
             className={cn(
               "relative flex items-center gap-3 px-4 py-3",
-              !isSettled && (isDebit ? "bg-destructive/[0.04]" : "bg-success/[0.05]")
+              !isSettled && (isDebit ? "bg-destructive/4" : "bg-success/5")
             )}
           >
             <span

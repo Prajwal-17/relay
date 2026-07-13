@@ -31,7 +31,7 @@ import {
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCustomerActions } from "../../CustomerActionsContext";
+import { useCustomerActions } from "../../customerActions";
 import { buildLedgerColumns } from "./LedgerColumns";
 
 const LEDGER_NUMBER_INPUT_CLASS =
