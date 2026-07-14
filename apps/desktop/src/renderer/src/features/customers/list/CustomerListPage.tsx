@@ -71,8 +71,34 @@ export function CustomerListPage() {
     [debouncedQuery, typeFilter, sortBy]
   );
 
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [dataKey]);
+
+  useEffect(() => {
+    setActiveIndex((i) => Math.min(i, Math.max(0, rows.length - 1)));
+  }, [rows.length]);
+
   const handleRowClick = (row: { id: string }) => {
     navigate(`/customers/${row.id}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (rows.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, rows.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      const row = rows[activeIndex];
+      if (row) handleRowClick(row);
+    }
   };
 
   const activeTypeLabel = TYPE_FILTERS.find((f) => f.key === typeFilter)?.label ?? "All";
@@ -89,7 +115,7 @@ export function CustomerListPage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 p-4">
+    <div className="flex h-full w-full flex-col gap-4 p-4" onKeyDown={handleKeyDown}>
       <div className="shrink-0 space-y-2.5">
         <motion.div
           initial={{ opacity: 0, y: -3 }}
@@ -281,6 +307,7 @@ export function CustomerListPage() {
         <CustomerListTable
           key={dataKey}
           rows={rows}
+          activeIndex={activeIndex}
           hasNextPage={hasNextPage}
           hasFilters={hasFilters}
           status={status}

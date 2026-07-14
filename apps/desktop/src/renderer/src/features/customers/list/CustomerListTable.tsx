@@ -8,6 +8,7 @@ import type { CustomerListRow } from "./types";
 
 type CustomerListTableProps = {
   rows: CustomerListRow[];
+  activeIndex: number;
   hasNextPage: boolean;
   hasFilters: boolean;
   status: "pending" | "success" | "error";
@@ -29,6 +30,7 @@ import {
 
 export function CustomerListTable({
   rows,
+  activeIndex,
   hasNextPage,
   hasFilters,
   status,
@@ -68,6 +70,11 @@ export function CustomerListTable({
     rows.length,
     virtualItems
   ]);
+
+  useEffect(() => {
+    if (rows.length === 0) return;
+    rowVirtualizer.scrollToIndex(activeIndex, { align: "auto" });
+  }, [activeIndex, rows.length, rowVirtualizer]);
 
   const colInfo = useMemo(
     () => [
@@ -196,13 +203,21 @@ export function CustomerListTable({
                     >
                       <button
                         type="button"
+                        aria-selected={virtualRow.index === activeIndex}
                         onClick={() => onRowClick(row)}
                         className={cn(
-                          "border-border/70 hover:bg-accent w-full border-b text-left transition-colors",
+                          "border-border/70 hover:bg-accent relative w-full border-b text-left transition-colors",
                           "grid cursor-pointer grid-cols-11 items-center gap-2 px-4 py-2.5",
-                          "last:border-b-0"
+                          "last:border-b-0",
+                          virtualRow.index === activeIndex && "bg-accent"
                         )}
                       >
+                        <span
+                          className={cn(
+                            "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
+                            virtualRow.index === activeIndex ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         <div className="col-span-3 flex min-w-0">{renderNameCell(row)}</div>
                         <div className="col-span-2 flex">{renderTypeCell(row)}</div>
                         <div className="col-span-2 flex justify-end">
@@ -229,6 +244,12 @@ export function CustomerListTable({
           </>
         )}
       </div>
+
+      {status === "success" && rows.length > 0 && (
+        <div className="border-border/70 text-muted-foreground flex shrink-0 items-center justify-end border-t px-4 py-2 text-xs font-medium">
+          <span>↑ ↓ navigate · ↵ open</span>
+        </div>
+      )}
     </div>
   );
 }
