@@ -14,6 +14,7 @@ export type LineItem = {
   quantity: string;
   totalPrice: number; // UI-only
   checkedQty: number;
+  position: number;
   isInventoryItem: boolean;
   syncStatus: SyncStatus; // FE-only
   isDeleted: boolean; // delete item flag

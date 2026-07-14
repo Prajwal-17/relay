@@ -13,6 +13,7 @@ export const lineItemSchema = z.object({
   price: z.coerce.number().int().positive().min(1),
   quantity: z.coerce.number().positive().gt(0),
   checkedQty: z.number().nonnegative().default(0),
+  position: z.number().int().nonnegative().default(0),
   isDeleted: z.boolean()
 });
 

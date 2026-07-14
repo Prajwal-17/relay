@@ -117,6 +117,7 @@ export type UnifiedTransactionItem = {
   totalPrice: number;
   purchasePrice: number | null;
   checkedQty: number;
+  position: number;
 };
 
 export type UnifiedTransctionWithItems = UnifiedTransaction & {
@@ -161,6 +162,7 @@ export type SaleItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type EstimateItem = {
@@ -177,6 +179,7 @@ export type EstimateItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type PageNo = number | null;

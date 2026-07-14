@@ -9,8 +9,18 @@ import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
 import type { LineItem } from "@/store/billing/billingSession.types";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
+import { useSidebarStore } from "@/store/sidebarStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent
+} from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
   CheckCheck,
   ChevronDown,
@@ -20,7 +30,7 @@ import {
   Plus,
   X
 } from "lucide-react";
-import LineItemRow from "./LineItemRow";
+import LineItemRow, { SortableLineItemRow } from "./LineItemRow";
 
 export type ItemType = {
   id: string;
@@ -35,11 +45,13 @@ const LineItemsTable = () => {
   const updateField = useBillingSessionStore((state) => state.updateField);
   const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
   const setAllChecked = useBillingSessionStore((state) => state.setAllChecked);
+  const reorderLineItems = useBillingSessionStore((state) => state.reorderLineItems);
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
   const setActionType = useProductsStore((state) => state.setActionType);
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
+  const setIsDndDragging = useSidebarStore((state) => state.setIsDndDragging);
 
   const { activeTabId, getActiveTabId } = useActiveTabId();
 
@@ -48,11 +60,35 @@ const LineItemsTable = () => {
   );
   const isCountColumnVisible = session?.isCountColumnVisible ?? false;
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
+
   if (!activeTabId || !session) {
     return null;
   }
 
-  const totalItems = session.lineItems.filter((item) => item.productSnapshot.trim() !== "").length;
+  const filledItems = session.lineItems.filter(
+    (item) => item.productSnapshot.trim() !== "" && !item.isDeleted
+  );
+  const emptyItems = session.lineItems.filter(
+    (item) => item.productSnapshot.trim() === "" && !item.isDeleted
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setIsDndDragging(false);
+
+    if (!over || active.id === over.id) return;
+
+    const tabId = getActiveTabId();
+    if (!tabId) return;
+
+    reorderLineItems(tabId, active.id as string, over.id as string);
+    processSyncQueue(tabId);
+  };
+
+  const totalItems = filledItems.length;
   const totalQty = fromMilliUnits(
     session.lineItems.reduce((acc, item) => acc + toMilliUnits(parseFloat(item.quantity) || 0), 0)
   );
@@ -197,19 +233,32 @@ const LineItemsTable = () => {
         </div>
 
         <div className="relative space-y-1 pt-2.5">
-          {session &&
-            session.lineItems.length > 0 &&
-            session.lineItems.map(
-              (item: LineItem, idx: number) =>
-                !item.isDeleted && (
-                  <LineItemRow
+          {filledItems.length > 0 && (
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={() => setIsDndDragging(true)} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={filledItems.map((i) => i.rowId)}
+                strategy={verticalListSortingStrategy}
+              >
+                {filledItems.map((item: LineItem, idx: number) => (
+                  <SortableLineItemRow
                     key={item.rowId}
                     idx={idx}
                     item={item}
                     isCountColumnVisible={isCountColumnVisible}
                   />
-                )
-            )}
+                ))}
+              </SortableContext>
+            </DndContext>
+          )}
+
+          {emptyItems.map((item: LineItem, idx: number) => (
+            <LineItemRow
+              key={item.rowId}
+              idx={filledItems.length + idx}
+              item={item}
+              isCountColumnVisible={isCountColumnVisible}
+            />
+          ))}
 
           <div className="flex items-center justify-between px-1 pt-1">
             <Button

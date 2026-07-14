@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gte, lte, sql, sum, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lte, sql, sum, type SQL } from "drizzle-orm";
 import {
   BATCH_CHECK_ACTION,
   UPDATE_QTY_ACTION,
@@ -20,7 +20,9 @@ const getEstimateById = async (id: string) => {
     where: eq(estimates.id, id),
     with: {
       customer: true,
-      estimateItems: true
+      estimateItems: {
+        orderBy: [asc(estimateItems.position), asc(estimateItems.createdAt)]
+      }
     }
   });
 };
@@ -106,7 +108,8 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
         unit: item.unit,
         quantity: item.quantity,
         totalPrice: Math.round((item.price * item.quantity) / 1000),
-        checkedQty: item.checkedQty
+        checkedQty: item.checkedQty,
+        position: item.position
       };
 
       // insert new
@@ -157,7 +160,8 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
         unit: item.unit,
         quantity: item.quantity,
         totalPrice: Math.round((item.price * item.quantity) / 1000),
-        checkedQty: item.checkedQty
+        checkedQty: item.checkedQty,
+        position: item.position
       };
 
       if (item.isDeleted && item.id) {
@@ -358,7 +362,8 @@ const convertEstimateToSale = async (id: string) => {
           unit: i.unit,
           quantity: i.quantity,
           totalPrice: i.totalPrice,
-          checkedQty: i.checkedQty ?? 0
+          checkedQty: i.checkedQty ?? 0,
+          position: i.position
         })
         .run();
     });
@@ -478,7 +483,8 @@ const duplicateEstimateById = async (id: string) => {
         unit: item.unit,
         quantity: item.quantity,
         totalPrice: item.totalPrice,
-        checkedQty: 0
+        checkedQty: 0,
+        position: item.position
       };
 
       const newItem = tx.insert(estimateItems).values(values).returning().get();

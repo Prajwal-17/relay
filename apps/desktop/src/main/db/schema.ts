@@ -204,6 +204,7 @@ export const saleItems = sqliteTable(
     quantity: integer("quantity").notNull(),
     totalPrice: integer("total_price").notNull(),
     checkedQty: integer("checked_qty").default(0),
+    position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -214,7 +215,8 @@ export const saleItems = sqliteTable(
   (table) => [
     index("sale_items_id_idx").on(table.id),
     index("sale_items_sale_id_idx").on(table.saleId),
-    index("sale_items_product_id_idx").on(table.productId)
+    index("sale_items_product_id_idx").on(table.productId),
+    index("sale_items_position_idx").on(table.saleId, table.position)
   ]
 );
 
@@ -267,6 +269,7 @@ export const estimateItems = sqliteTable(
     quantity: integer("quantity").notNull(),
     totalPrice: integer("total_price").notNull(),
     checkedQty: integer("checked_qty").default(0),
+    position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -277,7 +280,8 @@ export const estimateItems = sqliteTable(
   (table) => [
     index("estimate_items_id_idx").on(table.id),
     index("estimate_items_estimate_id_idx").on(table.estimateId),
-    index("estimate_items_product_id_idx").on(table.productId)
+    index("estimate_items_product_id_idx").on(table.productId),
+    index("estimate_items_position_idx").on(table.estimateId, table.position)
   ]
 );
 

@@ -1,9 +1,38 @@
 import { SYNCSTATUS } from "@/types";
 import { BILLSTATUS, TRANSACTION_TYPE, type UnifiedTransactionItem } from "@shared/types";
-import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
+import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
 import type { LineItem } from "./billingSession.types";
+
+export const POSITION_GAP = 65536;
+export const MIN_GAP = 1;
+
+/**
+ * Returns the next position after the highest existing position, or GAP if empty.
+ * Works on all items (filled + empty) since empty rows always have the highest positions.
+ */
+export function nextPosition(lineItems: LineItem[]): number {
+  if (lineItems.length === 0) return POSITION_GAP;
+  return Math.max(...lineItems.map((i) => i.position)) + POSITION_GAP;
+}
+
+/** Compute the midpoint between two positions. */
+export function midpointPosition(prevPos: number, nextPos: number): number {
+  return Math.floor((prevPos + nextPos) / 2);
+}
+
+/**
+ * Reassign every item to `i * GAP` based on current visual order.
+ * Returns a map of rowId → new position.
+ */
+export function rebalancePositions(lineItems: LineItem[]): Map<string, number> {
+  const result = new Map<string, number>();
+  lineItems.forEach((item, i) => {
+    result.set(item.rowId, i * POSITION_GAP);
+  });
+  return result;
+}
 
 export const createInitialSession = () => {
   return {
@@ -17,11 +46,11 @@ export const createInitialSession = () => {
     isNewCustomer: true,
     status: BILLSTATUS.IDLE,
     isCountColumnVisible: false,
-    lineItems: Array.from({ length: 5 }, () => createInitialLineItem())
+    lineItems: Array.from({ length: 5 }, (_, i) => createInitialLineItem(i * POSITION_GAP))
   };
 };
 
-export function createInitialLineItem() {
+export function createInitialLineItem(position = 0) {
   const lineItem: LineItem = {
     id: null,
     rowId: uuidv4(),
@@ -35,6 +64,7 @@ export function createInitialLineItem() {
     quantity: "",
     totalPrice: 0,
     checkedQty: 0,
+    position,
     isInventoryItem: false,
     syncStatus: SYNCSTATUS.SYNCED,
     isDeleted: false
@@ -61,12 +91,16 @@ export function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     quantity: fromMilliUnits(item.quantity).toString(),
     totalPrice: item.totalPrice,
     checkedQty: fromMilliUnits(item.checkedQty),
+    position: item.position,
     isInventoryItem: item.productId ? true : false,
     syncStatus: SYNCSTATUS.SYNCED,
     isDeleted: false
   }));
 
-  return [...lineItemsArray, createInitialLineItem()];
+  lineItemsArray.sort((a, b) => a.position - b.position);
+
+  const emptyPosition = nextPosition(lineItemsArray);
+  return [...lineItemsArray, createInitialLineItem(emptyPosition)];
 }
 
 export const reCalculateLineItem = (item: LineItem): LineItem => {
