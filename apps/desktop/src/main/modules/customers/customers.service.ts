@@ -1,16 +1,23 @@
+import { eq, type SQL } from "drizzle-orm";
 import {
+  CUSTOMER_TYPE,
   TRANSACTION_TYPE,
   type CreateCustomerPayload,
   type Customer,
   type CustomerSummary,
   type CustomerTransaction,
-  type Estimate,
   type PaginatedApiResponse,
-  type UpdateProductPayload
+  type UpdateCustomerPayload
 } from "../../../shared/types";
+import { CustomerRole } from "../../db/enum";
+import { customers } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { customersRepository } from "./customers.repository";
-import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
+import type {
+  EstimatesByCustomerParams,
+  ListCustomersParams,
+  SalesByCustomerParams
+} from "./customers.types";
 
 const findById = async (id: string): Promise<Customer> => {
   const customer = await customersRepository.findById(id);
@@ -27,6 +34,46 @@ const getCustomers = async (searchTerm: string): Promise<Customer[]> => {
   return customerResult;
 };
 
+const getCustomersPaginated = async (
+  params: ListCustomersParams
+): Promise<PaginatedApiResponse<{ data: Customer[] }>> => {
+  let whereClause: SQL | undefined = undefined;
+
+  if (params.type !== CUSTOMER_TYPE.ALL) {
+    const role =
+      params.type === CUSTOMER_TYPE.CASH
+        ? CustomerRole.CASH
+        : params.type === CUSTOMER_TYPE.ACCOUNT
+          ? CustomerRole.ACCOUNT
+          : CustomerRole.HOTEL;
+    whereClause = eq(customers.customerType, role);
+  }
+
+  const offset = (params.pageNo - 1) * params.pageSize;
+
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getCustomersPaginated({
+      searchTerm: params.query,
+      whereClause,
+      sort: params.sort,
+      limit: params.pageSize,
+      offset
+    }),
+    customersRepository.countCustomers({
+      searchTerm: params.query,
+      whereClause
+    })
+  ]);
+
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+
+  return {
+    nextPageNo,
+    totalCount,
+    data: rows
+  };
+};
+
 const getDefaultCustomer = async (): Promise<Customer> => {
   const customerResult = await customersRepository.getDefaultCustomer();
 
@@ -40,15 +87,19 @@ const getDefaultCustomer = async (): Promise<Customer> => {
 const getSalesByCustomerId = async (
   params: SalesByCustomerParams
 ): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
-  const sales = await customersRepository.getSalesByCustomerId(params);
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getSalesByCustomerId(params),
+    customersRepository.countSalesByCustomerId(params)
+  ]);
 
-  const nextPageNo = sales.length === 20 ? params.pageNo + 1 : null;
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
 
   return {
-    nextPageNo: nextPageNo,
+    nextPageNo,
+    totalCount,
     data:
-      sales.length > 0
-        ? sales.map((s) => ({
+      rows.length > 0
+        ? rows.map((s) => ({
             type: TRANSACTION_TYPE.SALE,
             transactionNo: s.invoiceNo,
             ...s
@@ -59,16 +110,20 @@ const getSalesByCustomerId = async (
 
 const getEstimatesByCustomerId = async (
   params: EstimatesByCustomerParams
-): Promise<PaginatedApiResponse<{ data: Estimate[] | [] }>> => {
-  const estimates = await customersRepository.getEstimatesByCustomerId(params);
+): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
+  const [rows, totalCount] = await Promise.all([
+    customersRepository.getEstimatesByCustomerId(params),
+    customersRepository.countEstimatesByCustomerId(params)
+  ]);
 
-  const nextPageNo = estimates.length === 20 ? params.pageNo + 1 : null;
+  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
 
   return {
-    nextPageNo: nextPageNo,
+    nextPageNo,
+    totalCount,
     data:
-      estimates.length > 0
-        ? estimates.map((e) => ({
+      rows.length > 0
+        ? rows.map((e) => ({
             type: TRANSACTION_TYPE.ESTIMATE,
             transactionNo: e.estimateNo,
             ...e
@@ -94,7 +149,7 @@ const createCustomer = async (payload: CreateCustomerPayload): Promise<Customer>
 
 const updateCustomerById = async (
   customerId: string,
-  payload: Partial<UpdateProductPayload>
+  payload: Partial<UpdateCustomerPayload>
 ): Promise<Customer> => {
   const existingCustomer = await customersRepository.findById(customerId);
 
@@ -121,6 +176,7 @@ const deleteCustomerById = async (id: string): Promise<void> => {
 export const customersService = {
   findById,
   getCustomers,
+  getCustomersPaginated,
   getDefaultCustomer,
   getSalesByCustomerId,
   getEstimatesByCustomerId,

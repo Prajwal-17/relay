@@ -16,8 +16,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  TimePicker,
+  TimePickerContent,
+  TimePickerHour,
+  TimePickerInput,
+  TimePickerInputGroup,
+  TimePickerMinute,
+  TimePickerPeriod,
+  TimePickerSeparator,
+  TimePickerTrigger
+} from "@/components/ui/time-picker";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DEFAULT_HOUR } from "@/constants";
 import { apiClient } from "@/lib/apiClient";
@@ -29,16 +39,8 @@ import { processSyncQueue } from "@/utils/syncWorker";
 import { type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  CalendarDays,
-  Clock,
-  Copy,
-  MoreVertical,
-  PanelLeftOpen,
-  Trash2,
-  UserRound
-} from "lucide-react";
-import { useState, type ChangeEvent } from "react";
+import { CalendarDays, Copy, MoreVertical, PanelLeftOpen, Trash2, UserRound } from "lucide-react";
+import { useState, type CSSProperties } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
@@ -120,9 +122,9 @@ const BillingHeader = () => {
     }
   };
 
-  const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") return;
-    const [hoursString = "", minutesString = ""] = e.target.value.split(":");
+  const handleTimeChange = (value: string) => {
+    if (!value) return;
+    const [hoursString = "", minutesString = ""] = value.split(":");
 
     const hours = parseInt(hoursString, 10);
     const minutes = parseInt(minutesString, 10);
@@ -131,8 +133,7 @@ const BillingHeader = () => {
       return;
     }
     const udpatedDate = new Date(billingDate);
-    udpatedDate.setHours(hours);
-    udpatedDate.setMinutes(minutes);
+    udpatedDate.setHours(hours, minutes, 0, 0);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
     updateField(activeTabId, "billingDate", udpatedDate);
     if (activeTabId) processSyncQueue(activeTabId);
@@ -223,17 +224,32 @@ const BillingHeader = () => {
 
             <div className="bg-border/50 mx-1.5 h-6 w-px shrink-0" />
 
-            <div className="hover:bg-background flex h-9 items-center rounded-lg px-2.5 transition-colors">
-              <Clock size={16} className="text-muted-foreground/70 mr-2 shrink-0" />
-              <Input
-                type="time"
-                id="time-picker"
-                step="60"
-                value={formatDateObjToHHmmss(billingDate)}
-                onChange={(e) => handleTimeChange(e)}
-                className="h-9 w-24 border-none bg-transparent px-1 text-base! font-medium shadow-none focus-visible:ring-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-              />
-            </div>
+            <TimePicker
+              value={formatDateObjToHHmmss(billingDate)}
+              onValueChange={handleTimeChange}
+              locale="en-US"
+            >
+              <TimePickerInputGroup
+                className="hover:bg-background h-9 w-auto cursor-pointer gap-1.5 rounded-lg border-none bg-transparent px-2.5 shadow-none transition-colors"
+                style={
+                  {
+                    "--time-picker-hour-input-width": "2.5ch",
+                    "--time-picker-minute-input-width": "2.5ch"
+                  } as CSSProperties
+                }
+              >
+                <TimePickerInput segment="hour" className="text-base font-medium" />
+                <TimePickerSeparator className="text-muted-foreground" />
+                <TimePickerInput segment="minute" className="text-base font-medium" />
+                <TimePickerInput segment="period" className="text-base font-medium" />
+                <TimePickerTrigger className="text-muted-foreground/70 hover:text-foreground ml-1 shrink-0" />
+              </TimePickerInputGroup>
+              <TimePickerContent align="end">
+                <TimePickerHour />
+                <TimePickerMinute />
+                <TimePickerPeriod />
+              </TimePickerContent>
+            </TimePicker>
           </div>
 
           {id && (

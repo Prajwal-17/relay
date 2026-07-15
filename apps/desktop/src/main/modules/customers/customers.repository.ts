@@ -1,10 +1,18 @@
-import { count, desc, eq, like, sql } from "drizzle-orm";
-import type { CreateCustomerPayload, UpdateCustomerPayload } from "../../../shared/types";
+import { and, asc, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
+import {
+  CUSTOMER_SORT_BY,
+  CUSTOMER_TXN_SORT,
+  type CreateCustomerPayload,
+  type CustomerSortByType,
+  type UpdateCustomerPayload
+} from "../../../shared/types";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
+import { ledgerRepository } from "../ledger/ledger.repository";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
+import { buildEstimatesWhere, buildSalesWhere } from "./customers.utils";
 
 const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
@@ -12,32 +20,67 @@ const findById = async (id: string) => {
 
 const getCustomers = async (searchTerm: string) => {
   if (searchTerm === "") {
-    return await db
-      .select({
-        id: customers.id,
-        name: customers.name,
-        contact: customers.contact,
-        customerType: customers.customerType,
-        createdAt: customers.createdAt,
-        updatedAt: customers.updatedAt
-      })
-      .from(customers)
-      .orderBy(customers.name);
+    return await db.select().from(customers).orderBy(customers.name);
   }
 
   const searchQuery = `${searchTerm}%`;
   return await db
-    .select({
-      id: customers.id,
-      name: customers.name,
-      contact: customers.contact,
-      customerType: customers.customerType,
-      createdAt: customers.createdAt,
-      updatedAt: customers.updatedAt
-    })
+    .select()
     .from(customers)
     .where(like(customers.name, searchQuery))
     .orderBy(customers.name);
+};
+
+const getCustomersPaginated = async (params: {
+  searchTerm: string;
+  whereClause: SQL | undefined;
+  sort: CustomerSortByType;
+  limit: number;
+  offset: number;
+}) => {
+  const sortClause: SQL =
+    params.sort === CUSTOMER_SORT_BY.NAME_DESC
+      ? desc(customers.name)
+      : params.sort === CUSTOMER_SORT_BY.NEWEST
+        ? desc(customers.createdAt)
+        : params.sort === CUSTOMER_SORT_BY.OLDEST
+          ? asc(customers.createdAt)
+          : asc(customers.name);
+
+  if (params.searchTerm === "") {
+    const query = db.select().from(customers).orderBy(sortClause);
+    if (params.whereClause) {
+      return query.where(params.whereClause).limit(params.limit).offset(params.offset);
+    }
+    return query.limit(params.limit).offset(params.offset);
+  }
+
+  const where = params.whereClause
+    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
+    : like(customers.name, `${params.searchTerm}%`);
+
+  return db
+    .select()
+    .from(customers)
+    .where(where)
+    .orderBy(sortClause)
+    .limit(params.limit)
+    .offset(params.offset);
+};
+
+const countCustomers = async (params: { searchTerm: string; whereClause: SQL | undefined }) => {
+  if (params.searchTerm === "") {
+    const query = db.select({ count: count() }).from(customers);
+    const result = params.whereClause ? query.where(params.whereClause).get() : query.get();
+    return result?.count ?? 0;
+  }
+
+  const where = params.whereClause
+    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
+    : like(customers.name, `${params.searchTerm}%`);
+
+  const result = db.select({ count: count() }).from(customers).where(where).get();
+  return result?.count ?? 0;
 };
 
 const getDefaultCustomer = async () => {
@@ -59,23 +102,55 @@ const createDefaultCustomer = (storeId: string, tx: any) => {
 const getSalesByCustomerId = async (params: SalesByCustomerParams) => {
   const offset = (params.pageNo - 1) * params.pageSize;
 
+  const sortClause: SQL =
+    params.sort === CUSTOMER_TXN_SORT.DATE_ASC
+      ? asc(sales.createdAt)
+      : params.sort === CUSTOMER_TXN_SORT.AMOUNT_DESC
+        ? desc(sales.grandTotal)
+        : params.sort === CUSTOMER_TXN_SORT.AMOUNT_ASC
+          ? asc(sales.grandTotal)
+          : desc(sales.createdAt);
+
   return await db.query.sales.findMany({
-    where: eq(sales.customerId, params.customerId),
-    orderBy: desc(sales.createdAt),
-    limit: 20,
+    where: buildSalesWhere(params),
+    orderBy: sortClause,
+    limit: params.pageSize,
     offset: offset
   });
+};
+
+const countSalesByCustomerId = async (params: SalesByCustomerParams) => {
+  const result = db.select({ count: count() }).from(sales).where(buildSalesWhere(params)).get();
+  return result?.count ?? 0;
 };
 
 const getEstimatesByCustomerId = async (params: EstimatesByCustomerParams) => {
   const offset = (params.pageNo - 1) * params.pageSize;
 
+  const sortClause: SQL =
+    params.sort === CUSTOMER_TXN_SORT.DATE_ASC
+      ? asc(estimates.createdAt)
+      : params.sort === CUSTOMER_TXN_SORT.AMOUNT_DESC
+        ? desc(estimates.grandTotal)
+        : params.sort === CUSTOMER_TXN_SORT.AMOUNT_ASC
+          ? asc(estimates.grandTotal)
+          : desc(estimates.createdAt);
+
   return await db.query.estimates.findMany({
-    where: eq(estimates.customerId, params.customerId),
-    orderBy: desc(estimates.createdAt),
-    limit: 20,
+    where: buildEstimatesWhere(params),
+    orderBy: sortClause,
+    limit: params.pageSize,
     offset: offset
   });
+};
+
+const countEstimatesByCustomerId = async (params: EstimatesByCustomerParams) => {
+  const result = db
+    .select({ count: count() })
+    .from(estimates)
+    .where(buildEstimatesWhere(params))
+    .get();
+  return result?.count ?? 0;
 };
 
 const getCustomerSummary = async (id: string) => {
@@ -120,7 +195,17 @@ const getCustomerSummary = async (id: string) => {
 };
 
 const createCustomer = async (payload: CreateCustomerPayload) => {
-  return db.insert(customers).values(payload).returning().get();
+  return db.transaction((tx) => {
+    const { openingBalance, ...customerData } = payload;
+    const customer = tx.insert(customers).values(customerData).returning().get();
+
+    if (customer && openingBalance && openingBalance > 0) {
+      ledgerRepository.insertOpeningBalance(tx, customer.id, { amount: openingBalance });
+      ledgerRepository.recomputeOutstanding(tx, customer.id);
+    }
+
+    return customer;
+  });
 };
 
 const updateById = async (customerId: string, payload: Partial<UpdateCustomerPayload>) => {
@@ -166,10 +251,14 @@ const deleteById = async (id: string) => {
 export const customersRepository = {
   findById,
   getCustomers,
+  getCustomersPaginated,
+  countCustomers,
   getDefaultCustomer,
   createDefaultCustomer,
   getSalesByCustomerId,
+  countSalesByCustomerId,
   getEstimatesByCustomerId,
+  countEstimatesByCustomerId,
   getCustomerSummary,
   createCustomer,
   updateById,

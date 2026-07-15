@@ -7,7 +7,8 @@ export const createCustomerSchema = CustomerSchema.omit({
   createdAt: true,
   updatedAt: true
 }).extend({
-  customerType: z.enum(CustomerRole).default(CustomerRole.CASH)
+  customerType: z.enum(CustomerRole).default(CustomerRole.CASH),
+  openingBalance: z.number().int().nonnegative().optional()
 });
 
 export const updateCustomerSchema = CustomerSchema.omit({

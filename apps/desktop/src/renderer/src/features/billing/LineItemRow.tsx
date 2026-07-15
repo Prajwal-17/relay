@@ -5,25 +5,35 @@ import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
 import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
 import { processSyncQueue } from "@/utils/syncWorker";
+import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { UPDATE_QTY_ACTION } from "@shared/types";
-import { paisaToRupeeString } from "@shared/utils/utils";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
+import { paisaToRupeeString } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
+export type DragHandle = {
+  setNodeRef: (node: HTMLElement | null) => void;
+  style: React.CSSProperties;
+  attributes: DraggableAttributes;
+  listeners: DraggableSyntheticListeners;
+  isDragging: boolean;
+};
+
+type LineItemRowProps = {
+  idx: number;
+  item: LineItem;
+  isCountColumnVisible: boolean;
+  dragHandle?: DragHandle;
+};
+
 const LineItemRow = memo(
-  ({
-    idx,
-    item,
-    isCountColumnVisible
-  }: {
-    idx: number;
-    item: LineItem;
-    isCountColumnVisible: boolean;
-  }) => {
+  ({ idx, item, isCountColumnVisible, dragHandle }: LineItemRowProps) => {
     const { activeTabId, getActiveTabId } = useActiveTabId();
 
     const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
@@ -48,18 +58,32 @@ const LineItemRow = memo(
     if (!activeTabId) return null;
 
     return (
-      <div key={item.rowId} className="relative">
+      <div
+        key={item.rowId}
+        className="relative"
+        ref={dragHandle?.setNodeRef}
+        style={dragHandle?.style}
+      >
         <div
           className={`group ${checkedColor} border-border/70 hover:border-border grid w-full items-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 hover:shadow-sm ${
-            isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
-          }`}
+            dragHandle?.isDragging ? "ring-primary/40 shadow-2xl ring-2" : ""
+          } ${isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"}`}
         >
           <div className="col-span-2 h-full min-h-11 px-2">
             <div className="flex h-full items-center justify-between gap-2">
-              <GripVertical
-                className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
-                size={20}
-              />
+              {dragHandle ? (
+                <GripVertical
+                  {...dragHandle.attributes}
+                  {...dragHandle.listeners}
+                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground active:bg-accent visible cursor-grab rounded-lg focus:outline-none active:cursor-grabbing"
+                  size={20}
+                />
+              ) : (
+                <GripVertical
+                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
+                  size={20}
+                />
+              )}
               <span className="text-foreground text-base font-semibold">{idx + 1}</span>
               <Trash2
                 className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
@@ -267,11 +291,27 @@ const LineItemRow = memo(
     return (
       prevProps.item === nextProps.item &&
       prevProps.idx === nextProps.idx &&
-      prevProps.isCountColumnVisible === nextProps.isCountColumnVisible
+      prevProps.isCountColumnVisible === nextProps.isCountColumnVisible &&
+      prevProps.dragHandle === nextProps.dragHandle
     );
   }
 );
 
 LineItemRow.displayName = "LineItemRow";
+
+export const SortableLineItemRow = (props: Omit<LineItemRowProps, "dragHandle">) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: props.item.rowId
+  });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform ? { ...transform, x: 0 } : null),
+    transition
+  };
+
+  return (
+    <LineItemRow {...props} dragHandle={{ setNodeRef, style, attributes, listeners, isDragging }} />
+  );
+};
 
 export default LineItemRow;

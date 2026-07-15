@@ -7,7 +7,12 @@ import { immer } from "zustand/middleware/immer";
 import {
   createInitialLineItem,
   createInitialSession,
+  midpointPosition,
+  MIN_GAP,
+  nextPosition,
   normalizeLineItems,
+  POSITION_GAP,
+  rebalancePositions,
   reCalculateLineItem
 } from "./billingSession.helpers";
 import type { BillingSessionData, LineItem } from "./billingSession.types";
@@ -39,6 +44,7 @@ type BillingSessionStore = {
     value: LineItem[K]
   ) => void;
   deleteLineItem: (tabId: string | null, rowId: string) => void;
+  reorderLineItems: (tabId: string | null, activeRowId: string, overRowId: string) => void;
   setAllChecked: (tabId: string | null, checked: boolean) => void;
   markItemAsSaving: (tabId: string | null, items: LineItem[]) => void;
   markItemAsSynced: (tabId: string | null, rowIds: Set<string>) => void;
@@ -119,7 +125,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
             if (type !== "button" && session.lineItems[length - 1]!.name === "") {
               return;
             }
-            session.lineItems.push(createInitialLineItem());
+            session.lineItems.push(createInitialLineItem(nextPosition(session.lineItems)));
           },
           false,
           "billingSession/addEmptyLineItem"
@@ -154,6 +160,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
               quantity: oldItemQuantity.toString(),
               totalPrice: 0, // temporary
               checkedQty: oldItemCheckedQty,
+              position: oldItem.position,
               isInventoryItem: true,
               syncStatus: SYNCSTATUS.IS_DIRTY,
               isDeleted: false
@@ -230,6 +237,71 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
           },
           false,
           "billingSession/deleteLineItem"
+        ),
+
+      reorderLineItems: (tabId, activeRowId, overRowId) =>
+        set(
+          (state) => {
+            if (!tabId || !state.sessions[tabId]) return;
+            const session = state.sessions[tabId];
+
+            const filled: LineItem[] = [];
+            const others: LineItem[] = [];
+            for (const item of session.lineItems) {
+              if (item.productSnapshot.trim() !== "" && !item.isDeleted) {
+                filled.push(item);
+              } else {
+                others.push(item);
+              }
+            }
+
+            const fromIdx = filled.findIndex((i) => i.rowId === activeRowId);
+            const toIdx = filled.findIndex((i) => i.rowId === overRowId);
+
+            if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+
+            let newPos: number;
+            let needsRebalance = false;
+
+            if (fromIdx < toIdx) {
+              const prevPos = filled[toIdx]!.position;
+              if (toIdx + 1 >= filled.length) {
+                newPos = prevPos + POSITION_GAP;
+              } else {
+                const nextPos = filled[toIdx + 1]!.position;
+                if (nextPos - prevPos <= MIN_GAP) needsRebalance = true;
+                newPos = midpointPosition(prevPos, nextPos);
+              }
+            } else {
+              const nextPos = filled[toIdx]!.position;
+              if (toIdx === 0) {
+                if (nextPos <= MIN_GAP) needsRebalance = true;
+                newPos = Math.floor(nextPos / 2);
+              } else {
+                const prevPos = filled[toIdx - 1]!.position;
+                if (nextPos - prevPos <= MIN_GAP) needsRebalance = true;
+                newPos = midpointPosition(prevPos, nextPos);
+              }
+            }
+
+            const [moved] = filled.splice(fromIdx, 1);
+            filled.splice(toIdx, 0, moved!);
+
+            if (needsRebalance) {
+              const newPositions = rebalancePositions(filled);
+              for (const item of filled) {
+                item.position = newPositions.get(item.rowId)!;
+                item.syncStatus = SYNCSTATUS.IS_DIRTY;
+              }
+            } else {
+              moved!.position = newPos;
+              moved!.syncStatus = SYNCSTATUS.IS_DIRTY;
+            }
+
+            session.lineItems = [...filled, ...others];
+          },
+          false,
+          "billingSession/reorderLineItems"
         ),
 
       setAllChecked: (tabId, checked) =>

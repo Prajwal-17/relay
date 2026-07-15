@@ -1,6 +1,6 @@
 // types used globally for both frontend & api service
 import type z from "zod";
-import type { createCustomerSchema } from "./schemas/customers.schema";
+import type { createCustomerSchema, updateCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
 import type {
   lineItemSchema,
@@ -14,11 +14,16 @@ export type UsersType = {
   role: string;
 };
 
+// TODO: add new fields
 export type Customer = {
   id: string;
   name: string;
   contact: string | null;
   customerType: string;
+  notes: string | null;
+  address: string | null;
+  outstandingBalance: number | null; // TODO: rm null
+  creditLimit: number | null; // TODO: rm null
   updatedAt?: string;
   createdAt?: string;
 };
@@ -112,6 +117,7 @@ export type UnifiedTransactionItem = {
   totalPrice: number;
   purchasePrice: number | null;
   checkedQty: number;
+  position: number;
 };
 
 export type UnifiedTransctionWithItems = UnifiedTransaction & {
@@ -156,6 +162,7 @@ export type SaleItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type EstimateItem = {
@@ -172,6 +179,7 @@ export type EstimateItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type PageNo = number | null;
@@ -256,7 +264,7 @@ export type EstimatePayloadItem = {
 };
 
 export type CreateCustomerPayload = z.infer<typeof createCustomerSchema>;
-export type UpdateCustomerPayload = z.infer<typeof updateProductSchema>;
+export type UpdateCustomerPayload = z.infer<typeof updateCustomerSchema>;
 
 export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
@@ -301,6 +309,13 @@ export const PRODUCT_FILTER = {
   DELETED: "deleted"
 } as const;
 
+export const CUSTOMER_TYPE = {
+  ALL: "all",
+  CASH: "cash",
+  ACCOUNT: "account",
+  HOTEL: "hotel"
+} as const;
+
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
   DATE_OLDEST_FIRST: "date_oldest_first",
@@ -317,6 +332,104 @@ export const PRODUCT_SORT_BY = {
   MRP_HIGH_LOW: "mrp_high_low"
 } as const;
 
+export const CUSTOMER_SORT_BY = {
+  NAME_ASC: "name_asc",
+  NAME_DESC: "name_desc",
+  NEWEST: "newest",
+  OLDEST: "oldest"
+} as const;
+
+export const CUSTOMER_TXN_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc",
+  AMOUNT_DESC: "amount_desc",
+  AMOUNT_ASC: "amount_asc"
+} as const;
+
+export const CUSTOMER_TXN_STATUS = {
+  ALL: "all",
+  PAID: "paid",
+  UNPAID: "unpaid"
+} as const;
+
+export const LEDGER_ENTRY_TYPE = {
+  SALE: "sale",
+  QUICK_SALE: "quick_sale",
+  PAYMENT: "payment",
+  ADJUSTMENT: "adjustment",
+  OPENING_BALANCE: "opening_balance"
+} as const;
+
+export type LedgerEntryType = (typeof LEDGER_ENTRY_TYPE)[keyof typeof LEDGER_ENTRY_TYPE];
+
+export const LEDGER_TYPE_FILTER = {
+  ALL: "all",
+  ...LEDGER_ENTRY_TYPE
+} as const;
+
+export type LedgerTypeFilter = (typeof LEDGER_TYPE_FILTER)[keyof typeof LEDGER_TYPE_FILTER];
+
+export const LEDGER_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc"
+} as const;
+
+export type LedgerSort = (typeof LEDGER_SORT)[keyof typeof LEDGER_SORT];
+
+export const PAYMENT_MODE = {
+  CASH: "cash",
+  UPI: "upi",
+  CARD: "card"
+} as const;
+
+export type PaymentMode = (typeof PAYMENT_MODE)[keyof typeof PAYMENT_MODE];
+
+export type LedgerEntry = {
+  id: string;
+  customerId: string;
+  type: LedgerEntryType;
+  saleId: string | null;
+  invoiceNo: number | null;
+  debit: number;
+  credit: number;
+  paymentMode: string | null;
+  notes: string | null;
+  runningBalance: number;
+  createdAt: string;
+};
+
+export type LedgerSummary = {
+  currentBalance: number;
+  totalDebit: number;
+  totalCredit: number;
+  openingBalance: number;
+  avgSale: number;
+  salesCount: number;
+  lastPayment: { amount: number; mode: string; date: string } | null;
+};
+
+export type CreatePaymentPayload = {
+  amount: number;
+  mode: PaymentMode;
+  notes?: string;
+};
+
+export type CreateAdjustmentPayload = {
+  amount: number;
+  direction: "debit" | "credit";
+  notes?: string;
+};
+
+export type CreateQuickSalePayload = {
+  amount: number;
+  notes?: string;
+};
+
+export type CreateOpeningBalancePayload = {
+  amount: number;
+  notes?: string;
+};
+
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"
@@ -324,9 +437,17 @@ export const PROPERTY_FILTER = {
 
 export type ProductFilterType = (typeof PRODUCT_FILTER)[keyof typeof PRODUCT_FILTER];
 
+export type CustomerType = (typeof CUSTOMER_TYPE)[keyof typeof CUSTOMER_TYPE];
+
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SORT_BY];
+
+export type CustomerSortByType = (typeof CUSTOMER_SORT_BY)[keyof typeof CUSTOMER_SORT_BY];
+
+export type CustomerTxnSort = (typeof CUSTOMER_TXN_SORT)[keyof typeof CUSTOMER_TXN_SORT];
+
+export type CustomerTxnStatus = (typeof CUSTOMER_TXN_STATUS)[keyof typeof CUSTOMER_TXN_STATUS];
 
 export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 

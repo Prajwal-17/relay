@@ -6,6 +6,8 @@ type SidebarStoreType = {
   setIsSidebarPinned: (value: boolean) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (value: boolean) => void;
+  isDndDragging: boolean;
+  setIsDndDragging: (value: boolean) => void;
 };
 
 export const useSidebarStore = create<SidebarStoreType>()(
@@ -17,7 +19,11 @@ export const useSidebarStore = create<SidebarStoreType>()(
 
       isSidebarOpen: true,
       setIsSidebarOpen: (value) =>
-        set(() => ({ isSidebarOpen: value }), false, "sidebar/setIsSidebarOpen")
+        set(() => ({ isSidebarOpen: value }), false, "sidebar/setIsSidebarOpen"),
+
+      isDndDragging: false,
+      setIsDndDragging: (value) =>
+        set(() => ({ isDndDragging: value }), false, "sidebar/setIsDndDragging")
     }),
     { name: "sidebar-store" }
   )

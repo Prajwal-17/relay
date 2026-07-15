@@ -49,6 +49,16 @@ export const customers = sqliteTable(
     name: text("name").notNull().unique(),
     contact: text("contact"),
     customerType: text("customer_type").$type<CustomerRole>().notNull(),
+    notes: text("notes"),
+    address: text("address"),
+    outstandingBalance: integer("outstanding_balance", { mode: "number" }).default(0),
+    creditLimit: integer("credit_limit", { mode: "number" }).default(0),
+
+    // lifetimeSales      // integer
+    // invoiceCount       // integer
+    // estimates count // integer
+    // lastPurchaseAt     // time
+
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -58,6 +68,30 @@ export const customers = sqliteTable(
   },
   (table) => [index("customer_store_id_idx").on(table.storeId)]
 );
+
+export const customerLedger = sqliteTable("customer_ledger", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => uuidv4()),
+  customerId: text("customer_id")
+    .references(() => customers.id)
+    .notNull(),
+  storeId: text("store_id").references(() => storeProfile.id, {
+    onDelete: "cascade"
+  }),
+  type: text("type").notNull(),
+  saleId: text("sale_id").references(() => sales.id),
+  debit: integer("debit").default(0),
+  credit: integer("credit").default(0),
+  paymentMode: text("payment_mode"),
+  notes: text("notes"),
+  createdAt: text("created_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
 
 export const products = sqliteTable(
   "products",
@@ -170,6 +204,7 @@ export const saleItems = sqliteTable(
     quantity: integer("quantity").notNull(),
     totalPrice: integer("total_price").notNull(),
     checkedQty: integer("checked_qty").default(0),
+    position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -180,7 +215,8 @@ export const saleItems = sqliteTable(
   (table) => [
     index("sale_items_id_idx").on(table.id),
     index("sale_items_sale_id_idx").on(table.saleId),
-    index("sale_items_product_id_idx").on(table.productId)
+    index("sale_items_product_id_idx").on(table.productId),
+    index("sale_items_position_idx").on(table.saleId, table.position)
   ]
 );
 
@@ -233,6 +269,7 @@ export const estimateItems = sqliteTable(
     quantity: integer("quantity").notNull(),
     totalPrice: integer("total_price").notNull(),
     checkedQty: integer("checked_qty").default(0),
+    position: integer("position").notNull().default(0),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -243,7 +280,8 @@ export const estimateItems = sqliteTable(
   (table) => [
     index("estimate_items_id_idx").on(table.id),
     index("estimate_items_estimate_id_idx").on(table.estimateId),
-    index("estimate_items_product_id_idx").on(table.productId)
+    index("estimate_items_product_id_idx").on(table.productId),
+    index("estimate_items_position_idx").on(table.estimateId, table.position)
   ]
 );
 
@@ -267,7 +305,23 @@ export const salesRelations = relations(sales, ({ one, many }) => ({
     fields: [sales.customerId],
     references: [customers.id]
   }),
-  saleItems: many(saleItems)
+  saleItems: many(saleItems),
+  customerLedgerEntries: many(customerLedger)
+}));
+
+export const customerLedgerRelations = relations(customerLedger, ({ one }) => ({
+  customer: one(customers, {
+    fields: [customerLedger.customerId],
+    references: [customers.id]
+  }),
+  sale: one(sales, {
+    fields: [customerLedger.saleId],
+    references: [sales.id]
+  }),
+  storeProfile: one(storeProfile, {
+    fields: [customerLedger.storeId],
+    references: [storeProfile.id]
+  })
 }));
 
 export const saleItemsRelations = relations(saleItems, ({ one }) => ({

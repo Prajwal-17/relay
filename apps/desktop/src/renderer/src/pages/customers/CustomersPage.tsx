@@ -1,9 +1,9 @@
-import { CustomerLayout } from "@/features/customers/CustomerLayout";
+import { CustomerModule } from "@/features/customers/CustomerModule";
 
 export default function CustomersPage() {
   return (
-    <div className="bg-background flex h-full min-h-full">
-      <CustomerLayout />
+    <div className="bg-background h-full min-h-full">
+      <CustomerModule />
     </div>
   );
 }

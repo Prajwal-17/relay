@@ -7,4 +7,5 @@ node_modules/
 .env.production
 .env.development
 .commandcode/*
-.agent/*
+.agents/*
+skills-lock.json

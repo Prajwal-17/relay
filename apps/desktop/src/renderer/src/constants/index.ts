@@ -1,4 +1,14 @@
-import { PRODUCT_FILTER, PRODUCT_SORT_BY, SortOption, TIME_PERIOD } from "@shared/types";
+import {
+  CUSTOMER_SORT_BY,
+  CUSTOMER_TXN_SORT,
+  CUSTOMER_TXN_STATUS,
+  LEDGER_SORT,
+  LEDGER_TYPE_FILTER,
+  PRODUCT_FILTER,
+  PRODUCT_SORT_BY,
+  SortOption,
+  TIME_PERIOD
+} from "@shared/types";
 import {
   ArrowDownAZ,
   ArrowUpAZ,
@@ -39,6 +49,48 @@ export const DEFAULT_HOUR = 8;
 export const PRODUCTS_LIMIT = 20;
 
 export const ignoredWeight = ["", "1ml", "1g", "none", "1pc", "1kg"];
+
+// Customers Page
+export const CUSTOMERS_SEARCH_DELAY = 300;
+export const CUSTOMERS_PAGE_SIZE = 20;
+export const CUSTOMER_SORT_OPTIONS = [
+  { value: CUSTOMER_SORT_BY.NAME_ASC, label: "Name: A → Z", icon: ArrowDownAZ },
+  { value: CUSTOMER_SORT_BY.NAME_DESC, label: "Name: Z → A", icon: ArrowUpAZ },
+  { value: CUSTOMER_SORT_BY.NEWEST, label: "Newest first", icon: CalendarArrowDown },
+  { value: CUSTOMER_SORT_BY.OLDEST, label: "Oldest first", icon: CalendarArrowUp }
+] as const;
+// Customer Transaction Table
+export const TXN_TABLE_PAGE_SIZE = 10;
+export const TXN_TABLE_SEARCH_DEBOUNCE_MS = 400;
+export const TXN_TABLE_SORT_OPTIONS = [
+  { value: CUSTOMER_TXN_SORT.DATE_DESC, label: "Date: newest" },
+  { value: CUSTOMER_TXN_SORT.DATE_ASC, label: "Date: oldest" },
+  { value: CUSTOMER_TXN_SORT.AMOUNT_DESC, label: "Amount: high to low" },
+  { value: CUSTOMER_TXN_SORT.AMOUNT_ASC, label: "Amount: low to high" }
+] as const;
+
+export const TXN_TABLE_STATUS_OPTIONS = [
+  { value: CUSTOMER_TXN_STATUS.ALL, label: "All" },
+  { value: CUSTOMER_TXN_STATUS.PAID, label: "Paid" },
+  { value: CUSTOMER_TXN_STATUS.UNPAID, label: "Unpaid" }
+] as const;
+
+// Customer Ledger Table
+export const LEDGER_TABLE_PAGE_SIZE = 15;
+export const LEDGER_TABLE_SEARCH_DEBOUNCE_MS = 400;
+export const LEDGER_SORT_OPTIONS = [
+  { value: LEDGER_SORT.DATE_DESC, label: "Newest first" },
+  { value: LEDGER_SORT.DATE_ASC, label: "Oldest first" }
+] as const;
+
+export const LEDGER_TYPE_OPTIONS = [
+  { value: LEDGER_TYPE_FILTER.ALL, label: "All" },
+  { value: LEDGER_TYPE_FILTER.SALE, label: "Sales" },
+  { value: LEDGER_TYPE_FILTER.QUICK_SALE, label: "Quick Sales" },
+  { value: LEDGER_TYPE_FILTER.PAYMENT, label: "Payments" },
+  { value: LEDGER_TYPE_FILTER.ADJUSTMENT, label: "Adjustments" },
+  { value: LEDGER_TYPE_FILTER.OPENING_BALANCE, label: "Opening" }
+] as const;
 
 // Products Page
 export const PRODUCTS_SEARCH_DELAY = 400;

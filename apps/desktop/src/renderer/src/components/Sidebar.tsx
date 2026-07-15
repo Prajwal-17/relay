@@ -58,6 +58,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
+  const isDndDragging = useSidebarStore((state) => state.isDndDragging);
 
   const applySidebarWidth = (width: number) => {
     if (!sidebarRef.current) {
@@ -188,7 +189,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   };
 
   const renderNavItem = (item: (typeof navLinks)[number]) => {
-    const isActive = pathname === item.href;
+    const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
     return (
       <motion.div
@@ -364,6 +365,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           <div
             className="fixed inset-y-0 left-0 z-40 w-4 lg:w-3"
             onMouseEnter={() => {
+              if (isDndDragging) {
+                return;
+              }
               if (Date.now() < suppressHoverOpenUntilRef.current) {
                 return;
               }
