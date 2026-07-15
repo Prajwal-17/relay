@@ -11,7 +11,6 @@ import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useProductsStore } from "@/store/productsStore";
 import { useSidebarStore } from "@/store/sidebarStore";
 import { processSyncQueue } from "@/utils/syncWorker";
-import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import {
   DndContext,
   PointerSensor,
@@ -21,6 +20,7 @@ import {
   type DragEndEvent
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import {
   CheckCheck,
   ChevronDown,
@@ -60,9 +60,7 @@ const LineItemsTable = () => {
   );
   const isCountColumnVisible = session?.isCountColumnVisible ?? false;
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
-  );
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
   if (!activeTabId || !session) {
     return null;
@@ -234,7 +232,12 @@ const LineItemsTable = () => {
 
         <div className="relative space-y-1 pt-2.5">
           {filledItems.length > 0 && (
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={() => setIsDndDragging(true)} onDragEnd={handleDragEnd}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={() => setIsDndDragging(true)}
+              onDragEnd={handleDragEnd}
+            >
               <SortableContext
                 items={filledItems.map((i) => i.rowId)}
                 strategy={verticalListSortingStrategy}
