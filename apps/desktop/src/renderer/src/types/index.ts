@@ -15,8 +15,8 @@ export const CUSTOMER_DETAIL_TAB = {
   ESTIMATES: "estimates",
   ACTIVITY: "activity",
   ABOUT: "about",
-  ATTACHMENTS: "attachments",
-  NOTES: "notes",
+  // ATTACHMENTS: "attachments",
+  // NOTES: "notes",
   SETTINGS: "settings"
 } as const;
 

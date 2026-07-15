@@ -4,9 +4,7 @@ import type { CustomerMock } from "../_mock/types";
 import { AboutTab } from "./tabs/AboutTab";
 import { AccountingTab } from "./tabs/AccountingTab";
 import { ActivityTab } from "./tabs/ActivityTab";
-import { AttachmentsTab } from "./tabs/AttachmentsTab";
 import { EstimatesTab } from "./tabs/EstimatesTab";
-import { NotesTab } from "./tabs/NotesTab";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { SalesTab } from "./tabs/SalesTab";
 import { SettingsTab } from "./tabs/SettingsTab";
@@ -22,8 +20,8 @@ const TAB_LABELS: Record<TabValue, string> = {
   [CUSTOMER_DETAIL_TAB.ESTIMATES]: "Estimates",
   [CUSTOMER_DETAIL_TAB.ACTIVITY]: "Activity",
   [CUSTOMER_DETAIL_TAB.ABOUT]: "About",
-  [CUSTOMER_DETAIL_TAB.ATTACHMENTS]: "Attachments",
-  [CUSTOMER_DETAIL_TAB.NOTES]: "Notes",
+  // [CUSTOMER_DETAIL_TAB.ATTACHMENTS]: "Attachments",
+  // [CUSTOMER_DETAIL_TAB.NOTES]: "Notes",
   [CUSTOMER_DETAIL_TAB.SETTINGS]: "Settings"
 };
 
@@ -77,12 +75,12 @@ export function DetailTabs({
       <TabsContent value={CUSTOMER_DETAIL_TAB.ABOUT} className={TAB_CONTENT_CLASS}>
         <AboutTab customerId={customerId} />
       </TabsContent>
-      <TabsContent value={CUSTOMER_DETAIL_TAB.ATTACHMENTS} className={TAB_CONTENT_CLASS}>
+      {/*<TabsContent value={CUSTOMER_DETAIL_TAB.ATTACHMENTS} className={TAB_CONTENT_CLASS}>
         <AttachmentsTab />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.NOTES} className={TAB_CONTENT_CLASS}>
         <NotesTab />
-      </TabsContent>
+      </TabsContent>*/}
       <TabsContent value={CUSTOMER_DETAIL_TAB.SETTINGS} className={TAB_CONTENT_CLASS}>
         <SettingsTab customer={customer} />
       </TabsContent>
