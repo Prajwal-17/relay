@@ -1,3 +1,4 @@
+import { cancelSyncQueue } from "@/utils/syncWorker";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { v4 as uuidv4 } from "uuid";
 import { create } from "zustand";
@@ -112,6 +113,7 @@ export const useBillingTabsStore = create<BillingTabsStore>()(
         );
 
         useBillingSessionStore.getState().removeSession(tabId);
+        cancelSyncQueue(tabId);
 
         return newActiveId;
       },
