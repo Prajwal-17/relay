@@ -31,5 +31,6 @@ export type BillingSessionData = {
   isNewCustomer: boolean;
   status: BillStatus;
   isCountColumnVisible: boolean;
+  notes: string | null;
   lineItems: LineItem[];
 };

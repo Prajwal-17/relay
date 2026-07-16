@@ -84,6 +84,7 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
         estimateNo: finalEstimateNo,
         customerId: payload.customerId,
         isPaid: payload.isPaid,
+        notes: payload.notes,
         createdAt: payload.createdAt
           ? payload.createdAt
           : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
@@ -252,6 +253,7 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
       .set({
         customerId: payload.customerId,
         isPaid: payload.isPaid,
+        notes: payload.notes,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
@@ -339,7 +341,8 @@ const convertEstimateToSale = async (id: string) => {
         customerId: estimate.customerId,
         grandTotal: estimate.grandTotal,
         totalQuantity: estimate.totalQuantity,
-        isPaid: false
+        isPaid: false,
+        notes: estimate.notes
       })
       .returning({ id: sales.id })
       .get();
@@ -461,6 +464,7 @@ const duplicateEstimateById = async (id: string) => {
         grandTotal: originalEstimate.grandTotal,
         totalQuantity: originalEstimate.totalQuantity,
         isPaid: originalEstimate.isPaid,
+        notes: originalEstimate.notes,
         createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
       .returning()

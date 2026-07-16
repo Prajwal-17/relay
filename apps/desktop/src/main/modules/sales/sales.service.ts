@@ -36,6 +36,7 @@ const getSaleById = async (id: string): Promise<UnifiedTransctionWithItems> => {
     grandTotal: sale.grandTotal,
     totalQuantity: sale.totalQuantity,
     isPaid: sale.isPaid,
+    notes: sale.notes,
     items: items,
     createdAt: sale.createdAt,
     updatedAt: sale.updatedAt
@@ -97,6 +98,7 @@ const filterSalesByDate = async (
       grandTotal: txn.grandTotal,
       totalQuantity: txn.totalQuantity,
       isPaid: txn.isPaid,
+      notes: txn.notes,
       updatedAt: txn.updatedAt,
       createdAt: txn.createdAt
     };

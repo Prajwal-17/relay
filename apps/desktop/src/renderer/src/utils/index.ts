@@ -117,12 +117,14 @@ export function buildTransactionPayload({
   transactionNo,
   customerId,
   items,
+  notes,
   createdAt
 }: {
   billingType: TransactionType;
   transactionNo: number | null;
   customerId: string | null;
   items: NormalizedLineItem[];
+  notes: string | null;
   createdAt: string;
 }) {
   return {
@@ -131,6 +133,7 @@ export function buildTransactionPayload({
       transactionType: billingType,
       customerId,
       isPaid: billingType === TRANSACTION_TYPE.SALE,
+      notes,
       items,
       createdAt
     }

@@ -23,6 +23,7 @@ export const payloadDataSchema = z.object({
   customerId: z.uuidv4(),
   isPaid: z.boolean(),
   items: z.array(lineItemSchema),
+  notes: z.string().nullable().default(null),
   createdAt: z.iso.datetime().optional()
 });
 

@@ -97,6 +97,7 @@ export type UnifiedTransaction = {
   transactionNo: number;
   customerId: string | null;
   customer: Customer;
+  notes: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
   isPaid: boolean;

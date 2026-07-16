@@ -2,6 +2,8 @@ import BillingHeader from "@/features/billing/BillingHeader";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillPreview from "@/features/billing/BillPreview";
 import LineItemsTable from "@/features/billing/LineItemsTable";
+import BillingNotes from "@/features/billing/BillingNotes";
+import PaymentSection from "@/features/billing/PaymentSection";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import BillingTabBar from "@/features/billing/tabs/BillingTabBar";
@@ -118,6 +120,8 @@ const BillingPage = () => {
     return <BillingSkeleton />;
   }
 
+  const isSale = session.billingType === TRANSACTION_TYPE.SALE;
+
   return (
     <div className="flex h-full flex-col">
       <BillingTabBar />
@@ -126,6 +130,11 @@ const BillingPage = () => {
           <div className="flex-1 overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
+            <div className="mx-4 mt-3 mb-2 grid grid-cols-1 gap-3 lg:grid-cols-5">
+              <BillingNotes className={isSale ? "lg:col-span-2" : "lg:col-span-5"} />
+              {isSale && <PaymentSection className="lg:col-span-3" />}
+            </div>
+            <div className="h-24 w-full shrink-0" aria-hidden="true" />
           </div>
           <SummaryFooter />
         </div>

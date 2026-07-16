@@ -37,7 +37,7 @@ const syncLogic = async (tabId: string) => {
     updateField,
     revertItemToDirty
   } = sessionStore;
-  const { billingType, transactionNo, customerId, billingDate, isMetaDataDirty } = session;
+  const { billingType, transactionNo, customerId, billingDate, notes, isMetaDataDirty } = session;
 
   const validLineItems = filterValidLineItems(lineItems);
   const dirtyItems = filterDirtyLineItems(validLineItems);
@@ -56,6 +56,7 @@ const syncLogic = async (tabId: string) => {
     transactionNo,
     customerId,
     items: normalizedItems,
+    notes,
     createdAt: billingDate ? billingDate.toISOString() : new Date().toISOString()
   });
 

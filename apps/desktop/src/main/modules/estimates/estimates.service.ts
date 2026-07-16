@@ -36,6 +36,7 @@ const getEstimateById = async (id: string): Promise<UnifiedTransctionWithItems> 
     grandTotal: estimate.grandTotal,
     totalQuantity: estimate.totalQuantity,
     isPaid: estimate.isPaid,
+    notes: estimate.notes,
     items: items,
     createdAt: estimate.createdAt,
     updatedAt: estimate.updatedAt
@@ -97,6 +98,7 @@ const filterEstimateByDate = async (
       grandTotal: txn.grandTotal,
       totalQuantity: txn.totalQuantity,
       isPaid: txn.isPaid,
+      notes: txn.notes,
       updatedAt: txn.updatedAt,
       createdAt: txn.createdAt
     };

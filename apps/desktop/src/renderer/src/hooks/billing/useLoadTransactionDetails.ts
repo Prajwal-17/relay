@@ -56,7 +56,8 @@ const useLoadTransactionDetails = (
         transactionNo: data.transactionNo,
         billingDate: new Date(data.createdAt as string),
         customerId: data.customerId,
-        customerName: data.customer.name
+        customerName: data.customer.name,
+        notes: data.notes
       });
       setLineItems(tabId, data.items);
       useBillingTabsStore.getState().updateTab(tabId, { transactionNo: data.transactionNo });

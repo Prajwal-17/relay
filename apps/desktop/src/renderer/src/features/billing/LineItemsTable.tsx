@@ -125,7 +125,7 @@ const LineItemsTable = () => {
   };
 
   return (
-    <div className="mx-4 h-full">
+    <div className="mx-4">
       <div className="border-border/70 bg-background relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
         <div className="bg-muted sticky top-0 z-10 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <Button
@@ -315,7 +315,6 @@ const LineItemsTable = () => {
           </div>
         </div>
       </div>
-      <div className="h-125 w-full" />
     </div>
   );
 };

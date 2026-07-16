@@ -78,6 +78,7 @@ const createSale = async (payload: TxnPayloadData) => {
         invoiceNo: finalInvoiceNo,
         customerId: payload.customerId,
         isPaid: payload.isPaid,
+        notes: payload.notes,
         createdAt: payload.createdAt
           ? payload.createdAt
           : sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
@@ -236,6 +237,7 @@ const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
       .set({
         customerId: payload.customerId,
         isPaid: payload.isPaid,
+        notes: payload.notes,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
@@ -324,7 +326,8 @@ const convertSaleToEstimate = async (id: string) => {
         customerId: sale.customerId,
         grandTotal: sale.grandTotal,
         totalQuantity: sale.totalQuantity,
-        isPaid: true
+        isPaid: true,
+        notes: sale.notes
       })
       .returning({ id: estimates.id })
       .get();
@@ -437,6 +440,7 @@ const duplicateSaleById = async (id: string) => {
         grandTotal: originalSale.grandTotal,
         totalQuantity: originalSale.totalQuantity,
         isPaid: originalSale.isPaid,
+        notes: originalSale.notes,
         createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
       .returning()

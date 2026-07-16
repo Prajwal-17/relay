@@ -171,6 +171,7 @@ export const sales = sqliteTable(
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
     isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
+    notes: text("notes"),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -236,6 +237,7 @@ export const estimates = sqliteTable(
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
     isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
+    notes: text("notes"),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
