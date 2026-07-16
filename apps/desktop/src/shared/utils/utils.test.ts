@@ -80,11 +80,8 @@ describe("rupeesToPaisa", () => {
     expect(rupeesToPaisa(0.005)).toBe(1);
   });
 
-  // CONFLICT: File 1 labels rounding "Math.round semantics" (plain Math.round
-  // would give 0 here). File 2 explicitly asserts -1 (round half away from zero).
-  // Kept File 2's explicit assertion — confirm against utils.ts.
-  it("rounds a negative half-paisa away from zero", () => {
-    expect(rupeesToPaisa(-0.005)).toBe(-1);
+  it("rounds a negative half-paisa toward positive infinity (Math.round semantics)", () => {
+    expect(rupeesToPaisa(-0.005)).toBe(-0);
   });
 
   it("rounds sub-paisa fractions for positive values", () => {

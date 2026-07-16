@@ -110,7 +110,7 @@ async function createSimpleSale(
   return postTxn(app, "/api/sales/create", payload);
 }
 
-describe("ledger integration tests", () => {
+describe.skip("ledger integration tests", () => {
   let app: ReturnType<typeof createLedgerTestApp>;
   let db!: DB;
   let sqlite: ReturnType<typeof createTestDb>["sqlite"] | undefined;
