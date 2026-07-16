@@ -87,6 +87,7 @@ describe("sales endpoint integration tests", () => {
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: customer.id,
       isPaid: false,
+      notes: null,
       createdAt,
       items: [
         {
@@ -101,6 +102,7 @@ describe("sales endpoint integration tests", () => {
           unit: product1.unit,
           quantity: 7000,
           checkedQty: 7,
+          position: 0,
           isDeleted: false
         },
         {
@@ -115,6 +117,7 @@ describe("sales endpoint integration tests", () => {
           unit: product2.unit,
           quantity: 5000,
           checkedQty: 5,
+          position: 1,
           isDeleted: false
         },
         {
@@ -129,6 +132,7 @@ describe("sales endpoint integration tests", () => {
           unit: "g",
           quantity: 45000,
           checkedQty: 45,
+          position: 2,
           isDeleted: false
         }
       ]
@@ -176,6 +180,7 @@ describe("sales endpoint integration tests", () => {
       transactionType: TRANSACTION_TYPE.SALE,
       customerId: initialData.customer.id,
       isPaid: true,
+      notes: null,
       createdAt,
       items: [
         {
@@ -190,6 +195,7 @@ describe("sales endpoint integration tests", () => {
           unit: initialData.saleItem1.unit,
           quantity: 9000,
           checkedQty: 9,
+          position: 0,
           isDeleted: false
         },
         {
@@ -204,6 +210,7 @@ describe("sales endpoint integration tests", () => {
           unit: initialData.saleItem2.unit,
           quantity: initialData.saleItem2.quantity,
           checkedQty: initialData.saleItem2.checkedQty,
+          position: 1,
           isDeleted: true
         },
         {
@@ -218,6 +225,7 @@ describe("sales endpoint integration tests", () => {
           unit: initialData.saleItem3.unit,
           quantity: 30000,
           checkedQty: 30,
+          position: 2,
           isDeleted: false
         },
         {
@@ -232,6 +240,7 @@ describe("sales endpoint integration tests", () => {
           unit: "g",
           quantity: 3000,
           checkedQty: 3,
+          position: 3,
           isDeleted: false
         }
       ]

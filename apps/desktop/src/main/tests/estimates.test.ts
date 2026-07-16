@@ -86,6 +86,7 @@ describe("estimates endpoint integration tests", () => {
       transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: customer.id,
       isPaid: false,
+      notes: null,
       createdAt: "2026-04-27T11:45:00.000Z",
       items: [
         {
@@ -100,6 +101,7 @@ describe("estimates endpoint integration tests", () => {
           unit: product1.unit,
           quantity: 7000,
           checkedQty: 7,
+          position: 0,
           isDeleted: false
         },
         {
@@ -114,6 +116,7 @@ describe("estimates endpoint integration tests", () => {
           unit: product2.unit,
           quantity: 5000,
           checkedQty: 5,
+          position: 1,
           isDeleted: false
         },
         {
@@ -128,6 +131,7 @@ describe("estimates endpoint integration tests", () => {
           unit: "g",
           quantity: 45000,
           checkedQty: 45,
+          position: 2,
           isDeleted: false
         }
       ]
@@ -174,6 +178,7 @@ describe("estimates endpoint integration tests", () => {
       transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: initialData.customer.id,
       isPaid: false,
+      notes: null,
       createdAt: "2026-04-28T09:30:00.000Z",
       items: [
         {
@@ -188,6 +193,7 @@ describe("estimates endpoint integration tests", () => {
           unit: initialData.estimateItem1.unit,
           quantity: 9000,
           checkedQty: 9,
+          position: 0,
           isDeleted: false
         },
         {
@@ -202,6 +208,7 @@ describe("estimates endpoint integration tests", () => {
           unit: initialData.estimateItem2.unit,
           quantity: initialData.estimateItem2.quantity,
           checkedQty: initialData.estimateItem2.checkedQty,
+          position: 1,
           isDeleted: true
         },
         {
@@ -216,6 +223,7 @@ describe("estimates endpoint integration tests", () => {
           unit: initialData.estimateItem3.unit,
           quantity: 30000,
           checkedQty: 30,
+          position: 2,
           isDeleted: false
         },
         {
@@ -230,6 +238,7 @@ describe("estimates endpoint integration tests", () => {
           unit: "g",
           quantity: 3000,
           checkedQty: 3,
+          position: 3,
           isDeleted: false
         }
       ]

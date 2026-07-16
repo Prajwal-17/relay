@@ -87,6 +87,7 @@ async function createSimpleSale(
     transactionType: TRANSACTION_TYPE.SALE,
     customerId,
     isPaid,
+    notes: null,
     items: [
       {
         id: null,
@@ -100,6 +101,7 @@ async function createSimpleSale(
         unit: product.unit,
         quantity,
         checkedQty: 0,
+        position: 0,
         isDeleted: false
       }
     ]
