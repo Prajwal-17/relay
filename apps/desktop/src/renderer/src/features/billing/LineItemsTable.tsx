@@ -5,6 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
 import type { LineItem } from "@/store/billing/billingSession.types";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
@@ -29,8 +30,10 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Plus,
+  Search,
   X
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SortableLineItemRow } from "./LineItemRow";
 
 export type ItemType = {
@@ -56,6 +59,11 @@ const LineItemsTable = () => {
 
   const { activeTabId, getActiveTabId } = useActiveTabId();
 
+  const [searchQuery, setSearchQuery] = useState("");
+  useEffect(() => {
+    setSearchQuery("");
+  }, [activeTabId]);
+
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
@@ -67,7 +75,14 @@ const LineItemsTable = () => {
     return null;
   }
 
-  const visibleItems = session.lineItems.filter((item) => !item.isDeleted);
+  const trimmedQuery = searchQuery.trim().toLowerCase();
+  const isSearchActive = trimmedQuery !== "";
+
+  const visibleItems = session.lineItems.filter((item) => {
+    if (item.isDeleted) return false;
+    if (!isSearchActive) return true;
+    return item.productSnapshot.toLowerCase().includes(trimmedQuery);
+  });
   const filledItems = session.lineItems.filter(
     (item) => item.productSnapshot.trim() !== "" && !item.isDeleted
   );
@@ -112,7 +127,7 @@ const LineItemsTable = () => {
   return (
     <div className="mx-4 h-full">
       <div className="border-border/70 bg-background relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
-        <div className="bg-muted/60 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
+        <div className="bg-muted sticky top-0 z-10 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
           <Button
             variant="outline"
             size="lg"
@@ -122,6 +137,25 @@ const LineItemsTable = () => {
             <PackagePlus className="mr-2 h-4 w-4" />
             New Product
           </Button>
+
+          <div className="relative w-64 min-w-0">
+            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search items…"
+              className="border-muted bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-10 rounded-lg pr-9 pl-9 text-sm shadow-none transition-colors"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+              >
+                <X className="size-4" />
+              </button>
+            )}
+          </div>
 
           <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
             <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-base font-medium">
@@ -253,10 +287,17 @@ const LineItemsTable = () => {
                   idx={idx}
                   item={item}
                   isCountColumnVisible={isCountColumnVisible}
+                  disableDrag={isSearchActive}
                 />
               ))}
             </SortableContext>
           </DndContext>
+
+          {isSearchActive && visibleItems.length === 0 && (
+            <div className="text-muted-foreground py-8 text-center text-sm">
+              No items match &ldquo;{searchQuery}&rdquo;.
+            </div>
+          )}
 
           <div className="flex items-center justify-between px-1 pt-1">
             <Button

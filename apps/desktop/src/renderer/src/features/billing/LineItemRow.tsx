@@ -28,10 +28,11 @@ type LineItemRowProps = {
   item: LineItem;
   isCountColumnVisible: boolean;
   dragHandle?: DragHandle;
+  disableDrag?: boolean;
 };
 
 const LineItemRow = memo(
-  ({ idx, item, isCountColumnVisible, dragHandle }: LineItemRowProps) => {
+  ({ idx, item, isCountColumnVisible, dragHandle, disableDrag }: LineItemRowProps) => {
     const { activeTabId, getActiveTabId } = useActiveTabId();
 
     const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
@@ -64,7 +65,7 @@ const LineItemRow = memo(
         >
           <div className="col-span-2 h-full min-h-11 px-2">
             <div className="flex h-full items-center justify-between gap-2">
-              {dragHandle && item.productSnapshot.trim() !== "" ? (
+              {dragHandle && item.productSnapshot.trim() !== "" && !disableDrag ? (
                 <GripVertical
                   {...dragHandle.attributes}
                   {...dragHandle.listeners}
@@ -285,6 +286,7 @@ const LineItemRow = memo(
       prevProps.item === nextProps.item &&
       prevProps.idx === nextProps.idx &&
       prevProps.isCountColumnVisible === nextProps.isCountColumnVisible &&
+      prevProps.disableDrag === nextProps.disableDrag &&
       prevProps.dragHandle?.isDragging === nextProps.dragHandle?.isDragging
     );
   }
