@@ -17,6 +17,7 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  type CollisionDetection,
   type DragEndEvent
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -71,6 +72,13 @@ const LineItemsTable = () => {
     (item) => item.productSnapshot.trim() !== "" && !item.isDeleted
   );
 
+  const filledRowIds = new Set(filledItems.map((i) => i.rowId));
+
+  const collisionDetection: CollisionDetection = (args) => {
+    const collisions = closestCenter(args);
+    return collisions.filter((c) => filledRowIds.has(c.id as string));
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setIsDndDragging(false);
@@ -118,17 +126,17 @@ const LineItemsTable = () => {
           <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
             <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-base font-medium">
               <div className="flex items-center gap-2">
-                <span className="uppercase tracking-wider">Items</span>
+                <span className="tracking-wider uppercase">Items</span>
                 <span className="text-foreground text-lg font-semibold">{totalItems}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="uppercase tracking-wider">Qty</span>
+                <span className="tracking-wider uppercase">Qty</span>
                 <span className="text-foreground text-lg font-semibold">{totalQty}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="uppercase tracking-wider">Checked</span>
+                <span className="tracking-wider uppercase">Checked</span>
                 {allChecked ? (
                   <span className="text-success flex items-center gap-1.5 text-base font-semibold">
                     <CheckCheck className="h-4 w-4" />
@@ -208,7 +216,7 @@ const LineItemsTable = () => {
         </div>
 
         <div
-          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold uppercase tracking-wider ${
+          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold tracking-wider uppercase ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
@@ -231,7 +239,7 @@ const LineItemsTable = () => {
         <div className="relative space-y-1 pt-2.5">
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={collisionDetection}
             onDragStart={() => setIsDndDragging(true)}
             onDragEnd={handleDragEnd}
           >

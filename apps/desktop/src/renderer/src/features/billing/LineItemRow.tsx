@@ -18,8 +18,6 @@ import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
 
 export type DragHandle = {
-  setNodeRef: (node: HTMLElement | null) => void;
-  style: React.CSSProperties;
   attributes: DraggableAttributes;
   listeners: DraggableSyntheticListeners;
   isDragging: boolean;
@@ -58,12 +56,7 @@ const LineItemRow = memo(
     if (!activeTabId) return null;
 
     return (
-      <div
-        key={item.rowId}
-        className="relative"
-        ref={dragHandle?.setNodeRef}
-        style={dragHandle?.style}
-      >
+      <div key={item.rowId} className="relative">
         <div
           className={`group ${checkedColor} border-border/70 hover:border-border grid w-full items-center rounded-xl border transition-[background-color,border-color,box-shadow] duration-200 hover:shadow-sm ${
             dragHandle?.isDragging ? "ring-primary/40 shadow-2xl ring-2" : ""
@@ -80,13 +73,13 @@ const LineItemRow = memo(
                 />
               ) : (
                 <GripVertical
-                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg hover:cursor-grab group-hover:visible"
+                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
                   size={20}
                 />
               )}
               <span className="text-foreground text-base font-semibold">{idx + 1}</span>
               <Trash2
-                className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg hover:cursor-pointer group-hover:visible"
+                className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive invisible rounded-lg group-hover:visible hover:cursor-pointer"
                 size={22}
                 onClick={() => {
                   const tabId = getActiveTabId();
@@ -100,7 +93,7 @@ const LineItemRow = memo(
           <div className="col-span-7 px-1 py-1">
             <input
               value={item.productSnapshot}
-              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-10 w-full rounded-lg border px-3 py-2 text-base font-bold shadow-none transition-all focus:outline-none focus:ring-2 focus:ring-offset-0"
+              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-10 w-full rounded-lg border px-3 py-2 text-base font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -180,7 +173,7 @@ const LineItemRow = memo(
           </div>
           <div className="col-span-3 px-1 py-1">
             <div className="relative h-10 w-full">
-              <span className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2">
+              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={14} />
               </span>
               <input
@@ -196,13 +189,13 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pl-8 pr-3 text-right text-base font-semibold tabular-nums focus:outline-none focus:ring-2 disabled:cursor-not-allowed"
+                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-base font-semibold tabular-nums focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
               />
             </div>
           </div>
           <div className="col-span-3 px-1 py-1">
             <div className="relative h-10 w-full">
-              <span className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2">
+              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={14} />
               </span>
               <div className="bg-muted/40 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums">
@@ -232,7 +225,7 @@ const LineItemRow = memo(
           {isCountColumnVisible && (
             <>
               <div className="col-span-2 flex items-center justify-center px-1 py-1">
-                <span className="text-foreground/80 whitespace-nowrap text-base font-semibold tabular-nums">
+                <span className="text-foreground/80 text-base font-semibold whitespace-nowrap tabular-nums">
                   {item.checkedQty}/{item.quantity || "0"}
                 </span>
               </div>
@@ -301,8 +294,7 @@ LineItemRow.displayName = "LineItemRow";
 
 export const SortableLineItemRow = (props: Omit<LineItemRowProps, "dragHandle">) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: props.item.rowId,
-    disabled: props.item.productSnapshot.trim() === ""
+    id: props.item.rowId
   });
 
   const style: React.CSSProperties = {
@@ -311,7 +303,9 @@ export const SortableLineItemRow = (props: Omit<LineItemRowProps, "dragHandle">)
   };
 
   return (
-    <LineItemRow {...props} dragHandle={{ setNodeRef, style, attributes, listeners, isDragging }} />
+    <div ref={setNodeRef} style={style}>
+      <LineItemRow {...props} dragHandle={{ attributes, listeners, isDragging }} />
+    </div>
   );
 };
 
