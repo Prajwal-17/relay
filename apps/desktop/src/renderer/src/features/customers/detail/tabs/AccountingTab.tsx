@@ -19,7 +19,7 @@ export function AccountingTab({ customerId }: { customerId: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {summary && (
-        <div className="border-border bg-card divide-border/70 grid shrink-0 grid-cols-3 divide-x overflow-hidden rounded-xl border shadow-xs">
+        <div className="border-border bg-card divide-border/70 shadow-xs grid shrink-0 grid-cols-3 divide-x overflow-hidden rounded-xl border">
           <div
             className={cn(
               "relative flex items-center gap-3 px-4 py-3",
@@ -45,12 +45,12 @@ export function AccountingTab({ customerId }: { customerId: string }) {
               <Wallet className="size-4.5" />
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider">
                 Balance
               </span>
               <span
                 className={cn(
-                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
+                  "truncate text-lg font-semibold tabular-nums leading-none tracking-[-0.02em]",
                   isSettled ? "text-foreground" : isDebit ? "text-destructive" : "text-success"
                 )}
               >
@@ -69,10 +69,10 @@ export function AccountingTab({ customerId }: { customerId: string }) {
               <TrendingUp className="size-4.5" />
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider">
                 Avg Sale
               </span>
-              <span className="text-foreground truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums">
+              <span className="text-foreground truncate text-lg font-semibold tabular-nums leading-none tracking-[-0.02em]">
                 {avgSale > 0 ? formatRupee(avgSale) : "—"}
               </span>
               <span className="text-muted-foreground text-[11px] font-medium tabular-nums">
@@ -93,12 +93,12 @@ export function AccountingTab({ customerId }: { customerId: string }) {
               <ArrowDownLeft className="size-4.5" />
             </span>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground text-[11px] font-semibold uppercase tracking-wider">
                 Last Payment
               </span>
               <span
                 className={cn(
-                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
+                  "truncate text-lg font-semibold tabular-nums leading-none tracking-[-0.02em]",
                   lastPayment ? "text-success" : "text-muted-foreground"
                 )}
               >

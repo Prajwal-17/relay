@@ -30,7 +30,7 @@ import {
   Plus,
   X
 } from "lucide-react";
-import LineItemRow, { SortableLineItemRow } from "./LineItemRow";
+import { SortableLineItemRow } from "./LineItemRow";
 
 export type ItemType = {
   id: string;
@@ -66,11 +66,9 @@ const LineItemsTable = () => {
     return null;
   }
 
+  const visibleItems = session.lineItems.filter((item) => !item.isDeleted);
   const filledItems = session.lineItems.filter(
     (item) => item.productSnapshot.trim() !== "" && !item.isDeleted
-  );
-  const emptyItems = session.lineItems.filter(
-    (item) => item.productSnapshot.trim() === "" && !item.isDeleted
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -120,17 +118,17 @@ const LineItemsTable = () => {
           <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
             <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-base font-medium">
               <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Items</span>
+                <span className="uppercase tracking-wider">Items</span>
                 <span className="text-foreground text-lg font-semibold">{totalItems}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Qty</span>
+                <span className="uppercase tracking-wider">Qty</span>
                 <span className="text-foreground text-lg font-semibold">{totalQty}</span>
               </div>
               <div className="bg-border/80 hidden h-5 w-px md:block" />
               <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Checked</span>
+                <span className="uppercase tracking-wider">Checked</span>
                 {allChecked ? (
                   <span className="text-success flex items-center gap-1.5 text-base font-semibold">
                     <CheckCheck className="h-4 w-4" />
@@ -210,7 +208,7 @@ const LineItemsTable = () => {
         </div>
 
         <div
-          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold tracking-wider uppercase ${
+          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold uppercase tracking-wider ${
             isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
           }`}
         >
@@ -231,37 +229,26 @@ const LineItemsTable = () => {
         </div>
 
         <div className="relative space-y-1 pt-2.5">
-          {filledItems.length > 0 && (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={() => setIsDndDragging(true)}
-              onDragEnd={handleDragEnd}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={() => setIsDndDragging(true)}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={visibleItems.map((i) => i.rowId)}
+              strategy={verticalListSortingStrategy}
             >
-              <SortableContext
-                items={filledItems.map((i) => i.rowId)}
-                strategy={verticalListSortingStrategy}
-              >
-                {filledItems.map((item: LineItem, idx: number) => (
-                  <SortableLineItemRow
-                    key={item.rowId}
-                    idx={idx}
-                    item={item}
-                    isCountColumnVisible={isCountColumnVisible}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          )}
-
-          {emptyItems.map((item: LineItem, idx: number) => (
-            <LineItemRow
-              key={item.rowId}
-              idx={filledItems.length + idx}
-              item={item}
-              isCountColumnVisible={isCountColumnVisible}
-            />
-          ))}
+              {visibleItems.map((item: LineItem, idx: number) => (
+                <SortableLineItemRow
+                  key={item.rowId}
+                  idx={idx}
+                  item={item}
+                  isCountColumnVisible={isCountColumnVisible}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
 
           <div className="flex items-center justify-between px-1 pt-1">
             <Button

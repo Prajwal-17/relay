@@ -49,7 +49,7 @@ export const ItemRow = ({
   return (
     <>
       <tr
-        className={`${bgColor} border-border hover:bg-opacity-50 border-b text-lg transition-colors`}
+        className={`${bgColor} border-border border-b text-lg transition-colors hover:bg-opacity-50`}
       >
         <td className="text-foreground px-3 py-3 text-center font-medium">{index}</td>
         <td

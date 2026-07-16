@@ -54,7 +54,7 @@ const BillingSkeleton = () => {
         </div>
       </div>
 
-      <div className="border-border bg-card hidden h-full w-95 rounded-xl border p-4 lg:block">
+      <div className="border-border bg-card w-95 hidden h-full rounded-xl border p-4 lg:block">
         <div className="border-success/20 flex h-full animate-pulse flex-col rounded-lg border-2 p-4">
           <div className="bg-muted mx-auto mb-2 h-6 w-3/4 rounded"></div>
           <div className="bg-muted mx-auto mb-6 h-4 w-1/2 rounded"></div>

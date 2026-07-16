@@ -24,13 +24,13 @@ export default function NotFound() {
 
             <div className="border-border bg-card mx-auto my-6 max-w-md rounded-lg border p-4">
               <p className="text-muted-foreground mb-2 text-sm">Wrong path entered:</p>
-              <code className="text-foreground font-mono text-base break-all">{pathname}</code>
+              <code className="text-foreground break-all font-mono text-base">{pathname}</code>
             </div>
 
             <div className="flex items-center gap-3 pt-4">
               <Button
                 size="lg"
-                className="group bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer rounded-full px-8 py-6 text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 group cursor-pointer rounded-full px-8 py-6 text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
                 // go back to previous url
                 onClick={() => navigate(-1)}
               >
@@ -40,7 +40,7 @@ export default function NotFound() {
               <NavLink to="/">
                 <Button
                   size="lg"
-                  className="group bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer rounded-full px-8 py-6 text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 group cursor-pointer rounded-full px-8 py-6 text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
                 >
                   Go Back Home
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />

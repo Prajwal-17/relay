@@ -60,7 +60,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   };
 
   return (
-    <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-2.5 transition-colors">
+    <div className="hover:bg-accent/50 active:bg-accent/70 group flex items-center gap-5 px-5 py-2.5 transition-colors">
       <div className="border-border bg-muted/50 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm">
         {product.imageUrl ? (
           <img
@@ -76,7 +76,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3
-            className={`text-xl leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
+            className={`text-xl font-semibold leading-tight ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
           >
             <HighlightedText text={product.name} query={searchParam} />
           </h3>

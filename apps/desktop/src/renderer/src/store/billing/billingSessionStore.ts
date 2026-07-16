@@ -48,6 +48,7 @@ type BillingSessionStore = {
   setAllChecked: (tabId: string | null, checked: boolean) => void;
   markItemAsSaving: (tabId: string | null, items: LineItem[]) => void;
   markItemAsSynced: (tabId: string | null, rowIds: Set<string>) => void;
+  revertItemToDirty: (tabId: string | null, items: LineItem[]) => void;
   updateLineItemId: (tabId: string | null, idMap: Map<string, string>) => void; // <rowId, id(i.e saleItem.id || estimateItem.id)>
   purgeDeletedItems: (tabId: string | null, rowIds: Set<string>) => void;
   // reset
@@ -353,17 +354,35 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
           "billingSession/markItemAsSynced"
         ),
 
-      updateLineItemId: (tabId, idMap) =>
+      revertItemToDirty: (tabId, items) =>
         set(
           (state) => {
             if (!tabId || !state.sessions[tabId]) return;
             const session = state.sessions[tabId];
 
+            const rowIds = new Set(items.map((i) => i.rowId));
             session.lineItems.forEach((item) => {
-              if (idMap.has(item.rowId)) {
-                item.id = idMap.get(item.rowId)!; // type assertion - this value never be undefined
+              if (rowIds.has(item.rowId) && item.syncStatus === SYNCSTATUS.SAVING) {
+                item.syncStatus = SYNCSTATUS.IS_DIRTY;
               }
             });
+          },
+          false,
+          "billingSession/revertItemToDirty"
+        ),
+
+      updateLineItemId: (tabId, idMap) =>
+        set(
+          (state) => {
+            if (!tabId || !state.sessions[tabId] || idMap.size === 0) return;
+            const session = state.sessions[tabId];
+
+            for (const item of session.lineItems) {
+              const newId = idMap.get(item.rowId);
+              if (newId !== undefined) {
+                item.id = newId;
+              }
+            }
           },
           false,
           "billingSession/updateLineItemId"

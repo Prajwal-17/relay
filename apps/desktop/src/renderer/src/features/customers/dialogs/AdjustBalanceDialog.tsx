@@ -84,7 +84,7 @@ export function AdjustBalanceDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-12 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="text-lg! h-12 font-semibold tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
@@ -95,7 +95,7 @@ export function AdjustBalanceDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Reason for adjustment…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-14 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 shadow-xs min-h-14 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px]"
             />
           </div>
         </div>

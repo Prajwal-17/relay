@@ -328,7 +328,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                     initial={{ opacity: 0, y: 3 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                    className="bg-foreground text-card font-roboto absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
+                    className="bg-foreground text-card font-roboto absolute -bottom-3 -right-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-base font-bold tracking-tight shadow-md"
                   >
                     {delayedPreviewProduct.weight}
                     {delayedPreviewProduct.unit}
@@ -336,7 +336,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 )}
 
                 {/* img preview tail */}
-                <div className="bg-card absolute top-1/2 -right-1.25 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-sm"></div>
+                <div className="bg-card -right-1.25 absolute top-1/2 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-sm"></div>
               </div>
             </motion.div>
           )}
@@ -344,7 +344,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-xl"
+          className="bg-background border-border/80 absolute left-[10.7%] top-[calc(100%+0.5rem)] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-xl"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
@@ -416,7 +416,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
                 >
                   <div
-                    className="absolute top-0 left-0 w-full"
+                    className="absolute left-0 top-0 w-full"
                     style={{
                       transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
                     }}
@@ -433,7 +433,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
+                            className={`border-l-3 group flex items-center gap-3.5 rounded-md py-3 pl-3 pr-3 transition-all duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
                                 ? "border-foreground bg-foreground/6 ring-foreground/15 ring-1"
                                 : "hover:bg-accent/60 border-transparent"

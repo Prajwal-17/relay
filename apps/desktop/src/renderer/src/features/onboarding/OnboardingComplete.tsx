@@ -119,7 +119,7 @@ export const OnboardingComplete = () => {
           size="lg"
           onClick={() => completeOnboardingMutation.mutate()}
           disabled={completeOnboardingMutation.isPending}
-          className="group shadow-primary/30 hover:shadow-primary/40 w-full gap-2 rounded-xl py-6 text-base font-semibold shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70"
+          className="shadow-primary/30 hover:shadow-primary/40 group w-full gap-2 rounded-xl py-6 text-base font-semibold shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-70"
         >
           {completeOnboardingMutation.isPending ? (
             <>

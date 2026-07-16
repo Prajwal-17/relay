@@ -135,7 +135,7 @@ export const ProductImageCropSelector = ({
 
   return (
     <div className="w-full max-w-xl space-y-3">
-      <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
+      <Label className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
         PRODUCT IMAGE
       </Label>
       <input
@@ -174,7 +174,7 @@ export const ProductImageCropSelector = ({
               });
               resetCropper();
             }}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 gap-1.5 px-2 text-xs font-bold tracking-wider uppercase"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 gap-1.5 px-2 text-xs font-bold uppercase tracking-wider"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Remove
@@ -183,7 +183,7 @@ export const ProductImageCropSelector = ({
       </div>
 
       {selectedFileName && !sourceImageUrl && (
-        <div className="text-muted-foreground text-sm font-medium break-all">
+        <div className="text-muted-foreground break-all text-sm font-medium">
           {pendingImagePreviewUrl ? selectedFileName : `Current image: ${selectedFileName}`}
         </div>
       )}

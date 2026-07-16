@@ -151,13 +151,13 @@ export const CustomerNameInput = () => {
       <PopoverContent className="z-40 w-96 p-0" align="start" onKeyDown={onKeyDown}>
         <div className="border-border/70 shrink-0 border-b px-2 py-1.5">
           <div className="relative">
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
+            <Search className="text-muted-foreground pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2" />
             <Input
               ref={inputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customer..."
-              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-8 rounded-lg pr-8 pl-8 text-sm shadow-none transition-colors"
+              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-8 rounded-lg pl-8 pr-8 text-sm shadow-none transition-colors"
             />
             {search && (
               <button
@@ -166,7 +166,7 @@ export const CustomerNameInput = () => {
                   setSearch("");
                   inputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1.5 -translate-y-1/2 cursor-pointer rounded p-0.5 transition-colors"
+                className="text-muted-foreground hover:text-foreground absolute right-1.5 top-1/2 -translate-y-1/2 cursor-pointer rounded p-0.5 transition-colors"
                 aria-label="Clear customer search"
               >
                 <X className="size-3.5" />
@@ -259,12 +259,12 @@ function CustomerRow({
     >
       <span
         className={cn(
-          "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
+          "bg-primary absolute left-0 top-0 h-full w-0.5 rounded-r-full transition-opacity",
           isActive ? "opacity-100" : "opacity-0"
         )}
       />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-[13px] leading-tight font-medium">
+        <p className="text-foreground truncate text-[13px] font-medium leading-tight">
           {customer.name}
         </p>
         <p className="text-muted-foreground truncate text-[11px] leading-tight">

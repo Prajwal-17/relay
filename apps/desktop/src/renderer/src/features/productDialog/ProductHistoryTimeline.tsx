@@ -93,7 +93,7 @@ export function ProductHistoryTimeline() {
         </div>
 
         <div className="relative">
-          <div className="bg-border/60 absolute top-4 bottom-6 left-2.75 w-0.5 rounded-full" />
+          <div className="bg-border/60 left-2.75 absolute bottom-6 top-4 w-0.5 rounded-full" />
 
           <div className="flex flex-col gap-6">
             {entries.map((entry, idx) => (
@@ -105,7 +105,7 @@ export function ProductHistoryTimeline() {
                 className="group relative flex gap-8"
               >
                 {/* timeline dot */}
-                <div className="bg-muted-foreground/30 ring-background group-hover:bg-primary z-10 mt-1.25 flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-sm ring-4 transition-all duration-300 group-hover:scale-110">
+                <div className="bg-muted-foreground/30 ring-background group-hover:bg-primary mt-1.25 z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-sm ring-4 transition-all duration-300 group-hover:scale-110">
                   <div className="bg-background group-hover:bg-primary-foreground h-2 w-2 rounded-full transition-colors" />
                 </div>
 

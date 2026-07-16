@@ -1,4 +1,4 @@
-import { apiClient } from "@/lib/apiClient";
+import { apiClient, ApiError } from "@/lib/apiClient";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import {
@@ -29,8 +29,14 @@ const syncLogic = async (tabId: string) => {
   }
 
   const { lineItems } = session;
-  const { markItemAsSaving, markItemAsSynced, updateLineItemId, purgeDeletedItems, updateField } =
-    sessionStore;
+  const {
+    markItemAsSaving,
+    markItemAsSynced,
+    updateLineItemId,
+    purgeDeletedItems,
+    updateField,
+    revertItemToDirty
+  } = sessionStore;
   const { billingType, transactionNo, customerId, billingDate, isMetaDataDirty } = session;
 
   const validLineItems = filterValidLineItems(lineItems);
@@ -53,6 +59,9 @@ const syncLogic = async (tabId: string) => {
     createdAt: billingDate ? billingDate.toISOString() : new Date().toISOString()
   });
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+
   try {
     const currentBillingId = useBillingSessionStore.getState().sessions[tabId]?.billingId;
     const isNewBill = !currentBillingId;
@@ -60,7 +69,9 @@ const syncLogic = async (tabId: string) => {
       ? `/api/${billingType}s/create`
       : `/api/${billingType}s/${currentBillingId}/sync`;
 
-    const response = (await apiClient.post(endpoint, payload)) as SyncResponse;
+    const response = (await apiClient.post(endpoint, payload, {
+      signal: controller.signal
+    })) as SyncResponse;
 
     if (isNewBill && response.billingId) {
       updateField(tabId, "billingId", response.billingId);
@@ -84,9 +95,19 @@ const syncLogic = async (tabId: string) => {
     purgeDeletedItems(tabId, purgeIds);
     updateField(tabId, "isMetaDataDirty", false);
   } catch (error) {
-    console.error("Sync error:", error);
-    updateField(tabId, "status", BILLSTATUS.ERROR);
+    revertItemToDirty(tabId, dirtyItems);
+
+    const isNonRetryable = error instanceof ApiError && error.status >= 400 && error.status < 500;
+
+    if (isNonRetryable) {
+      console.error("Sync validation error:", error.message);
+      updateField(tabId, "status", BILLSTATUS.ERROR);
+    } else {
+      console.error("Sync error:", error);
+      updateField(tabId, "status", BILLSTATUS.ERROR);
+    }
   } finally {
+    clearTimeout(timeout);
     syncStates.set(tabId, false);
 
     const freshSession = useBillingSessionStore.getState().sessions[tabId];

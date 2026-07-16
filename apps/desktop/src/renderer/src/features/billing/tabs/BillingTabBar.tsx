@@ -66,8 +66,8 @@ const BillingTabBar = () => {
   const isAtLimit = tabs.length >= MAX_BILLING_TABS;
 
   return (
-    <div className="border-border/60 bg-card flex shrink-0 items-end justify-between border-b px-4 pt-2 select-none">
-      <div className="flex flex-1 [scrollbar-width:none] items-end gap-0.5 overflow-x-auto [&::-webkit-scrollbar]:hidden">
+    <div className="border-border/60 bg-card flex shrink-0 select-none items-end justify-between border-b px-4 pt-2">
+      <div className="flex flex-1 items-end gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <AnimatePresence initial={false}>
           {tabs.map((tab, index) => (
             <motion.div key={tab.id} layout className="flex items-end gap-0.5">

@@ -87,7 +87,7 @@ export const LocationStep = () => {
       className="flex flex-col gap-6"
     >
       <div className="flex flex-col gap-3">
-        <div className="bg-primary/15 flex h-13 w-13 items-center justify-center rounded-xl">
+        <div className="bg-primary/15 h-13 w-13 flex items-center justify-center rounded-xl">
           <MapPin className="text-onboarding-icon-dark h-6 w-6" />
         </div>
         <h2 className="text-foreground text-3xl font-bold tracking-tight">Location & Compliance</h2>
@@ -349,7 +349,7 @@ export const LocationStep = () => {
           onClick={handleNext}
           disabled={mutation.isPending}
           size="lg"
-          className="group shadow-primary/20 hover:shadow-primary/30 gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
+          className="shadow-primary/20 hover:shadow-primary/30 group gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
         >
           {mutation.isPending ? (
             <>

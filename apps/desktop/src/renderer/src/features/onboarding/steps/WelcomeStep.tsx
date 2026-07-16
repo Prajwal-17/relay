@@ -68,7 +68,7 @@ export const WelcomeStep = () => {
         <Button
           size="lg"
           onClick={nextStep}
-          className="group shadow-primary/30 hover:shadow-primary/40 h-14 gap-2 rounded-xl px-10 text-lg font-semibold shadow-lg transition-all duration-200 hover:shadow-xl"
+          className="shadow-primary/30 hover:shadow-primary/40 group h-14 gap-2 rounded-xl px-10 text-lg font-semibold shadow-lg transition-all duration-200 hover:shadow-xl"
         >
           Get Started
           <ArrowRight className="h-4.5 w-4.5 transition-transform duration-200 group-hover:translate-x-1" />

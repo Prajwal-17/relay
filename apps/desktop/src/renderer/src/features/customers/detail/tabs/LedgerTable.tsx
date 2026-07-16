@@ -132,11 +132,11 @@ export function LedgerTable({ customerId }: { customerId: string }) {
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex shrink-0 flex-wrap items-center gap-2.5">
         <div className="relative w-64 min-w-0">
-          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
           <Input
             disabled
             placeholder="Search notes…"
-            className="bg-muted/60 h-9 rounded-md border-transparent pr-9 pl-9 text-sm shadow-none"
+            className="bg-muted/60 h-9 rounded-md border-transparent pl-9 pr-9 text-sm shadow-none"
           />
         </div>
 
@@ -152,7 +152,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
               Type
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -184,7 +184,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
               Sort by
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -216,7 +216,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
           </button>
         )}
 
-        <div className="text-muted-foreground ml-auto flex shrink-0 items-center gap-2 text-sm font-medium tabular-nums select-none">
+        <div className="text-muted-foreground ml-auto flex shrink-0 select-none items-center gap-2 text-sm font-medium tabular-nums">
           {isFetching && !isFirstLoad && (
             <LoaderCircle className="text-primary size-3.5 animate-spin" />
           )}
@@ -245,14 +245,14 @@ export function LedgerTable({ customerId }: { customerId: string }) {
       </div>
 
       {isFirstLoad ? (
-        <div className="border-border bg-card flex min-h-0 flex-1 items-center justify-center rounded-xl border shadow-xs">
+        <div className="border-border bg-card shadow-xs flex min-h-0 flex-1 items-center justify-center rounded-xl border">
           <div className="flex flex-col items-center gap-3">
             <LoaderCircle className="text-muted-foreground size-7 animate-spin" />
             <p className="text-muted-foreground text-sm font-medium">Loading…</p>
           </div>
         </div>
       ) : isEmpty ? (
-        <div className="border-border bg-card flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border px-6 py-16 text-center shadow-xs">
+        <div className="border-border bg-card shadow-xs flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border px-6 py-16 text-center">
           <span className="bg-muted text-muted-foreground mb-5 flex size-12 items-center justify-center rounded-xl">
             <Scale className="size-6" />
           </span>
@@ -271,7 +271,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
           )}
         </div>
       ) : (
-        <div className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+        <div className="border-border bg-card shadow-xs flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
           <div className={cn("relative min-h-0 flex-1 overflow-auto", isFetching && "opacity-60")}>
             <table className="w-full table-fixed border-collapse">
               <thead className="bg-muted sticky top-0 z-10">
@@ -283,7 +283,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
                         <th
                           key={header.id}
                           className={cn(
-                            "text-muted-foreground border-border/70 h-9 border-b px-4 text-xs font-semibold tracking-wide uppercase",
+                            "text-muted-foreground border-border/70 h-9 border-b px-4 text-xs font-semibold uppercase tracking-wide",
                             meta?.width,
                             meta?.align === TXN_TABLE_ALIGN.RIGHT
                               ? "text-right"
@@ -310,7 +310,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
                       ease: "easeOut",
                       delay: idx < 12 ? idx * 0.015 : 0
                     }}
-                    className="group border-border/70 hover:bg-accent border-b transition-colors last:border-b-0"
+                    className="border-border/70 hover:bg-accent group border-b transition-colors last:border-b-0"
                   >
                     {row.getVisibleCells().map((cell) => {
                       const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;

@@ -19,7 +19,7 @@ export function AttachmentsTab() {
       </div>
 
       {attachments.length === 0 ? (
-        <div className="bg-card border-border rounded-xl border shadow-xs">
+        <div className="bg-card border-border shadow-xs rounded-xl border">
           <div className="border-border m-4 flex min-h-64 flex-col items-center justify-center rounded-xl border border-dashed px-6 py-16 text-center">
             <span className="bg-muted text-muted-foreground mb-5 flex size-12 items-center justify-center rounded-xl">
               <Upload className="size-6" />
@@ -33,7 +33,7 @@ export function AttachmentsTab() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border-border rounded-xl border shadow-xs">
+        <div className="bg-card border-border shadow-xs rounded-xl border">
           <ul className="divide-border/70 divide-y">
             {attachments.map((att) => (
               <li key={att.id} className="flex items-center justify-between gap-3 px-4 py-3">

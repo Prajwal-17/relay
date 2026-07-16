@@ -40,11 +40,11 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
           : { fullDate: "—", timePart: "" };
         return (
           <div className="flex flex-col">
-            <span className="text-foreground text-sm font-semibold whitespace-nowrap tabular-nums">
+            <span className="text-foreground whitespace-nowrap text-sm font-semibold tabular-nums">
               {fullDate}
             </span>
             {timePart && (
-              <span className="text-muted-foreground text-xs font-medium whitespace-nowrap tabular-nums">
+              <span className="text-muted-foreground whitespace-nowrap text-xs font-medium tabular-nums">
                 {timePart}
               </span>
             )}

@@ -121,16 +121,16 @@ export function CustomerListPage() {
           initial={{ opacity: 0, y: -3 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.15, ease: "easeOut" as const }}
-          className="border-border bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2.5 shadow-xs"
+          className="border-border bg-card shadow-xs flex items-center gap-2.5 rounded-xl border px-3 py-2.5"
         >
           <div className="relative w-96 min-w-0">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" />
             <Input
               ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers…"
-              className="bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-9 rounded-md border-transparent pr-9 pl-9 text-base shadow-none transition-colors"
+              className="bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-9 rounded-md border-transparent pl-9 pr-9 text-base shadow-none transition-colors"
             />
             {search && (
               <button
@@ -139,7 +139,7 @@ export function CustomerListPage() {
                   setSearch("");
                   searchInputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+                className="text-muted-foreground hover:text-foreground absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
               >
                 <X className="size-4" />
               </button>
@@ -162,12 +162,12 @@ export function CustomerListPage() {
               </Button>
             </PopoverTrigger>
             <PopoverContent align="start" className="border-border/80 w-64 rounded-xl p-0">
-              <div className="text-foreground px-4 pt-3 pb-2 text-sm font-semibold tracking-tight">
+              <div className="text-foreground px-4 pb-2 pt-3 text-sm font-semibold tracking-tight">
                 Filters
               </div>
               <Separator />
               <div className="p-3">
-                <p className="text-muted-foreground mb-2 text-xs font-semibold tracking-wider uppercase">
+                <p className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-wider">
                   Type
                 </p>
                 <div className="space-y-0.5">
@@ -223,7 +223,7 @@ export function CustomerListPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-52 rounded-xl">
-              <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Sort by
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -259,7 +259,7 @@ export function CustomerListPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <div className="text-muted-foreground ml-auto shrink-0 text-sm font-medium tabular-nums select-none">
+          <div className="text-muted-foreground ml-auto shrink-0 select-none text-sm font-medium tabular-nums">
             {totalCount} {totalCount === 1 ? "customer" : "customers"}
           </div>
 

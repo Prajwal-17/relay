@@ -83,7 +83,7 @@ export function SalesEstimateChart() {
         {isSuccess && data && (
           <>
             {data.length <= 0 ? (
-              <div className="border-muted bg-secondary flex h-75 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
+              <div className="border-muted bg-secondary h-75 flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
                 <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
                   <ChartColumnIncreasing className="text-muted-foreground" />
                 </div>

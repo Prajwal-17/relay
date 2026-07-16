@@ -99,7 +99,7 @@ export default function PdfInvoicePage() {
               <p className="text-invoice-text text-xs">{formattedDate}</p>
             </div>
             {isSale && storeProfile?.gstin && (
-              <p className="text-invoice-text mt-4 text-xs font-semibold tracking-widest uppercase">
+              <p className="text-invoice-text mt-4 text-xs font-semibold uppercase tracking-widest">
                 GSTIN: {storeProfile.gstin}
               </p>
             )}
@@ -107,7 +107,7 @@ export default function PdfInvoicePage() {
         </div>
 
         <div className="mb-6 flex flex-col gap-0.5 text-sm">
-          <p className="text-invoice-text-muted text-[10px] font-semibold tracking-wider uppercase">
+          <p className="text-invoice-text-muted text-[10px] font-semibold uppercase tracking-wider">
             Billed To:
           </p>
           <p className="text-invoice-text text-xs">

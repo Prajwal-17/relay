@@ -45,7 +45,7 @@ export const StoreIdentityStep = () => {
       className="flex flex-col gap-8"
     >
       <div className="flex flex-col gap-3">
-        <div className="bg-primary/15 flex h-13 w-13 items-center justify-center rounded-xl">
+        <div className="bg-primary/15 h-13 w-13 flex items-center justify-center rounded-xl">
           <Store className="text-onboarding-icon-dark h-6 w-6" />
         </div>
         <h2 className="text-foreground text-3xl font-bold tracking-tight">Your Store</h2>
@@ -96,7 +96,7 @@ export const StoreIdentityStep = () => {
         <Button
           onClick={handleNext}
           size="lg"
-          className="group shadow-primary/20 hover:shadow-primary/30 gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
+          className="shadow-primary/20 hover:shadow-primary/30 group gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
         >
           Continue
           <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
