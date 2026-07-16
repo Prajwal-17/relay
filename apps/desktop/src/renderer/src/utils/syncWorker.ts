@@ -42,7 +42,9 @@ const syncLogic = async (tabId: string) => {
   const validLineItems = filterValidLineItems(lineItems);
   const dirtyItems = filterDirtyLineItems(validLineItems);
 
-  if (dirtyItems.length === 0 && !isMetaDataDirty) {
+  const isNewBill = !session.billingId;
+
+  if (dirtyItems.length === 0 && (!isMetaDataDirty || isNewBill)) {
     syncStates.set(tabId, false);
     return;
   }
@@ -65,8 +67,8 @@ const syncLogic = async (tabId: string) => {
 
   try {
     const currentBillingId = useBillingSessionStore.getState().sessions[tabId]?.billingId;
-    const isNewBill = !currentBillingId;
-    const endpoint = isNewBill
+    const isNewBillRetry = !currentBillingId;
+    const endpoint = isNewBillRetry
       ? `/api/${billingType}s/create`
       : `/api/${billingType}s/${currentBillingId}/sync`;
 
@@ -74,7 +76,7 @@ const syncLogic = async (tabId: string) => {
       signal: controller.signal
     })) as SyncResponse;
 
-    if (isNewBill && response.billingId) {
+    if (isNewBillRetry && response.billingId) {
       updateField(tabId, "billingId", response.billingId);
       if (response.transactionNo !== null && response.transactionNo !== undefined) {
         updateField(tabId, "transactionNo", response.transactionNo);
