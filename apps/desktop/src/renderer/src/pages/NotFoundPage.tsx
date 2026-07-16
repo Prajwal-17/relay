@@ -24,7 +24,7 @@ export default function NotFound() {
 
             <div className="border-border bg-card mx-auto my-6 max-w-md rounded-lg border p-4">
               <p className="text-muted-foreground mb-2 text-sm">Wrong path entered:</p>
-              <code className="text-foreground break-all font-mono text-base">{pathname}</code>
+              <code className="text-foreground font-mono text-base break-all">{pathname}</code>
             </div>
 
             <div className="flex items-center gap-3 pt-4">

@@ -102,7 +102,7 @@ export function ProductDialog() {
         onKeyDownCapture={(e) => {
           if (productMutation.isPending) e.preventDefault();
         }}
-        className="min-w-7xl flex h-[88vh] max-h-screen w-full flex-col overflow-hidden p-0"
+        className="flex h-[88vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
       >
         <Tabs
           value={activeTab}
@@ -144,7 +144,7 @@ export function ProductDialog() {
             </div>
 
             <div className="flex shrink-0 justify-center">
-              <TabsList className="bg-secondary/60 border-border/40 shadow-xs flex h-auto w-full gap-1 rounded-3xl border p-1 sm:w-fit">
+              <TabsList className="bg-secondary/60 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-xs sm:w-fit">
                 <TabsTrigger
                   value={INITIAL_TAB.INFO}
                   className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
@@ -181,7 +181,7 @@ export function ProductDialog() {
                               <Button
                                 variant="outline"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
-                                className="text-success border-success/30 hover:bg-success/10 duration-160 h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all ease-out active:scale-[0.97]"
+                                className="text-success border-success/30 hover:bg-success/10 h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                               >
                                 <RotateCcw className="h-4 w-4" />
                                 Restore
@@ -196,7 +196,7 @@ export function ProductDialog() {
                               <Button
                                 variant="destructive"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
-                                className="duration-160 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all ease-out active:scale-[0.97]"
+                                className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 <span className="hidden sm:inline">Delete</span>
@@ -212,7 +212,7 @@ export function ProductDialog() {
                           <Button
                             variant="outline"
                             onClick={() => setDialogMode(DIALOG_MODE.EDIT)}
-                            className="border-border text-foreground hover:bg-secondary duration-160 h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all ease-out active:scale-[0.97]"
+                            className="border-border text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                           >
                             <Edit3 className="h-4 w-4" />
                             Edit
@@ -220,7 +220,7 @@ export function ProductDialog() {
                           <Button
                             variant="destructive"
                             onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
-                            className="duration-160 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all ease-out active:scale-[0.97]"
+                            className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="hidden sm:inline">Delete</span>
@@ -233,7 +233,7 @@ export function ProductDialog() {
                       variant="ghost"
                       onClick={() => setDialogMode(DIALOG_MODE.VIEW)}
                       disabled={productMutation.isPending}
-                      className="text-muted-foreground hover:text-foreground hover:bg-secondary duration-160 h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all ease-out active:scale-[0.97]"
+                      className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                     >
                       <Eye className="h-4 w-4" />
                       View
@@ -248,7 +248,7 @@ export function ProductDialog() {
                   setInitialTab(INITIAL_TAB.INFO);
                   setOpenProductDialog();
                 }}
-                className="text-muted-foreground hover:text-foreground hover:bg-secondary duration-160 h-10 w-10 shrink-0 cursor-pointer p-0 transition-all ease-out active:scale-[0.97]"
+                className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
               >
                 <X className="h-6! w-6!" />
               </Button>

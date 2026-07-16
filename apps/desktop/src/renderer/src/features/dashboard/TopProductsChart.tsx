@@ -52,7 +52,7 @@ export const TopProductsChart = () => {
             <LoaderCircle className="text-primary animate-spin" size={24} />
           </div>
         ) : colorizedData.length === 0 ? (
-          <div className="text-muted-foreground h-75 flex items-center justify-center">
+          <div className="text-muted-foreground flex h-75 items-center justify-center">
             No data available
           </div>
         ) : (

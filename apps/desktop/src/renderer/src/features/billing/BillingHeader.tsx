@@ -192,7 +192,7 @@ const BillingHeader = () => {
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </span>
             <span className="text-muted-foreground/40 text-xl font-light">/</span>
-            <span className="text-foreground font-mono text-2xl font-extrabold tabular-nums tracking-tight">
+            <span className="text-foreground font-mono text-2xl font-extrabold tracking-tight tabular-nums">
               #{transactionNo ?? "New"}
             </span>
           </div>
@@ -312,7 +312,7 @@ const BillingHeader = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        <span className="text-muted-foreground/80 ml-1 text-xs font-semibold uppercase tracking-wider">
+        <span className="text-muted-foreground/80 ml-1 text-xs font-semibold tracking-wider uppercase">
           Customer Details
         </span>
         <div className="flex items-center gap-3">

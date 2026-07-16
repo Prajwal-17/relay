@@ -63,17 +63,17 @@ export default function ProductHeader() {
     <div className="sticky top-0 z-10 space-y-2.5">
       <div className="border-border bg-card flex items-center gap-3.5 rounded-xl border px-5 py-4 shadow-sm">
         <div className="relative min-w-0 flex-1">
-          <Search className="text-muted-foreground absolute left-5 top-1/2 h-7 w-7 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-5 h-7 w-7 -translate-y-1/2" />
           <Input
             ref={inputRef}
             placeholder="Search products…"
             value={productsSearchParam}
             onChange={(e) => setProductsSearchParam(e.target.value)}
-            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background pl-15 text-lg! h-14 rounded-xl border-transparent pr-14 font-medium shadow-none transition-colors"
+            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-lg! font-medium shadow-none transition-colors"
           />
           {productsSearchParam && (
             <button
-              className="text-muted-foreground hover:text-foreground absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-1.5 transition-colors"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer rounded-md p-1.5 transition-colors"
               onClick={() => {
                 setProductsSearchParam("");
                 inputRef.current?.focus();
@@ -101,13 +101,13 @@ export default function ProductHeader() {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="border-border/80 w-80 rounded-xl p-0 shadow-lg">
-            <div className="px-5 pb-3 pt-3">
+            <div className="px-5 pt-3 pb-3">
               <h4 className="text-foreground text-base font-semibold tracking-tight">Filters</h4>
             </div>
             <Separator />
 
             <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
                 Status
               </p>
               <div className="space-y-1">
@@ -131,14 +131,14 @@ export default function ProductHeader() {
             <Separator />
 
             <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
                 Price Range
               </p>
               <div className="flex items-center gap-2.5">
                 <Input
                   type="number"
                   placeholder="Min ₹"
-                  className="h-10 text-sm [appearance:textfield]"
+                  className="h-10 [appearance:textfield] text-sm"
                   value={priceMin ?? ""}
                   onChange={(e) => setPriceMin(e.target.value || null)}
                 />
@@ -146,7 +146,7 @@ export default function ProductHeader() {
                 <Input
                   type="number"
                   placeholder="Max ₹"
-                  className="h-10 text-sm [appearance:textfield]"
+                  className="h-10 [appearance:textfield] text-sm"
                   value={priceMax ?? ""}
                   onChange={(e) => setPriceMax(e.target.value || null)}
                 />
@@ -156,7 +156,7 @@ export default function ProductHeader() {
             <Separator />
 
             <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-wider">
+              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
                 Properties
               </p>
               <div className="space-y-1">
@@ -227,7 +227,7 @@ export default function ProductHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56 rounded-xl">
-            <DropdownMenuLabel className="text-muted-foreground text-sm font-semibold uppercase tracking-wider">
+            <DropdownMenuLabel className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
               Sort by
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -369,7 +369,7 @@ export default function ProductHeader() {
           )}
         </div>
 
-        <div className="text-muted-foreground ml-auto shrink-0 select-none font-sans text-base font-semibold">
+        <div className="text-muted-foreground ml-auto shrink-0 font-sans text-base font-semibold select-none">
           Showing {totalCount} {totalCount === 1 ? "result" : "results"}
         </div>
       </div>
@@ -387,7 +387,7 @@ function FilterChip({
   onRemove?: () => void;
 }) {
   return (
-    <span className="border-border bg-muted/60 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pl-3.5 pr-2.5 text-lg font-medium transition-all">
+    <span className="border-border bg-muted/60 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-lg font-medium transition-all">
       <span className="text-muted-foreground text-base">{label}:</span>
       <span className="font-semibold">{value}</span>
       {onRemove && (

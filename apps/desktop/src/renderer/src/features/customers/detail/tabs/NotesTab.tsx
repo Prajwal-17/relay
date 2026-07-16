@@ -19,7 +19,7 @@ export function NotesTab() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Write a note about this customer…"
-            className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 shadow-xs min-h-20 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px]"
+            className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-20 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
           />
           <div className="flex justify-end">
             <Button className="hover:bg-primary-hover h-9 cursor-pointer" disabled={!draft.trim()}>
@@ -32,7 +32,7 @@ export function NotesTab() {
 
       {/* Pinned / all notes */}
       {notes.length === 0 ? (
-        <div className="bg-card border-border shadow-xs rounded-xl border">
+        <div className="bg-card border-border rounded-xl border shadow-xs">
           <EmptyTab
             icon={StickyNote}
             title="No notes yet"

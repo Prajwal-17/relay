@@ -42,7 +42,7 @@ export const BillingTab = ({
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       onClick={onSelect}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-2.5 whitespace-nowrap rounded-t-lg border-none px-5 py-3 text-sm font-medium transition-colors duration-150",
+        "group relative flex cursor-pointer items-center gap-2.5 rounded-t-lg border-none px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150",
         isActive
           ? "bg-background-secondary text-foreground z-10 -mb-px"
           : "text-foreground/50 hover:bg-foreground/4 hover:text-foreground/70"
@@ -72,7 +72,7 @@ export const BillingTab = ({
         <motion.div
           layoutId="activeTabAccent"
           className={cn(
-            "absolute bottom-0 left-3 right-3 h-0.5 rounded-t-full",
+            "absolute right-3 bottom-0 left-3 h-0.5 rounded-t-full",
             isSale ? "bg-success" : "bg-info"
           )}
           transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}

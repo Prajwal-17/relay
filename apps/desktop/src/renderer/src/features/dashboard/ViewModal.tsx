@@ -47,13 +47,13 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
               <div className="bg-secondary/50 border-border rounded-lg border p-4">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
                   <div>
-                    <p className="text-muted-foreground mb-1 text-sm font-medium uppercase tracking-wide">
+                    <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">
                       Customer
                     </p>
                     <p className="text-foreground font-medium">{data.customer.name}</p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground mb-1 text-sm font-medium uppercase tracking-wide">
+                    <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">
                       Created At
                     </p>
                     <p className="text-foreground text-base font-medium">
@@ -61,7 +61,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                     </p>
                   </div>
                   <div>
-                    <p className="text-muted-foreground mb-1 text-sm font-medium uppercase tracking-wide">
+                    <p className="text-muted-foreground mb-1 text-sm font-medium tracking-wide uppercase">
                       Updated At
                     </p>
                     <p className="text-foreground text-base font-medium">

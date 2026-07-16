@@ -41,7 +41,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
       <CardContent className="px-4 py-0">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-foreground text-lg font-medium leading-6">{label}</span>
+            <span className="text-foreground text-lg leading-6 font-medium">{label}</span>
           </div>
 
           {href ? (
@@ -55,7 +55,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
         </div>
 
         <div className="mt-4">
-          <div className="text-foreground text-3xl font-semibold tabular-nums tracking-tight sm:text-4xl">
+          <div className="text-foreground text-3xl font-semibold tracking-tight tabular-nums sm:text-4xl">
             {value}
           </div>
         </div>
@@ -83,7 +83,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
               </Badge>
             ) : null}
 
-            <span className="text-muted-foreground text-base font-medium leading-6">
+            <span className="text-muted-foreground text-base leading-6 font-medium">
               vs Yesterday
             </span>
           </div>

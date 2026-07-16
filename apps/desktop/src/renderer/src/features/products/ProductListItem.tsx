@@ -76,7 +76,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3
-            className={`text-xl font-semibold leading-tight ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
+            className={`text-xl leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
           >
             <HighlightedText text={product.name} query={searchParam} />
           </h3>

@@ -32,8 +32,8 @@ export const ProductViewMode = () => {
       transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       className="flex flex-col gap-9 md:flex-row md:items-start"
     >
-      <div className="md:w-76 flex w-full shrink-0 flex-col gap-6">
-        <div className="bg-secondary/60 border-border/60 rounded-4xl flex aspect-square w-full items-center justify-center overflow-hidden border shadow-sm">
+      <div className="flex w-full shrink-0 flex-col gap-6 md:w-76">
+        <div className="bg-secondary/60 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-4xl border shadow-sm">
           {formData.imageUrl ? (
             <img
               src={`${PROTOCOL_NAME}${formData.imageUrl}`}
@@ -139,7 +139,7 @@ function DataField({
 }) {
   return (
     <div className={`flex min-w-0 flex-col gap-1 ${className}`}>
-      <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+      <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
         {label}
       </span>
       <span className={`text-foreground ${valueClassName}`} style={{ overflowWrap: "anywhere" }}>

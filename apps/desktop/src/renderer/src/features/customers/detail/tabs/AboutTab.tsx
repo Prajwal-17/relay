@@ -83,8 +83,8 @@ function addressDirty(c: Customer, f: AddressForm) {
 function DisplayField({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="bg-muted/40 border-border/70 flex flex-col gap-1.5 rounded-lg border px-4 py-3">
-      <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</dt>
-      <dd className="text-foreground wrap-break-word text-base font-medium">{value || "—"}</dd>
+      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
+      <dd className="text-foreground text-base font-medium wrap-break-word">{value || "—"}</dd>
     </div>
   );
 }
@@ -104,7 +104,7 @@ function FieldShell({
     <div className="flex flex-col gap-2">
       <Label
         htmlFor={htmlFor}
-        className="text-muted-foreground text-xs font-medium uppercase tracking-wide"
+        className="text-muted-foreground text-xs font-medium tracking-wide uppercase"
       >
         {label}
       </Label>
@@ -313,7 +313,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
             className="min-h-24 resize-y text-base"
           />
         ) : (
-          <p className="text-foreground whitespace-pre-line text-base font-medium">
+          <p className="text-foreground text-base font-medium whitespace-pre-line">
             {customer.address || "No address on file."}
           </p>
         )}
@@ -323,10 +323,10 @@ export function AboutTab({ customerId }: { customerId: string }) {
         <div className="flex flex-col gap-3">
           <div className="bg-muted/40 border-border/70 flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+              <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Customer ID
               </dt>
-              <dd className="text-foreground break-all font-mono text-base font-medium tabular-nums">
+              <dd className="text-foreground font-mono text-base font-medium break-all tabular-nums">
                 {customer.id}
               </dd>
             </div>

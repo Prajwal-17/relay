@@ -90,8 +90,8 @@ export function CustomerListTable({
   const isEmpty = status === "success" && rows.length === 0;
 
   return (
-    <div className="bg-card border-border shadow-xs flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border">
-      <div className="bg-muted text-muted-foreground grid grid-cols-11 items-center gap-2 px-4 py-2 text-xs font-medium uppercase tracking-wide">
+    <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+      <div className="bg-muted text-muted-foreground grid grid-cols-11 items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide uppercase">
         {colInfo.map((c, i) => (
           <div key={i} className={cn("flex", c.span, c.align)}>
             {c.label}
@@ -164,7 +164,7 @@ export function CustomerListTable({
               }}
             >
               <div
-                className="absolute left-0 top-0 w-full"
+                className="absolute top-0 left-0 w-full"
                 style={{
                   transform: `translateY(${virtualItems[0]?.start ?? 0}px)`
                 }}
@@ -214,7 +214,7 @@ export function CustomerListTable({
                       >
                         <span
                           className={cn(
-                            "bg-primary absolute left-0 top-0 h-full w-0.5 rounded-r-full transition-opacity",
+                            "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
                             virtualRow.index === activeIndex ? "opacity-100" : "opacity-0"
                           )}
                         />

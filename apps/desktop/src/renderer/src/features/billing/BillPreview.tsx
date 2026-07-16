@@ -45,7 +45,7 @@ const BillPreview = () => {
       <div className="border-success bg-muted flex w-1/4 flex-col items-center justify-between overflow-y-auto border">
         <div
           ref={localReceiptRef}
-          className="receipt no-break font-roboto border-success bg-card text-foreground mb-24 mt-0 border px-1 pt-1"
+          className="receipt no-break font-roboto border-success bg-card text-foreground mt-0 mb-24 border px-1 pt-1"
         >
           <div className="mb-2 space-y-2 pb-4 text-center">
             <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>
@@ -60,7 +60,7 @@ const BillPreview = () => {
               9945029729
             </p>
           </div>
-          <div className="border-foreground mb-4 flex justify-between border-b border-t border-dashed py-1 text-xs">
+          <div className="border-foreground mb-4 flex justify-between border-t border-b border-dashed py-1 text-xs">
             <div>
               <div>
                 <span className="font-semibold">Date:</span>{" "}

@@ -31,16 +31,16 @@ export function MetricTile({
   className
 }: MetricTileProps) {
   return (
-    <div className={cn("bg-card border-border shadow-xs rounded-xl border px-4 py-3", className)}>
+    <div className={cn("bg-card border-border rounded-xl border px-4 py-3 shadow-xs", className)}>
       <div className="flex items-center gap-1.5">
         {icon && <span className="text-muted-foreground">{icon}</span>}
-        <span className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
           {label}
         </span>
       </div>
       <p
         className={cn(
-          "mt-1.5 font-semibold tabular-nums tracking-[-0.02em]",
+          "mt-1.5 font-semibold tracking-[-0.02em] tabular-nums",
           toneValueClass[tone],
           "text-2xl"
         )}

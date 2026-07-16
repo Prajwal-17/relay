@@ -218,7 +218,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                 animate={{ opacity: 1, scaleY: 1 }}
                 exit={{ opacity: 0, scaleY: 0.4 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
-                className="bg-sidebar-primary absolute left-0 top-1/2 -mt-2 h-4 w-0.5 origin-center rounded-full"
+                className="bg-sidebar-primary absolute top-1/2 left-0 -mt-2 h-4 w-0.5 origin-center rounded-full"
               />
             )}
           </AnimatePresence>
@@ -306,14 +306,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
           <nav className="mt-6 flex flex-col">
             <div className="flex flex-col">
-              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium uppercase tracking-wider">
+              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
                 Main
               </span>
               <div className="flex flex-col gap-0.5">{mainLinks.map(renderNavItem)}</div>
             </div>
 
             <div className="mt-6 flex flex-col">
-              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium uppercase tracking-wider">
+              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
                 System
               </span>
               <div className="flex flex-col gap-0.5">{systemLinks.map(renderNavItem)}</div>
@@ -350,7 +350,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         {/* ── Resize handle ── */}
         <div
           onMouseDown={handleResizeStart}
-          className="hover:bg-foreground/5 group absolute right-0 top-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
+          className="hover:bg-foreground/5 group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
         >
           <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>

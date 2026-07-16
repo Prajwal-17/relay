@@ -11,8 +11,8 @@ import { SectionCard } from "../shared/SectionCard";
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="flex flex-col gap-0.5 py-2">
-      <dt className="text-muted-foreground text-xs font-medium uppercase tracking-wide">{label}</dt>
-      <dd className="text-foreground break-words text-sm font-medium">{value || "—"}</dd>
+      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
+      <dd className="text-foreground text-sm font-medium break-words">{value || "—"}</dd>
     </div>
   );
 }

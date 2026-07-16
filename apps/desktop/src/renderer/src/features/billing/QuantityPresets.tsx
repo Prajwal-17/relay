@@ -64,7 +64,7 @@ const QuantityPresets = ({
     <>
       <div
         ref={popDownRef}
-        className="bg-muted absolute left-1/2 top-full z-50 mt-2 w-max -translate-x-1/2 rounded-xl px-1 py-2 shadow-2xl"
+        className="bg-muted absolute top-full left-1/2 z-50 mt-2 w-max -translate-x-1/2 rounded-xl px-1 py-2 shadow-2xl"
       >
         <div className="grid w-max grid-flow-row grid-cols-4 gap-1 px-1">
           {weights.map((w, idx) => (

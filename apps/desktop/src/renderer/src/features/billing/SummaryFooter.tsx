@@ -114,8 +114,8 @@ export const SummaryFooter = () => {
   }
 
   return (
-    <footer className="absolute bottom-1 right-6 z-20">
-      <div className="bg-background/80 border-border/50 backdrop-blur-xs flex items-center gap-6 rounded-lg border py-1.5 pl-6 pr-1.5 shadow-xl">
+    <footer className="absolute right-6 bottom-1 z-20">
+      <div className="bg-background/80 border-border/50 flex items-center gap-6 rounded-lg border py-1.5 pr-1.5 pl-6 shadow-xl backdrop-blur-xs">
         <div className="flex items-end gap-6">
           <div className="flex items-end gap-2">
             <span className="text-muted-foreground self-end text-sm font-semibold uppercase">

@@ -32,8 +32,8 @@ export const OnboardingFlow = () => {
       className="bg-background-secondary fixed inset-0 z-50 flex items-stretch"
     >
       {/* left panel */}
-      <div className="from-onboarding-gradient-start via-onboarding-gradient-mid to-onboarding-gradient-end bg-linear-to-br relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden p-14 lg:flex">
-        <div className="bg-primary pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full opacity-20 blur-3xl" />
+      <div className="from-onboarding-gradient-start via-onboarding-gradient-mid to-onboarding-gradient-end relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden bg-linear-to-br p-14 lg:flex">
+        <div className="bg-primary pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-20 blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-3.5">
           <img
@@ -46,7 +46,7 @@ export const OnboardingFlow = () => {
 
         <div className="relative z-10 flex flex-col gap-10">
           <div className="flex flex-col gap-4">
-            <h2 className="text-5xl font-bold leading-tight text-white">
+            <h2 className="text-5xl leading-tight font-bold text-white">
               Billing made{" "}
               <span className="text-primary inline-block rounded-lg px-1">effortless</span>
             </h2>

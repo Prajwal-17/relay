@@ -67,7 +67,7 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
                 animate={{
                   color: isActive ? STEP_COLORS.activeText : STEP_COLORS.inactiveText
                 }}
-                className="whitespace-nowrap text-sm font-medium"
+                className="text-sm font-medium whitespace-nowrap"
               >
                 {label}
               </motion.span>

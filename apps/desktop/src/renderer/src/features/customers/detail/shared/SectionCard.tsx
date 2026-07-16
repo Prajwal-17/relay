@@ -23,7 +23,7 @@ export function SectionCard({
   children
 }: SectionCardProps) {
   return (
-    <section className={cn("bg-card border-border shadow-xs rounded-xl border", className)}>
+    <section className={cn("bg-card border-border rounded-xl border shadow-xs", className)}>
       {(title || action) && (
         <header className="border-border/70 flex items-center justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">

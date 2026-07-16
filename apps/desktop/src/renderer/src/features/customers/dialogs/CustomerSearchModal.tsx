@@ -97,13 +97,13 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
       >
         <div className="border-border/70 shrink-0 border-b px-4 py-3">
           <div className="relative">
-            <Search className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               ref={inputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers by name or contact…"
-              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-10 rounded-lg pl-9 pr-10 text-sm shadow-none transition-colors"
+              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-10 rounded-lg pr-10 pl-9 text-sm shadow-none transition-colors"
             />
             {search && (
               <button
@@ -112,7 +112,7 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
                   setSearch("");
                   inputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute right-2.5 top-1/2 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
                 aria-label="Clear customer search"
               >
                 <X className="size-4" />
@@ -193,14 +193,14 @@ function CustomerRow({
       onMouseEnter={onHover}
       onClick={onSelect}
       className={cn(
-        "relative flex w-full items-center justify-between gap-3 py-2.5 pl-4 pr-3 text-left transition-colors",
+        "relative flex w-full items-center justify-between gap-3 py-2.5 pr-3 pl-4 text-left transition-colors",
         "hover:bg-accent",
         isActive && "bg-accent"
       )}
     >
       <span
         className={cn(
-          "bg-primary absolute left-0 top-0 h-full w-0.5 rounded-r-full transition-opacity",
+          "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
           isActive ? "opacity-100" : "opacity-0"
         )}
       />

@@ -93,7 +93,7 @@ const AppShell = () => {
               </div>
 
               <div className="relative ml-auto w-full max-w-md">
-                <Search className="text-muted-foreground pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2" />
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
                 <Input
                   type="text"
                   placeholder="Search anything..."
