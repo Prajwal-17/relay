@@ -21,7 +21,7 @@ export function AdjustBalanceDialog({
   onClose: () => void;
 }) {
   const [amount, setAmount] = useState("");
-  const [direction, setDirection] = useState<"debit" | "credit">("debit");
+  const [direction, setDirection] = useState<"due" | "paid">("due");
   const [note, setNote] = useState("");
 
   const createAdjustment = useCreateAdjustment(customerId);
@@ -42,7 +42,7 @@ export function AdjustBalanceDialog({
         <DialogHeader>
           <DialogTitle>Adjust Balance</DialogTitle>
           <DialogDescription>
-            Manually correct the ledger with a debit (they owe more) or credit (they owe less).
+            Manually correct the ledger — add to the amount they owe, or record a payment.
           </DialogDescription>
         </DialogHeader>
 
@@ -52,25 +52,25 @@ export function AdjustBalanceDialog({
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => setDirection("debit")}
+                onClick={() => setDirection("due")}
                 className={
-                  direction === "debit"
+                  direction === "due"
                     ? "border-destructive/25 bg-destructive/10 text-destructive h-12 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
                     : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-12 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
-                Debit (Dr)
+                Add Due
               </button>
               <button
                 type="button"
-                onClick={() => setDirection("credit")}
+                onClick={() => setDirection("paid")}
                 className={
-                  direction === "credit"
+                  direction === "paid"
                     ? "border-success/25 bg-success/15 text-success h-12 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
                     : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-12 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
-                Credit (Cr)
+                Record Payment
               </button>
             </div>
           </div>

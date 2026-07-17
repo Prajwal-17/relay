@@ -2,10 +2,10 @@ import { cn } from "@/lib/utils";
 import { formatRupee } from "@shared/utils/utils";
 
 /**
- * Outstanding Dr/Cr badge.
- * - Positive outstanding → Dr (they owe) → destructive tone.
- * - Negative outstanding → Cr (prepaid) → success tone.
- * - Zero → neutral muted.
+ * Outstanding badge.
+ * - Positive outstanding → they owe → destructive tone.
+ * - Negative outstanding → advance → success tone.
+ * - Zero → settled → neutral muted.
  */
 export function OutstandingBadge({
   outstanding,
@@ -17,9 +17,9 @@ export function OutstandingBadge({
   size?: "sm" | "md";
 }) {
   const isZero = outstanding === 0;
-  const isDebit = outstanding > 0;
+  const isDue = outstanding > 0;
   const amount = formatRupee(Math.abs(outstanding));
-  const label = isZero ? "Settled" : isDebit ? "Dr" : "Cr";
+  const label = isZero ? "Settled" : amount;
 
   return (
     <span
@@ -28,16 +28,13 @@ export function OutstandingBadge({
         size === "md" ? "px-3 py-1 text-sm" : "px-2.5 py-0.5 text-xs",
         isZero
           ? "bg-muted text-muted-foreground border-border"
-          : isDebit
+          : isDue
             ? "bg-destructive/10 text-destructive border-destructive/25"
             : "bg-success/15 text-success border-success/25",
         className
       )}
     >
-      {!isZero && (
-        <span className="text-muted-foreground text-xs font-semibold uppercase">{label}</span>
-      )}
-      <span className="font-semibold">{isZero ? label : amount}</span>
+      <span className="font-semibold">{label}</span>
     </span>
   );
 }

@@ -150,10 +150,10 @@ describe.skip("ledger integration tests", () => {
       .where(eq(customerLedger.customerId, created.id))
       .get();
     expect(openingRow?.type).toBe("opening_balance");
-    expect(openingRow?.debit).toBe(50000);
+    expect(openingRow?.amountDue).toBe(50000);
   });
 
-  it("an unpaid sale creates a debit ledger row and increases outstanding", async () => {
+  it("an unpaid sale creates a ledger row and increases outstanding", async () => {
     const customer = await seedCustomer(db);
     await createSimpleSale(app, db, customer.id, false);
 
@@ -168,7 +168,7 @@ describe.skip("ledger integration tests", () => {
       .all()
       .filter((r) => r.type === "sale");
     expect(saleRows).toHaveLength(1);
-    expect(saleRows[0]?.debit).toBe(50000);
+    expect(saleRows[0]?.amountDue).toBe(50000);
   });
 
   it("a paid sale is excluded from outstanding but present in the ledger", async () => {
@@ -185,7 +185,7 @@ describe.skip("ledger integration tests", () => {
       .all()
       .filter((r) => r.type === "sale");
     expect(saleRows).toHaveLength(1);
-    expect(saleRows[0]?.debit).toBe(50000);
+    expect(saleRows[0]?.amountDue).toBe(50000);
   });
 
   it("payment, adjustment, summary and paginated list behave correctly", async () => {
@@ -203,7 +203,7 @@ describe.skip("ledger integration tests", () => {
 
     const adjustmentRes = await postJson(app, `/api/customers/${customer.id}/adjustments`, {
       amount: 5000,
-      direction: "credit",
+      direction: "paid",
       notes: "round-off"
     });
     expect(adjustmentRes.status).toBe(201);
@@ -215,16 +215,16 @@ describe.skip("ledger integration tests", () => {
     expect(summaryRes.status).toBe(200);
     const summary = (await summaryRes.json()) as {
       currentBalance: number;
-      totalDebit: number;
-      totalCredit: number;
+      totalDue: number;
+      totalPaid: number;
       openingBalance: number;
       avgSale: number;
       salesCount: number;
       lastPayment: { amount: number; mode: string } | null;
     };
-    // currentBalance is the pure ledger sum: 50000 debit - 20000 - 5000 credit = 25000
-    expect(summary.totalDebit).toBe(50000);
-    expect(summary.totalCredit).toBe(25000);
+    // currentBalance is the pure ledger sum: 50000 due - 20000 - 5000 paid = 25000
+    expect(summary.totalDue).toBe(50000);
+    expect(summary.totalPaid).toBe(25000);
     expect(summary.currentBalance).toBe(25000);
     expect(summary.salesCount).toBe(1);
     expect(summary.avgSale).toBe(50000);
@@ -235,7 +235,7 @@ describe.skip("ledger integration tests", () => {
     expect(listRes.status).toBe(200);
     const list = (await listRes.json()) as {
       totalCount: number;
-      data: { type: string; debit: number; credit: number; runningBalance: number }[];
+      data: { type: string; amountDue: number; amountPaid: number; runningBalance: number }[];
     };
     expect(list.totalCount).toBe(3);
     expect(list.data).toHaveLength(3);

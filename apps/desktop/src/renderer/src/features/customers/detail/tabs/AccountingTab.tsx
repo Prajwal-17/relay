@@ -14,7 +14,7 @@ export function AccountingTab({ customerId }: { customerId: string }) {
   const lastPayment = summary?.lastPayment ?? null;
 
   const isSettled = currentBalance === 0;
-  const isDebit = currentBalance > 0;
+  const isDue = currentBalance > 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
@@ -23,13 +23,13 @@ export function AccountingTab({ customerId }: { customerId: string }) {
           <div
             className={cn(
               "relative flex items-center gap-3 px-4 py-3",
-              !isSettled && (isDebit ? "bg-destructive/4" : "bg-success/5")
+              !isSettled && (isDue ? "bg-destructive/4" : "bg-success/5")
             )}
           >
             <span
               className={cn(
                 "absolute inset-y-0 left-0 w-1",
-                isSettled ? "bg-border" : isDebit ? "bg-destructive" : "bg-success"
+                isSettled ? "bg-border" : isDue ? "bg-destructive" : "bg-success"
               )}
             />
             <span
@@ -37,7 +37,7 @@ export function AccountingTab({ customerId }: { customerId: string }) {
                 "flex size-9 shrink-0 items-center justify-center rounded-lg",
                 isSettled
                   ? "bg-muted text-muted-foreground"
-                  : isDebit
+                  : isDue
                     ? "bg-destructive/10 text-destructive"
                     : "bg-success/15 text-success"
               )}
@@ -51,14 +51,14 @@ export function AccountingTab({ customerId }: { customerId: string }) {
               <span
                 className={cn(
                   "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
-                  isSettled ? "text-foreground" : isDebit ? "text-destructive" : "text-success"
+                  isSettled ? "text-foreground" : isDue ? "text-destructive" : "text-success"
                 )}
               >
                 {isSettled ? "Settled" : formatRupee(Math.abs(currentBalance))}
               </span>
               {!isSettled && (
                 <span className="text-muted-foreground text-[11px] font-medium">
-                  {isDebit ? "Receivable (Dr)" : "Advance (Cr)"}
+                  {isDue ? "Receivable" : "Advance"}
                 </span>
               )}
             </div>

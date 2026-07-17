@@ -185,7 +185,7 @@ function CustomerRow({
   onHover: () => void;
 }) {
   const outstanding = customer.outstandingBalance ?? 0;
-  const isDebit = outstanding > 0;
+  const isDue = outstanding > 0;
 
   return (
     <button
@@ -213,7 +213,7 @@ function CustomerRow({
       <span
         className={cn(
           "shrink-0 text-sm font-semibold tabular-nums",
-          isDebit ? "text-destructive" : "text-muted-foreground"
+          isDue ? "text-destructive" : "text-muted-foreground"
         )}
       >
         {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}

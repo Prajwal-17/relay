@@ -81,8 +81,8 @@ export const customerLedger = sqliteTable("customer_ledger", {
   }),
   type: text("type").notNull(),
   saleId: text("sale_id").references(() => sales.id),
-  debit: integer("debit").default(0),
-  credit: integer("credit").default(0),
+  amountDue: integer("amount_due").default(0),
+  amountPaid: integer("amount_paid").default(0),
   paymentMode: text("payment_mode"),
   notes: text("notes"),
   createdAt: text("created_at")

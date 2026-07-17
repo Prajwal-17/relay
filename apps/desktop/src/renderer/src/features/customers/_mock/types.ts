@@ -18,7 +18,7 @@ export type CustomerMock = {
   shippingAddress?: string;
   openingBalance: number;
   creditLimit: number;
-  /** + = Dr (they owe), - = Cr (prepaid) */
+  /** + = Due (they owe), - = Advance (prepaid) */
   outstanding: number;
   totalSales: number;
   lastPurchase?: string;

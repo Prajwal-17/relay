@@ -115,13 +115,13 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
     },
     {
-      accessorKey: "debit",
-      header: "Debit",
+      accessorKey: "amountDue",
+      header: "Amount Due",
       cell: ({ row }) => {
-        const debit = row.original.debit;
-        return debit > 0 ? (
+        const amountDue = row.original.amountDue;
+        return amountDue > 0 ? (
           <span className="text-foreground text-sm font-semibold tabular-nums">
-            {formatRupee(debit)}
+            {formatRupee(amountDue)}
           </span>
         ) : (
           <span className="text-muted-foreground/60 text-sm">—</span>
@@ -130,13 +130,13 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[110px]" } as TxnTableColMeta
     },
     {
-      accessorKey: "credit",
-      header: "Credit",
+      accessorKey: "amountPaid",
+      header: "Amount Paid",
       cell: ({ row }) => {
-        const credit = row.original.credit;
-        return credit > 0 ? (
+        const amountPaid = row.original.amountPaid;
+        return amountPaid > 0 ? (
           <span className="text-success text-sm font-semibold tabular-nums">
-            {formatRupee(credit)}
+            {formatRupee(amountPaid)}
           </span>
         ) : (
           <span className="text-muted-foreground/60 text-sm">—</span>
@@ -149,14 +149,14 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       header: "Balance",
       cell: ({ row }) => {
         const balance = row.original.runningBalance;
-        const isDebit = balance >= 0;
+        const isDue = balance >= 0;
         return (
           <span
             className={cn(
               "text-sm font-semibold tabular-nums",
               balance === 0
                 ? "text-muted-foreground"
-                : isDebit
+                : isDue
                   ? "text-destructive"
                   : "text-success"
             )}

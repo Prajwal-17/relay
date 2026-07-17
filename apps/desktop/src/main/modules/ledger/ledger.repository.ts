@@ -55,12 +55,12 @@ const getLedgerByCustomerId = (params: GetLedgerParams): LedgerEntry[] => {
       type: customerLedger.type,
       saleId: customerLedger.saleId,
       invoiceNo: sales.invoiceNo,
-      debit: customerLedger.debit,
-      credit: customerLedger.credit,
+      amountDue: customerLedger.amountDue,
+      amountPaid: customerLedger.amountPaid,
       paymentMode: customerLedger.paymentMode,
       notes: customerLedger.notes,
       runningBalance: sql<number>`(
-        SELECT COALESCE(SUM(COALESCE(l2.debit, 0) - COALESCE(l2.credit, 0)), 0)
+        SELECT COALESCE(SUM(COALESCE(l2.amount_due, 0) - COALESCE(l2.amount_paid, 0)), 0)
         FROM customer_ledger l2
         WHERE l2.customer_id = customer_ledger.customer_id
           AND (l2.created_at < customer_ledger.created_at
@@ -82,8 +82,8 @@ const getLedgerByCustomerId = (params: GetLedgerParams): LedgerEntry[] => {
     type: row.type as LedgerEntry["type"],
     saleId: row.saleId,
     invoiceNo: row.invoiceNo ?? null,
-    debit: row.debit ?? 0,
-    credit: row.credit ?? 0,
+    amountDue: row.amountDue ?? 0,
+    amountPaid: row.amountPaid ?? 0,
     paymentMode: row.paymentMode,
     notes: row.notes,
     runningBalance: row.runningBalance ?? 0,
@@ -108,8 +108,8 @@ const getLedgerSummary = (customerId: string) => {
   return db.transaction((tx) => {
     const totals = tx
       .select({
-        totalDebit: sql<number>`COALESCE(SUM(${customerLedger.debit}), 0)`,
-        totalCredit: sql<number>`COALESCE(SUM(${customerLedger.credit}), 0)`
+        totalDue: sql<number>`COALESCE(SUM(${customerLedger.amountDue}), 0)`,
+        totalPaid: sql<number>`COALESCE(SUM(${customerLedger.amountPaid}), 0)`
       })
       .from(customerLedger)
       .where(eq(customerLedger.customerId, customerId))
@@ -141,7 +141,7 @@ const getLedgerSummary = (customerId: string) => {
 
     const salesAgg = tx
       .select({
-        salesTotal: sql<number>`COALESCE(SUM(${customerLedger.debit}), 0)`,
+        salesTotal: sql<number>`COALESCE(SUM(${customerLedger.amountDue}), 0)`,
         salesCount: count()
       })
       .from(customerLedger)
@@ -153,21 +153,21 @@ const getLedgerSummary = (customerId: string) => {
       )
       .get();
 
-    const totalDebit = totals?.totalDebit ?? 0;
-    const totalCredit = totals?.totalCredit ?? 0;
+    const totalDue = totals?.totalDue ?? 0;
+    const totalPaid = totals?.totalPaid ?? 0;
     const salesTotal = salesAgg?.salesTotal ?? 0;
     const salesCount = salesAgg?.salesCount ?? 0;
 
     return {
-      currentBalance: totalDebit - totalCredit,
-      totalDebit,
-      totalCredit,
-      openingBalance: opening ? (opening.debit ?? 0) - (opening.credit ?? 0) : 0,
+      currentBalance: totalDue - totalPaid,
+      totalDue,
+      totalPaid,
+      openingBalance: opening ? (opening.amountDue ?? 0) - (opening.amountPaid ?? 0) : 0,
       avgSale: salesCount > 0 ? Math.round(salesTotal / salesCount) : 0,
       salesCount,
       lastPayment: lastPayment
         ? {
-            amount: lastPayment.credit ?? 0,
+            amount: lastPayment.amountPaid ?? 0,
             mode: lastPayment.paymentMode ?? "cash",
             date: lastPayment.createdAt
           }
@@ -196,8 +196,8 @@ const insertPayment = (tx: Tx, customerId: string, payload: CreatePaymentPayload
     .values({
       customerId,
       type: LEDGER_ENTRY_TYPE.PAYMENT,
-      debit: 0,
-      credit: payload.amount,
+      amountDue: 0,
+      amountPaid: payload.amount,
       paymentMode: payload.mode,
       notes: payload.notes ?? null,
       createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
@@ -212,8 +212,8 @@ const insertAdjustment = (tx: Tx, customerId: string, payload: CreateAdjustmentP
     .values({
       customerId,
       type: LEDGER_ENTRY_TYPE.ADJUSTMENT,
-      debit: payload.direction === "debit" ? payload.amount : 0,
-      credit: payload.direction === "credit" ? payload.amount : 0,
+      amountDue: payload.direction === "due" ? payload.amount : 0,
+      amountPaid: payload.direction === "paid" ? payload.amount : 0,
       notes: payload.notes ?? null
     })
     .returning()
@@ -226,8 +226,8 @@ const insertQuickSale = (tx: Tx, customerId: string, payload: CreateQuickSalePay
     .values({
       customerId,
       type: LEDGER_ENTRY_TYPE.QUICK_SALE,
-      debit: payload.amount,
-      credit: 0,
+      amountDue: payload.amount,
+      amountPaid: 0,
       notes: payload.notes ?? null
     })
     .returning()
@@ -240,8 +240,8 @@ const insertOpeningBalance = (tx: Tx, customerId: string, payload: CreateOpening
     .values({
       customerId,
       type: LEDGER_ENTRY_TYPE.OPENING_BALANCE,
-      debit: payload.amount,
-      credit: 0,
+      amountDue: payload.amount,
+      amountPaid: 0,
       notes: payload.notes ?? null
     })
     .returning()
@@ -255,15 +255,15 @@ const insertSaleEntry = (tx: Tx, params: InsertSaleEntryParams) => {
       customerId: params.customerId,
       type: LEDGER_ENTRY_TYPE.SALE,
       saleId: params.saleId,
-      debit: params.debit,
-      credit: 0
+      amountDue: params.amountDue,
+      amountPaid: 0
     })
     .returning()
     .get();
 };
 
-const updateSaleEntryDebit = (tx: Tx, saleId: string, debit: number) => {
-  return tx.update(customerLedger).set({ debit }).where(eq(customerLedger.saleId, saleId)).run();
+const updateSaleEntryAmountDue = (tx: Tx, saleId: string, amountDue: number) => {
+  return tx.update(customerLedger).set({ amountDue }).where(eq(customerLedger.saleId, saleId)).run();
 };
 
 const deleteSaleEntry = (tx: Tx, saleId: string) => {
@@ -273,7 +273,7 @@ const deleteSaleEntry = (tx: Tx, saleId: string) => {
 const recomputeOutstanding = (tx: Tx, customerId: string) => {
   const result = tx
     .select({
-      balance: sql<number>`COALESCE(SUM(COALESCE(${customerLedger.debit}, 0) - COALESCE(${customerLedger.credit}, 0)), 0)`
+      balance: sql<number>`COALESCE(SUM(COALESCE(${customerLedger.amountDue}, 0) - COALESCE(${customerLedger.amountPaid}, 0)), 0)`
     })
     .from(customerLedger)
     .leftJoin(sales, eq(customerLedger.saleId, sales.id))
@@ -301,7 +301,7 @@ export const ledgerRepository = {
   insertQuickSale,
   insertOpeningBalance,
   insertSaleEntry,
-  updateSaleEntryDebit,
+  updateSaleEntryAmountDue,
   deleteSaleEntry,
   recomputeOutstanding
 };

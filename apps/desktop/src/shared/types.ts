@@ -391,8 +391,8 @@ export type LedgerEntry = {
   type: LedgerEntryType;
   saleId: string | null;
   invoiceNo: number | null;
-  debit: number;
-  credit: number;
+  amountDue: number;
+  amountPaid: number;
   paymentMode: string | null;
   notes: string | null;
   runningBalance: number;
@@ -401,8 +401,8 @@ export type LedgerEntry = {
 
 export type LedgerSummary = {
   currentBalance: number;
-  totalDebit: number;
-  totalCredit: number;
+  totalDue: number;
+  totalPaid: number;
   openingBalance: number;
   avgSale: number;
   salesCount: number;
@@ -417,7 +417,7 @@ export type CreatePaymentPayload = {
 
 export type CreateAdjustmentPayload = {
   amount: number;
-  direction: "debit" | "credit";
+  direction: "due" | "paid";
   notes?: string;
 };
 

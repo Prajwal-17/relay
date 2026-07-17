@@ -26,7 +26,7 @@ export const createPaymentSchema = z.object({
 
 export const createAdjustmentSchema = z.object({
   amount: z.number().int().positive(),
-  direction: z.enum(["debit", "credit"]),
+  direction: z.enum(["due", "paid"]),
   notes: z.string().trim().optional()
 });
 

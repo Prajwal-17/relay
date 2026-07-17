@@ -39,5 +39,5 @@ export type CreateOpeningBalanceParams = {
 export type InsertSaleEntryParams = {
   customerId: string;
   saleId: string;
-  debit: number;
+  amountDue: number;
 };
