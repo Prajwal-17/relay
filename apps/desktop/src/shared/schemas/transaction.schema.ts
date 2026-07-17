@@ -21,6 +21,8 @@ export const payloadDataSchema = z.object({
   transactionNo: z.number().positive().nullable().optional(),
   transactionType: z.enum(TRANSACTION_TYPE),
   customerId: z.uuidv4(),
+  amountPaid: z.number().int().nonnegative().default(0),
+  paymentMode: z.enum(["cash", "upi", "card"]).nullable().default(null),
   isPaid: z.boolean(),
   items: z.array(lineItemSchema),
   notes: z.string().nullable().default(null),

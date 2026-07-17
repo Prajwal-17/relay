@@ -2,10 +2,10 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { processSyncQueue } from "@/utils/syncWorker";
 import { PAYMENT_MODE, TRANSACTION_TYPE, type PaymentMode } from "@shared/types";
 import { formatRupee, rupeesToPaisa } from "@shared/utils/utils";
-import { Banknote, CreditCard, Smartphone, Wallet } from "lucide-react";
-import { useState } from "react";
+import { Banknote, CreditCard, IndianRupee, Smartphone, Wallet } from "lucide-react";
 
 type PaymentStatus = "PAID" | "PARTIAL" | "UNPAID";
 
@@ -40,16 +40,17 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
+  const updateField = useBillingSessionStore((state) => state.updateField);
   const lineItems = useBillingSessionStore((state) =>
     activeTabId ? (state.sessions[activeTabId]?.lineItems ?? []) : []
   );
 
-  const [amountReceived, setAmountReceived] = useState("");
-  const [paymentMode, setPaymentMode] = useState<PaymentMode | null>(PAYMENT_MODE.CASH);
-
   if (!session || session.billingType !== TRANSACTION_TYPE.SALE) {
     return null;
   }
+
+  const amountReceived = session.amountPaid ?? "";
+  const paymentMode = session.paymentMode;
 
   const grandTotalPaisa = lineItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
 
@@ -63,19 +64,24 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
     receivedPaisa <= 0 ? "UNPAID" : balancePaisa <= 0 ? "PAID" : "PARTIAL";
   const statusStyle = STATUS_STYLES[status];
 
-  const handleAmountChange = (raw: string) => {
-    if (raw === "") {
-      setAmountReceived("");
-      return;
-    }
-    setAmountReceived(raw.replace(/[^0-9.]/g, ""));
+  const commit = (field: "amountPaid" | "paymentMode", value: string | PaymentMode | null) => {
+    updateField(activeTabId!, field, value as never);
+    processSyncQueue(activeTabId!);
   };
 
-  const applyFull = () => setAmountReceived(String(grandTotalPaisa / 100));
-  const applyHalf = () => setAmountReceived(String(Math.round(grandTotalPaisa / 2) / 100));
+  const handleAmountChange = (raw: string) => {
+    commit("amountPaid", raw === "" ? "" : raw.replace(/[^0-9.]/g, ""));
+  };
+
+  const handlePaymentModeChange = (mode: PaymentMode | null) => {
+    commit("paymentMode", paymentMode === mode ? null : mode);
+  };
+
+  const applyFull = () => commit("amountPaid", String(grandTotalPaisa / 100));
+  const applyHalf = () => commit("amountPaid", String(Math.round(grandTotalPaisa / 2) / 100));
   const applyRoundOff = () => {
     const rupees = grandTotalPaisa / 100;
-    setAmountReceived(String(Math.ceil(rupees / 10) * 10));
+    commit("amountPaid", String(Math.ceil(rupees / 10) * 10));
   };
 
   const hasBillAmount = grandTotalPaisa > 0;
@@ -103,7 +109,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
         </div>
         <span
           className={cn(
-            "inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums",
+            "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold tabular-nums",
             statusStyle.pill
           )}
         >
@@ -114,7 +120,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
       <div className="mb-3 flex flex-col gap-1.5">
         <div className="flex items-center justify-between gap-2">
           <span className="text-muted-foreground/80 text-xs font-semibold tracking-wider uppercase">
-            Received
+            Amount Received
           </span>
           <div className="flex items-center gap-1">
             {quickActions.map((action) => (
@@ -131,9 +137,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
           </div>
         </div>
         <div className="relative">
-          <span className="text-muted-foreground/60 pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-xl font-semibold">
-            ₹
-          </span>
+          <IndianRupee className="text-muted-foreground/70 pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2" />
           <Input
             type="number"
             inputMode="decimal"
@@ -142,14 +146,14 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
             value={amountReceived}
             onChange={(e) => handleAmountChange(e.target.value)}
             placeholder="0.00"
-            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring/50 bg-background h-12 [appearance:textfield] rounded-xl border pr-3 pl-9 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring bg-background placeholder:text-muted-foreground/60 h-12 [appearance:textfield] rounded-lg border pr-3 pl-10 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
       </div>
 
       <div className="mb-3 flex flex-col gap-1.5">
         <span className="text-muted-foreground/80 text-xs font-semibold tracking-wider uppercase">
-          Mode
+          Payment Mode
         </span>
         <div className="grid grid-cols-3 gap-1.5">
           {PAYMENT_MODES.map(({ value, label, Icon }) => {
@@ -158,7 +162,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
               <button
                 key={value}
                 type="button"
-                onClick={() => setPaymentMode(selected ? null : value)}
+                onClick={() => handlePaymentModeChange(value)}
                 className={cn(
                   "flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold capitalize transition-colors",
                   selected
@@ -192,7 +196,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
           <span className="text-foreground text-xs font-semibold">
             {isOverpaid ? "Change Due" : "Balance Due"}
           </span>
-          <span className={cn("text-lg font-bold tabular-nums", statusStyle.amount)}>
+          <span className={cn("text-2xl font-bold tabular-nums", statusStyle.amount)}>
             {formatRupee(displayBalance)}
           </span>
         </div>

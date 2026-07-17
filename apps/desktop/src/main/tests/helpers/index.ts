@@ -8,7 +8,15 @@ import { HTTPException } from "hono/http-exception";
 import path from "node:path";
 import { CustomerRole } from "../../db/enum";
 import * as schema from "../../db/schema";
-import { customers, estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
+import {
+  customerLedger,
+  customers,
+  estimateItems,
+  estimates,
+  products,
+  saleItems,
+  sales
+} from "../../db/schema";
 import { estimatesController } from "../../modules/estimates/estimates.controller";
 import { salesController } from "../../modules/sales/sales.controller";
 import { AppError } from "../../utils/appError";
@@ -79,6 +87,7 @@ export function cleanupDb(db: DB) {
   db.delete(estimateItems).run();
   db.delete(saleItems).run();
   db.delete(estimates).run();
+  db.delete(customerLedger).run();
   db.delete(sales).run();
   db.delete(products).run();
   db.delete(customers).run();

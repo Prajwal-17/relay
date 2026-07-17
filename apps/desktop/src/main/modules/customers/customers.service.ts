@@ -101,8 +101,17 @@ const getSalesByCustomerId = async (
       rows.length > 0
         ? rows.map((s) => ({
             type: TRANSACTION_TYPE.SALE,
+            id: s.id,
             transactionNo: s.invoiceNo,
-            ...s
+            customerId: s.customerId,
+            grandTotal: s.grandTotal,
+            totalQuantity: s.totalQuantity,
+            amountPaid: s.amountPaid ?? 0,
+            paymentMode: s.paymentMode as CustomerTransaction["paymentMode"],
+            isPaid: s.isPaid,
+            notes: s.notes,
+            updatedAt: s.updatedAt,
+            createdAt: s.createdAt
           }))
         : []
   };
@@ -125,8 +134,17 @@ const getEstimatesByCustomerId = async (
       rows.length > 0
         ? rows.map((e) => ({
             type: TRANSACTION_TYPE.ESTIMATE,
+            id: e.id,
             transactionNo: e.estimateNo,
-            ...e
+            customerId: e.customerId,
+            grandTotal: e.grandTotal,
+            totalQuantity: e.totalQuantity,
+            amountPaid: 0,
+            paymentMode: null,
+            isPaid: e.isPaid,
+            notes: e.notes,
+            updatedAt: e.updatedAt,
+            createdAt: e.createdAt
           }))
         : []
   };

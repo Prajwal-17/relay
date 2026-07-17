@@ -118,6 +118,8 @@ export function buildTransactionPayload({
   customerId,
   items,
   notes,
+  amountPaid,
+  paymentMode,
   createdAt
 }: {
   billingType: TransactionType;
@@ -125,6 +127,8 @@ export function buildTransactionPayload({
   customerId: string | null;
   items: NormalizedLineItem[];
   notes: string | null;
+  amountPaid: string;
+  paymentMode: string | null;
   createdAt: string;
 }) {
   return {
@@ -132,6 +136,8 @@ export function buildTransactionPayload({
       transactionNo: transactionNo,
       transactionType: billingType,
       customerId,
+      amountPaid: amountPaid ? rupeesToPaisa(parseFloat(amountPaid)) : 0,
+      paymentMode,
       isPaid: billingType === TRANSACTION_TYPE.SALE,
       notes,
       items,

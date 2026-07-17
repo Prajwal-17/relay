@@ -263,11 +263,106 @@ const insertSaleEntry = (tx: Tx, params: InsertSaleEntryParams) => {
 };
 
 const updateSaleEntryAmountDue = (tx: Tx, saleId: string, amountDue: number) => {
-  return tx.update(customerLedger).set({ amountDue }).where(eq(customerLedger.saleId, saleId)).run();
+  return tx
+    .update(customerLedger)
+    .set({ amountDue })
+    .where(eq(customerLedger.saleId, saleId))
+    .run();
 };
 
-const deleteSaleEntry = (tx: Tx, saleId: string) => {
+const deleteAllLedgerEntriesForSale = (tx: Tx, saleId: string) => {
   return tx.delete(customerLedger).where(eq(customerLedger.saleId, saleId)).run();
+};
+
+const getLedgerEntriesForSale = (tx: Tx, saleId: string) => {
+  return tx.select().from(customerLedger).where(eq(customerLedger.saleId, saleId)).all();
+};
+
+const upsertSaleEntry = (tx: Tx, params: InsertSaleEntryParams) => {
+  const existing = tx
+    .select()
+    .from(customerLedger)
+    .where(
+      and(eq(customerLedger.saleId, params.saleId), eq(customerLedger.type, LEDGER_ENTRY_TYPE.SALE))
+    )
+    .get();
+
+  if (existing) {
+    return tx
+      .update(customerLedger)
+      .set({
+        customerId: params.customerId,
+        amountDue: params.amountDue,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .where(eq(customerLedger.id, existing.id))
+      .returning()
+      .get();
+  }
+
+  return tx
+    .insert(customerLedger)
+    .values({
+      customerId: params.customerId,
+      type: LEDGER_ENTRY_TYPE.SALE,
+      saleId: params.saleId,
+      amountDue: params.amountDue,
+      amountPaid: 0,
+      createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .returning()
+    .get();
+};
+
+const upsertPaymentForSale = (
+  tx: Tx,
+  params: { saleId: string; customerId: string; amountPaid: number; paymentMode: string | null }
+) => {
+  const existing = tx
+    .select()
+    .from(customerLedger)
+    .where(
+      and(
+        eq(customerLedger.saleId, params.saleId),
+        eq(customerLedger.type, LEDGER_ENTRY_TYPE.PAYMENT)
+      )
+    )
+    .get();
+
+  if (params.amountPaid <= 0) {
+    if (existing) {
+      tx.delete(customerLedger).where(eq(customerLedger.id, existing.id)).run();
+    }
+    return null;
+  }
+
+  if (existing) {
+    return tx
+      .update(customerLedger)
+      .set({
+        customerId: params.customerId,
+        amountPaid: params.amountPaid,
+        paymentMode: params.paymentMode,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .where(eq(customerLedger.id, existing.id))
+      .returning()
+      .get();
+  }
+
+  return tx
+    .insert(customerLedger)
+    .values({
+      customerId: params.customerId,
+      type: LEDGER_ENTRY_TYPE.PAYMENT,
+      saleId: params.saleId,
+      amountDue: 0,
+      amountPaid: params.amountPaid,
+      paymentMode: params.paymentMode,
+      createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .returning()
+    .get();
 };
 
 const recomputeOutstanding = (tx: Tx, customerId: string) => {
@@ -276,13 +371,7 @@ const recomputeOutstanding = (tx: Tx, customerId: string) => {
       balance: sql<number>`COALESCE(SUM(COALESCE(${customerLedger.amountDue}, 0) - COALESCE(${customerLedger.amountPaid}, 0)), 0)`
     })
     .from(customerLedger)
-    .leftJoin(sales, eq(customerLedger.saleId, sales.id))
-    .where(
-      and(
-        eq(customerLedger.customerId, customerId),
-        sql`NOT (${customerLedger.type} = 'sale' AND COALESCE(${sales.isPaid}, 0) = 1)`
-      )
-    )
+    .where(eq(customerLedger.customerId, customerId))
     .get();
 
   tx.update(customers)
@@ -302,6 +391,9 @@ export const ledgerRepository = {
   insertOpeningBalance,
   insertSaleEntry,
   updateSaleEntryAmountDue,
-  deleteSaleEntry,
+  deleteAllLedgerEntriesForSale,
+  getLedgerEntriesForSale,
+  upsertSaleEntry,
+  upsertPaymentForSale,
   recomputeOutstanding
 };

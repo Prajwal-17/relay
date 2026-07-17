@@ -3,9 +3,11 @@ import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import {
   TRANSACTION_TYPE,
+  type PaymentMode,
   type TransactionType,
   type UnifiedTransctionWithItems
 } from "@shared/types";
+import { paisaToRupees } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
@@ -57,7 +59,9 @@ const useLoadTransactionDetails = (
         billingDate: new Date(data.createdAt as string),
         customerId: data.customerId,
         customerName: data.customer.name,
-        notes: data.notes
+        notes: data.notes,
+        amountPaid: data.amountPaid ? paisaToRupees(data.amountPaid).toString() : "",
+        paymentMode: data.paymentMode as PaymentMode | null
       });
       setLineItems(tabId, data.items);
       useBillingTabsStore.getState().updateTab(tabId, { transactionNo: data.transactionNo });

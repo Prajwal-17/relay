@@ -1,5 +1,5 @@
 import { MetricsComponent } from "@/features/dashboard/MetricsComponent";
-import { RecentActivitiesTable } from "@/features/dashboard/RecentTransactionsTable";
+// import { RecentActivitiesTable } from "@/features/dashboard/RecentTransactionsTable";
 import { SalesEstimateChart } from "@/features/dashboard/SalesEstimatesChart";
 import { TopProductsChart } from "@/features/dashboard/TopProductsChart";
 
@@ -16,7 +16,7 @@ const HomePage = () => {
           <TopProductsChart />
         </div>
       </div>
-      <RecentActivitiesTable />
+      {/*<RecentActivitiesTable />*/}
     </div>
   );
 };

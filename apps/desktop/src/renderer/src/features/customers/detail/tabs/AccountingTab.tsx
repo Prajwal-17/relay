@@ -16,100 +16,104 @@ export function AccountingTab({ customerId }: { customerId: string }) {
   const isSettled = currentBalance === 0;
   const isDue = currentBalance > 0;
 
+  const balanceTone = isSettled
+    ? "text-muted-foreground"
+    : isDue
+      ? "text-destructive"
+      : "text-success";
+  const balanceIconTone = isSettled
+    ? "bg-muted text-muted-foreground"
+    : isDue
+      ? "bg-destructive/10 text-destructive"
+      : "bg-success/15 text-success";
+
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
       {summary && (
         <div className="border-border bg-card divide-border/70 grid shrink-0 grid-cols-3 divide-x overflow-hidden rounded-xl border shadow-xs">
-          <div
-            className={cn(
-              "relative flex items-center gap-3 px-4 py-3",
-              !isSettled && (isDue ? "bg-destructive/4" : "bg-success/5")
-            )}
-          >
-            <span
-              className={cn(
-                "absolute inset-y-0 left-0 w-1",
-                isSettled ? "bg-border" : isDue ? "bg-destructive" : "bg-success"
-              )}
-            />
-            <span
-              className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                isSettled
-                  ? "bg-muted text-muted-foreground"
-                  : isDue
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-success/15 text-success"
-              )}
-            >
-              <Wallet className="size-4.5" />
-            </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
-                Balance
-              </span>
+          <div className="flex items-center justify-between gap-3 px-4 py-4">
+            <div className="flex min-w-0 items-center gap-2.5">
               <span
                 className={cn(
-                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
-                  isSettled ? "text-foreground" : isDue ? "text-destructive" : "text-success"
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                  balanceIconTone
                 )}
+              >
+                <Wallet className="size-4" />
+              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  Current balance
+                </span>
+                <span className="text-muted-foreground truncate text-xs font-medium">
+                  {isSettled ? "Account is clear" : isDue ? "They owe you" : "You owe them"}
+                </span>
+              </div>
+            </div>
+            <div className="flex shrink-0 items-baseline justify-end gap-1">
+              <span
+                className={cn("text-2xl font-bold tracking-[-0.02em] tabular-nums", balanceTone)}
               >
                 {isSettled ? "Settled" : formatRupee(Math.abs(currentBalance))}
               </span>
               {!isSettled && (
-                <span className="text-muted-foreground text-[11px] font-medium">
+                <span className={cn("text-sm font-bold tracking-wider uppercase", balanceTone)}>
                   {isDue ? "Receivable" : "Advance"}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3 px-4 py-3">
-            <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-lg">
-              <TrendingUp className="size-4.5" />
-            </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
-                Avg Sale
+          <div className="flex items-center justify-between gap-3 px-4 py-4">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <TrendingUp className="size-4" />
               </span>
-              <span className="text-foreground truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums">
-                {avgSale > 0 ? formatRupee(avgSale) : "—"}
-              </span>
-              <span className="text-muted-foreground text-[11px] font-medium tabular-nums">
-                {salesCount > 0
-                  ? `Across ${salesCount} ${salesCount === 1 ? "sale" : "sales"}`
-                  : "No sales yet"}
-              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  Avg sale
+                </span>
+                <span className="text-muted-foreground truncate text-xs font-medium tabular-nums">
+                  {salesCount > 0
+                    ? `Across ${salesCount} ${salesCount === 1 ? "sale" : "sales"}`
+                    : "No sales yet"}
+                </span>
+              </div>
             </div>
-          </div>
-
-          <div className="flex items-center gap-3 px-4 py-3">
             <span
               className={cn(
-                "flex size-9 shrink-0 items-center justify-center rounded-lg",
-                lastPayment ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
+                "text-2xl font-bold tracking-[-0.02em] tabular-nums",
+                avgSale > 0 ? "text-foreground" : "text-muted-foreground"
               )}
             >
-              <ArrowDownLeft className="size-4.5" />
+              {avgSale > 0 ? formatRupee(avgSale) : "—"}
             </span>
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
-                Last Payment
+          </div>
+
+          <div className="flex items-center justify-between gap-3 px-4 py-4">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <ArrowDownLeft className="size-4" />
               </span>
-              <span
-                className={cn(
-                  "truncate text-lg leading-none font-semibold tracking-[-0.02em] tabular-nums",
-                  lastPayment ? "text-success" : "text-muted-foreground"
-                )}
-              >
-                {lastPayment ? formatRupee(lastPayment.amount) : "—"}
-              </span>
-              <span className="text-muted-foreground truncate text-[11px] font-medium capitalize">
-                {lastPayment
-                  ? `${lastPayment.mode} · ${formatDateStr(lastPayment.date)}`
-                  : "No payments yet"}
-              </span>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                  Last payment
+                </span>
+                <span className="text-muted-foreground truncate text-xs font-medium capitalize">
+                  {lastPayment
+                    ? `${lastPayment.mode} • ${formatDateStr(lastPayment.date)}`
+                    : "No payments yet"}
+                </span>
+              </div>
             </div>
+            <span
+              className={cn(
+                "text-2xl font-bold tracking-[-0.02em] tabular-nums",
+                lastPayment ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {lastPayment ? formatRupee(lastPayment.amount) : "—"}
+            </span>
           </div>
         </div>
       )}

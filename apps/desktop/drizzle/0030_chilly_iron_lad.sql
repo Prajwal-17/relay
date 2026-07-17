@@ -4,8 +4,8 @@ CREATE TABLE `customer_ledger` (
 	`store_id` text,
 	`type` text NOT NULL,
 	`sale_id` text,
-	`debit` integer DEFAULT 0,
-	`credit` integer DEFAULT 0,
+	`amount_due` integer DEFAULT 0,
+	`amount_paid` integer DEFAULT 0,
 	`payment_mode` text,
 	`notes` text,
 	`created_at` text DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL,
@@ -21,5 +21,9 @@ ALTER TABLE `customers` ADD `outstanding_balance` integer DEFAULT 0;--> statemen
 ALTER TABLE `customers` ADD `credit_limit` integer DEFAULT 0;--> statement-breakpoint
 ALTER TABLE `estimate_items` ADD `position` integer DEFAULT 0 NOT NULL;--> statement-breakpoint
 CREATE INDEX `estimate_items_position_idx` ON `estimate_items` (`estimate_id`,`position`);--> statement-breakpoint
+ALTER TABLE `estimates` ADD `notes` text;--> statement-breakpoint
 ALTER TABLE `sale_items` ADD `position` integer DEFAULT 0 NOT NULL;--> statement-breakpoint
-CREATE INDEX `sale_items_position_idx` ON `sale_items` (`sale_id`,`position`);
+CREATE INDEX `sale_items_position_idx` ON `sale_items` (`sale_id`,`position`);--> statement-breakpoint
+ALTER TABLE `sales` ADD `amount_paid` integer DEFAULT 0 NOT NULL;--> statement-breakpoint
+ALTER TABLE `sales` ADD `payment_mode` text;--> statement-breakpoint
+ALTER TABLE `sales` ADD `notes` text;

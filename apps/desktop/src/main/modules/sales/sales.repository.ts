@@ -12,6 +12,7 @@ import { db } from "../../db/db";
 import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
+import { ledgerRepository } from "../ledger/ledger.repository";
 import type { FilterSalesParams } from "./sales.types";
 
 const getSaleById = async (id: string) => {
@@ -77,7 +78,9 @@ const createSale = async (payload: TxnPayloadData) => {
       .values({
         invoiceNo: finalInvoiceNo,
         customerId: payload.customerId,
-        isPaid: payload.isPaid,
+        amountPaid: payload.amountPaid ?? 0,
+        paymentMode: payload.paymentMode ?? null,
+        isPaid: false,
         notes: payload.notes,
         createdAt: payload.createdAt
           ? payload.createdAt
@@ -126,6 +129,33 @@ const createSale = async (payload: TxnPayloadData) => {
     }
 
     updateSaleTotals(tx, newSale.id);
+
+    tx.update(sales)
+      .set({
+        amountPaid: sql`MIN(${sales.amountPaid}, COALESCE(${sales.grandTotal}, 0))`
+      })
+      .where(eq(sales.id, newSale.id))
+      .run();
+
+    const finalSale = tx.select().from(sales).where(eq(sales.id, newSale.id)).get()!;
+    const cappedPaid = Math.min(finalSale.amountPaid ?? 0, finalSale.grandTotal ?? 0);
+
+    if ((finalSale.grandTotal ?? 0) > 0) {
+      ledgerRepository.upsertSaleEntry(tx, {
+        customerId: finalSale.customerId,
+        saleId: finalSale.id,
+        amountDue: finalSale.grandTotal ?? 0
+      });
+      ledgerRepository.upsertPaymentForSale(tx, {
+        saleId: finalSale.id,
+        customerId: finalSale.customerId,
+        amountPaid: cappedPaid,
+        paymentMode: finalSale.paymentMode
+      });
+    } else {
+      ledgerRepository.deleteAllLedgerEntriesForSale(tx, finalSale.id);
+    }
+    ledgerRepository.recomputeOutstanding(tx, finalSale.customerId);
 
     return {
       billingId: newSale.id,
@@ -236,13 +266,40 @@ const syncSaleWithItems = async (saleId: string, payload: TxnPayloadData) => {
     tx.update(sales)
       .set({
         customerId: payload.customerId,
-        isPaid: payload.isPaid,
+        amountPaid: sql`MIN(${payload.amountPaid ?? 0}, COALESCE(${sales.grandTotal}, 0))`,
+        paymentMode: payload.paymentMode ?? null,
         notes: payload.notes,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
       .where(eq(sales.id, saleId))
       .run();
+
+    const finalSale = tx.select().from(sales).where(eq(sales.id, saleId)).get()!;
+    const existingLedgerRows = ledgerRepository.getLedgerEntriesForSale(tx, saleId);
+    const oldCustomerId = existingLedgerRows[0]?.customerId ?? finalSale.customerId;
+    const cappedPaid = Math.min(finalSale.amountPaid ?? 0, finalSale.grandTotal ?? 0);
+
+    if ((finalSale.grandTotal ?? 0) > 0) {
+      ledgerRepository.upsertSaleEntry(tx, {
+        customerId: finalSale.customerId,
+        saleId,
+        amountDue: finalSale.grandTotal ?? 0
+      });
+      ledgerRepository.upsertPaymentForSale(tx, {
+        saleId,
+        customerId: finalSale.customerId,
+        amountPaid: cappedPaid,
+        paymentMode: finalSale.paymentMode
+      });
+    } else {
+      ledgerRepository.deleteAllLedgerEntriesForSale(tx, saleId);
+    }
+
+    if (oldCustomerId !== finalSale.customerId) {
+      ledgerRepository.recomputeOutstanding(tx, oldCustomerId);
+    }
+    ledgerRepository.recomputeOutstanding(tx, finalSale.customerId);
 
     return {
       syncedItems,
@@ -262,10 +319,13 @@ const updateSaleTotals = async (tx: any, saleId: string) => {
     .where(eq(saleItems.saleId, saleId))
     .get();
 
+  const grandTotal = totals?.grandTotal ?? 0;
+
   tx.update(sales)
     .set({
-      grandTotal: totals?.grandTotal ?? 0,
-      totalQuantity: totals?.totalQuantity ?? 0
+      grandTotal,
+      totalQuantity: totals?.totalQuantity ?? 0,
+      isPaid: sql`CASE WHEN ${grandTotal} > 0 AND ${sales.amountPaid} >= ${grandTotal} THEN 1 ELSE 0 END`
     })
     .where(eq(sales.id, saleId))
     .run();
@@ -291,6 +351,9 @@ const deleteSaleById = async (id: string) => {
           .run();
       }
     }
+
+    ledgerRepository.deleteAllLedgerEntriesForSale(tx, id);
+    ledgerRepository.recomputeOutstanding(tx, existingSale.customerId);
 
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
     if (result.changes === 0) {
@@ -355,6 +418,9 @@ const convertSaleToEstimate = async (id: string) => {
         })
         .run();
     });
+
+    ledgerRepository.deleteAllLedgerEntriesForSale(tx, id);
+    ledgerRepository.recomputeOutstanding(tx, sale.customerId);
 
     const result = tx.delete(sales).where(eq(sales.id, id)).run();
 
@@ -439,7 +505,9 @@ const duplicateSaleById = async (id: string) => {
         customerId: originalSale.customerId,
         grandTotal: originalSale.grandTotal,
         totalQuantity: originalSale.totalQuantity,
-        isPaid: originalSale.isPaid,
+        amountPaid: 0,
+        paymentMode: null,
+        isPaid: false,
         notes: originalSale.notes,
         createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
@@ -477,6 +545,13 @@ const duplicateSaleById = async (id: string) => {
           .run();
       }
     }
+
+    ledgerRepository.upsertSaleEntry(tx, {
+      customerId: newSale.customerId,
+      saleId: newSale.id,
+      amountDue: newSale.grandTotal ?? 0
+    });
+    ledgerRepository.recomputeOutstanding(tx, newSale.customerId);
 
     return {
       id: newSale.id,

@@ -215,15 +215,8 @@
     {
       "idx": 30,
       "version": "6",
-      "when": 1784104310649,
-      "tag": "0030_ambitious_arachne",
-      "breakpoints": true
-    },
-    {
-      "idx": 31,
-      "version": "6",
-      "when": 1784205837882,
-      "tag": "0031_amazing_omega_sentinel",
+      "when": 1784299004095,
+      "tag": "0030_chilly_iron_lad",
       "breakpoints": true
     }
   ]

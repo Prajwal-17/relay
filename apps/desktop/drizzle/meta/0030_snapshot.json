@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d5a5b965-4523-4d83-a7e1-779fc28f8455",
+  "id": "0fad43ab-27e3-451a-9b46-5bdb0911002b",
   "prevId": "a76c68a2-a2f8-47ab-b160-4472ef23bf89",
   "tables": {
     "app_instance": {
@@ -150,16 +150,16 @@
           "notNull": false,
           "autoincrement": false
         },
-        "debit": {
-          "name": "debit",
+        "amount_due": {
+          "name": "amount_due",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false,
           "default": 0
         },
-        "credit": {
-          "name": "credit",
+        "amount_paid": {
+          "name": "amount_paid",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -598,6 +598,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -1186,6 +1193,21 @@
           "notNull": false,
           "autoincrement": false
         },
+        "amount_paid": {
+          "name": "amount_paid",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "payment_mode": {
+          "name": "payment_mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "is_paid": {
           "name": "is_paid",
           "type": "integer",
@@ -1193,6 +1215,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",

@@ -4,6 +4,7 @@ import {
   TREND_OPTION,
   type ChartDataType,
   type MetricsSummary,
+  type PaymentMode,
   type RecentTransactions,
   type TimePeriodType,
   type TopProductDataPoint,
@@ -91,10 +92,19 @@ const getRecentTransactions = async (type: TransactionType): Promise<RecentTrans
 
     return result.length > 0
       ? result.map((r) => ({
-          ...r,
+          id: r.id,
+          invoiceNo: r.invoiceNo,
+          customerId: r.customerId,
+          grandTotal: r.grandTotal,
+          totalQuantity: r.totalQuantity,
+          amountPaid: r.amountPaid ?? 0,
+          paymentMode: (r.paymentMode as PaymentMode) ?? null,
+          isPaid: r.isPaid,
+          notes: r.notes,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
           transactionNo: r.invoiceNo,
-          customerName: r.customer.name,
-          grandTotal: r.grandTotal
+          customerName: r.customer.name
         }))
       : [];
   } else if (type === TRANSACTION_TYPE.ESTIMATE) {
@@ -102,10 +112,19 @@ const getRecentTransactions = async (type: TransactionType): Promise<RecentTrans
 
     return result.length > 0
       ? result.map((r) => ({
-          ...r,
+          id: r.id,
+          estimateNo: r.estimateNo,
+          customerId: r.customerId,
+          grandTotal: r.grandTotal,
+          totalQuantity: r.totalQuantity,
+          amountPaid: 0,
+          paymentMode: null,
+          isPaid: r.isPaid,
+          notes: r.notes,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
           transactionNo: r.estimateNo,
-          customerName: r.customer.name,
-          grandTotal: r.grandTotal
+          customerName: r.customer.name
         }))
       : [];
   }

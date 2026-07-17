@@ -64,11 +64,11 @@ async function getJson(app: Hono, pathname: string) {
   return app.request(pathname, { method: "GET" });
 }
 
-async function createSimpleSale(
+async function createAndSyncSale(
   app: Hono,
   db: DB,
   customerId: string,
-  isPaid: boolean,
+  overrides: Partial<TxnPayloadData> = {},
   price = 10000,
   quantity = 5000
 ) {
@@ -86,7 +86,9 @@ async function createSimpleSale(
     transactionNo: undefined,
     transactionType: TRANSACTION_TYPE.SALE,
     customerId,
-    isPaid,
+    amountPaid: 0,
+    paymentMode: null,
+    isPaid: false,
     notes: null,
     items: [
       {
@@ -104,13 +106,15 @@ async function createSimpleSale(
         position: 0,
         isDeleted: false
       }
-    ]
+    ],
+    ...overrides
   };
 
-  return postTxn(app, "/api/sales/create", payload);
+  const response = await postTxn(app, "/api/sales/create", payload);
+  return (await response.json()) as { billingId: string };
 }
 
-describe.skip("ledger integration tests", () => {
+describe("ledger integration tests", () => {
   let app: ReturnType<typeof createLedgerTestApp>;
   let db!: DB;
   let sqlite: ReturnType<typeof createTestDb>["sqlite"] | undefined;
@@ -155,7 +159,7 @@ describe.skip("ledger integration tests", () => {
 
   it("an unpaid sale creates a ledger row and increases outstanding", async () => {
     const customer = await seedCustomer(db);
-    await createSimpleSale(app, db, customer.id, false);
+    await createAndSyncSale(app, db, customer.id);
 
     const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
     // grandTotal = price * quantity / 1000 = 10000 * 5000 / 1000 = 50000
@@ -171,9 +175,9 @@ describe.skip("ledger integration tests", () => {
     expect(saleRows[0]?.amountDue).toBe(50000);
   });
 
-  it("a paid sale is excluded from outstanding but present in the ledger", async () => {
+  it("a fully paid sale nets to zero outstanding with sale+payment ledger rows", async () => {
     const customer = await seedCustomer(db);
-    await createSimpleSale(app, db, customer.id, true);
+    await createAndSyncSale(app, db, customer.id, { amountPaid: 50000, paymentMode: "cash" });
 
     const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
     expect(updated?.outstandingBalance).toBe(0);
@@ -186,11 +190,28 @@ describe.skip("ledger integration tests", () => {
       .filter((r) => r.type === "sale");
     expect(saleRows).toHaveLength(1);
     expect(saleRows[0]?.amountDue).toBe(50000);
+
+    const paymentRows = db
+      .select()
+      .from(customerLedger)
+      .where(eq(customerLedger.customerId, customer.id))
+      .all()
+      .filter((r) => r.type === "payment");
+    expect(paymentRows).toHaveLength(1);
+    expect(paymentRows[0]?.amountPaid).toBe(50000);
+  });
+
+  it("a partially paid sale shows net outstanding", async () => {
+    const customer = await seedCustomer(db);
+    await createAndSyncSale(app, db, customer.id, { amountPaid: 20000, paymentMode: "upi" });
+
+    const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
+    expect(updated?.outstandingBalance).toBe(30000);
   });
 
   it("payment, adjustment, summary and paginated list behave correctly", async () => {
     const customer = await seedCustomer(db);
-    await createSimpleSale(app, db, customer.id, false); // outstanding = 50000
+    await createAndSyncSale(app, db, customer.id); // outstanding = 50000
 
     const paymentRes = await postJson(app, `/api/customers/${customer.id}/payments`, {
       amount: 20000,
@@ -222,7 +243,7 @@ describe.skip("ledger integration tests", () => {
       salesCount: number;
       lastPayment: { amount: number; mode: string } | null;
     };
-    // currentBalance is the pure ledger sum: 50000 due - 20000 - 5000 paid = 25000
+    // sale amountDue 50000, payment amountPaid 20000, adjustment amountPaid 5000 = 50000 - 25000 = 25000
     expect(summary.totalDue).toBe(50000);
     expect(summary.totalPaid).toBe(25000);
     expect(summary.currentBalance).toBe(25000);

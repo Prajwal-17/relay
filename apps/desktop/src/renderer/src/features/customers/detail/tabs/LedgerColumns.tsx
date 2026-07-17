@@ -80,14 +80,14 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
               <button
                 type="button"
                 onClick={() => onOpenSale(entry.saleId!)}
-                className="text-primary hover:text-primary-hover cursor-pointer text-sm font-semibold tabular-nums"
+                className="text-primary hover:text-primary-hover cursor-pointer text-sm font-semibold tabular-nums hover:underline"
               >
                 INV #{entry.invoiceNo ?? "—"}
               </button>
             );
           }
           return (
-            <span className="text-primary text-sm font-semibold tabular-nums">
+            <span className="text-primary text-sm font-semibold tabular-nums hover:underline">
               INV #{entry.invoiceNo ?? "—"}
             </span>
           );
@@ -154,11 +154,7 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
           <span
             className={cn(
               "text-sm font-semibold tabular-nums",
-              balance === 0
-                ? "text-muted-foreground"
-                : isDue
-                  ? "text-destructive"
-                  : "text-success"
+              balance === 0 ? "text-muted-foreground" : isDue ? "text-destructive" : "text-success"
             )}
           >
             {formatRupee(Math.abs(balance))}

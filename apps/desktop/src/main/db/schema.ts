@@ -170,6 +170,8 @@ export const sales = sqliteTable(
       .notNull(),
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
+    amountPaid: integer("amount_paid", { mode: "number" }).default(0).notNull(),
+    paymentMode: text("payment_mode"),
     isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
     notes: text("notes"),
     createdAt: text("created_at")

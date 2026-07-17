@@ -100,6 +100,8 @@ export type UnifiedTransaction = {
   notes: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
+  amountPaid: number;
+  paymentMode: PaymentMode | null;
   isPaid: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -133,6 +135,8 @@ export type Sale = {
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
+  amountPaid: number;
+  paymentMode: PaymentMode | null;
   isPaid: boolean;
   createdAt?: string;
   updatedAt?: string;

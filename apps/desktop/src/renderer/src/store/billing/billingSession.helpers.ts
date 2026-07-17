@@ -47,6 +47,8 @@ export const createInitialSession = () => {
     status: BILLSTATUS.IDLE,
     isCountColumnVisible: false,
     notes: null,
+    amountPaid: "",
+    paymentMode: null,
     lineItems: Array.from({ length: 5 }, (_, i) => createInitialLineItem(i * POSITION_GAP))
   };
 };
