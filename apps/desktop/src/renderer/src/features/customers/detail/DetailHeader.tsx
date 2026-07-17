@@ -95,7 +95,11 @@ export function DetailHeader({ customer }: { customer: CustomerMock }) {
           variant="outline"
           size="sm"
           className="cursor-pointer"
-          onClick={() => navigate("/billing/sales/create")}
+          onClick={() =>
+            navigate("/billing/sales/create", {
+              state: { prefillCustomer: { id: customer.id, name: customer.name } }
+            })
+          }
         >
           New Sale
         </Button>

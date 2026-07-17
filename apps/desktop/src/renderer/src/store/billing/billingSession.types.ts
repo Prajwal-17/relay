@@ -20,6 +20,11 @@ export type LineItem = {
   isDeleted: boolean; // delete item flag
 };
 
+export type PrefillCustomer = {
+  id: string;
+  name: string;
+};
+
 export type BillingSessionData = {
   isMetaDataDirty: boolean;
   billingId: string | null; // sales.id | estimates.id

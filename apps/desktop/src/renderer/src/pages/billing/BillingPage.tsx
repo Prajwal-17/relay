@@ -12,6 +12,7 @@ import useReset from "@/hooks/billing/useBillingReset";
 import { useInitialBillingData } from "@/hooks/billing/useInitialBillingData";
 import useLoadTransactionDetails from "@/hooks/billing/useLoadTransactionDetails";
 import { billingCoordinator } from "@/store/billing/billingCoordinator";
+import type { PrefillCustomer } from "@/store/billing/billingSession.types";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
@@ -21,8 +22,11 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 const BillingPage = () => {
   const navigate = useNavigate();
   const { type, id } = useParams();
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
   const formattedType = type?.slice(0, -1) as TransactionType;
+
+  const prefillCustomer =
+    (state as { prefillCustomer?: PrefillCustomer } | null)?.prefillCustomer ?? null;
 
   const { activeTabId } = useActiveTabId();
 
@@ -34,7 +38,7 @@ const BillingPage = () => {
   // synchronous state reset
   useReset(formattedType, id);
 
-  useInitialBillingData(formattedType, activeTabId, id);
+  useInitialBillingData(formattedType, activeTabId, id, prefillCustomer);
   const transactionNo = session?.transactionNo ?? null;
 
   const activeTabRoutePath = useBillingTabsStore((state) =>

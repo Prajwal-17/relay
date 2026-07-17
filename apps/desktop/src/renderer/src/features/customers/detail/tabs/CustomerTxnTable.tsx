@@ -166,12 +166,14 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
 
 export function CustomerTxnTable({
   customerId,
+  customerName,
   type,
   numberLabel,
   addLabel,
   emptyIcon: EmptyIcon
 }: {
   customerId: string;
+  customerName: string;
   type: TransactionType;
   numberLabel: string;
   addLabel: string;
@@ -410,7 +412,11 @@ export function CustomerTxnTable({
         </div>
 
         <Button
-          onClick={() => navigate(addRoute)}
+          onClick={() =>
+            navigate(addRoute, {
+              state: { prefillCustomer: { id: customerId, name: customerName } }
+            })
+          }
           className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
         >
           <Plus className="size-4" />

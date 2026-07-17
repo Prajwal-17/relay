@@ -41,7 +41,7 @@ export function QuickSaleDialog({
         <DialogHeader>
           <DialogTitle>Quick Sale</DialogTitle>
           <DialogDescription>
-            Record a fast over-the-counter sale without creating an invoice.
+            Record a fast counter sale without creating an invoice.
           </DialogDescription>
         </DialogHeader>
 
@@ -55,7 +55,7 @@ export function QuickSaleDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-12 [appearance:textfield] text-lg font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="h-12 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
