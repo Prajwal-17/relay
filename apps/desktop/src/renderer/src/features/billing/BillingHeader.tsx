@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/time-picker";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { DEFAULT_HOUR } from "@/constants";
+import { useCustomer } from "@/hooks/customers/useCustomer";
 import { apiClient } from "@/lib/apiClient";
 import { billingCoordinator } from "@/store/billing/billingCoordinator";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
@@ -38,8 +39,9 @@ import { useSidebarStore } from "@/store/sidebarStore";
 import { processSyncQueue } from "@/utils/syncWorker";
 import { type TransactionType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { formatRupee } from "@shared/utils/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Copy, MoreVertical, PanelLeftOpen, Trash2, UserRound } from "lucide-react";
+import { CalendarDays, Copy, MoreVertical, PanelLeftOpen, Trash2 } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -159,6 +161,10 @@ const BillingHeader = () => {
     if (activeTabId) processSyncQueue(activeTabId);
     setOpen(false);
   };
+
+  const { customer } = useCustomer(session?.customerId ?? undefined);
+  const outstandingBalance = customer?.outstandingBalance ?? 0;
+  const isDue = outstandingBalance > 0;
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -317,24 +323,15 @@ const BillingHeader = () => {
         </span>
         <div className="flex items-center gap-3">
           <CustomerNameInput />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={0}>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  disabled={!hasRealCustomer}
-                  className="h-12 gap-2 px-5 text-base font-medium disabled:opacity-50"
-                >
-                  <UserRound size={18} />
-                  View Account
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {hasRealCustomer ? "View customer account" : "Select a customer first"}
-            </TooltipContent>
-          </Tooltip>
+          {hasRealCustomer && (
+            <span
+              className={`rounded-lg px-3 py-1.5 text-sm font-bold tabular-nums ${
+                isDue ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+              }`}
+            >
+              {isDue ? `Due ${formatRupee(outstandingBalance)}` : "Settled"}
+            </span>
+          )}
         </div>
       </div>
     </div>

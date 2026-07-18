@@ -419,6 +419,16 @@ export type CreatePaymentPayload = {
   notes?: string;
 };
 
+export type CreatePaymentResult = {
+  allocations: {
+    saleId: string;
+    allocatedPaisa: number;
+    ledgerEntryId: null;
+  }[];
+  leftoverPaisa: number;
+  ledgerEntryId: string;
+};
+
 export type CreateAdjustmentPayload = {
   amount: number;
   direction: "due" | "paid";

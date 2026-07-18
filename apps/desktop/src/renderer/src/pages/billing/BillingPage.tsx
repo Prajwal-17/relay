@@ -1,6 +1,6 @@
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
-import BillPreview from "@/features/billing/BillPreview";
+import BillingPreviewPanel from "@/features/billing/preview/BillingPreviewPanel";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import BillingNotes from "@/features/billing/BillingNotes";
 import PaymentSection from "@/features/billing/PaymentSection";
@@ -142,7 +142,7 @@ const BillingPage = () => {
           </div>
           <SummaryFooter />
         </div>
-        <BillPreview />
+        <BillingPreviewPanel />
         <ProductDialogWrapper />
       </div>
     </div>

@@ -1,19 +1,16 @@
-import { eq } from "drizzle-orm";
 import type { LedgerEntry, LedgerSummary, PaginatedApiResponse } from "../../../shared/types";
 import { db } from "../../db/db";
-import { customers } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { ledgerRepository } from "./ledger.repository";
 import type {
   CreateAdjustmentParams,
   CreateOpeningBalanceParams,
-  CreatePaymentParams,
   CreateQuickSaleParams,
   GetLedgerParams
 } from "./ledger.types";
 
 const assertCustomerExists = (customerId: string) => {
-  const customer = db.select().from(customers).where(eq(customers.id, customerId)).get();
+  const customer = ledgerRepository.findCustomerById(db, customerId);
   if (!customer) {
     throw new AppError(`Customer with ID ${customerId} not found`, 404);
   }
@@ -39,15 +36,7 @@ const getLedgerSummary = async (customerId: string): Promise<LedgerSummary> => {
   return ledgerRepository.getLedgerSummary(customerId);
 };
 
-const createPayment = async ({ customerId, payload }: CreatePaymentParams) => {
-  assertCustomerExists(customerId);
-
-  return db.transaction((tx) => {
-    const entry = ledgerRepository.insertPayment(tx, customerId, payload);
-    ledgerRepository.recomputeOutstanding(tx, customerId);
-    return entry;
-  });
-};
+const createPayment = ledgerRepository.createPayment;
 
 const createAdjustment = async ({ customerId, payload }: CreateAdjustmentParams) => {
   assertCustomerExists(customerId);

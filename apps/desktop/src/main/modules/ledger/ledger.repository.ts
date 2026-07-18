@@ -6,7 +6,7 @@ import {
   LEDGER_TYPE_FILTER,
   type CreateAdjustmentPayload,
   type CreateOpeningBalancePayload,
-  type CreatePaymentPayload,
+  type CreatePaymentResult,
   type CreateQuickSalePayload,
   type LedgerEntry,
   type LedgerSort,
@@ -15,7 +15,9 @@ import {
 import { db } from "../../db/db";
 import type * as schema from "../../db/schema";
 import { customerLedger, customers, sales } from "../../db/schema";
-import type { GetLedgerParams, InsertSaleEntryParams } from "./ledger.types";
+import { AppError } from "../../utils/appError";
+import type { CreatePaymentParams, GetLedgerParams, InsertSaleEntryParams } from "./ledger.types";
+import { allocatePaymentFifo } from "./ledger.utils";
 
 type Tx = BetterSQLite3Database<typeof schema>;
 
@@ -190,16 +192,62 @@ const hasOpeningBalance = (tx: Tx, customerId: string): boolean => {
   return !!row;
 };
 
-const insertPayment = (tx: Tx, customerId: string, payload: CreatePaymentPayload) => {
+const getOpenSalesByCustomerId = (tx: Tx, customerId: string) => {
+  return tx
+    .select({
+      id: sales.id,
+      grandTotal: sales.grandTotal,
+      amountPaid: sales.amountPaid,
+      isPaid: sales.isPaid
+    })
+    .from(sales)
+    .where(and(eq(sales.customerId, customerId), eq(sales.isPaid, false)))
+    .orderBy(asc(sales.createdAt), asc(sales.invoiceNo))
+    .all();
+};
+
+const applyAllocationToSale = (
+  tx: Tx,
+  params: { saleId: string; allocatedPaisa: number; closes: boolean; paymentMode: string }
+) => {
+  tx.update(sales)
+    .set({
+      amountPaid: sql`${sales.amountPaid} + ${params.allocatedPaisa}`,
+      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .where(eq(sales.id, params.saleId))
+    .run();
+
+  if (params.closes) {
+    tx.update(sales)
+      .set({ isPaid: true, paymentMode: params.paymentMode })
+      .where(eq(sales.id, params.saleId))
+      .run();
+  }
+};
+
+const insertPaymentEntry = (
+  tx: Tx,
+  params: {
+    customerId: string;
+    storeId: string | null;
+    saleId: string | null;
+    amountPaid: number;
+    paymentMode: string;
+    notes: string | null;
+  }
+) => {
   return tx
     .insert(customerLedger)
     .values({
-      customerId,
+      customerId: params.customerId,
+      storeId: params.storeId,
       type: LEDGER_ENTRY_TYPE.PAYMENT,
+      saleId: params.saleId,
       amountDue: 0,
-      amountPaid: payload.amount,
-      paymentMode: payload.mode,
-      notes: payload.notes ?? null,
+      amountPaid: params.amountPaid,
+      paymentMode: params.paymentMode,
+      notes: params.notes,
       createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
     })
     .returning()
@@ -365,6 +413,60 @@ const upsertPaymentForSale = (
     .get();
 };
 
+const findCustomerById = (tx: Tx, customerId: string) => {
+  return tx.select().from(customers).where(eq(customers.id, customerId)).get();
+};
+
+const createPayment = ({ customerId, payload }: CreatePaymentParams): CreatePaymentResult => {
+  return db.transaction((tx) => {
+    const customer = findCustomerById(tx, customerId);
+    if (!customer) {
+      throw new AppError(`Customer with ID ${customerId} not found`, 404);
+    }
+
+    const openSales = getOpenSalesByCustomerId(tx, customerId);
+    const { allocations, leftoverPaisa } = allocatePaymentFifo(payload.amount, openSales);
+
+    const appliedAllocations: CreatePaymentResult["allocations"] = [];
+
+    for (const alloc of allocations) {
+      const sale = openSales.find((s) => s.id === alloc.saleId)!;
+      const newAmountPaid = (sale.amountPaid ?? 0) + alloc.allocatedPaisa;
+      const closes = newAmountPaid >= (sale.grandTotal ?? 0);
+
+      applyAllocationToSale(tx, {
+        saleId: alloc.saleId,
+        allocatedPaisa: alloc.allocatedPaisa,
+        closes,
+        paymentMode: payload.mode
+      });
+
+      appliedAllocations.push({
+        saleId: alloc.saleId,
+        allocatedPaisa: alloc.allocatedPaisa,
+        ledgerEntryId: null
+      });
+    }
+
+    const entry = insertPaymentEntry(tx, {
+      customerId,
+      storeId: customer.storeId ?? null,
+      saleId: null,
+      amountPaid: payload.amount,
+      paymentMode: payload.mode,
+      notes: payload.notes ?? null
+    });
+
+    recomputeOutstanding(tx, customerId);
+
+    return {
+      allocations: appliedAllocations,
+      leftoverPaisa,
+      ledgerEntryId: entry.id
+    };
+  });
+};
+
 const recomputeOutstanding = (tx: Tx, customerId: string) => {
   const result = tx
     .select({
@@ -375,17 +477,24 @@ const recomputeOutstanding = (tx: Tx, customerId: string) => {
     .get();
 
   tx.update(customers)
-    .set({ outstandingBalance: result?.balance ?? 0 })
+    .set({
+      outstandingBalance: result?.balance ?? 0,
+      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
     .where(eq(customers.id, customerId))
     .run();
 };
 
 export const ledgerRepository = {
+  findCustomerById,
+  createPayment,
   getLedgerByCustomerId,
   countLedgerByCustomerId,
   getLedgerSummary,
   hasOpeningBalance,
-  insertPayment,
+  getOpenSalesByCustomerId,
+  applyAllocationToSale,
+  insertPaymentEntry,
   insertAdjustment,
   insertQuickSale,
   insertOpeningBalance,

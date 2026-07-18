@@ -41,3 +41,15 @@ export type InsertSaleEntryParams = {
   saleId: string;
   amountDue: number;
 };
+
+export type OpenSale = {
+  id: string;
+  grandTotal: number | null;
+  amountPaid: number;
+  isPaid: boolean;
+};
+
+export type FifoAllocation = {
+  saleId: string;
+  allocatedPaisa: number;
+};

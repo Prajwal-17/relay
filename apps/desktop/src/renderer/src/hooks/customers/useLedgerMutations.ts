@@ -3,6 +3,7 @@ import type {
   CreateAdjustmentPayload,
   CreateOpeningBalancePayload,
   CreatePaymentPayload,
+  CreatePaymentResult,
   CreateQuickSalePayload,
   LedgerEntry
 } from "@shared/types";
@@ -17,13 +18,15 @@ const useInvalidateLedger = (customerId: string) => {
     queryClient.invalidateQueries({ queryKey: ["customer-ledger-summary", customerId] });
     queryClient.invalidateQueries({ queryKey: ["customer", customerId] });
     queryClient.invalidateQueries({ queryKey: ["customers-infinite"], exact: false });
+    queryClient.invalidateQueries({ queryKey: ["customer-txns", customerId], exact: false });
+    queryClient.invalidateQueries({ queryKey: ["sales"], exact: false });
   };
 };
 
 export function useCreatePayment(customerId: string) {
   const invalidate = useInvalidateLedger(customerId);
 
-  return useMutation<LedgerEntry, Error, CreatePaymentPayload>({
+  return useMutation<CreatePaymentResult, Error, CreatePaymentPayload>({
     mutationFn: (payload) => apiClient.post(`/api/customers/${customerId}/payments`, payload),
     onSuccess: () => {
       invalidate();
