@@ -1,10 +1,9 @@
 import { ViewModal } from "@/features/dashboard/ViewModal";
 import { useViewModalStore } from "@/store/viewModalStore";
 import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types";
-import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
+import { DASHBOARD_TYPE, type Customer, type DashboardType } from "@shared/types";
 import { UserX } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
-import type { CustomerMock } from "../_mock/types";
 import { DetailHeader } from "./DetailHeader";
 import { DetailTabs } from "./DetailTabs";
 import { EmptyTab } from "./shared/EmptyTab";
@@ -16,7 +15,7 @@ export function CustomerDetailPage({
   customer
 }: {
   customerId: string;
-  customer: CustomerMock | null;
+  customer: Customer | null;
 }) {
   const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
   const transactionId = useViewModalStore((state) => state.transactionId);

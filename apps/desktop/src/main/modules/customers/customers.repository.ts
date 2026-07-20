@@ -1,18 +1,23 @@
 import { and, asc, count, desc, eq, inArray, like, sql, type SQL } from "drizzle-orm";
 import {
+  ACTIVITY_KIND,
   CUSTOMER_SORT_BY,
   CUSTOMER_TXN_SORT,
+  LEDGER_ENTRY_TYPE,
+  type ActivityEvent,
   type CreateCustomerPayload,
   type CustomerSortByType,
+  type RecentSalePreview,
   type UpdateCustomerPayload
 } from "../../../shared/types";
+import { formatRupee } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
 import { customerLedger, customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { ledgerRepository } from "../ledger/ledger.repository";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
-import { buildEstimatesWhere, buildSalesWhere } from "./customers.utils";
+import { buildEstimatesWhere, buildSalesWhere, mapLedgerEvent } from "./customers.utils";
 
 const findById = async (id: string) => {
   return db.select().from(customers).where(eq(customers.id, id)).get();
@@ -234,6 +239,116 @@ const getCustomerSummary = async (id: string) => {
   });
 };
 
+const getRecentSales = async (params: {
+  customerId: string;
+  limit: number;
+}): Promise<RecentSalePreview[]> => {
+  return db
+    .select({
+      id: sales.id,
+      invoiceNo: sales.invoiceNo,
+      grandTotal: sales.grandTotal,
+      amountPaid: sales.amountPaid,
+      isPaid: sales.isPaid,
+      createdAt: sales.createdAt
+    })
+    .from(sales)
+    .where(eq(sales.customerId, params.customerId))
+    .orderBy(desc(sales.createdAt), desc(sales.invoiceNo))
+    .limit(params.limit)
+    .all()
+    .map((row) => ({
+      id: row.id,
+      invoiceNo: row.invoiceNo,
+      grandTotal: row.grandTotal ?? 0,
+      amountPaid: row.amountPaid ?? 0,
+      isPaid: row.isPaid,
+      createdAt: row.createdAt
+    }));
+};
+
+const getCustomerActivity = async (params: {
+  customerId: string;
+  limit: number;
+}): Promise<ActivityEvent[]> => {
+  const recentSales = db
+    .select({
+      id: sales.id,
+      invoiceNo: sales.invoiceNo,
+      grandTotal: sales.grandTotal,
+      isPaid: sales.isPaid,
+      createdAt: sales.createdAt
+    })
+    .from(sales)
+    .where(eq(sales.customerId, params.customerId))
+    .orderBy(desc(sales.createdAt), desc(sales.invoiceNo))
+    .limit(params.limit)
+    .all();
+
+  const recentEstimates = db
+    .select({
+      id: estimates.id,
+      estimateNo: estimates.estimateNo,
+      grandTotal: estimates.grandTotal,
+      isPaid: estimates.isPaid,
+      createdAt: estimates.createdAt
+    })
+    .from(estimates)
+    .where(eq(estimates.customerId, params.customerId))
+    .orderBy(desc(estimates.createdAt), desc(estimates.estimateNo))
+    .limit(params.limit)
+    .all();
+
+  const ledgerTypes = [
+    LEDGER_ENTRY_TYPE.PAYMENT,
+    LEDGER_ENTRY_TYPE.ADJUSTMENT,
+    LEDGER_ENTRY_TYPE.QUICK_SALE,
+    LEDGER_ENTRY_TYPE.OPENING_BALANCE
+  ];
+  const recentLedger = db
+    .select({
+      id: customerLedger.id,
+      type: customerLedger.type,
+      amountDue: customerLedger.amountDue,
+      amountPaid: customerLedger.amountPaid,
+      paymentMode: customerLedger.paymentMode,
+      notes: customerLedger.notes,
+      createdAt: customerLedger.createdAt
+    })
+    .from(customerLedger)
+    .where(
+      and(
+        eq(customerLedger.customerId, params.customerId),
+        inArray(customerLedger.type, ledgerTypes)
+      )
+    )
+    .orderBy(desc(customerLedger.createdAt), desc(customerLedger.id))
+    .limit(params.limit)
+    .all();
+
+  const saleEvents: ActivityEvent[] = recentSales.map((s) => ({
+    id: `sale:${s.id}`,
+    date: s.createdAt,
+    kind: ACTIVITY_KIND.SALE,
+    title: "Sale recorded",
+    description: `Invoice #${s.invoiceNo} for ${formatRupee(s.grandTotal ?? 0)} (${s.isPaid ? "Paid" : "Unpaid"})`
+  }));
+
+  const estimateEvents: ActivityEvent[] = recentEstimates.map((e) => ({
+    id: `estimate:${e.id}`,
+    date: e.createdAt,
+    kind: ACTIVITY_KIND.ESTIMATE,
+    title: "Estimate created",
+    description: `Estimate #${e.estimateNo} for ${formatRupee(e.grandTotal ?? 0)}`
+  }));
+
+  const ledgerEvents: ActivityEvent[] = recentLedger.map((l) => mapLedgerEvent(l));
+
+  return [...saleEvents, ...estimateEvents, ...ledgerEvents]
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.id < b.id ? 1 : -1))
+    .slice(0, params.limit);
+};
+
 const createCustomer = async (payload: CreateCustomerPayload) => {
   return db.transaction((tx) => {
     const { openingBalance, ...customerData } = payload;
@@ -300,6 +415,8 @@ export const customersRepository = {
   getEstimatesByCustomerId,
   countEstimatesByCustomerId,
   getCustomerSummary,
+  getRecentSales,
+  getCustomerActivity,
   createCustomer,
   updateById,
   deleteById,

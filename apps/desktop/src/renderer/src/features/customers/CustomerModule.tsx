@@ -5,7 +5,6 @@ import { useParams } from "react-router-dom";
 import { CustomerActionsProvider } from "./CustomerActionsContext";
 import { type CustomerActions } from "./customerActions";
 import { CustomerDetailPage } from "./detail/CustomerDetailPage";
-import { toCustomerDetail } from "./detail/types";
 import { AdjustBalanceDialog } from "./dialogs/AdjustBalanceDialog";
 import { CustomerFormDialog } from "./dialogs/CustomerFormDialog";
 import { CustomerSearchModal } from "./dialogs/CustomerSearchModal";
@@ -20,8 +19,7 @@ export function CustomerModule() {
   const isDetail = customerId !== undefined;
 
   const { customer, isLoading } = useCustomer(isDetail ? customerId : undefined);
-  // chore: to be removed - toCustomerDetail -> jst a mock func
-  const selected = customer ? toCustomerDetail(customer) : null;
+  const selected = customer ?? null;
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"add" | "edit">("add");

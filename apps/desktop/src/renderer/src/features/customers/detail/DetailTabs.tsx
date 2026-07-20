@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types";
-import type { CustomerMock } from "../_mock/types";
+import type { Customer } from "@shared/types";
 import { AboutTab } from "./tabs/AboutTab";
 import { AccountingTab } from "./tabs/AccountingTab";
 import { ActivityTab } from "./tabs/ActivityTab";
@@ -20,8 +20,6 @@ const TAB_LABELS: Record<TabValue, string> = {
   [CUSTOMER_DETAIL_TAB.ESTIMATES]: "Estimates",
   [CUSTOMER_DETAIL_TAB.ACTIVITY]: "Activity",
   [CUSTOMER_DETAIL_TAB.ABOUT]: "About",
-  // [CUSTOMER_DETAIL_TAB.ATTACHMENTS]: "Attachments",
-  // [CUSTOMER_DETAIL_TAB.NOTES]: "Notes",
   [CUSTOMER_DETAIL_TAB.SETTINGS]: "Settings"
 };
 
@@ -35,7 +33,7 @@ export function DetailTabs({
   onTabChange
 }: {
   customerId: string;
-  customer: CustomerMock;
+  customer: Customer;
   value: TabValue;
   onTabChange: (tab: TabValue) => void;
 }) {
@@ -70,17 +68,11 @@ export function DetailTabs({
         <EstimatesTab customerId={customerId} customerName={customer.name} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.ACTIVITY} className={TAB_CONTENT_CLASS}>
-        <ActivityTab />
+        <ActivityTab customerId={customerId} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.ABOUT} className={TAB_CONTENT_CLASS}>
         <AboutTab customerId={customerId} />
       </TabsContent>
-      {/*<TabsContent value={CUSTOMER_DETAIL_TAB.ATTACHMENTS} className={TAB_CONTENT_CLASS}>
-        <AttachmentsTab />
-      </TabsContent>
-      <TabsContent value={CUSTOMER_DETAIL_TAB.NOTES} className={TAB_CONTENT_CLASS}>
-        <NotesTab />
-      </TabsContent>*/}
       <TabsContent value={CUSTOMER_DETAIL_TAB.SETTINGS} className={TAB_CONTENT_CLASS}>
         <SettingsTab customer={customer} />
       </TabsContent>

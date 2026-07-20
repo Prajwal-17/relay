@@ -30,3 +30,23 @@ export type TxnByCustomerParams = {
 export type SalesByCustomerParams = TxnByCustomerParams;
 
 export type EstimatesByCustomerParams = TxnByCustomerParams;
+
+export type ActivityParams = {
+  customerId: string;
+  limit: number;
+};
+
+export type RecentSalesParams = {
+  customerId: string;
+  limit: number;
+};
+
+export type LedgerEventRow = {
+  id: string;
+  type: string;
+  amountDue: number | null;
+  amountPaid: number | null;
+  paymentMode: string | null;
+  notes: string | null;
+  createdAt: string;
+};

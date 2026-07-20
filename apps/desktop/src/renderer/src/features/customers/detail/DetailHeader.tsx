@@ -1,20 +1,20 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import type { Customer } from "@shared/types";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { CustomerMock } from "../_mock/types";
 import { useCustomerActions } from "../customerActions";
 import { OutstandingBadge } from "./shared/OutstandingBadge";
 
-const typeBadgeClass: Record<CustomerMock["customerType"], string> = {
+const typeBadgeClass: Record<string, string> = {
   cash: "bg-muted text-muted-foreground border-border",
   account: "bg-info/15 text-info border-info/25",
   hotel: "bg-primary/10 text-primary border-primary/25"
 };
 
 // pinned slim tabs toolbar in customer workspace
-export function DetailHeader({ customer }: { customer: CustomerMock }) {
+export function DetailHeader({ customer }: { customer: Customer }) {
   const navigate = useNavigate();
   const { openEditForm, openPayment, openSearch } = useCustomerActions();
 
@@ -48,13 +48,17 @@ export function DetailHeader({ customer }: { customer: CustomerMock }) {
           variant="outline"
           className={cn(
             "shrink-0 px-2 py-0.5 text-xs font-medium capitalize",
-            typeBadgeClass[customer.customerType]
+            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
           )}
         >
           {customer.customerType}
         </Badge>
 
-        <OutstandingBadge outstanding={customer.outstanding} size="md" className="shrink-0" />
+        <OutstandingBadge
+          outstanding={customer.outstandingBalance ?? 0}
+          size="md"
+          className="shrink-0"
+        />
       </div>
 
       <div className="flex shrink-0 items-center gap-2">

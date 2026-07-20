@@ -23,6 +23,11 @@ export const useCustomerTxnMutations = (customerId: string, type: TransactionTyp
     queryClient.invalidateQueries({ queryKey: ["customer-txns", customerId, type] });
     queryClient.invalidateQueries({ queryKey: [`${type}s`], exact: false });
     queryClient.invalidateQueries({ queryKey: ["customer", customerId, "summary"] });
+    queryClient.invalidateQueries({ queryKey: ["customer-activity", customerId], exact: false });
+    queryClient.invalidateQueries({
+      queryKey: ["customer-recent-sales", customerId],
+      exact: false
+    });
   };
 
   const deleteMutation = useMutation<null, Error, MutationVariables>({

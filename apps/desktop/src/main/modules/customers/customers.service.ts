@@ -2,11 +2,13 @@ import { eq, type SQL } from "drizzle-orm";
 import {
   CUSTOMER_TYPE,
   TRANSACTION_TYPE,
+  type ActivityEvent,
   type CreateCustomerPayload,
   type Customer,
   type CustomerSummary,
   type CustomerTransaction,
   type PaginatedApiResponse,
+  type RecentSalePreview,
   type UpdateCustomerPayload
 } from "../../../shared/types";
 import { CustomerRole } from "../../db/enum";
@@ -14,8 +16,10 @@ import { customers } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { customersRepository } from "./customers.repository";
 import type {
+  ActivityParams,
   EstimatesByCustomerParams,
   ListCustomersParams,
+  RecentSalesParams,
   SalesByCustomerParams
 } from "./customers.types";
 
@@ -192,6 +196,16 @@ const getCustomerSummary = async (id: string): Promise<CustomerSummary> => {
   return result;
 };
 
+const getCustomerActivity = async (params: ActivityParams): Promise<ActivityEvent[]> => {
+  await findById(params.customerId);
+  return customersRepository.getCustomerActivity(params);
+};
+
+const getRecentSales = async (params: RecentSalesParams): Promise<RecentSalePreview[]> => {
+  await findById(params.customerId);
+  return customersRepository.getRecentSales(params);
+};
+
 const createCustomer = async (payload: CreateCustomerPayload): Promise<Customer> => {
   const customer = await customersRepository.createCustomer(payload);
 
@@ -236,6 +250,8 @@ export const customersService = {
   getSalesByCustomerId,
   getEstimatesByCustomerId,
   getCustomerSummary,
+  getCustomerActivity,
+  getRecentSales,
   createCustomer,
   updateCustomerById,
   deleteCustomerById

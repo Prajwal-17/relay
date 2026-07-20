@@ -10,19 +10,18 @@ import {
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { SectionCard } from "../shared/SectionCard";
+import type { Customer } from "@shared/types";
 import { Archive, GitMerge, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { CustomerMock } from "../../_mock/types";
+import { SectionCard } from "../shared/SectionCard";
 
-export function SettingsTab({ customer }: { customer: CustomerMock }) {
+export function SettingsTab({ customer }: { customer: Customer }) {
   const [mergeOpen, setMergeOpen] = useState(false);
 
   return (
     <div className="flex flex-col gap-4">
       <SectionCard title="Danger Zone" description="Irreversible actions. Proceed with caution.">
         <ul className="divide-border/70 flex flex-col divide-y">
-          {/* Archive */}
           <li className="flex items-center justify-between gap-3 py-3 first:pt-0">
             <div className="min-w-0">
               <p className="text-foreground flex items-center gap-2 text-sm font-semibold">
@@ -60,7 +59,6 @@ export function SettingsTab({ customer }: { customer: CustomerMock }) {
             </AlertDialog>
           </li>
 
-          {/* Merge */}
           <li className="flex items-center justify-between gap-3 py-3">
             <div className="min-w-0">
               <p className="text-foreground flex items-center gap-2 text-sm font-semibold">
@@ -102,7 +100,6 @@ export function SettingsTab({ customer }: { customer: CustomerMock }) {
             </AlertDialog>
           </li>
 
-          {/* Delete */}
           <li className="flex items-center justify-between gap-3 py-3 last:pb-0">
             <div className="min-w-0">
               <p className="text-foreground flex items-center gap-2 text-sm font-semibold">

@@ -20,6 +20,11 @@ const useInvalidateLedger = (customerId: string) => {
     queryClient.invalidateQueries({ queryKey: ["customer", customerId] });
     queryClient.invalidateQueries({ queryKey: ["customers-infinite"], exact: false });
     queryClient.invalidateQueries({ queryKey: ["customer-txns", customerId], exact: false });
+    queryClient.invalidateQueries({ queryKey: ["customer-activity", customerId], exact: false });
+    queryClient.invalidateQueries({
+      queryKey: ["customer-recent-sales", customerId],
+      exact: false
+    });
     queryClient.invalidateQueries({ queryKey: ["sales"], exact: false });
   };
 };

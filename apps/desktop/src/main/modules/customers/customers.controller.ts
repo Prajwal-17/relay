@@ -15,6 +15,7 @@ import {
 } from "../ledger/ledger.schema";
 import { ledgerService } from "../ledger/ledger.service";
 import {
+  activityQuerySchema,
   getEstimatesByCustomerSchema,
   getSalesByCustomerSchema,
   listCustomersSchema
@@ -53,6 +54,32 @@ customersController.get("/:id/summary", validateRequest("param", idSchema), asyn
   const result = await customersService.getCustomerSummary(id);
   return c.json(result, 200);
 });
+
+// get recent activity (sales + estimates + ledger) for a customer
+customersController.get(
+  "/:id/activity",
+  validateRequest("param", idSchema),
+  validateRequest("query", activityQuerySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { limit } = c.req.valid("query");
+    const result = await customersService.getCustomerActivity({ customerId: id, limit });
+    return c.json(result, 200);
+  }
+);
+
+// get recent sales for a customer
+customersController.get(
+  "/:id/recent-sales",
+  validateRequest("param", idSchema),
+  validateRequest("query", activityQuerySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { limit } = c.req.valid("query");
+    const result = await customersService.getRecentSales({ customerId: id, limit });
+    return c.json(result, 200);
+  }
+);
 
 // createCustomer
 customersController.post("/", validateRequest("json", createCustomerSchema), async (c) => {

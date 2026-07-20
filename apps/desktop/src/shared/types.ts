@@ -392,6 +392,34 @@ export const PAYMENT_MODE = {
 
 export type PaymentMode = (typeof PAYMENT_MODE)[keyof typeof PAYMENT_MODE];
 
+export const ACTIVITY_KIND = {
+  SALE: "sale",
+  ESTIMATE: "estimate",
+  PAYMENT: "payment",
+  ADJUSTMENT: "adjustment",
+  QUICK_SALE: "quick_sale",
+  OPENING_BALANCE: "opening_balance"
+} as const;
+
+export type ActivityKind = (typeof ACTIVITY_KIND)[keyof typeof ACTIVITY_KIND];
+
+export type ActivityEvent = {
+  id: string;
+  date: string;
+  kind: ActivityKind;
+  title: string;
+  description: string;
+};
+
+export type RecentSalePreview = {
+  id: string;
+  invoiceNo: number;
+  grandTotal: number;
+  amountPaid: number;
+  isPaid: boolean;
+  createdAt: string;
+};
+
 export type LedgerEntry = {
   id: string;
   customerId: string;
