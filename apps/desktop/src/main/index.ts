@@ -111,7 +111,7 @@ function createWindow(): void {
   const web = mainWindow.webContents;
 
   if (store) {
-    registerZoomController(web, store);
+    registerZoomController(web);
 
     // Re-apply the persisted zoom after every load/reload (Chromium reverts to the
     // host default on navigation, which is what caused the silent reset to 1.0).

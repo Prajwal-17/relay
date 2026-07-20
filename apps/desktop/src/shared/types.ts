@@ -682,3 +682,9 @@ export interface ExportApi {
   exportAsPdf: (id: string, type: TransactionType) => Promise<string | null>;
   showItemInFolder: (path: string) => void;
 }
+
+export interface ZoomApi {
+  getZoom: () => Promise<{ zoomFactor: number }>;
+  setZoom: (factor: number) => Promise<{ zoomFactor: number }>;
+  getBounds: () => Promise<{ min: number; max: number; default: number }>;
+}

@@ -1,5 +1,6 @@
 import { createHashRouter, Navigate } from "react-router-dom";
 import RootLayout from "./components/layouts/RootLayout";
+import { AppearanceSection } from "./features/settings/sections/AppearanceSection";
 import { BillingSection } from "./features/settings/sections/BillingSection";
 import { ExportsSection } from "./features/settings/sections/ExportsSection";
 import { StoreProfileSection } from "./features/settings/sections/StoreProfileSection";
@@ -48,7 +49,11 @@ export const router = createHashRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="store-profile" replace />
+            element: <Navigate to="appearance" replace />
+          },
+          {
+            path: "appearance",
+            element: <AppearanceSection />
           },
           {
             path: "store-profile",

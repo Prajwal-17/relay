@@ -1,4 +1,5 @@
 export const settingsNavigation = [
+  { id: "appearance", label: "Appearance" },
   { id: "store-profile", label: "Store Profile" },
   { id: "billing", label: "Billing" },
   { id: "exports", label: "Exports & Storage" }
