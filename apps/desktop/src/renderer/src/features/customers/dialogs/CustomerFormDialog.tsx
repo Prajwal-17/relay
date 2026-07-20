@@ -187,7 +187,7 @@ export function CustomerFormDialog({
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
                   placeholder="Enter customer name"
-                  className="h-12 text-xl font-bold"
+                  className="h-12 text-xl! font-bold"
                 />
               </FormField>
             </div>
@@ -199,19 +199,25 @@ export function CustomerFormDialog({
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="10-digit phone"
-                className="h-12 text-lg font-semibold tabular-nums"
+                className="h-12 text-lg! font-semibold tabular-nums"
               />
             </FormField>
 
             <FormField label="Type">
               <Select value={form.customerType} onValueChange={(v) => set("customerType", v)}>
-                <SelectTrigger className="h-12 text-lg font-semibold">
+                <SelectTrigger className="text-md h-12 font-semibold">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="account">Account</SelectItem>
-                  <SelectItem value="hotel">Hotel</SelectItem>
+                  <SelectItem className="text-md!" value="cash">
+                    Cash
+                  </SelectItem>
+                  <SelectItem className="text-md!" value="account">
+                    Account
+                  </SelectItem>
+                  <SelectItem className="text-md!" value="hotel">
+                    Hotel
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </FormField>
@@ -224,7 +230,7 @@ export function CustomerFormDialog({
                 onChange={(e) => set("creditLimit", onlyUnsignedDecimal(e.target.value))}
                 onFocus={selectOnFocus}
                 placeholder="0"
-                className="h-12 text-lg font-semibold tabular-nums"
+                className="h-12 text-lg! font-semibold tabular-nums"
               />
             </FormField>
 
@@ -235,7 +241,7 @@ export function CustomerFormDialog({
                 onChange={(e) => set("outstandingBalance", onlySignedDecimal(e.target.value))}
                 onFocus={selectOnFocus}
                 placeholder="0"
-                className="h-12 text-lg font-semibold tabular-nums"
+                className="h-12 text-lg! font-semibold tabular-nums"
               />
             </FormField>
 

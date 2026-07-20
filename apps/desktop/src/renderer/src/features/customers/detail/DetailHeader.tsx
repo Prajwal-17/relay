@@ -1,18 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useCustomerActions } from "../customerActions";
 import type { CustomerMock } from "../_mock/types";
+import { useCustomerActions } from "../customerActions";
 import { OutstandingBadge } from "./shared/OutstandingBadge";
 
 const typeBadgeClass: Record<CustomerMock["customerType"], string> = {
@@ -70,7 +62,7 @@ export function DetailHeader({ customer }: { customer: CustomerMock }) {
           Edit
         </Button>
 
-        <DropdownMenu>
+        {/*<DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="cursor-pointer">
               Export
@@ -89,7 +81,7 @@ export function DetailHeader({ customer }: { customer: CustomerMock }) {
             <DropdownMenuItem className="cursor-pointer">Invoices</DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer">Payments</DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu>*/}
 
         <Button
           variant="outline"
