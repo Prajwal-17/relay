@@ -57,7 +57,7 @@ export function exportAsPdf() {
         } else {
           let outputDir = preferences?.config?.exports?.defaultPdfLocation;
           if (!outputDir) {
-            outputDir = path.join(os.homedir(), "Downloads");
+            outputDir = path.join(os.homedir(), "Downloads", "Receipts");
           }
 
           if (!fs.existsSync(outputDir)) {

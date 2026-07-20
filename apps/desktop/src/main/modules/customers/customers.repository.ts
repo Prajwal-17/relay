@@ -364,6 +364,13 @@ const createCustomer = async (payload: CreateCustomerPayload) => {
 };
 
 const updateById = async (customerId: string, payload: Partial<UpdateCustomerPayload>) => {
+  if (payload.name !== undefined) {
+    const existing = await findById(customerId);
+    if (existing?.name === "DEFAULT") {
+      throw new AppError("Cannot rename the DEFAULT customer", 400);
+    }
+  }
+
   return db
     .update(customers)
     .set({ ...payload })
@@ -393,6 +400,11 @@ const hasExistingTransactions = async (customerId: string) => {
 };
 
 const deleteById = async (id: string) => {
+  const customer = await findById(id);
+  if (customer?.name === "DEFAULT") {
+    throw new AppError("Cannot delete the DEFAULT customer", 400);
+  }
+
   const transactionsExist = await hasExistingTransactions(id);
 
   if (transactionsExist > 0) {

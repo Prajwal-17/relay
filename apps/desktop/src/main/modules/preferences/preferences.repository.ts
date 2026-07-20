@@ -41,7 +41,7 @@ const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx
     },
     exports: {
       askBeforeSavingPdf: true,
-      defaultPdfLocation: path.join(os.homedir(), "Downloads"),
+      defaultPdfLocation: path.join(os.homedir(), "Downloads", "Receipts"),
       defaultExportFormat: "pdf"
     }
   };

@@ -8,7 +8,8 @@ const useAppBootstrap = () => {
   const {
     data: onboardingStatus,
     isLoading: isOnboardingLoading,
-    isSuccess: isOnboardingSuccess
+    isSuccess: isOnboardingSuccess,
+    isError: isOnboardingError
   } = useQuery({
     queryKey: ["onboarding"],
     queryFn: () => apiClient.get<{ isComplete: boolean }>("/api/onboarding/status"),
@@ -16,16 +17,17 @@ const useAppBootstrap = () => {
   });
 
   const {
-    data: preferences,
     isLoading: isPreferencesLoading,
-    isSuccess: isPreferencesSuccess
+    isError: isPreferencesError
   } = useQuery({
     queryKey: ["appPreferences"],
     queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
-    retry: false
+    retry: 2,
+    staleTime: Infinity
   });
 
   const isBootstrapping = isOnboardingLoading || isPreferencesLoading;
+  const hasError = isOnboardingError || isPreferencesError;
 
   useEffect(() => {
     if (isOnboardingSuccess) {
@@ -33,15 +35,11 @@ const useAppBootstrap = () => {
         isOnboardingComplete: onboardingStatus?.isComplete
       });
     }
-    if (isPreferencesSuccess && preferences?.config) {
-      useAppStore.setState({
-        config: preferences.config
-      });
-    }
-  }, [isOnboardingSuccess, isPreferencesSuccess, onboardingStatus, preferences]);
+  }, [isOnboardingSuccess, onboardingStatus]);
 
   return {
-    isBootstrapping
+    isBootstrapping,
+    hasError
   };
 };
 

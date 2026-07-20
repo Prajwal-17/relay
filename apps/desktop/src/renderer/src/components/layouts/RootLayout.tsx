@@ -1,10 +1,11 @@
 import useAppBootstrap from "@/hooks/useAppBootstrap";
 import { useAppStore } from "@/store/appStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Loader2 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import React, { Suspense } from "react";
 import AppShell from "./AppShell";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 const OnboardingFlow = React.lazy(() =>
   import("@/features/onboarding/OnboardingFlow").then((module) => ({
@@ -13,12 +14,30 @@ const OnboardingFlow = React.lazy(() =>
 );
 
 const RootLayout = () => {
-  const { isBootstrapping } = useAppBootstrap();
+  const { isBootstrapping, hasError } = useAppBootstrap();
   const isOnboardingComplete = useAppStore((state) => state.isOnboardingComplete);
+  const queryClient = useQueryClient();
 
   return (
     <AnimatePresence mode="wait">
-      {isBootstrapping ? (
+      {hasError ? (
+        <motion.div
+          key="error"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-background flex h-screen w-full items-center justify-center"
+        >
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-muted-foreground text-base font-medium">Failed to load app data.</p>
+            <button
+              onClick={() => queryClient.invalidateQueries()}
+              className="text-primary cursor-pointer text-sm underline underline-offset-4"
+            >
+              Retry
+            </button>
+          </div>
+        </motion.div>
+      ) : isBootstrapping ? (
         <motion.div
           key="loading"
           initial={{ opacity: 0 }}

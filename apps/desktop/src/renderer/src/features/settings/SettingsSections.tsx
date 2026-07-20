@@ -20,7 +20,6 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
-import { useAppStore } from "@/store/appStore";
 import type { AppPreferencesResponse, Customer, StoreProfile } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, FolderOpen, Loader2 } from "lucide-react";
@@ -231,14 +230,20 @@ export const StoreProfileSettingsPage = () => {
 };
 
 export const BillingSettingsPage = () => {
-  const config = useAppStore((state) => state.config);
-  const setConfig = useAppStore((state) => state.setConfig);
+  const { data: preferences } = useQuery({
+    queryKey: ["appPreferences"],
+    queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
+    staleTime: Infinity
+  });
+  const config = preferences?.config;
   const [open, setOpen] = useState(false);
 
-  const { data: customers } = useQuery({
+  const { data: customersResponse } = useQuery({
     queryKey: ["customers", ""],
-    queryFn: () => apiClient.get<Customer[]>("/api/customers", { query: "" })
+    queryFn: () =>
+      apiClient.get<{ data: Customer[] }>("/api/customers", { query: "", pageSize: 100 })
   });
+  const customers = customersResponse?.data;
 
   const queryClient = useQueryClient();
 
@@ -247,8 +252,7 @@ export const BillingSettingsPage = () => {
       apiClient.patch<AppPreferencesResponse>("/api/app-preferences", {
         billing: { defaultCustomerId }
       }),
-    onSuccess: (data) => {
-      setConfig(data.config);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appPreferences"] });
       toast.success("Billing preferences updated");
     },
@@ -263,10 +267,13 @@ export const BillingSettingsPage = () => {
   };
 
   const selectedCustomerName = useMemo(() => {
-    if (!customers || !config.billing.defaultCustomerId) return null;
-    const match = customers.find((c) => c.id === config.billing.defaultCustomerId);
+    const defaultCustomerId = preferences?.config?.billing?.defaultCustomerId;
+    if (!customers || !defaultCustomerId) return null;
+    const match = customers.find((c) => c.id === defaultCustomerId);
     return match?.name ?? null;
-  }, [customers, config.billing.defaultCustomerId]);
+  }, [customers, preferences?.config?.billing?.defaultCustomerId]);
+
+  if (!config) return null;
 
   return (
     <section>
@@ -339,23 +346,28 @@ export const BillingSettingsPage = () => {
 };
 
 export const ExportsSettingsPage = () => {
-  const config = useAppStore((state) => state.config);
-  const setConfig = useAppStore((state) => state.setConfig);
+  const { data: preferences } = useQuery({
+    queryKey: ["appPreferences"],
+    queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
+    staleTime: Infinity
+  });
+  const config = preferences?.config;
 
-  const [pdfLocation, setPdfLocation] = useState(config.exports.defaultPdfLocation);
+  const [pdfLocation, setPdfLocation] = useState(
+    preferences?.config?.exports?.defaultPdfLocation ?? ""
+  );
   const [isBrowsing, setIsBrowsing] = useState(false);
 
   useEffect(() => {
-    setPdfLocation(config.exports.defaultPdfLocation);
-  }, [config.exports.defaultPdfLocation]);
+    setPdfLocation(preferences?.config?.exports?.defaultPdfLocation ?? "");
+  }, [preferences?.config?.exports?.defaultPdfLocation]);
 
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (exports: Record<string, unknown>) =>
       apiClient.patch<AppPreferencesResponse>("/api/app-preferences", { exports }),
-    onSuccess: (data) => {
-      setConfig(data.config);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["appPreferences"] });
       toast.success("Export preferences updated");
     },
@@ -386,6 +398,8 @@ export const ExportsSettingsPage = () => {
   const handleExportFormatChange = (format: string) => {
     mutation.mutate({ defaultExportFormat: format });
   };
+
+  if (!config) return null;
 
   return (
     <section>
