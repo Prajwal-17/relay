@@ -1,10 +1,13 @@
 import quickcartLogo from "@/assets/quickcart.svg";
 import { navLinks } from "@/constants/Navlinks";
+import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/sidebarStore";
+import type { StoreProfile } from "@shared/types";
+import { useQuery } from "@tanstack/react-query";
 import { FileText, ShoppingCart } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import { Button } from "./ui/button";
 
@@ -30,6 +33,18 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     `/billing/estimates/${id}/edit`
   ];
   const isBillingPage = billingPages.includes(pathname);
+
+  const { data: storeProfile } = useQuery({
+    queryKey: ["storeProfile"],
+    queryFn: () => apiClient.get<StoreProfile>("/api/store-profile")
+  });
+
+  const storeInitials = useMemo(() => {
+    if (!storeProfile?.storeName) return "";
+    const words = storeProfile.storeName.trim().split(/\s+/);
+    if (words.length === 1) return words[0]!.charAt(0).toUpperCase();
+    return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
+  }, [storeProfile?.storeName]);
   const isOverlay = variant === "overlay";
   const sidebarRef = useRef<HTMLElement | null>(null);
   const isDraggingRef = useRef(false);
@@ -83,7 +98,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     window.localStorage.setItem(SIDEBAR_WIDTH_STORAGE_KEY, String(sidebarWidth));
   }, [sidebarWidth]);
 
-  // Ensure overlay mode starts closed
   useEffect(() => {
     if (isOverlay) {
       setIsSidebarOpen(false);
@@ -245,7 +259,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       }}
     >
       <div className="flex h-full flex-col">
-        {/* ── Brand ── */}
         <div className="border-b-frame flex h-14 shrink-0 items-center border-b px-4">
           <Link
             to="/"
@@ -270,7 +283,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           </Link>
         </div>
 
-        {/* ── Scrollable middle: actions + nav ── */}
         <div className="flex flex-1 flex-col overflow-y-auto px-4 py-5">
           <div className="flex flex-col gap-3">
             <Link
@@ -321,9 +333,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           </nav>
         </div>
 
-        {/* ── Store profile footer ── */}
         <div className="border-t-frame shrink-0 border-t px-4 py-3">
-          {/* TODO: wire to /api/store-profile — name, email, initials are placeholder */}
           <Link
             to="/settings"
             onClick={() => {
@@ -334,20 +344,19 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             className="hover:bg-sidebar-accent flex items-center gap-3 rounded-xl p-2 transition-colors duration-150"
           >
             <div className="bg-success/15 text-success flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-              MS
+              {storeInitials}
             </div>
             <div className="min-w-0">
               <span className="block truncate text-sm font-semibold">
-                Sri Manjunatheshwara Stores
+                {storeProfile?.storeName}
               </span>
               <span className="text-sidebar-foreground/55 block truncate text-xs">
-                kumarkrwelcome@gmail.com
+                {storeProfile?.email}
               </span>
             </div>
           </Link>
         </div>
 
-        {/* ── Resize handle ── */}
         <div
           onMouseDown={handleResizeStart}
           className="hover:bg-foreground/5 group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
