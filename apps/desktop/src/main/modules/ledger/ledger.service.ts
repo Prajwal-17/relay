@@ -1,4 +1,5 @@
 import type { LedgerEntry, LedgerSummary, PaginatedApiResponse } from "../../../shared/types";
+import { LEDGER_ENTRY_TYPE } from "../../../shared/types";
 import { db } from "../../db/db";
 import { AppError } from "../../utils/appError";
 import { ledgerRepository } from "./ledger.repository";
@@ -6,7 +7,9 @@ import type {
   CreateAdjustmentParams,
   CreateOpeningBalanceParams,
   CreateQuickSaleParams,
-  GetLedgerParams
+  DeleteLedgerEntryParams,
+  GetLedgerParams,
+  UpdateLedgerEntryParams
 } from "./ledger.types";
 
 const assertCustomerExists = (customerId: string) => {
@@ -71,11 +74,78 @@ const createOpeningBalance = async ({ customerId, payload }: CreateOpeningBalanc
   });
 };
 
+const TWO_DAYS_MS = 48 * 60 * 60 * 1000;
+
+const ensureWithinTwoDays = (createdAt: string) => {
+  if (Date.now() - new Date(createdAt).getTime() > TWO_DAYS_MS) {
+    throw new AppError("Can only edit or delete entries within 2 days of creation", 400);
+  }
+};
+
+const ensureNotSaleType = (type: string) => {
+  if (type === LEDGER_ENTRY_TYPE.SALE) {
+    throw new AppError("Sale entries cannot be edited or deleted", 400);
+  }
+};
+
+const findAndGuardEntry = (
+  tx: Parameters<typeof ledgerRepository.findLedgerEntryById>[0],
+  entryId: string,
+  customerId: string
+) => {
+  const entry = ledgerRepository.findLedgerEntryById(tx, entryId);
+  if (!entry) throw new AppError(`Ledger entry ${entryId} not found`, 404);
+  if (entry.customerId !== customerId)
+    throw new AppError("Entry does not belong to this customer", 403);
+  ensureWithinTwoDays(entry.createdAt);
+  ensureNotSaleType(entry.type);
+  return entry;
+};
+
+const updateLedgerEntry = async ({ entryId, customerId, payload }: UpdateLedgerEntryParams) => {
+  assertCustomerExists(customerId);
+
+  return db.transaction((tx) => {
+    const entry = findAndGuardEntry(tx, entryId, customerId);
+
+    const updated = ledgerRepository.updateLedgerEntry(tx, entryId, payload);
+
+    if (
+      entry.type === LEDGER_ENTRY_TYPE.PAYMENT &&
+      payload.amountPaid !== undefined &&
+      payload.amountPaid !== (entry.amountPaid ?? 0)
+    ) {
+      ledgerRepository.replayPaymentsForCustomer(tx, customerId);
+    }
+
+    ledgerRepository.recomputeOutstanding(tx, customerId);
+    return updated;
+  });
+};
+
+const deleteLedgerEntry = async ({ entryId, customerId }: DeleteLedgerEntryParams) => {
+  assertCustomerExists(customerId);
+
+  return db.transaction((tx) => {
+    const entry = findAndGuardEntry(tx, entryId, customerId);
+
+    ledgerRepository.deleteLedgerEntryById(tx, entryId);
+
+    if (entry.type === LEDGER_ENTRY_TYPE.PAYMENT) {
+      ledgerRepository.replayPaymentsForCustomer(tx, customerId);
+    }
+
+    ledgerRepository.recomputeOutstanding(tx, customerId);
+  });
+};
+
 export const ledgerService = {
   getLedgerByCustomerId,
   getLedgerSummary,
   createPayment,
   createAdjustment,
   createQuickSale,
-  createOpeningBalance
+  createOpeningBalance,
+  updateLedgerEntry,
+  deleteLedgerEntry
 };

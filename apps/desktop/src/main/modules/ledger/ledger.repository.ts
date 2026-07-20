@@ -10,7 +10,8 @@ import {
   type CreateQuickSalePayload,
   type LedgerEntry,
   type LedgerSort,
-  type LedgerTypeFilter
+  type LedgerTypeFilter,
+  type UpdateLedgerEntryPayload
 } from "../../../shared/types";
 import { db } from "../../db/db";
 import type * as schema from "../../db/schema";
@@ -413,6 +414,94 @@ const upsertPaymentForSale = (
     .get();
 };
 
+const findLedgerEntryById = (tx: Tx, entryId: string) => {
+  return tx.select().from(customerLedger).where(eq(customerLedger.id, entryId)).get();
+};
+
+const updateLedgerEntry = (tx: Tx, entryId: string, updates: UpdateLedgerEntryPayload) => {
+  const setData: Record<string, unknown> = {
+    updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+  };
+  if (updates.amountDue !== undefined) setData.amountDue = updates.amountDue;
+  if (updates.amountPaid !== undefined) setData.amountPaid = updates.amountPaid;
+  if (updates.paymentMode !== undefined) setData.paymentMode = updates.paymentMode;
+  if (updates.notes !== undefined) setData.notes = updates.notes;
+
+  return tx
+    .update(customerLedger)
+    .set(setData)
+    .where(eq(customerLedger.id, entryId))
+    .returning()
+    .get();
+};
+
+const deleteLedgerEntryById = (tx: Tx, entryId: string) => {
+  return tx.delete(customerLedger).where(eq(customerLedger.id, entryId)).run();
+};
+
+const resetSalesForCustomer = (tx: Tx, customerId: string) => {
+  tx.update(sales)
+    .set({
+      amountPaid: 0,
+      isPaid: false,
+      paymentMode: null,
+      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+    })
+    .where(eq(sales.customerId, customerId))
+    .run();
+};
+
+const replayPaymentsForCustomer = (tx: Tx, customerId: string) => {
+  resetSalesForCustomer(tx, customerId);
+
+  const payments = tx
+    .select()
+    .from(customerLedger)
+    .where(
+      and(
+        eq(customerLedger.customerId, customerId),
+        eq(customerLedger.type, LEDGER_ENTRY_TYPE.PAYMENT)
+      )
+    )
+    .orderBy(asc(customerLedger.createdAt), asc(customerLedger.id))
+    .all();
+
+  for (const payment of payments) {
+    if (payment.saleId) {
+      const sale = tx
+        .select({ id: sales.id, grandTotal: sales.grandTotal, amountPaid: sales.amountPaid })
+        .from(sales)
+        .where(eq(sales.id, payment.saleId))
+        .get();
+
+      if (sale) {
+        const newAmountPaid = (sale.amountPaid ?? 0) + (payment.amountPaid ?? 0);
+        const closes = newAmountPaid >= (sale.grandTotal ?? 0);
+        applyAllocationToSale(tx, {
+          saleId: sale.id,
+          allocatedPaisa: payment.amountPaid ?? 0,
+          closes,
+          paymentMode: payment.paymentMode ?? "cash"
+        });
+      }
+    } else {
+      const openSales = getOpenSalesByCustomerId(tx, customerId);
+      const { allocations } = allocatePaymentFifo(payment.amountPaid ?? 0, openSales);
+      for (const alloc of allocations) {
+        const sale = openSales.find((s) => s.id === alloc.saleId)!;
+        const newAmountPaid = (sale.amountPaid ?? 0) + alloc.allocatedPaisa;
+        const closes = newAmountPaid >= (sale.grandTotal ?? 0);
+        applyAllocationToSale(tx, {
+          saleId: alloc.saleId,
+          allocatedPaisa: alloc.allocatedPaisa,
+          closes,
+          paymentMode: payment.paymentMode ?? "cash"
+        });
+      }
+    }
+  }
+};
+
 const findCustomerById = (tx: Tx, customerId: string) => {
   return tx.select().from(customers).where(eq(customers.id, customerId)).get();
 };
@@ -504,5 +593,10 @@ export const ledgerRepository = {
   getLedgerEntriesForSale,
   upsertSaleEntry,
   upsertPaymentForSale,
+  findLedgerEntryById,
+  updateLedgerEntry,
+  deleteLedgerEntryById,
+  resetSalesForCustomer,
+  replayPaymentsForCustomer,
   recomputeOutstanding
 };

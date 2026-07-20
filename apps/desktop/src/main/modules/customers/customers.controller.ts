@@ -10,7 +10,8 @@ import {
   createOpeningBalanceSchema,
   createPaymentSchema,
   createQuickSaleSchema,
-  getLedgerSchema
+  getLedgerSchema,
+  updateLedgerEntrySchema
 } from "../ledger/ledger.schema";
 import { ledgerService } from "../ledger/ledger.service";
 import {
@@ -175,6 +176,30 @@ customersController.post(
     const payload = c.req.valid("json");
     const result = await ledgerService.createOpeningBalance({ customerId: id, payload });
     return c.json(result, 201);
+  }
+);
+
+customersController.patch(
+  "/:id/ledger/:entryId",
+  validateRequest("param", idSchema),
+  validateRequest("json", updateLedgerEntrySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { entryId } = c.req.param();
+    const payload = c.req.valid("json");
+    const result = await ledgerService.updateLedgerEntry({ entryId, customerId: id, payload });
+    return c.json(result, 200);
+  }
+);
+
+customersController.delete(
+  "/:id/ledger/:entryId",
+  validateRequest("param", idSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { entryId } = c.req.param();
+    await ledgerService.deleteLedgerEntry({ entryId, customerId: id });
+    return c.body(null, 204);
   }
 );
 

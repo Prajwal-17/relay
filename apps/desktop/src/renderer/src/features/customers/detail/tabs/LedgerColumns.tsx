@@ -1,10 +1,19 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types";
 import { LEDGER_ENTRY_TYPE, type LedgerEntry, type LedgerEntryType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { ColumnDef } from "@tanstack/react-table";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { isWithinTwoDays } from "@shared/utils/dateUtils";
 
 const typePillClass: Record<LedgerEntryType, string> = {
   [LEDGER_ENTRY_TYPE.SALE]: "border-info/25 bg-info/15 text-info",
@@ -24,10 +33,12 @@ const typeLabel: Record<LedgerEntryType, string> = {
 
 type LedgerColumnsOptions = {
   onOpenSale?: (saleId: string) => void;
+  onEdit?: (entry: LedgerEntry) => void;
+  onDelete?: (entry: LedgerEntry) => void;
 };
 
 export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<LedgerEntry>[] {
-  const { onOpenSale } = opts;
+  const { onOpenSale, onEdit, onDelete } = opts;
 
   return [
     {
@@ -162,6 +173,52 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
         );
       },
       meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[120px]" } as TxnTableColMeta
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const entry = row.original;
+        const canModify = entry.type !== LEDGER_ENTRY_TYPE.SALE && isWithinTwoDays(entry.createdAt);
+        if (!canModify || (!onEdit && !onDelete)) return null;
+
+        return (
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer p-0"
+                >
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                {onEdit && (
+                  <DropdownMenuItem
+                    onClick={() => onEdit(entry)}
+                    className="cursor-pointer text-sm font-medium"
+                  >
+                    <Pencil className="mr-2 size-3.5" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {onDelete && (
+                  <DropdownMenuItem
+                    onClick={() => onDelete(entry)}
+                    className="text-destructive focus:text-destructive cursor-pointer text-sm font-medium"
+                  >
+                    <Trash2 className="mr-2 size-3.5" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        );
+      },
+      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[52px]" } as TxnTableColMeta
     }
   ];
 }

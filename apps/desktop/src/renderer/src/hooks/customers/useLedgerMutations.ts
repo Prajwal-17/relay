@@ -5,7 +5,8 @@ import type {
   CreatePaymentPayload,
   CreatePaymentResult,
   CreateQuickSalePayload,
-  LedgerEntry
+  LedgerEntry,
+  UpdateLedgerEntryPayload
 } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -71,6 +72,33 @@ export function useCreateOpeningBalance(customerId: string) {
     onSuccess: () => {
       invalidate();
       toast.success("Opening balance set");
+    },
+    onError: (error) => toast.error(error.message)
+  });
+}
+
+export function useUpdateLedgerEntry(customerId: string) {
+  const invalidate = useInvalidateLedger(customerId);
+
+  return useMutation<LedgerEntry, Error, { entryId: string; payload: UpdateLedgerEntryPayload }>({
+    mutationFn: ({ entryId, payload }) =>
+      apiClient.patch(`/api/customers/${customerId}/ledger/${entryId}`, payload),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Entry updated");
+    },
+    onError: (error) => toast.error(error.message)
+  });
+}
+
+export function useDeleteLedgerEntry(customerId: string) {
+  const invalidate = useInvalidateLedger(customerId);
+
+  return useMutation<void, Error, string>({
+    mutationFn: (entryId) => apiClient.delete(`/api/customers/${customerId}/ledger/${entryId}`),
+    onSuccess: () => {
+      invalidate();
+      toast.success("Entry deleted");
     },
     onError: (error) => toast.error(error.message)
   });

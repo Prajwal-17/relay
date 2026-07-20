@@ -10,11 +10,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle
+} from "@/components/ui/alert-dialog";
 import { LEDGER_SORT_OPTIONS, LEDGER_TABLE_PAGE_SIZE, LEDGER_TYPE_OPTIONS } from "@/constants";
 import { useCustomerLedger } from "@/hooks/customers/useCustomerLedger";
+import { useDeleteLedgerEntry } from "@/hooks/customers/useLedgerMutations";
 import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types";
-import type { LedgerSort, LedgerTypeFilter } from "@shared/types";
+import type { LedgerEntry, LedgerSort, LedgerTypeFilter } from "@shared/types";
 import { LEDGER_SORT, LEDGER_TYPE_FILTER } from "@shared/types";
 import { flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import {
@@ -30,16 +41,21 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useCustomerActions } from "../../customerActions";
+import { useViewModalStore } from "@/store/viewModalStore";
+import { EditLedgerDialog } from "../../dialogs/EditLedgerDialog";
 import { buildLedgerColumns } from "./LedgerColumns";
 
 const LEDGER_NUMBER_INPUT_CLASS =
   "h-8 w-14 border-border bg-muted/50 text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
 
 export function LedgerTable({ customerId }: { customerId: string }) {
-  const navigate = useNavigate();
   const { openAdjust, openQuickSale } = useCustomerActions();
+  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
+  const setTransactionId = useViewModalStore((state) => state.setTransactionId);
+
+  const [editingEntry, setEditingEntry] = useState<LedgerEntry | null>(null);
+  const [deletingEntry, setDeletingEntry] = useState<LedgerEntry | null>(null);
 
   const [pageNo, setPageNo] = useState(1);
   const [pageSize, setPageSize] = useState(LEDGER_TABLE_PAGE_SIZE);
@@ -58,12 +74,19 @@ export function LedgerTable({ customerId }: { customerId: string }) {
     sort: sortValue
   });
 
+  const deleteEntry = useDeleteLedgerEntry(customerId);
+
   const columns = useMemo(
     () =>
       buildLedgerColumns({
-        onOpenSale: (saleId) => navigate(`/billing/sales/${saleId}/edit`)
+        onOpenSale: (saleId) => {
+          setTransactionId(saleId);
+          setIsViewModalOpen(true);
+        },
+        onEdit: setEditingEntry,
+        onDelete: setDeletingEntry
       }),
-    [navigate]
+    [setTransactionId, setIsViewModalOpen]
   );
 
   const table = useReactTable({
@@ -405,6 +428,46 @@ export function LedgerTable({ customerId }: { customerId: string }) {
           </div>
         </div>
       )}
+
+      {editingEntry && (
+        <EditLedgerDialog
+          entry={editingEntry}
+          customerId={customerId}
+          onClose={() => setEditingEntry(null)}
+        />
+      )}
+
+      <AlertDialog
+        open={!!deletingEntry}
+        onOpenChange={(isOpen) => !isOpen && setDeletingEntry(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this ledger entry. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer" disabled={deleteEntry.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+              disabled={deleteEntry.isPending}
+              onClick={() => {
+                if (deletingEntry) {
+                  deleteEntry.mutate(deletingEntry.id, {
+                    onSuccess: () => setDeletingEntry(null)
+                  });
+                }
+              }}
+            >
+              {deleteEntry.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -103,9 +103,7 @@ const getLastPaymentsForCustomers = (customerIds: string[]) => {
       amountPaid: customerLedger.amountPaid
     })
     .from(customerLedger)
-    .where(
-      and(inArray(customerLedger.customerId, customerIds), eq(customerLedger.type, "payment"))
-    )
+    .where(and(inArray(customerLedger.customerId, customerIds), eq(customerLedger.type, "payment")))
     .orderBy(desc(customerLedger.createdAt))
     .all();
 };

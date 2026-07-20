@@ -4,7 +4,8 @@ import type {
   CreatePaymentPayload,
   CreateQuickSalePayload,
   LedgerSort,
-  LedgerTypeFilter
+  LedgerTypeFilter,
+  UpdateLedgerEntryPayload
 } from "../../../shared/types";
 
 export type GetLedgerParams = {
@@ -52,4 +53,15 @@ export type OpenSale = {
 export type FifoAllocation = {
   saleId: string;
   allocatedPaisa: number;
+};
+
+export type UpdateLedgerEntryParams = {
+  entryId: string;
+  customerId: string;
+  payload: UpdateLedgerEntryPayload;
+};
+
+export type DeleteLedgerEntryParams = {
+  entryId: string;
+  customerId: string;
 };

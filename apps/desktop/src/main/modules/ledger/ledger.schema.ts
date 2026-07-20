@@ -39,3 +39,19 @@ export const createOpeningBalanceSchema = z.object({
   amount: z.number().int().nonnegative(),
   notes: z.string().trim().optional()
 });
+
+export const updateLedgerEntrySchema = z
+  .object({
+    amountDue: z.number().int().min(0).optional(),
+    amountPaid: z.number().int().min(0).optional(),
+    paymentMode: z.enum([PAYMENT_MODE.CASH, PAYMENT_MODE.UPI, PAYMENT_MODE.CARD]).optional(),
+    notes: z.string().trim().optional()
+  })
+  .refine(
+    (data) =>
+      data.amountDue !== undefined ||
+      data.amountPaid !== undefined ||
+      data.paymentMode !== undefined ||
+      data.notes !== undefined,
+    { message: "At least one field must be provided" }
+  );

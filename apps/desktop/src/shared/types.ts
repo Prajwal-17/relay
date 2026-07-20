@@ -443,6 +443,13 @@ export type CreateQuickSalePayload = {
   notes?: string;
 };
 
+export type UpdateLedgerEntryPayload = {
+  amountDue?: number;
+  amountPaid?: number;
+  paymentMode?: string;
+  notes?: string;
+};
+
 export type CreateOpeningBalancePayload = {
   amount: number;
   notes?: string;

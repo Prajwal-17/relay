@@ -117,3 +117,7 @@ export function formatDateStrToISTDateTimeStr(dateStr: string) {
 
   return `${fullDate} ${timePart}`;
 }
+
+export function isWithinTwoDays(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() <= 48 * 60 * 60 * 1000;
+}
