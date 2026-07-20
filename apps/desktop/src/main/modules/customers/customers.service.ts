@@ -67,10 +67,47 @@ const getCustomersPaginated = async (
 
   const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
 
+  if (rows.length === 0) {
+    return { nextPageNo, totalCount, data: [] };
+  }
+
+  const customerIds = rows.map((r) => r.id);
+
+  const [lastSales, lastPayments] = await Promise.all([
+    customersRepository.getLastSalesForCustomers(customerIds),
+    customersRepository.getLastPaymentsForCustomers(customerIds)
+  ]);
+
+  const purchaseByCustomer = new Map<string, { createdAt: string; grandTotal: number | null }>();
+  for (const s of lastSales) {
+    if (!purchaseByCustomer.has(s.customerId)) {
+      purchaseByCustomer.set(s.customerId, { createdAt: s.createdAt, grandTotal: s.grandTotal });
+    }
+  }
+
+  const paymentByCustomer = new Map<string, { createdAt: string; amountPaid: number | null }>();
+  for (const p of lastPayments) {
+    if (!paymentByCustomer.has(p.customerId)) {
+      paymentByCustomer.set(p.customerId, { createdAt: p.createdAt, amountPaid: p.amountPaid });
+    }
+  }
+
+  const data = rows.map((row) => {
+    const purchase = purchaseByCustomer.get(row.id);
+    const payment = paymentByCustomer.get(row.id);
+    return {
+      ...row,
+      lastPurchaseAt: purchase?.createdAt ?? null,
+      lastPurchaseAmt: purchase?.grandTotal ?? null,
+      lastPaymentAt: payment?.createdAt ?? null,
+      lastPaymentAmt: payment?.amountPaid ?? null
+    };
+  });
+
   return {
     nextPageNo,
     totalCount,
-    data: rows
+    data
   };
 };
 

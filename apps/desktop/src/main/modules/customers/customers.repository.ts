@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, like, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, like, sql, type SQL } from "drizzle-orm";
 import {
   CUSTOMER_SORT_BY,
   CUSTOMER_TXN_SORT,
@@ -8,7 +8,7 @@ import {
 } from "../../../shared/types";
 import { db } from "../../db/db";
 import { CustomerRole } from "../../db/enum";
-import { customers, estimates, sales } from "../../db/schema";
+import { customerLedger, customers, estimates, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { ledgerRepository } from "../ledger/ledger.repository";
 import type { EstimatesByCustomerParams, SalesByCustomerParams } from "./customers.types";
@@ -31,6 +31,20 @@ const getCustomers = async (searchTerm: string) => {
     .orderBy(customers.name);
 };
 
+const columns = {
+  id: customers.id,
+  storeId: customers.storeId,
+  name: customers.name,
+  contact: customers.contact,
+  customerType: customers.customerType,
+  notes: customers.notes,
+  address: customers.address,
+  outstandingBalance: customers.outstandingBalance,
+  creditLimit: customers.creditLimit,
+  createdAt: customers.createdAt,
+  updatedAt: customers.updatedAt
+};
+
 const getCustomersPaginated = async (params: {
   searchTerm: string;
   whereClause: SQL | undefined;
@@ -48,7 +62,7 @@ const getCustomersPaginated = async (params: {
           : asc(customers.name);
 
   if (params.searchTerm === "") {
-    const query = db.select().from(customers).orderBy(sortClause);
+    const query = db.select(columns).from(customers).orderBy(sortClause);
     if (params.whereClause) {
       return query.where(params.whereClause).limit(params.limit).offset(params.offset);
     }
@@ -60,12 +74,40 @@ const getCustomersPaginated = async (params: {
     : like(customers.name, `${params.searchTerm}%`);
 
   return db
-    .select()
+    .select(columns)
     .from(customers)
     .where(where)
     .orderBy(sortClause)
     .limit(params.limit)
     .offset(params.offset);
+};
+
+const getLastSalesForCustomers = (customerIds: string[]) => {
+  return db
+    .select({
+      customerId: sales.customerId,
+      createdAt: sales.createdAt,
+      grandTotal: sales.grandTotal
+    })
+    .from(sales)
+    .where(inArray(sales.customerId, customerIds))
+    .orderBy(desc(sales.createdAt))
+    .all();
+};
+
+const getLastPaymentsForCustomers = (customerIds: string[]) => {
+  return db
+    .select({
+      customerId: customerLedger.customerId,
+      createdAt: customerLedger.createdAt,
+      amountPaid: customerLedger.amountPaid
+    })
+    .from(customerLedger)
+    .where(
+      and(inArray(customerLedger.customerId, customerIds), eq(customerLedger.type, "payment"))
+    )
+    .orderBy(desc(customerLedger.createdAt))
+    .all();
 };
 
 const countCustomers = async (params: { searchTerm: string; whereClause: SQL | undefined }) => {
@@ -262,5 +304,7 @@ export const customersRepository = {
   getCustomerSummary,
   createCustomer,
   updateById,
-  deleteById
+  deleteById,
+  getLastSalesForCustomers,
+  getLastPaymentsForCustomers
 };

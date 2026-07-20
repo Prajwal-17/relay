@@ -21,6 +21,8 @@ type CustomerListTableProps = {
 };
 
 import {
+  renderLastPaymentAmtCell,
+  renderLastPaymentAtCell,
   renderLastPurchaseAmtCell,
   renderLastPurchaseAtCell,
   renderNameCell,
@@ -47,7 +49,7 @@ export function CustomerListTable({
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? rows.length + 1 : rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 60
+    estimateSize: () => 64
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -79,10 +81,12 @@ export function CustomerListTable({
   const colInfo = useMemo(
     () => [
       { span: "col-span-3", align: "", label: "NAME" },
-      { span: "col-span-2", align: "", label: "TYPE" },
-      { span: "col-span-2", align: "justify-end", label: "OUTSTANDING" },
-      { span: "col-span-2", align: "justify-end", label: "LAST PURCHASE AT" },
-      { span: "col-span-2", align: "justify-end", label: "LAST PURCHASE AMT" }
+      { span: "col-span-1", align: "", label: "TYPE" },
+      { span: "col-span-1", align: "justify-end", label: "BALANCE" },
+      { span: "col-span-2", align: "justify-end", label: "LAST PURCHASE" },
+      { span: "col-span-1", align: "justify-end", label: "AMOUNT" },
+      { span: "col-span-2", align: "justify-end", label: "LAST PAYMENT" },
+      { span: "col-span-1", align: "justify-end", label: "AMOUNT" }
     ],
     []
   );
@@ -91,7 +95,7 @@ export function CustomerListTable({
 
   return (
     <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
-      <div className="bg-muted text-muted-foreground grid grid-cols-11 items-center gap-2 px-4 py-2 text-xs font-medium tracking-wide uppercase">
+      <div className="bg-muted text-muted-foreground grid grid-cols-11 items-center gap-2 px-4 py-2.5 text-sm font-semibold">
         {colInfo.map((c, i) => (
           <div key={i} className={cn("flex", c.span, c.align)}>
             {c.label}
@@ -207,7 +211,7 @@ export function CustomerListTable({
                         onClick={() => onRowClick(row)}
                         className={cn(
                           "border-border/70 hover:bg-accent relative w-full border-b text-left transition-colors",
-                          "grid cursor-pointer grid-cols-11 items-center gap-2 px-4 py-2.5",
+                          "grid cursor-pointer grid-cols-11 items-center gap-2 px-4 py-3 text-sm",
                           "last:border-b-0",
                           virtualRow.index === activeIndex && "bg-accent"
                         )}
@@ -219,15 +223,21 @@ export function CustomerListTable({
                           )}
                         />
                         <div className="col-span-3 flex min-w-0">{renderNameCell(row)}</div>
-                        <div className="col-span-2 flex">{renderTypeCell(row)}</div>
-                        <div className="col-span-2 flex justify-end">
+                        <div className="col-span-1 flex">{renderTypeCell(row)}</div>
+                        <div className="col-span-1 flex justify-end">
                           {renderOutstandingCell(row)}
                         </div>
                         <div className="col-span-2 flex justify-end">
                           {renderLastPurchaseAtCell(row)}
                         </div>
-                        <div className="col-span-2 flex justify-end">
+                        <div className="col-span-1 flex justify-end">
                           {renderLastPurchaseAmtCell(row)}
+                        </div>
+                        <div className="col-span-2 flex justify-end">
+                          {renderLastPaymentAtCell(row)}
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          {renderLastPaymentAmtCell(row)}
                         </div>
                       </button>
                     </div>

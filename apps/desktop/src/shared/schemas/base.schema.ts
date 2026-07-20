@@ -15,6 +15,10 @@ export const CustomerSchema = z.object({
   address: z.string().trim().nullable().optional(),
   creditLimit: z.number().int().nonnegative().nullable().optional(),
   outstandingBalance: z.number().int().nullable().optional(),
+  lastPurchaseAt: z.string().nullable().optional(),
+  lastPurchaseAmt: z.number().int().nullable().optional(),
+  lastPaymentAt: z.string().nullable().optional(),
+  lastPaymentAmt: z.number().int().nullable().optional(),
   createdAt: z.iso.datetime().nullable(),
   updatedAt: z.iso.datetime().nullable()
 });

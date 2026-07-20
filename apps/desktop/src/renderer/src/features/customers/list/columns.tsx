@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
-import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
 import type { CustomerListRow } from "./types";
 
 const typeBadgeClass: Record<string, string> = {
@@ -13,9 +12,10 @@ const typeBadgeClass: Record<string, string> = {
 
 export const colSpans = [
   "col-span-3",
+  "col-span-1",
+  "col-span-1",
   "col-span-2",
-  "col-span-2",
-  "col-span-2",
+  "col-span-1",
   "col-span-2",
   "col-span-1"
 ] as const;
@@ -23,8 +23,8 @@ export const colSpans = [
 export function renderNameCell(row: CustomerListRow) {
   return (
     <div className="min-w-0">
-      <p className="text-foreground truncate font-medium">{row.name}</p>
-      <p className="text-muted-foreground truncate text-xs">{row.contact ?? "No contact"}</p>
+      <p className="text-foreground truncate text-sm font-semibold">{row.name}</p>
+      <p className="text-muted-foreground truncate text-sm">{row.contact ?? "No contact"}</p>
     </div>
   );
 }
@@ -35,7 +35,7 @@ export function renderTypeCell(row: CustomerListRow) {
     <Badge
       variant="outline"
       className={cn(
-        "px-2 py-0.5 text-xs font-medium capitalize",
+        "px-2 py-0.5 text-sm font-medium capitalize",
         typeBadgeClass[t] ?? typeBadgeClass.cash
       )}
     >
@@ -45,30 +45,64 @@ export function renderTypeCell(row: CustomerListRow) {
 }
 
 export function renderOutstandingCell(row: CustomerListRow) {
-  if (row.outstanding !== null) {
-    return <OutstandingBadge outstanding={row.outstanding} size="sm" />;
+  if (row.outstanding === null || row.outstanding === 0) {
+    return <span className="text-muted-foreground/60 text-sm tabular-nums">{"\u2014"}</span>;
   }
-  return <span className="text-muted-foreground/60 text-sm tabular-nums">{"\u2014"}</span>;
+
+  const isDue = row.outstanding > 0;
+  return (
+    <span
+      className={cn(
+        "text-sm font-semibold tabular-nums",
+        isDue ? "text-destructive" : "text-success"
+      )}
+    >
+      {formatRupee(Math.abs(row.outstanding))}
+      <span className="ml-0.5 text-xs font-medium">{isDue ? "Dr" : "Cr"}</span>
+    </span>
+  );
 }
 
 export function renderLastPurchaseAtCell(row: CustomerListRow) {
   if (row.lastPurchaseAt !== null) {
     return (
-      <span className="text-muted-foreground text-xs tabular-nums">
+      <span className="text-muted-foreground text-sm tabular-nums">
         {formatDateStr(row.lastPurchaseAt)}
       </span>
     );
   }
-  return <span className="text-muted-foreground/60 text-sm">{"\u2014"}</span>;
+  return <span className="text-muted-foreground/60 text-base">{"\u2014"}</span>;
 }
 
 export function renderLastPurchaseAmtCell(row: CustomerListRow) {
   if (row.lastPurchaseAmt !== null) {
     return (
-      <span className="text-foreground text-sm font-medium tabular-nums">
+      <span className="text-foreground text-sm font-semibold tabular-nums">
         {formatRupee(row.lastPurchaseAmt)}
       </span>
     );
   }
-  return <span className="text-muted-foreground/60 text-sm">{"\u2014"}</span>;
+  return <span className="text-muted-foreground/60 text-base">{"\u2014"}</span>;
+}
+
+export function renderLastPaymentAtCell(row: CustomerListRow) {
+  if (row.lastPaymentAt !== null) {
+    return (
+      <span className="text-muted-foreground text-sm tabular-nums">
+        {formatDateStr(row.lastPaymentAt)}
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground/60 text-base">{"\u2014"}</span>;
+}
+
+export function renderLastPaymentAmtCell(row: CustomerListRow) {
+  if (row.lastPaymentAmt !== null) {
+    return (
+      <span className="text-foreground text-sm font-semibold tabular-nums">
+        {formatRupee(row.lastPaymentAmt)}
+      </span>
+    );
+  }
+  return <span className="text-muted-foreground/60 text-base">{"\u2014"}</span>;
 }

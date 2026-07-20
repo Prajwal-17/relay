@@ -14,7 +14,6 @@ export type UsersType = {
   role: string;
 };
 
-// TODO: add new fields
 export type Customer = {
   id: string;
   name: string;
@@ -22,8 +21,12 @@ export type Customer = {
   customerType: string;
   notes: string | null;
   address: string | null;
-  outstandingBalance: number | null; // TODO: rm null
-  creditLimit: number | null; // TODO: rm null
+  outstandingBalance: number | null;
+  creditLimit: number | null;
+  lastPurchaseAt?: string | null;
+  lastPurchaseAmt?: number | null;
+  lastPaymentAt?: string | null;
+  lastPaymentAmt?: number | null;
   updatedAt?: string;
   createdAt?: string;
 };
