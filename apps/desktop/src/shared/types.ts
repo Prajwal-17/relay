@@ -650,6 +650,8 @@ export type AppPreferencesResponse = {
   config: AppConfig;
 };
 
+export type AppPreferencesDefaults = AppConfig;
+
 export type StoreProfile = {
   id: string;
   storeName: string;

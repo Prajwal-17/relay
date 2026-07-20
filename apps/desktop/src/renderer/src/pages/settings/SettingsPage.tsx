@@ -3,10 +3,10 @@ import { settingsNavigation } from "../../features/settings/settingsNavigation";
 
 const SettingsPage = () => {
   return (
-    <div className="bg-background min-h-full px-4 py-4 lg:px-6">
-      <div className="w-full max-w-280">
-        <div className="grid items-start gap-20 lg:grid-cols-[240px_minmax(0,1fr)]">
-          <aside className="grid gap-1.5" aria-label="Settings sections">
+    <div className="bg-background h-full px-4 py-4 lg:px-6">
+      <div className="mx-auto h-full w-full max-w-280">
+        <div className="grid h-full gap-20 lg:grid-cols-[240px_minmax(0,1fr)]">
+          <aside className="sticky top-0 grid h-fit gap-1.5" aria-label="Settings sections">
             {settingsNavigation.map((item) => (
               <NavLink
                 key={item.id}
@@ -23,7 +23,10 @@ const SettingsPage = () => {
             ))}
           </aside>
 
-          <main className="rounded-none border-0 bg-transparent p-0" aria-live="polite">
+          <main
+            className="overflow-y-auto rounded-none border-0 bg-transparent p-0"
+            aria-live="polite"
+          >
             <Outlet />
           </main>
         </div>

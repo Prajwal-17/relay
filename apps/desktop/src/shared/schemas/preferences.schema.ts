@@ -16,3 +16,9 @@ export const updatePreferencesSchema = z.object({
 });
 
 export type UpdatePreferencesPayload = z.infer<typeof updatePreferencesSchema>;
+
+export const resetSectionParamSchema = z.object({
+  section: z.enum(["exports"])
+});
+
+export type ResetSectionParam = z.infer<typeof resetSectionParamSchema>;

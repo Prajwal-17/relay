@@ -1,9 +1,8 @@
 import { eq, sql } from "drizzle-orm";
-import os from "os";
-import path from "path";
 import type { AppConfig } from "../../../shared/types";
 import { db } from "../../db/db";
 import { appPreferences } from "../../db/schema";
+import { getDefaultExportsConfig } from "./preferences.defaults";
 
 const getPreferences = async (storeId: string) => {
   return db
@@ -39,11 +38,7 @@ const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx
     billing: {
       defaultCustomerId: defaultCustomerId
     },
-    exports: {
-      askBeforeSavingPdf: true,
-      defaultPdfLocation: path.join(os.homedir(), "Downloads", "Receipts"),
-      defaultExportFormat: "pdf"
-    }
+    exports: getDefaultExportsConfig()
   };
 
   return tx
@@ -60,8 +55,13 @@ const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx
     .get();
 };
 
+const resetSectionConfig = async (storeId: string, config: AppConfig) => {
+  return updatePreferences(storeId, config);
+};
+
 export const preferencesRepository = {
   getPreferences,
   updatePreferences,
-  createDefaultPreferences
+  createDefaultPreferences,
+  resetSectionConfig
 };
