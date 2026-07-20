@@ -25,14 +25,18 @@ const findById = async (id: string) => {
 
 const getCustomers = async (searchTerm: string) => {
   if (searchTerm === "") {
-    return await db.select().from(customers).orderBy(customers.name);
+    return await db
+      .select()
+      .from(customers)
+      .where(eq(customers.isArchived, false))
+      .orderBy(customers.name);
   }
 
   const searchQuery = `${searchTerm}%`;
   return await db
     .select()
     .from(customers)
-    .where(like(customers.name, searchQuery))
+    .where(and(like(customers.name, searchQuery), eq(customers.isArchived, false)))
     .orderBy(customers.name);
 };
 
@@ -46,6 +50,8 @@ const columns = {
   address: customers.address,
   outstandingBalance: customers.outstandingBalance,
   creditLimit: customers.creditLimit,
+  isArchived: customers.isArchived,
+  archivedAt: customers.archivedAt,
   createdAt: customers.createdAt,
   updatedAt: customers.updatedAt
 };
@@ -56,6 +62,7 @@ const getCustomersPaginated = async (params: {
   sort: CustomerSortByType;
   limit: number;
   offset: number;
+  includeArchived: boolean;
 }) => {
   const sortClause: SQL =
     params.sort === CUSTOMER_SORT_BY.NAME_DESC
@@ -66,22 +73,40 @@ const getCustomersPaginated = async (params: {
           ? asc(customers.createdAt)
           : asc(customers.name);
 
+  const buildWhere = (baseWhere: SQL | undefined): SQL | undefined => {
+    if (params.includeArchived) {
+      return baseWhere;
+    }
+    const archivedClause = eq(customers.isArchived, false);
+    return baseWhere ? and(baseWhere, archivedClause) : archivedClause;
+  };
+
   if (params.searchTerm === "") {
     const query = db.select(columns).from(customers).orderBy(sortClause);
-    if (params.whereClause) {
-      return query.where(params.whereClause).limit(params.limit).offset(params.offset);
+    const where = buildWhere(params.whereClause);
+    if (where) {
+      return query.where(where).limit(params.limit).offset(params.offset);
     }
     return query.limit(params.limit).offset(params.offset);
   }
 
-  const where = params.whereClause
-    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
-    : like(customers.name, `${params.searchTerm}%`);
+  const searchClause = like(customers.name, `${params.searchTerm}%`);
+  const baseWhere = params.whereClause ? and(searchClause, params.whereClause) : searchClause;
+  const where = buildWhere(baseWhere);
 
+  if (where) {
+    return db
+      .select(columns)
+      .from(customers)
+      .where(where)
+      .orderBy(sortClause)
+      .limit(params.limit)
+      .offset(params.offset);
+  }
   return db
     .select(columns)
     .from(customers)
-    .where(where)
+    .where(baseWhere)
     .orderBy(sortClause)
     .limit(params.limit)
     .offset(params.offset);
@@ -113,18 +138,39 @@ const getLastPaymentsForCustomers = (customerIds: string[]) => {
     .all();
 };
 
-const countCustomers = async (params: { searchTerm: string; whereClause: SQL | undefined }) => {
+const countCustomers = async (params: {
+  searchTerm: string;
+  whereClause: SQL | undefined;
+  includeArchived: boolean;
+}) => {
+  const buildWhere = (baseWhere: SQL | undefined): SQL | undefined => {
+    if (params.includeArchived) {
+      return baseWhere;
+    }
+    const archivedClause = eq(customers.isArchived, false);
+    return baseWhere ? and(baseWhere, archivedClause) : archivedClause;
+  };
+
   if (params.searchTerm === "") {
+    const where = buildWhere(params.whereClause);
     const query = db.select({ count: count() }).from(customers);
-    const result = params.whereClause ? query.where(params.whereClause).get() : query.get();
+    const result = where ? query.where(where).get() : query.get();
     return result?.count ?? 0;
   }
 
-  const where = params.whereClause
-    ? and(like(customers.name, `${params.searchTerm}%`), params.whereClause)
-    : like(customers.name, `${params.searchTerm}%`);
+  const searchClause = like(customers.name, `${params.searchTerm}%`);
+  const baseWhere = params.whereClause ? and(searchClause, params.whereClause) : searchClause;
+  const where = buildWhere(baseWhere);
 
-  const result = db.select({ count: count() }).from(customers).where(where).get();
+  if (where) {
+    const result = db.select({ count: count() }).from(customers).where(where).get();
+    return result?.count ?? 0;
+  }
+  const result = db
+    .select({ count: count() })
+    .from(customers)
+    .where(baseWhere)
+    .get();
   return result?.count ?? 0;
 };
 
@@ -395,8 +441,38 @@ const hasExistingTransactions = async (customerId: string) => {
       .limit(1)
       .all();
 
-    return existingSales.length || existingEstimates.length;
+    const existingLedger = tx
+      .select()
+      .from(customerLedger)
+      .where(eq(customerLedger.customerId, customerId))
+      .limit(1)
+      .all();
+
+    return existingSales.length || existingEstimates.length || existingLedger.length;
   });
+};
+
+const archiveById = async (id: string) => {
+  const customer = await findById(id);
+  if (customer?.name === "DEFAULT") {
+    throw new AppError("Cannot archive the DEFAULT customer", 400);
+  }
+
+  const result = await db
+    .update(customers)
+    .set({ isArchived: true, archivedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))` })
+    .where(eq(customers.id, id));
+
+  return result.changes;
+};
+
+const restoreById = async (id: string) => {
+  const result = await db
+    .update(customers)
+    .set({ isArchived: false, archivedAt: null })
+    .where(eq(customers.id, id));
+
+  return result.changes;
 };
 
 const deleteById = async (id: string) => {
@@ -408,7 +484,10 @@ const deleteById = async (id: string) => {
   const transactionsExist = await hasExistingTransactions(id);
 
   if (transactionsExist > 0) {
-    throw new AppError("Cannot delete customer with existing sales or estimates.", 400);
+    throw new AppError(
+      "Cannot delete customer with existing sales, estimates, or ledger entries. Archive them instead.",
+      400
+    );
   }
 
   const result = await db.delete(customers).where(eq(customers.id, id));
@@ -431,6 +510,8 @@ export const customersRepository = {
   getCustomerActivity,
   createCustomer,
   updateById,
+  archiveById,
+  restoreById,
   deleteById,
   getLastSalesForCustomers,
   getLastPaymentsForCustomers

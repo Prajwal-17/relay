@@ -25,13 +25,14 @@ import { customersService } from "./customers.service";
 export const customersController = new Hono();
 
 customersController.get("/", validateRequest("query", listCustomersSchema), async (c) => {
-  const { pageNo, pageSize, query, type, sort } = c.req.valid("query");
+  const { pageNo, pageSize, query, type, sort, includeArchived } = c.req.valid("query");
   const result = await customersService.getCustomersPaginated({
     pageNo,
     pageSize,
     query,
     type,
-    sort
+    sort,
+    includeArchived
   });
   return c.json(result, 200);
 });
@@ -229,6 +230,20 @@ customersController.delete(
     return c.body(null, 204);
   }
 );
+
+// archive customer
+customersController.patch("/:id/archive", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await customersService.archiveCustomerById(id);
+  return c.json({ status: "success", data: null }, 200);
+});
+
+// restore customer
+customersController.patch("/:id/restore", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await customersService.restoreCustomerById(id);
+  return c.json({ status: "success", data: null }, 200);
+});
 
 // delete customer
 customersController.delete("/:id", validateRequest("param", idSchema), async (c) => {

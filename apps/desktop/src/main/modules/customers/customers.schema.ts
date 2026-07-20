@@ -20,7 +20,11 @@ export const listCustomersSchema = z.object({
       CUSTOMER_SORT_BY.NEWEST,
       CUSTOMER_SORT_BY.OLDEST
     ])
-    .default(CUSTOMER_SORT_BY.NAME_ASC)
+    .default(CUSTOMER_SORT_BY.NAME_ASC),
+  includeArchived: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true")
 });
 
 export const getSalesByCustomerSchema = z.object({

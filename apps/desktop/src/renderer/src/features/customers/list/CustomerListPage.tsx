@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { CUSTOMER_SORT_OPTIONS } from "@/constants";
 import { useCustomersInfinite } from "@/hooks/customers/useCustomersInfinite";
 import { cn } from "@/lib/utils";
@@ -57,6 +58,8 @@ export function CustomerListPage() {
     setTypeFilter,
     sortBy,
     setSortBy,
+    includeArchived,
+    setIncludeArchived,
     debouncedQuery
   } = useCustomersInfinite();
 
@@ -67,8 +70,8 @@ export function CustomerListPage() {
   const rows = useMemo(() => customersData.map(toCustomerListRow), [customersData]);
 
   const dataKey = useMemo(
-    () => `${debouncedQuery}::${typeFilter}::${sortBy}`,
-    [debouncedQuery, typeFilter, sortBy]
+    () => `${debouncedQuery}::${typeFilter}::${sortBy}::${includeArchived}`,
+    [debouncedQuery, typeFilter, sortBy, includeArchived]
   );
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -105,12 +108,15 @@ export function CustomerListPage() {
   const activeSortLabel = CUSTOMER_SORT_OPTIONS.find((s) => s.value === sortBy)?.label;
   const hasTypeFilter = typeFilter !== CUSTOMER_TYPE.ALL;
   const hasSort = sortBy !== CUSTOMER_SORT_BY.NAME_ASC;
-  const hasFilters = search !== "" || hasTypeFilter;
+  const hasFilters = search !== "" || hasTypeFilter || includeArchived;
+
+  const filterCount = (hasTypeFilter ? 1 : 0) + (includeArchived ? 1 : 0);
 
   const clearFilters = () => {
     setSearch("");
     setTypeFilter(CUSTOMER_TYPE.ALL);
     setSortBy(CUSTOMER_SORT_BY.NAME_ASC);
+    setIncludeArchived(false);
     searchInputRef.current?.focus();
   };
 
@@ -154,9 +160,9 @@ export function CustomerListPage() {
               >
                 <SlidersHorizontal className="size-4" />
                 Filter
-                {hasTypeFilter && (
+                {filterCount > 0 && (
                   <span className="bg-primary text-primary-foreground ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
-                    1
+                    {filterCount}
                   </span>
                 )}
               </Button>
@@ -192,18 +198,33 @@ export function CustomerListPage() {
                   })}
                 </div>
               </div>
-              {hasTypeFilter && (
+              <Separator />
+              <div className="p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    Show archived
+                  </p>
+                  <Switch
+                    checked={includeArchived}
+                    onCheckedChange={setIncludeArchived}
+                  />
+                </div>
+              </div>
+              {(hasTypeFilter || includeArchived) && (
                 <>
                   <Separator />
                   <div className="p-2.5">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setTypeFilter(CUSTOMER_TYPE.ALL)}
+                      onClick={() => {
+                        setTypeFilter(CUSTOMER_TYPE.ALL);
+                        setIncludeArchived(false);
+                      }}
                       className="border-destructive/40 text-destructive hover:bg-destructive/10 w-full cursor-pointer justify-center gap-1.5 text-xs font-medium"
                     >
                       <X className="size-3.5" />
-                      Clear selection
+                      Clear all filters
                     </Button>
                   </div>
                 </>
@@ -283,6 +304,13 @@ export function CustomerListPage() {
             value={activeTypeLabel}
             onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
           />
+          {includeArchived && (
+            <FilterChip
+              label="Archived"
+              value="Yes"
+              onRemove={() => setIncludeArchived(false)}
+            />
+          )}
           {hasSort && (
             <FilterChip
               label="Sort"
@@ -290,7 +318,7 @@ export function CustomerListPage() {
               onRemove={() => setSortBy(CUSTOMER_SORT_BY.NAME_ASC)}
             />
           )}
-          {(hasTypeFilter || hasSort) && (
+          {(hasTypeFilter || includeArchived || hasSort) && (
             <button
               type="button"
               onClick={clearFilters}

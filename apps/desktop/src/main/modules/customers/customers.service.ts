@@ -61,11 +61,13 @@ const getCustomersPaginated = async (
       whereClause,
       sort: params.sort,
       limit: params.pageSize,
-      offset
+      offset,
+      includeArchived: params.includeArchived
     }),
     customersRepository.countCustomers({
       searchTerm: params.query,
-      whereClause
+      whereClause,
+      includeArchived: params.includeArchived
     })
   ]);
 
@@ -234,6 +236,26 @@ const updateCustomerById = async (
   return updatedCustomer;
 };
 
+const archiveCustomerById = async (id: string): Promise<void> => {
+  await findById(id);
+
+  const changes = await customersRepository.archiveById(id);
+
+  if (changes <= 0) {
+    throw new AppError("Could not archive Customer", 400);
+  }
+};
+
+const restoreCustomerById = async (id: string): Promise<void> => {
+  await findById(id);
+
+  const changes = await customersRepository.restoreById(id);
+
+  if (changes <= 0) {
+    throw new AppError("Could not restore Customer", 400);
+  }
+};
+
 const deleteCustomerById = async (id: string): Promise<void> => {
   const changes = await customersRepository.deleteById(id);
 
@@ -254,5 +276,7 @@ export const customersService = {
   getRecentSales,
   createCustomer,
   updateCustomerById,
+  archiveCustomerById,
+  restoreCustomerById,
   deleteCustomerById
 };

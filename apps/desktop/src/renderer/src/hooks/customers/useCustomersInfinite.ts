@@ -21,6 +21,7 @@ export const useCustomersInfinite = () => {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<CustomerType>(CUSTOMER_TYPE.ALL);
   const [sortBy, setSortBy] = useState<CustomerSortByType>(CUSTOMER_SORT_BY.NAME_ASC);
+  const [includeArchived, setIncludeArchived] = useState(false);
 
   const debouncedQuery = useDebounce(search, CUSTOMERS_SEARCH_DELAY);
 
@@ -36,14 +37,15 @@ export const useCustomersInfinite = () => {
     isPlaceholderData,
     status
   } = useInfiniteQuery({
-    queryKey: ["customers-infinite", debouncedQuery, typeFilter, sortBy],
+    queryKey: ["customers-infinite", debouncedQuery, typeFilter, sortBy, includeArchived],
     queryFn: ({ pageParam = 1 }) =>
       apiClient.get<PaginatedApiResponse<CustomersPageResult>>("/api/customers", {
         pageNo: pageParam,
         pageSize: CUSTOMERS_PAGE_SIZE,
         query: debouncedQuery,
         type: typeFilter,
-        sort: sortBy
+        sort: sortBy,
+        includeArchived
       }),
     initialPageParam: 1,
     placeholderData: (previousData) => previousData,
@@ -82,6 +84,8 @@ export const useCustomersInfinite = () => {
     setTypeFilter,
     sortBy,
     setSortBy,
+    includeArchived,
+    setIncludeArchived,
     debouncedQuery
   };
 };

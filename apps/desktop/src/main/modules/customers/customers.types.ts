@@ -16,6 +16,7 @@ export type ListCustomersParams = {
   query: string;
   type: CustomerType;
   sort: CustomerSortByType;
+  includeArchived: boolean;
 };
 
 export type TxnByCustomerParams = {

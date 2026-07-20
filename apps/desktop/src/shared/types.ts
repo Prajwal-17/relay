@@ -23,6 +23,8 @@ export type Customer = {
   address: string | null;
   outstandingBalance: number | null;
   creditLimit: number | null;
+  isArchived: boolean;
+  archivedAt: string | null;
   lastPurchaseAt?: string | null;
   lastPurchaseAmt?: number | null;
   lastPaymentAt?: string | null;

@@ -53,6 +53,8 @@ export const customers = sqliteTable(
     address: text("address"),
     outstandingBalance: integer("outstanding_balance", { mode: "number" }).default(0),
     creditLimit: integer("credit_limit", { mode: "number" }).default(0),
+    isArchived: integer("is_archived", { mode: "boolean" }).notNull().default(false),
+    archivedAt: text("archived_at"),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
