@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -229,6 +230,12 @@ export const CustomerNameInput = () => {
   );
 };
 
+const typeBadgeClass: Record<string, string> = {
+  cash: "bg-muted text-muted-foreground border-border",
+  account: "bg-info/15 text-info border-info/25",
+  hotel: "bg-primary/10 text-primary border-primary/25"
+};
+
 function CustomerRow({
   customer,
   isActive,
@@ -272,6 +279,15 @@ function CustomerRow({
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
+        <Badge
+          variant="outline"
+          className={cn(
+            "px-1.5 py-0 text-[10px] leading-tight font-semibold capitalize",
+            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
+          )}
+        >
+          {customer.customerType}
+        </Badge>
         <span
           className={cn(
             "text-xs font-semibold tabular-nums",
