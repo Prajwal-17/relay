@@ -11,6 +11,7 @@ import { fromMilliUnits } from "@shared/utils/milliUnits";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Check, Minus, Plus } from "lucide-react";
 import { useCallback } from "react";
+import { cn } from "@/lib/utils";
 
 export const ItemRow = ({
   id,
@@ -25,9 +26,8 @@ export const ItemRow = ({
   type: DashboardType;
   updateQtyMutation: UseMutationResult<null, Error, MutationVariables>;
 }) => {
-  const checked = item.quantity === item.checkedQty;
-
-  let bgColor = "bg-background";
+  const checked = item.quantity > 0 && item.checkedQty === item.quantity;
+  const partial = item.checkedQty > 0 && item.checkedQty < item.quantity;
 
   const handleUpdateQty = useCallback(
     (action: UpdateQtyAction) => {
@@ -41,68 +41,80 @@ export const ItemRow = ({
     [updateQtyMutation, item.id, type, id]
   );
 
-  if (item.checkedQty === item.quantity) {
-    bgColor = "bg-success/15";
-  } else if (item.checkedQty > 0 && item.checkedQty < item.quantity) {
-    bgColor = "bg-warning/20";
-  }
   return (
-    <>
-      <tr
-        className={`${bgColor} border-border hover:bg-opacity-50 border-b text-lg transition-colors`}
+    <tr
+      className={cn(
+        "border-border/70 hover:bg-accent/40 border-b text-sm transition-colors",
+        checked && "bg-success/10 hover:bg-success/15",
+        partial && "bg-warning/10 hover:bg-warning/15",
+        !checked && !partial && "bg-card"
+      )}
+    >
+      <td className="text-muted-foreground px-3 py-2.5 text-center font-medium tabular-nums">
+        {index}
+      </td>
+      <td
+        className={cn(
+          "text-foreground max-w-sm truncate px-3 py-2.5 text-left font-medium",
+          checked && "line-through opacity-70"
+        )}
       >
-        <td className="text-foreground px-3 py-3 text-center font-medium">{index}</td>
-        <td
-          className={`text-foreground w-sm truncate px-3 py-2 text-left font-semibold ${item.quantity === item.checkedQty ? "line-through" : ""} `}
+        {item.productSnapshot}
+      </td>
+      <td className="text-foreground px-3 py-2.5 text-center tabular-nums">
+        {fromMilliUnits(item.quantity)}
+      </td>
+      <td className="text-foreground px-3 py-2.5 text-right tabular-nums">
+        {formatRupee(item.price)}
+      </td>
+      <td className="text-foreground px-3 py-2.5 text-right font-semibold tabular-nums">
+        {formatRupee(item.totalPrice)}
+      </td>
+      <td className="px-3 py-2.5 text-center">
+        <button
+          type="button"
+          onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.SET)}
+          aria-label={checked ? "Uncheck item" : "Check item"}
+          className={cn(
+            "mx-auto flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors",
+            checked
+              ? "bg-success text-background border-success"
+              : "bg-muted/70 text-muted-foreground border-border hover:border-input"
+          )}
         >
-          {item.productSnapshot}
-        </td>
-        <td className="text-foreground px-3 py-2 text-center">{fromMilliUnits(item.quantity)}</td>
-        <td className="text-foreground px-3 py-2 text-right">{formatRupee(item.price)}</td>
-        <td className="text-foreground px-3 py-2 text-right font-medium">
-          {formatRupee(item.totalPrice)}
-        </td>
-        <td className="px-3 py-2 text-center">
-          <button
-            onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.SET)}
-            className={`mx-auto flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 transition-all ${
-              checked
-                ? "bg-success border-success"
-                : "border-muted-foreground hover:border-foreground"
-            }`}
-          >
-            {checked && <Check className="text-background" />}
-          </button>
-        </td>
-
-        <td className="text-foreground px-2 py-2 text-center font-semibold">
-          {fromMilliUnits(item.checkedQty)}/ {fromMilliUnits(item.quantity)}
-        </td>
-
-        <td className="px-3 py-2 text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
-            disabled={checked}
-            className="flex h-7 w-7 cursor-pointer items-center justify-center bg-transparent p-0"
-          >
-            <Plus className="size-5" />
-          </Button>
-        </td>
-
-        <td className="px-3 py-2 text-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.DECREMENT)}
-            disabled={item.checkedQty === 0}
-            className="flex h-7 w-7 cursor-pointer items-center justify-center bg-transparent p-0"
-          >
-            <Minus className="size-5" />
-          </Button>
-        </td>
-      </tr>
-    </>
+          {checked && <Check className="size-4" />}
+        </button>
+      </td>
+      <td className="text-foreground px-2 py-2.5 text-center font-semibold tabular-nums">
+        <span className={cn(checked && "text-success", partial && "text-warning")}>
+          {fromMilliUnits(item.checkedQty)}
+        </span>
+        <span className="text-muted-foreground/60"> / {fromMilliUnits(item.quantity)}</span>
+      </td>
+      <td className="px-3 py-2.5 text-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
+          disabled={checked}
+          aria-label="Increment checked quantity"
+          className="flex size-7 cursor-pointer items-center justify-center bg-transparent p-0"
+        >
+          <Plus className="size-4" />
+        </Button>
+      </td>
+      <td className="px-3 py-2.5 text-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.DECREMENT)}
+          disabled={item.checkedQty === 0}
+          aria-label="Decrement checked quantity"
+          className="flex size-7 cursor-pointer items-center justify-center bg-transparent p-0"
+        >
+          <Minus className="size-4" />
+        </Button>
+      </td>
+    </tr>
   );
 };

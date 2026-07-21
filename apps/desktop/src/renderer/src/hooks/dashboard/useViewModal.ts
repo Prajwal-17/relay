@@ -1,13 +1,16 @@
 import { apiClient } from "@/lib/apiClient";
 import {
+  DASHBOARD_TYPE,
+  TRANSACTION_TYPE,
   type BatchCheckAction,
   type DashboardType,
+  type TransactionType,
   type UnifiedTransctionWithItems,
   type UpdateQtyAction
 } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 export type MutationVariables = {
@@ -23,18 +26,20 @@ type BatchUpdateMutationVariables = {
   action: BatchCheckAction;
 };
 
+type ActionVariables = { type: DashboardType; id: string };
+type StatusVariables = { type: DashboardType; id: string; isPaid: boolean };
+
 export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) => {
   const queryClient = useQueryClient();
-  const { data, isError, error } = useQuery({
+  const { data, isError, error, isLoading } = useQuery({
     queryKey: [type, id],
     queryFn: () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}/${id}`)
   });
 
+  // Per-item checked-qty updates (fulfillment workflow)
   const updateQtyMutation = useMutation<null, Error, MutationVariables>({
     mutationFn: ({ type, id, itemId, action }) =>
-      apiClient.post(`/api/${type}/${id}/items/${itemId}/checked-qty`, {
-        action
-      }),
+      apiClient.post(`/api/${type}/${id}/items/${itemId}/checked-qty`, { action }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
     }
@@ -42,9 +47,7 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
 
   const batchUpdateQtyMutation = useMutation<null, Error, BatchUpdateMutationVariables>({
     mutationFn: ({ type, id, action }) =>
-      apiClient.post(`/api/${type}/${id}/items/checked-qty/batch`, {
-        action
-      }),
+      apiClient.post(`/api/${type}/${id}/items/checked-qty/batch`, { action }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
       toast.success("Successfully updated items.");
@@ -54,20 +57,101 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
     }
   });
 
+  // Transaction-level actions (mirrors dashboard row)
+  const deleteMutation = useMutation<null, Error, ActionVariables>({
+    mutationFn: ({ type, id }) => apiClient.delete(`/api/${type}/${id}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type], exact: false });
+      toast.success("Transaction deleted");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const convertMutation = useMutation<{ id: string }, Error, ActionVariables>({
+    mutationFn: ({ type, id }) => apiClient.post(`/api/${type}/${id}/convert`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type], exact: false });
+      toast.success("Transaction converted");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const duplicateMutation = useMutation<{ id: string }, Error, ActionVariables>({
+    mutationFn: ({ type, id }) => apiClient.post(`/api/${type}/${id}/duplicate`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [type], exact: false });
+      toast.success("Transaction duplicated");
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  const statusMutation = useMutation<{ message: string }, Error, StatusVariables>({
+    mutationFn: ({ type, id, isPaid }) => apiClient.patch(`/api/${type}/${id}`, { isPaid }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
+      queryClient.invalidateQueries({ queryKey: [type], exact: false });
+      toast.success(res.message);
+    },
+    onError: (err) => toast.error(err.message)
+  });
+
+  // PDF export via Electron IPC (expects singular TransactionType)
+  const txnType: TransactionType =
+    type === DASHBOARD_TYPE.SALES ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE;
+
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const exportPdf = useCallback(async (): Promise<string | null> => {
+    setPdfLoading(true);
+    try {
+      const response = await window.exportApi.exportAsPdf(id, txnType);
+      if (response?.status === "success") {
+        return response.data;
+      }
+      toast.error(response?.error?.message || "Failed to generate PDF");
+      return null;
+    } catch (e) {
+      console.error("PDF Export failed", e);
+      toast.error("Failed to export PDF");
+      return null;
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [id, txnType]);
+
   useEffect(() => {
     if (isError && error) {
       toast.error(error.message);
     }
   }, [isError, error]);
 
-  const total =
-    data?.items.reduce((sum, currentItem) => {
-      return sum + Number(currentItem.totalPrice || 0);
-    }, 0) || 0;
-
+  // Computed display values
+  const items = data?.items ?? [];
+  const total = items.reduce((sum, currentItem) => {
+    return sum + Number(currentItem.totalPrice || 0);
+  }, 0);
   const subtotal = formatRupee(total);
-
   const grandTotal = formatRupee(Math.round(total));
+  const totalQty = items.reduce((s, it) => s + Number(it.quantity || 0), 0);
+  const totalCheckedQty = items.reduce((s, it) => s + Number(it.checkedQty || 0), 0);
+  const itemsCount = items.length;
+  const balanceDue = data ? (data.grandTotal ?? 0) - (data.amountPaid ?? 0) : 0;
 
-  return { data, subtotal, grandTotal, updateQtyMutation, batchUpdateQtyMutation };
+  return {
+    data,
+    isLoading,
+    subtotal,
+    grandTotal,
+    balanceDue,
+    itemsCount,
+    totalQty,
+    totalCheckedQty,
+    updateQtyMutation,
+    batchUpdateQtyMutation,
+    deleteMutation,
+    convertMutation,
+    duplicateMutation,
+    statusMutation,
+    exportPdf,
+    pdfLoading
+  };
 };

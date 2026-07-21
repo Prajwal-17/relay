@@ -113,16 +113,16 @@ const DashboardTableRow = ({
         toast.success(
           (t) => (
             <div className="flex items-center gap-4 whitespace-nowrap">
-              <span className="font-medium">PDF saved successfully</span>
+              <span className="text-sm font-medium">PDF saved successfully</span>
               <button
                 onClick={() => {
                   window.exportApi.showItemInFolder(filePath);
                   toast.dismiss(t.id);
                 }}
-                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
+                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-sm font-medium transition-colors hover:underline"
               >
                 Open
-                <ArrowUpRight size={18} />
+                <ArrowUpRight size={14} />
               </button>
             </div>
           ),
@@ -144,37 +144,39 @@ const DashboardTableRow = ({
       {isLoaderRow ? (
         <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
           {hasNextPage ? (
-            <div className="my-8 flex justify-center gap-3">
-              <div className="text-muted-foreground text-xl font-semibold">Loading</div>
-              <LoaderCircle className="text-primary animate-spin" size={26} />
+            <div className="flex items-center justify-center py-4">
+              <LoaderCircle className="text-muted-foreground size-5 animate-spin" />
+              <span className="text-muted-foreground ml-2 text-xs">Loading more…</span>
             </div>
           ) : null}
         </div>
       ) : (
-        <div className="hover:bg-muted/40 bg-card border-border/50 grid grid-cols-12 gap-4 border-b px-6 py-2 text-lg">
-          <div className="col-span-2 flex flex-col items-start justify-start font-medium">
-            <span className="text-xl font-semibold">
+        <div className="hover:bg-accent border-border/70 grid grid-cols-12 items-center gap-2 border-b px-4 py-3.5 text-base transition-colors last:border-b-0">
+          <div className="col-span-2 flex flex-col justify-center">
+            <span className="text-foreground text-base font-semibold tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).fullDate
                 : "-"}
             </span>
-            <span className="text-muted-foreground text-base">
+            <span className="text-muted-foreground text-sm tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).timePart
                 : "-"}
             </span>
           </div>
-          <div className="col-span-3 flex items-center gap-2 font-medium">
-            <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-              {transaction.customerName.charAt(0)}
+          <div className="col-span-3 flex items-center gap-2">
+            <div className="bg-accent text-accent-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+              {transaction.customerName.charAt(0).toUpperCase()}
             </div>
-            <span className="truncate">{transaction.customerName}</span>
+            <span className="text-foreground truncate text-base font-medium">
+              {transaction.customerName}
+            </span>
           </div>
 
-          <div className="text-muted-foreground col-span-2 flex items-center font-medium">
-            # {transaction.transactionNo}
+          <div className="text-muted-foreground col-span-2 flex items-center text-base tabular-nums">
+            #{transaction.transactionNo}
           </div>
-          <div className="col-span-2 flex items-center font-semibold">
+          <div className="text-foreground col-span-2 flex items-center text-base font-semibold tabular-nums">
             {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
           </div>
           <div className="col-span-1 flex items-center justify-start">
@@ -186,16 +188,16 @@ const DashboardTableRow = ({
               </Badge>
             )}
           </div>
-          <div className="col-span-2 flex items-center justify-center gap-1">
+          <div className="col-span-2 flex items-center justify-center gap-0.5">
             <Tooltip>
               <TooltipTrigger
                 onClick={handleView}
                 className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
               >
-                <Eye size={20} />
+                <Eye className="size-5" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-base">View</p>
+                <p className="text-sm">View</p>
               </TooltipContent>
             </Tooltip>
 
@@ -204,10 +206,10 @@ const DashboardTableRow = ({
                 onClick={handleEdit}
                 className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
               >
-                <Edit size={20} />
+                <Edit className="size-5" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-base">Edit</p>
+                <p className="text-sm">Edit</p>
               </TooltipContent>
             </Tooltip>
 
@@ -216,10 +218,10 @@ const DashboardTableRow = ({
                 onClick={() => setActiveDialog("delete")}
                 className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2"
               >
-                <Trash2 size={20} />
+                <Trash2 className="size-5" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-base">Delete</p>
+                <p className="text-sm">Delete</p>
               </TooltipContent>
             </Tooltip>
 
@@ -230,14 +232,14 @@ const DashboardTableRow = ({
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-base">
+                  <AlertDialogDescription className="text-sm">
                     This will permanently delete the transaction.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+                    className="bg-destructive hover:bg-destructive/90 text-destructive-foreground cursor-pointer"
                     onClick={onDelete}
                   >
                     {deleteMutation.isPending ? "Deleting..." : "Delete"}
@@ -248,9 +250,9 @@ const DashboardTableRow = ({
 
             <DropdownMenu>
               <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
-                <MoreVertical />
+                <MoreVertical className="size-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-55" align="end">
+              <DropdownMenuContent className="w-44" align="end">
                 <DropdownMenuItem
                   onSelect={() => handleStatus()}
                   className="cursor-pointer"
@@ -258,13 +260,13 @@ const DashboardTableRow = ({
                 >
                   {transaction.isPaid ? (
                     <>
-                      <CircleOff className="mr-1 h-4 w-4" />
-                      <span className="text-lg">Mark as unpaid</span>
+                      <CircleOff className="mr-2 size-4" />
+                      <span className="text-base">Mark as unpaid</span>
                     </>
                   ) : (
                     <>
-                      <CircleCheckBig className="mr-1 h-4 w-4" />
-                      <span className="text-lg">Mark as paid</span>
+                      <CircleCheckBig className="mr-2 size-4" />
+                      <span className="text-base">Mark as paid</span>
                     </>
                   )}
                 </DropdownMenuItem>
@@ -273,8 +275,8 @@ const DashboardTableRow = ({
                   onSelect={() => setActiveDialog("convert")}
                   className="cursor-pointer"
                 >
-                  <RefreshCcw className="mr-1 h-4 w-4" />
-                  <span className="text-lg">Convert</span>
+                  <RefreshCcw className="mr-2 size-4" />
+                  <span className="text-base">Convert</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
@@ -282,8 +284,8 @@ const DashboardTableRow = ({
                   className="cursor-pointer"
                   disabled={duplicateMutation.isPending}
                 >
-                  <Copy className="mr-1 h-4 w-4" />
-                  <span className="text-lg">Duplicate</span>
+                  <Copy className="mr-2 size-4" />
+                  <span className="text-base">Duplicate</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -294,16 +296,16 @@ const DashboardTableRow = ({
                   disabled={pdfLoading}
                 >
                   {pdfLoading ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 size-4 animate-spin" />
                   ) : (
-                    <FileDown className="mr-1 h-4 w-4" />
+                    <FileDown className="mr-2 size-4" />
                   )}
-                  <span className="text-lg">{pdfLoading ? "Exporting…" : "Export PDF"}</span>
+                  <span className="text-base">{pdfLoading ? "Exporting…" : "Export PDF"}</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem disabled>
-                  <Printer className="mr-1 h-4 w-4" />
-                  <span className="text-lg">Print</span>
+                  <Printer className="mr-2 size-4" />
+                  <span className="text-base">Print</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -315,14 +317,14 @@ const DashboardTableRow = ({
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-base">
+                  <AlertDialogDescription className="text-sm">
                     This will permanently convert the transaction.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
                     onClick={onConvert}
                     disabled={convertMutation.isPending}
                   >
@@ -345,14 +347,14 @@ const DashboardTableRow = ({
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-base">
+                  <AlertDialogDescription className="text-sm">
                     This will permanently convert the transaction.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                    className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
                     onClick={onConvert}
                     disabled={convertMutation.isPending}
                   >

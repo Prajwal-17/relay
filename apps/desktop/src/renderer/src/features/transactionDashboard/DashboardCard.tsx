@@ -18,13 +18,13 @@ export const DashboardCard = () => {
     <>
       <div className="flex items-center justify-between gap-3">
         <div className="flex h-full w-full items-center justify-end gap-3">
-          <div className="text-muted-foreground text-base font-medium">Sort by: </div>
+          <div className="text-muted-foreground text-sm font-medium">Sort by:</div>
           <Select
             value={sortBy}
             defaultValue={sortBy}
             onValueChange={(value: SortType) => setSortBy(value)}
           >
-            <SelectTrigger className="text-foreground h-11! w-62 cursor-pointer text-base font-semibold">
+            <SelectTrigger className="text-foreground h-9 w-52 cursor-pointer text-sm font-medium">
               <SelectValue placeholder="Date (Newest First)" />
             </SelectTrigger>
             <SelectContent>
@@ -34,10 +34,10 @@ export const DashboardCard = () => {
                   <SelectItem
                     key={idx}
                     value={s.value}
-                    className="cursor-pointer text-base font-medium"
+                    className="cursor-pointer text-sm font-medium"
                   >
                     <span className="flex items-center gap-2">
-                      <Icon className="text-muted-foreground h-4 w-4" />
+                      <Icon className="text-muted-foreground size-4" />
                       {s.label}
                     </span>
                   </SelectItem>

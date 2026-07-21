@@ -19,20 +19,22 @@ export const DashboardTable = () => {
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="text-muted-foreground pb-2 pl-1 font-medium">
+        <div className="text-muted-foreground pb-2 pl-1 text-sm font-medium">
           Showing <span className="text-foreground font-medium">{totalTransactions}</span> results
         </div>
 
         {status === "pending" ? (
-          <div className="my-8 flex flex-1 justify-center gap-3">
-            <span className="text-muted-foreground text-lg font-semibold">Loading</span>
-            <LoaderCircle className="text-primary animate-spin" size={24} />
+          <div className="bg-card border-border flex min-h-48 flex-1 items-center justify-center rounded-xl border shadow-xs">
+            <div className="flex flex-col items-center gap-3">
+              <LoaderCircle className="text-muted-foreground size-8 animate-spin" />
+              <p className="text-muted-foreground text-sm">Loading transactions…</p>
+            </div>
           </div>
         ) : (
-          <div className="border-border/60 flex min-h-0 flex-1 flex-col rounded-lg border shadow-md">
-            <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 rounded-t-lg px-4 py-2 text-base font-semibold">
+          <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+            <div className="bg-muted text-muted-foreground grid grid-cols-12 items-center gap-2 px-4 py-3 text-base font-semibold">
               <div className="col-span-2 flex items-center">Date</div>
-              <div className="col-span-3 flex items-center">Customer Name</div>
+              <div className="col-span-3 flex items-center">Customer</div>
               <div className="col-span-2 flex items-center">
                 {type === DASHBOARD_TYPE.SALES
                   ? "Invoice No"
@@ -90,9 +92,14 @@ export const DashboardTable = () => {
                 </div>
               </div>
             ) : (
-              <div className="py-12 text-center">
-                <ReceiptIndianRupee className="bg-secondary text-foreground mx-auto mb-6 h-14 w-14 rounded-lg p-2" />
-                <p className="text-muted-foreground text-xl font-medium">No transactions found</p>
+              <div className="flex h-full min-h-48 flex-col items-center justify-center px-6 py-16 text-center">
+                <span className="bg-muted text-muted-foreground mb-5 flex size-12 items-center justify-center rounded-xl">
+                  <ReceiptIndianRupee className="size-6" />
+                </span>
+                <h3 className="text-foreground text-base font-semibold">No transactions found</h3>
+                <p className="text-muted-foreground mt-1.5 max-w-sm text-sm">
+                  Try adjusting your filters or date range.
+                </p>
               </div>
             )}
           </div>

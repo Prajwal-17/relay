@@ -20,25 +20,28 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
     <>
       <div className="bg-background flex h-full flex-1 flex-col overflow-hidden px-6 py-4">
         <div className="mb-3 flex items-center justify-between gap-4">
-          <div className="bg-card flex w-full items-center gap-6 rounded-lg border p-3">
+          <div className="bg-card flex w-full items-center gap-6 rounded-lg border px-4 py-2.5">
             <div className="flex items-center gap-2">
-              <div className="bg-success/20 flex h-10 w-10 items-center justify-center rounded-lg">
-                <IndianRupee className="text-success h-5 w-5" />
+              <div className="bg-success/15 text-success flex size-8 items-center justify-center rounded-md">
+                <IndianRupee className="size-4" />
               </div>
-              <span className="text-muted-foreground text-lg font-medium">Revenue:</span>
-              <span className="text-2xl font-bold">{formatRupee(totalRevenue ?? 0)}</span>
+              <span className="text-muted-foreground text-sm font-medium">Revenue</span>
+              <span className="text-foreground text-lg font-semibold tabular-nums">
+                {formatRupee(totalRevenue ?? 0)}
+              </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="bg-secondary/90 flex h-10 w-10 items-center justify-center rounded-lg">
-                <ShoppingCart className="text-secondary-foreground h-5 w-5" />
+              <div className="bg-secondary text-secondary-foreground flex size-8 items-center justify-center rounded-md">
+                <ShoppingCart className="size-4" />
               </div>
-              <span className="text-muted-foreground text-lg font-medium">Total Transactions:</span>
-              <span className="text-2xl font-bold">{totalTransactions}</span>
+              <span className="text-muted-foreground text-sm font-medium">Transactions</span>
+              <span className="text-foreground text-lg font-semibold tabular-nums">
+                {totalTransactions}
+              </span>
             </div>
           </div>
 
           <Button
-            size="lg"
             onClick={() => {
               if (isSales) {
                 navigate("/billing/sales/create");
@@ -46,9 +49,9 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
                 navigate("/billing/estimates/create");
               }
             }}
-            className="hover:bg-primary/80 h-12 cursor-pointer gap-2 px-6 py-3 text-lg font-medium shadow-lg hover:shadow-xl"
+            className="hover:bg-primary-hover cursor-pointer gap-1.5"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="size-4" />
             {isSales ? "New Sale" : "New Estimate"}
           </Button>
         </div>
