@@ -25,18 +25,21 @@ import { useViewModalStore } from "@/store/viewModalStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
+  ArrowUpRight,
   CircleCheckBig,
   CircleOff,
   Copy,
-  Download,
   Edit,
   Eye,
+  FileDown,
+  Loader2,
   MoreVertical,
   Printer,
   RefreshCcw,
   Trash2
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 type TxnRowActionsProps = {
@@ -60,6 +63,7 @@ function TxnRowActionsInner({
   const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
   const setTransactionId = useViewModalStore((state) => state.setTransactionId);
   const [activeDialog, setActiveDialog] = useState<"delete" | "convert" | "idle">("idle");
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   const handleView = useCallback(() => {
     setTransactionId(txn.id);
@@ -86,6 +90,41 @@ function TxnRowActionsInner({
   const onStatusToggle = useCallback(() => {
     txnStatusMutation.mutate({ type, id: txn.id, isPaid: !txn.isPaid });
   }, [txnStatusMutation, type, txn.id, txn.isPaid]);
+
+  const handleSavePdf = useCallback(async () => {
+    setPdfLoading(true);
+    try {
+      const response = await window.exportApi.exportAsPdf(txn.id, type);
+      if (response?.status === "success") {
+        const filePath = response.data;
+        toast.success(
+          (t) => (
+            <div className="flex items-center gap-4 whitespace-nowrap">
+              <span className="font-medium">PDF saved successfully</span>
+              <button
+                onClick={() => {
+                  window.exportApi.showItemInFolder(filePath);
+                  toast.dismiss(t.id);
+                }}
+                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
+              >
+                Open
+                <ArrowUpRight size={18} />
+              </button>
+            </div>
+          ),
+          { duration: 4000, style: { maxWidth: "fit-content" } }
+        );
+      } else {
+        toast.error(response?.error?.message || "Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("PDF Export failed", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [txn.id, type]);
 
   return (
     <div className="flex items-center justify-center gap-0.5">
@@ -172,13 +211,22 @@ function TxnRowActionsInner({
 
           <DropdownMenuSeparator />
 
+          <DropdownMenuItem
+            onSelect={handleSavePdf}
+            className="cursor-pointer"
+            disabled={pdfLoading}
+          >
+            {pdfLoading ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
+            ) : (
+              <FileDown className="mr-1.5 size-4" />
+            )}
+            <span>{pdfLoading ? "Exporting…" : "Export PDF"}</span>
+          </DropdownMenuItem>
+
           <DropdownMenuItem disabled>
             <Printer className="mr-1.5 size-4" />
             <span>Print</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <Download className="mr-1.5 size-4" />
-            <span>Download</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

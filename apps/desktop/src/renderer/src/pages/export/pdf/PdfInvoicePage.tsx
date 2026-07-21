@@ -67,7 +67,7 @@ export default function PdfInvoicePage() {
           @page { size: auto; margin: 10mm; }
         `}
       </style>
-      <div className="bg-invoice-bg text-invoice-text flex min-h-[297mm] w-full max-w-[210mm] flex-col p-12 font-sans shadow-2xl print:m-0 print:min-h-0 print:w-full print:max-w-none print:p-0 print:shadow-none">
+      <div className="bg-invoice-bg text-invoice-text flex min-h-[297mm] w-full max-w-[210mm] flex-col p-12 font-sans shadow-2xl print:m-0 print:min-h-0 print:w-full print:max-w-none print:bg-white print:p-0 print:shadow-none">
         <div className="border-invoice-border mb-8 flex items-start justify-between border-b-2 pb-8">
           <div className="flex flex-col gap-1">
             <h1 className="text-invoice-accent font-serif text-2xl font-bold tracking-tight">

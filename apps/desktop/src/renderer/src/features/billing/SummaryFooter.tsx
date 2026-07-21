@@ -77,8 +77,8 @@ export const SummaryFooter = () => {
       if (!synced) return;
       const txnType = type === "sales" ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE;
       const response = await window.exportApi.exportAsPdf(id, txnType);
-      if (response && (response as any).status === "success") {
-        const filePath = (response as any).data as string;
+      if (response && response.status === "success") {
+        const filePath = response.data;
         toast.success(
           (t) => (
             <div className="flex items-center gap-4 whitespace-nowrap">
@@ -99,7 +99,7 @@ export const SummaryFooter = () => {
         );
         navigate(`/dashboard/${type}`);
       } else {
-        toast.error((response as any)?.error?.message || "Failed to generate PDF");
+        toast.error(response?.error?.message || "Failed to generate PDF");
       }
     } catch (error) {
       console.error("PDF Export failed", error);

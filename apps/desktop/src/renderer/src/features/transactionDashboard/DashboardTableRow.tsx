@@ -23,12 +23,14 @@ import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
+  ArrowUpRight,
   CircleCheckBig,
   CircleOff,
   Copy,
-  Download,
   Edit,
   Eye,
+  FileDown,
+  Loader2,
   LoaderCircle,
   MoreVertical,
   Printer,
@@ -36,6 +38,7 @@ import {
   Trash2
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 const DashboardTableRow = ({
@@ -98,6 +101,43 @@ const DashboardTableRow = ({
       isPaid: !transaction.isPaid
     });
   }, [txnStatusMutation, transaction.type, transaction.id, transaction.isPaid]);
+
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleSavePdf = useCallback(async () => {
+    setPdfLoading(true);
+    try {
+      const response = await window.exportApi.exportAsPdf(transaction.id, transaction.type);
+      if (response?.status === "success") {
+        const filePath = response.data;
+        toast.success(
+          (t) => (
+            <div className="flex items-center gap-4 whitespace-nowrap">
+              <span className="font-medium">PDF saved successfully</span>
+              <button
+                onClick={() => {
+                  window.exportApi.showItemInFolder(filePath);
+                  toast.dismiss(t.id);
+                }}
+                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
+              >
+                Open
+                <ArrowUpRight size={18} />
+              </button>
+            </div>
+          ),
+          { duration: 4000, style: { maxWidth: "fit-content" } }
+        );
+      } else {
+        toast.error(response?.error?.message || "Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("PDF Export failed", error);
+      toast.error("Failed to export PDF");
+    } finally {
+      setPdfLoading(false);
+    }
+  }, [transaction.id, transaction.type]);
 
   return (
     <div>
@@ -248,13 +288,22 @@ const DashboardTableRow = ({
 
                 <DropdownMenuSeparator />
 
+                <DropdownMenuItem
+                  onSelect={handleSavePdf}
+                  className="cursor-pointer"
+                  disabled={pdfLoading}
+                >
+                  {pdfLoading ? (
+                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileDown className="mr-1 h-4 w-4" />
+                  )}
+                  <span className="text-lg">{pdfLoading ? "Exporting…" : "Export PDF"}</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuItem disabled>
                   <Printer className="mr-1 h-4 w-4" />
                   <span className="text-lg">Print</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <Download className="mr-1 h-4 w-4" />
-                  <span className="text-lg">Download</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

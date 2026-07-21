@@ -684,7 +684,7 @@ export interface DialogApi {
 }
 
 export interface ExportApi {
-  exportAsPdf: (id: string, type: TransactionType) => Promise<string | null>;
+  exportAsPdf: (id: string, type: TransactionType) => Promise<ApiResponse<string>>;
   showItemInFolder: (path: string) => void;
 }
 
