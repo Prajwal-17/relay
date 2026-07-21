@@ -121,6 +121,7 @@ function createWindow(): void {
     // window-switch / occlusion case where Chromium re-evaluates the zoom.
     mainWindow.on("show", () => restoreZoom(web, store));
     mainWindow.on("restore", () => restoreZoom(web, store));
+    mainWindow.on("focus", () => restoreZoom(web, store));
   }
 
   mainWindow.once("ready-to-show", () => {
