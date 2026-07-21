@@ -638,6 +638,9 @@ export type ProductOperation = (typeof PRODUCT_OPERATION)[keyof typeof PRODUCT_O
 export interface AppConfig {
   billing: {
     defaultCustomerId: string;
+    searchDropdown: {
+      scale: number;
+    };
   };
   exports: {
     askBeforeSavingPdf: boolean;

@@ -63,7 +63,8 @@ export const ExportsSection = () => {
         hint="Ask where to save each time."
         defaultValue={defaults?.exports.askBeforeSavingPdf ? "On" : "Off"}
         onReset={() =>
-          defaults && updateConfig({ exports: { askBeforeSavingPdf: defaults.exports.askBeforeSavingPdf } })
+          defaults &&
+          updateConfig({ exports: { askBeforeSavingPdf: defaults.exports.askBeforeSavingPdf } })
         }
         isResetting={isUpdating}
       >
@@ -71,7 +72,9 @@ export const ExportsSection = () => {
           <Switch
             id="settings-ask-before-saving"
             checked={config.exports.askBeforeSavingPdf}
-            onCheckedChange={(checked) => updateConfig({ exports: { askBeforeSavingPdf: checked } })}
+            onCheckedChange={(checked) =>
+              updateConfig({ exports: { askBeforeSavingPdf: checked } })
+            }
             disabled={isUpdating}
           />
         </div>
@@ -82,7 +85,8 @@ export const ExportsSection = () => {
         hint="Where your PDFs are saved."
         defaultValue={defaults?.exports.defaultPdfLocation}
         onReset={() =>
-          defaults && updateConfig({ exports: { defaultPdfLocation: defaults.exports.defaultPdfLocation } })
+          defaults &&
+          updateConfig({ exports: { defaultPdfLocation: defaults.exports.defaultPdfLocation } })
         }
         isResetting={isUpdating}
       >

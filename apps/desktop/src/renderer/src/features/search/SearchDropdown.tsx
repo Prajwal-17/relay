@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { useProductsStore } from "@/store/productsStore";
@@ -39,6 +40,9 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
+
+  const { config } = useAppPreferences();
+  const scale = config?.billing?.searchDropdown?.scale ?? 1;
 
   const {
     dropdownRef,
@@ -159,7 +163,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       }
 
       // img preview card
-      const PREVIEW_SIZE = 144;
+      const PREVIEW_SIZE = 144 * scale;
       setPreviewStyle({
         position: "fixed",
         top: rowRect.top + rowRect.height / 2 - PREVIEW_SIZE / 2,
@@ -170,7 +174,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     } else {
       setPreviewStyle({ display: "none" });
     }
-  }, [delayedPreviewProduct, hoveredIndex, parentRef]);
+  }, [delayedPreviewProduct, hoveredIndex, parentRef, scale]);
 
   useEffect(() => {
     updatePreviewPosition();
@@ -314,7 +318,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               transition={{ type: "spring", stiffness: 600, damping: 35 }}
               style={previewStyle}
             >
-              <div className="relative h-36 w-36">
+              <div className="relative h-36 w-36" style={{ zoom: scale }}>
                 <div className="ring-border h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1">
                   <img
                     src={`${PROTOCOL_NAME}${delayedPreviewProduct.imageUrl}`}
@@ -344,7 +348,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[63%] flex-col overflow-hidden rounded-2xl border shadow-xl"
+          style={{ zoom: scale }}
+          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[64%] flex-col overflow-hidden rounded-2xl border shadow-xl"
         >
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">

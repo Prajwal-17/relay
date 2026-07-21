@@ -16,7 +16,7 @@ export function getDefaultExportsConfig(): AppConfig["exports"] {
 
 export function getDefaultConfig(): AppConfig {
   return {
-    billing: { defaultCustomerId: "" },
+    billing: { defaultCustomerId: "", searchDropdown: { scale: 1 } },
     exports: getDefaultExportsConfig()
   };
 }

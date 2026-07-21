@@ -1,8 +1,8 @@
 import { Slider } from "@/components/ui/slider";
 import { Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { SettingsSection } from "../SettingsSection";
 import { SettingsField } from "../SettingsField";
+import { SettingsSection } from "../SettingsSection";
 
 const DESCRIPTION = "Customize the appearance of the app.";
 
@@ -45,19 +45,16 @@ export const AppearanceSection = () => {
     setSliderPercent(value[0]!);
   }, []);
 
-  const handleSliderCommit = useCallback(
-    async (value: number[]) => {
-      const percent = value[0]!;
-      const factor = percentToFactor(percent);
-      try {
-        await window.zoomApi.setZoom(factor);
-        setZoom(factor);
-      } catch (err) {
-        console.error("Failed to set zoom", err);
-      }
-    },
-    []
-  );
+  const handleSliderCommit = useCallback(async (value: number[]) => {
+    const percent = value[0]!;
+    const factor = percentToFactor(percent);
+    try {
+      await window.zoomApi.setZoom(factor);
+      setZoom(factor);
+    } catch (err) {
+      console.error("Failed to set zoom", err);
+    }
+  }, []);
 
   const handleReset = useCallback(async () => {
     const defaultZoom = bounds?.default ?? 1;
@@ -100,7 +97,7 @@ export const AppearanceSection = () => {
             value={[sliderPercent]}
             min={minPercent}
             max={maxPercent}
-            step={Math.round(STEP * 100)}
+            step={factorToPercent(STEP)}
             onValueChange={handleSliderDrag}
             onValueCommit={handleSliderCommit}
             className="flex-1"

@@ -16,10 +16,7 @@ const useAppBootstrap = () => {
     retry: false
   });
 
-  const {
-    isLoading: isPreferencesLoading,
-    isError: isPreferencesError
-  } = useQuery({
+  const { isLoading: isPreferencesLoading, isError: isPreferencesError } = useQuery({
     queryKey: ["appPreferences"],
     queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
     retry: 2,

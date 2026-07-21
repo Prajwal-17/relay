@@ -8,17 +8,68 @@ import {
   CommandList
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
 import { useAppPreferences } from "../../../hooks/useAppPreferences";
 
 const DESCRIPTION = "Settings for new bills.";
+
+const SCALE_MIN = 80;
+const SCALE_MAX = 150;
+const SCALE_STEP = 5;
+
+const SearchDropdownSizeField = () => {
+  const { config, updateConfig, isUpdating } = useAppPreferences();
+  const scale = config?.billing?.searchDropdown?.scale ?? 1;
+  const [localPercent, setLocalPercent] = useState<number>(() => Math.round(scale * 100));
+
+  useEffect(() => {
+    setLocalPercent(Math.round(scale * 100));
+  }, [scale]);
+
+  return (
+    <SettingsField
+      label="Search dropdown size"
+      hint="Enlarge or shrink the product search popup in bills."
+      defaultValue="100%"
+      onReset={() => {
+        setLocalPercent(100);
+        updateConfig({ billing: { searchDropdown: { scale: 1 } } });
+      }}
+      isResetting={isUpdating}
+    >
+      <div className="flex items-center gap-4">
+        <span className="text-muted-foreground w-12 text-right text-sm tabular-nums">
+          {SCALE_MIN}%
+        </span>
+        <Slider
+          value={[localPercent]}
+          min={SCALE_MIN}
+          max={SCALE_MAX}
+          step={SCALE_STEP}
+          onValueChange={(v) => setLocalPercent(v[0]!)}
+          onValueCommit={(v) =>
+            updateConfig({ billing: { searchDropdown: { scale: v[0]! / 100 } } })
+          }
+          className="flex-1"
+        />
+        <span className="text-muted-foreground w-12 text-sm tabular-nums">{SCALE_MAX}%</span>
+      </div>
+      <div className="mt-1 text-center">
+        <span className="text-foreground text-base font-semibold tabular-nums">
+          {localPercent}%
+        </span>
+      </div>
+    </SettingsField>
+  );
+};
 
 export const BillingSection = () => {
   const { config, isLoading, updateConfig, isUpdating } = useAppPreferences();
@@ -110,6 +161,8 @@ export const BillingSection = () => {
           </PopoverContent>
         </Popover>
       </SettingsField>
+
+      <SearchDropdownSizeField />
     </SettingsSection>
   );
 };

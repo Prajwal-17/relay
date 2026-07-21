@@ -204,10 +204,7 @@ export function CustomerListPage() {
                   <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                     Show archived
                   </p>
-                  <Switch
-                    checked={includeArchived}
-                    onCheckedChange={setIncludeArchived}
-                  />
+                  <Switch checked={includeArchived} onCheckedChange={setIncludeArchived} />
                 </div>
               </div>
               {(hasTypeFilter || includeArchived) && (
@@ -305,11 +302,7 @@ export function CustomerListPage() {
             onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
           />
           {includeArchived && (
-            <FilterChip
-              label="Archived"
-              value="Yes"
-              onRemove={() => setIncludeArchived(false)}
-            />
+            <FilterChip label="Archived" value="Yes" onRemove={() => setIncludeArchived(false)} />
           )}
           {hasSort && (
             <FilterChip

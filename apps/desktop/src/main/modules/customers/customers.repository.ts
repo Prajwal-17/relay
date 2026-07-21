@@ -166,11 +166,7 @@ const countCustomers = async (params: {
     const result = db.select({ count: count() }).from(customers).where(where).get();
     return result?.count ?? 0;
   }
-  const result = db
-    .select({ count: count() })
-    .from(customers)
-    .where(baseWhere)
-    .get();
+  const result = db.select({ count: count() }).from(customers).where(baseWhere).get();
   return result?.count ?? 0;
 };
 
