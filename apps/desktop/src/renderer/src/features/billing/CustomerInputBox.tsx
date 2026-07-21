@@ -143,7 +143,7 @@ export const CustomerNameInput = () => {
         <Button
           variant="outline"
           role="combobox"
-          className="border-border/60 hover:bg-accent/50 h-10 w-96 justify-between bg-transparent px-4 text-base font-normal"
+          className="border-border/60 hover:bg-accent h-10 w-96 justify-between bg-transparent px-4 text-base font-normal"
         >
           <span className="truncate">{customerName ? customerName : "Select Customer..."}</span>
           <ChevronsUpDown className="ml-3 h-5 w-5 shrink-0 opacity-40" />
@@ -271,10 +271,10 @@ function CustomerRow({
         )}
       />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-[13px] leading-tight font-medium">
+        <p className="text-foreground truncate text-sm leading-tight font-medium">
           {customer.name}
         </p>
-        <p className="text-muted-foreground truncate text-[11px] leading-tight">
+        <p className="text-muted-foreground truncate text-xs leading-tight">
           {customer.contact ? customer.contact : "No contact"}
         </p>
       </div>
@@ -282,7 +282,7 @@ function CustomerRow({
         <Badge
           variant="outline"
           className={cn(
-            "px-1.5 py-0 text-[10px] leading-tight font-semibold capitalize",
+            "px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
             typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
           )}
         >

@@ -48,16 +48,16 @@ export function SalesEstimateChart() {
     <Card className="py-4">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex flex-col gap-2">
-          <CardTitle className="text-xl">Sales vs Estimates</CardTitle>
+          <CardTitle className="text-base">Sales vs Estimates</CardTitle>
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1">
-              <div className="bg-chart-1 h-3 w-3 rounded-sm" />
-              <span className="text-muted-foreground text-base font-medium">Sales</span>
+              <div className="bg-chart-1 h-2.5 w-2.5 rounded-sm" />
+              <span className="text-muted-foreground text-sm font-medium">Sales</span>
             </div>
 
             <div className="flex items-center gap-1">
-              <div className="bg-chart-2 h-3 w-3 rounded-sm" />
-              <span className="text-muted-foreground text-base font-medium">Estimates</span>
+              <div className="bg-chart-2 h-2.5 w-2.5 rounded-sm" />
+              <span className="text-muted-foreground text-sm font-medium">Estimates</span>
             </div>
           </div>
         </div>
@@ -111,7 +111,7 @@ export function SalesEstimateChart() {
                       tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
                     />
                     <ChartTooltip
-                      content={<ChartTooltipContent className="justify-between text-base" />}
+                      content={<ChartTooltipContent className="justify-between text-sm" />}
                     />
                     <Bar dataKey="sales" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="estimates" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />

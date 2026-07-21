@@ -391,7 +391,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => toggleSort(field)}
-                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-[0.82rem] font-semibold transition ${
+                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold transition ${
                               isActive
                                 ? "bg-foreground text-background"
                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -441,7 +441,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
                                 ? "border-foreground bg-foreground/6 ring-foreground/15 ring-1"
-                                : "hover:bg-accent/60 border-transparent"
+                                : "hover:bg-accent border-transparent"
                             }`}
                             onClick={() => {
                               if (!activeTabId) return;
@@ -483,7 +483,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       ) && (
                                         <Badge
                                           variant="outline"
-                                          className="border-border bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
+                                          className="border-border bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-sm font-semibold shadow-sm"
                                         >
                                           {product.weight}
                                           {product.unit}

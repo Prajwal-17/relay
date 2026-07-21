@@ -232,7 +232,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                 onClick={handleCustomerOpen}
                 disabled={!data.customerId}
                 className={cn(
-                  "bg-card border-border hover:bg-accent/50 rounded-xl border px-4 py-3 text-left transition-colors",
+                  "bg-card border-border hover:bg-accent rounded-xl border px-4 py-3 text-left transition-colors",
                   "flex w-full items-center gap-3",
                   !data.customerId && "cursor-default"
                 )}

@@ -109,7 +109,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
         </div>
         <span
           className={cn(
-            "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold tabular-nums",
+            "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold tabular-nums",
             statusStyle.pill
           )}
         >
@@ -129,7 +129,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
                 type="button"
                 onClick={action.onClick}
                 disabled={!hasBillAmount}
-                className="border-border/70 bg-muted/60 text-foreground hover:bg-accent focus-visible:ring-ring/50 cursor-pointer rounded-md border px-2 py-0.5 text-xs font-semibold transition-colors outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
+                className="border-border/70 bg-muted/60 text-foreground hover:bg-accent focus-visible:ring-ring/50 cursor-pointer rounded-md border px-2 py-0.5 text-xs font-semibold transition-colors focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {action.label}
               </button>
@@ -146,7 +146,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
             value={amountReceived}
             onChange={(e) => handleAmountChange(e.target.value)}
             placeholder="0.00"
-            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring bg-background placeholder:text-muted-foreground/60 h-12 [appearance:textfield] rounded-lg border pr-3 pl-10 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-2 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring/50 bg-background placeholder:text-muted-foreground/60 h-12 [appearance:textfield] rounded-lg border pr-3 pl-10 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] focus-visible:ring-[3px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
       </div>

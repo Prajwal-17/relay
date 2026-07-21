@@ -60,8 +60,8 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   };
 
   return (
-    <div className="hover:bg-accent/50 active:bg-accent/70 group flex items-center gap-5 px-5 py-2.5 transition-colors">
-      <div className="border-border bg-muted/50 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm">
+    <div className="hover:bg-accent active:bg-accent/70 group flex items-center gap-3 px-4 py-2.5 transition-colors">
+      <div className="border-border bg-muted/50 flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border shadow-sm">
         {product.imageUrl ? (
           <img
             src={`${PROTOCOL_NAME}${product.imageUrl}`}
@@ -69,14 +69,14 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             className="h-full w-full object-contain p-0.5"
           />
         ) : (
-          <Image className="text-muted-foreground/20 h-7 w-7" strokeWidth={1.25} />
+          <Image className="text-muted-foreground/20 size-5" strokeWidth={1.25} />
         )}
       </div>
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3
-            className={`text-xl leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
+            className={`text-base leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
           >
             <HighlightedText text={product.name} query={searchParam} />
           </h3>
@@ -122,7 +122,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       </div>
 
       <div className="shrink-0 text-right">
-        <div className="text-foreground text-2xl font-bold">{formatRupee(product.price)}</div>
+        <div className="text-foreground text-xl font-bold">{formatRupee(product.price)}</div>
       </div>
 
       {product.isDeleted ? (
@@ -131,13 +131,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">View</p>
+              <p className="text-xs">View</p>
             </TooltipContent>
           </Tooltip>
 
@@ -145,13 +145,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Clock className="h-5 w-5" />
+                <Clock className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">History</p>
+              <p className="text-xs">History</p>
             </TooltipContent>
           </Tooltip>
 
@@ -159,13 +159,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Permanently Delete</p>
+              <p className="text-xs">Permanently Delete</p>
             </TooltipContent>
           </Tooltip>
 
@@ -173,13 +173,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <RotateCcw className="h-5 w-5" />
+                <RotateCcw className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Restore</p>
+              <p className="text-xs">Restore</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -189,13 +189,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">View</p>
+              <p className="text-xs">View</p>
             </TooltipContent>
           </Tooltip>
 
@@ -203,13 +203,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.EDIT)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Edit className="h-5 w-5" />
+                <Edit className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Edit</p>
+              <p className="text-xs">Edit</p>
             </TooltipContent>
           </Tooltip>
 
@@ -217,13 +217,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Delete</p>
+              <p className="text-xs">Delete</p>
             </TooltipContent>
           </Tooltip>
 
@@ -231,13 +231,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
               >
-                <Clock className="h-5 w-5" />
+                <Clock className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">History</p>
+              <p className="text-xs">History</p>
             </TooltipContent>
           </Tooltip>
         </div>

@@ -206,40 +206,34 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
 
     return (
-      <motion.div
+      <Link
+        to={item.href}
         key={item.href}
-        whileHover={{ x: 2 }}
-        transition={{ duration: 0.12, ease: "easeOut" }}
+        onClick={() => {
+          if (isOverlay) {
+            setIsSidebarOpen(false);
+          }
+        }}
+        className={cn(
+          "relative flex h-12 w-full items-center gap-3 rounded-lg px-2.5 text-base font-medium transition-colors duration-150 outline-none",
+          "focus-visible:ring-ring focus-visible:ring-offset-sidebar focus-visible:ring-2 focus-visible:ring-offset-2",
+          isActive
+            ? "bg-accent text-accent-foreground font-semibold"
+            : "text-sidebar-foreground/70 hover:bg-accent/50 hover:text-sidebar-foreground"
+        )}
       >
-        <Link
-          to={item.href}
-          onClick={() => {
-            if (isOverlay) {
-              setIsSidebarOpen(false);
-            }
-          }}
+        <span
           className={cn(
-            "relative flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-base font-medium transition-colors duration-150",
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors duration-150 [&_svg]:size-[22px]",
             isActive
-              ? "bg-sidebar-accent text-sidebar-foreground font-semibold"
-              : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              : "bg-sidebar-accent text-sidebar-foreground/55"
           )}
         >
-          <AnimatePresence>
-            {isActive && (
-              <motion.span
-                initial={{ opacity: 0, scaleY: 0.4 }}
-                animate={{ opacity: 1, scaleY: 1 }}
-                exit={{ opacity: 0, scaleY: 0.4 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="bg-sidebar-primary absolute top-1/2 left-0 -mt-2 h-4 w-0.5 origin-center rounded-full"
-              />
-            )}
-          </AnimatePresence>
-          <span className="shrink-0 [&_svg]:size-5">{item.icon}</span>
-          <span className="truncate text-base">{item.title}</span>
-        </Link>
-      </motion.div>
+          {item.icon}
+        </span>
+        <span className="truncate text-base">{item.title}</span>
+      </Link>
     );
   };
 
@@ -248,7 +242,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       ref={sidebarRef}
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
-        "linear-light bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-hidden border-r",
+        "bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-hidden border-r",
         isOverlay && "shadow-xl"
       )}
       style={{
@@ -269,7 +263,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             }}
             className="flex items-center gap-3"
           >
-            <div className="bg-primary/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl p-2">
+            <div className="bg-background border-frame flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border p-2 shadow-xs">
               <img
                 src={quickcartLogo}
                 alt="QuickCart logo"
@@ -283,8 +277,8 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           </Link>
         </div>
 
-        <div className="flex flex-1 flex-col overflow-y-auto px-4 py-5">
-          <div className="flex flex-col gap-3">
+        <div className="flex flex-1 flex-col overflow-y-auto px-3 py-4">
+          <div className="flex flex-col gap-2">
             <Link
               to="/billing/sales/create"
               className="block w-full"
@@ -293,7 +287,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="default"
                 size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
               >
                 <ShoppingCart className="h-5 w-5" />
                 <span>New Sale</span>
@@ -308,7 +302,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <Button
                 variant="outline"
                 size="lg"
-                className="h-10 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
+                className="h-12 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
               >
                 <FileText className="h-5 w-5" />
                 <span>New Estimate</span>
@@ -316,16 +310,16 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             </Link>
           </div>
 
-          <nav className="mt-6 flex flex-col">
+          <nav className="mt-7 flex flex-col">
             <div className="flex flex-col">
-              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
+              <span className="text-sidebar-foreground/50 mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
                 Main
               </span>
               <div className="flex flex-col gap-0.5">{mainLinks.map(renderNavItem)}</div>
             </div>
 
             <div className="mt-6 flex flex-col">
-              <span className="text-sidebar-foreground/55 mb-2 px-3 text-xs font-medium tracking-wider uppercase">
+              <span className="text-sidebar-foreground/50 mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
                 System
               </span>
               <div className="flex flex-col gap-0.5">{systemLinks.map(renderNavItem)}</div>
@@ -341,9 +335,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                 setIsSidebarOpen(false);
               }
             }}
-            className="hover:bg-sidebar-accent flex items-center gap-3 rounded-xl p-2 transition-colors duration-150"
+            className="hover:bg-sidebar-accent flex h-14 items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150"
           >
-            <div className="bg-success/15 text-success flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
+            <div className="bg-success/15 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
               {storeInitials}
             </div>
             <div className="min-w-0">

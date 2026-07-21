@@ -23,11 +23,11 @@ export const MetricsComponent = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
         {isLoading ? (
           <Card className="bg-background flex h-full items-center justify-center border shadow-sm hover:shadow-xl">
             <CardContent className="py-0">
-              <LoaderCircle className="text-primary animate-spin" size={26} />
+              <LoaderCircle className="text-primary animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (
@@ -45,7 +45,7 @@ export const MetricsComponent = () => {
         {isLoading ? (
           <Card className="bg-background flex h-full items-center justify-center border shadow-sm hover:shadow-xl">
             <CardContent className="py-0">
-              <LoaderCircle className="text-primary animate-spin" size={26} />
+              <LoaderCircle className="text-primary animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (
@@ -63,12 +63,12 @@ export const MetricsComponent = () => {
         {isLoading ? (
           <Card className="bg-background col-span-2 grid grid-cols-2 grid-rows-2 items-center justify-center border shadow-sm hover:shadow-xl">
             <CardContent className="col-span-2 row-span-2 flex h-full w-full items-center justify-center py-0">
-              <LoaderCircle className="text-primary animate-spin" size={26} />
+              <LoaderCircle className="text-primary animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (
           data && (
-            <div className="col-span-2 grid grid-cols-2 grid-rows-2 gap-3">
+            <div className="col-span-2 grid grid-cols-2 grid-rows-2 gap-2">
               <StatCard label="Total Products" value={data.counts.products} />
               <StatCard label="Total Customers" value={data.counts.customers} />
               <StatCard label="Total Sales" value={data.counts.sales} />

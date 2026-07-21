@@ -130,7 +130,9 @@ export const SummaryFooter = () => {
             <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
               Total:
             </span>
-            <span className="text-foreground text-2xl font-bold">{grandTotal}</span>
+            <span className="text-foreground bg-accent/40 rounded-md px-2 py-0.5 text-2xl font-bold tabular-nums">
+              {grandTotal}
+            </span>
           </div>
         </div>
 
@@ -153,7 +155,7 @@ export const SummaryFooter = () => {
 
           <Button
             variant="outline"
-            className="border-border/60 hover:bg-accent/50 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
+            className="border-border/60 hover:bg-accent h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
             disabled={loadingAction !== null}
             onClick={handleSaveAndExit}
           >
@@ -167,7 +169,7 @@ export const SummaryFooter = () => {
 
           <Button
             variant="outline"
-            className="border-border/60 hover:bg-accent/50 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
+            className="border-border/60 hover:bg-accent h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
             disabled={loadingAction !== null}
             onClick={handleExportPdf}
           >

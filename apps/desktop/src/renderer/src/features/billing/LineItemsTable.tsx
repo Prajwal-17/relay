@@ -64,6 +64,12 @@ const LineItemsTable = () => {
     setSearchQuery("");
   }, [activeTabId]);
 
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("dragging-active");
+    };
+  }, []);
+
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
@@ -94,9 +100,15 @@ const LineItemsTable = () => {
     return collisions.filter((c) => filledRowIds.has(c.id as string));
   };
 
+  const handleDragStart = () => {
+    setIsDndDragging(true);
+    document.body.classList.add("dragging-active");
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setIsDndDragging(false);
+    document.body.classList.remove("dragging-active");
 
     if (!over || active.id === over.id) return;
 
@@ -105,6 +117,11 @@ const LineItemsTable = () => {
 
     reorderLineItems(tabId, active.id as string, over.id as string);
     processSyncQueue(tabId);
+  };
+
+  const handleDragCancel = () => {
+    setIsDndDragging(false);
+    document.body.classList.remove("dragging-active");
   };
 
   const totalItems = filledItems.length;
@@ -274,8 +291,9 @@ const LineItemsTable = () => {
           <DndContext
             sensors={sensors}
             collisionDetection={collisionDetection}
-            onDragStart={() => setIsDndDragging(true)}
+            onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
           >
             <SortableContext
               items={visibleItems.map((i) => i.rowId)}

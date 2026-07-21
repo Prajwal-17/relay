@@ -185,7 +185,7 @@ const BillingHeader = () => {
                   setIsSidebarPinned(nextPinnedState);
                   setIsSidebarOpen(nextPinnedState);
                 }}
-                className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150"
+                className="hover:bg-accent text-muted-foreground hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150"
               >
                 <PanelLeftOpen size={22} />
               </button>
@@ -265,7 +265,7 @@ const BillingHeader = () => {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="border-border/60 hover:bg-accent/60 text-foreground flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl"
+                    className="border-border/60 hover:bg-accent text-foreground flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl"
                   >
                     <MoreVertical size={18} />
                   </Button>

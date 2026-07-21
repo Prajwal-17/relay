@@ -44,7 +44,7 @@ export const ItemRow = ({
   return (
     <tr
       className={cn(
-        "border-border/70 hover:bg-accent/40 border-b text-sm transition-colors",
+        "border-border/70 hover:bg-accent border-b text-sm transition-colors",
         checked && "bg-success/10 hover:bg-success/15",
         partial && "bg-warning/10 hover:bg-warning/15",
         !checked && !partial && "bg-card"

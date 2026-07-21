@@ -21,7 +21,7 @@
   --canvas: oklch(0.965 0.003 255);
   --surface-1: oklch(0.992 0.002 255);
   --surface-2: oklch(0.94 0.004 255);
-  --surface-3: oklch(0.955 0.003 255);
+  --surface-3: oklch(0.94 0.004 255);
   --surface-4: oklch(0.992 0.002 255);
 
   /* Borders */
@@ -82,7 +82,7 @@
   --secondary: var(--surface-2);
   --secondary-foreground: var(--ink);
 
-  --accent: oklch(0.958 0.006 258);
+  --accent: oklch(0.918 0.012 258);
   --accent-foreground: var(--ink-muted);
 
   --muted: var(--surface-3);
@@ -133,9 +133,9 @@
   --invoice-table-header-bg: var(--surface-3);
 
   /* Shadows */
-  --shadow-xs: 0 1px 0 0 rgb(15 23 42 / 0.05);
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.05), 0 1px 1px 0 rgb(15 23 42 / 0.04);
-  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05);
+  --shadow-xs: 0 1px 0 0 rgb(15 23 42 / 0.08);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.09), 0 1px 1px 0 rgb(15 23 42 / 0.06);
+  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.12), 0 2px 4px -2px rgb(15 23 42 / 0.08);
   --shadow-lg: 0 12px 24px -6px rgb(15 23 42 / 0.1), 0 4px 8px -4px rgb(15 23 42 / 0.06);
   --shadow-xl: 0 20px 40px -8px rgb(15 23 42 / 0.14), 0 8px 16px -6px rgb(15 23 42 / 0.08);
   --shadow-2xl: 0 32px 64px -12px rgb(15 23 42 / 0.18), 0 12px 24px -8px rgb(15 23 42 / 0.1);
@@ -354,3 +354,9 @@
     display: none;
   }
 }
+
+body.dragging-active,
+body.dragging-active * {
+  cursor: grabbing !important;
+}
+

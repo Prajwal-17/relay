@@ -92,7 +92,7 @@ const BillingTabBar = () => {
                   whileHover={{ scale: 1.08 }}
                   whileTap={{ scale: 0.92 }}
                   disabled={isAtLimit}
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent/60 ml-1.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-lg border-none transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-30"
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent ml-1.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center self-center rounded-lg border-none transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   <Plus size={18} strokeWidth={2.5} />
                 </motion.button>

@@ -40,7 +40,7 @@ this file. Every token is available as a Tailwind utility (e.g., `bg-primary`, `
 | `card`       | `oklch(0.992 0.002 255)` | Elevated sheets (E2/E5). Cards, dialog bodies.                      | Page background, inset bands       |
 | `popover`    | `oklch(0.992 0.002 255)` | Dropdowns, tooltips (E4/E6). Same as card by value, semantic alias. | Page background                    |
 | `secondary`  | `oklch(0.94 0.004 255)`  | Neutral fills: secondary buttons, active nav, chip backgrounds.     | Card surfaces                      |
-| `muted`      | `oklch(0.955 0.003 255)` | Recessed/inset bands (E3). Table heads, skeletons, code.            | Card surfaces                      |
+| `muted`      | `oklch(0.94 0.004 255)`  | Recessed/inset bands (E3). Table heads, skeletons, code.            | Card surfaces                      |
 
 ### 2.2 Text (Ink)
 
@@ -74,7 +74,7 @@ is for interactive control edges. Never use `border` on app-chrome or `frame` on
 | `primary-foreground` | `#ffffff`                | Text/icons on `bg-primary` surfaces              |
 | `primary-hover`      | `oklch(0.37 0.08 258)`   | Hovered/pressed CTA state                        |
 | `ring`               | `var(--primary)`         | Focus ring color (solid for keyboard visibility) |
-| `accent`             | `oklch(0.958 0.006 258)` | Hover/selected wash — faint primary tint.        |
+| `accent`             | `oklch(0.918 0.012 258)` | Hover/selected wash — faint primary tint.        |
 | `accent-foreground`  | `var(--ink-muted)`       | Text on accent backgrounds                       |
 
 **Key:** `accent` is barely-tinted for hover states that feel "engaged" without screaming
@@ -193,9 +193,9 @@ this reads as a "desktop window," not a floating web card.
 
 | Token        | Value                                                                          | Use for              |
 | ------------ | ------------------------------------------------------------------------------ | -------------------- |
-| `shadow-xs`  | `0 1px 0 0 rgb(15 23 42 / 0.05)`                                               | Light card lift (E2) |
-| `shadow-sm`  | `0 1px 2px 0 rgb(15 23 42 / 0.05), 0 1px 1px 0 rgb(15 23 42 / 0.04)`           | Hovered card         |
-| `shadow-md`  | `0 4px 8px -2px rgb(15 23 42 / 0.08), 0 2px 4px -2px rgb(15 23 42 / 0.05)`     | Popover (E4)         |
+| `shadow-xs`  | `0 1px 0 0 rgb(15 23 42 / 0.08)`                                               | Light card lift (E2) |
+| `shadow-sm`  | `0 1px 2px 0 rgb(15 23 42 / 0.09), 0 1px 1px 0 rgb(15 23 42 / 0.06)`           | Hovered card         |
+| `shadow-md`  | `0 4px 8px -2px rgb(15 23 42 / 0.12), 0 2px 4px -2px rgb(15 23 42 / 0.08)`     | Popover (E4)         |
 | `shadow-lg`  | `0 12px 24px -6px rgb(15 23 42 / 0.1), 0 4px 8px -4px rgb(15 23 42 / 0.06)`    | Dialog (E5)          |
 | `shadow-xl`  | `0 20px 40px -8px rgb(15 23 42 / 0.14), 0 8px 16px -6px rgb(15 23 42 / 0.08)`  | Overlay (E6)         |
 | `shadow-2xl` | `0 32px 64px -12px rgb(15 23 42 / 0.18), 0 12px 24px -8px rgb(15 23 42 / 0.1)` | Extreme overlay      |
@@ -282,9 +282,12 @@ element including children). Do NOT use `bg-muted/30` — below 40% is invisible
 
 ```tsx
 // Pills / status indicators
-<span className="bg-<state>/15 text-<state> border-<state>/25 rounded-full border px-2.5 py-0.5 text-xs font-medium">
+<span className="bg-<state>/15 text-<state> border-<state>/25 rounded-md border px-2.5 py-0.5 text-xs font-medium">
   {label}
 </span>
+
+// Status pills use `rounded-md` (rounded rectangle), not `rounded-full`.
+// The reserved pill shape (`rounded-full`) is for MRP badges only (§2.8).
 
 // Solid state buttons (check button pattern)
 // Checked:   bg-success text-background border-success
@@ -315,6 +318,32 @@ element including children). Do NOT use `bg-muted/30` — below 40% is invisible
 Library: **lucide-react**. Size pattern: `size-4` (16px) for inline icons, `size-5` (20px)
 for standalone icons, `size-6` (24px) for large icons. All icons inherit color via
 `currentColor` — never set a fill/stroke color directly.
+
+### 6.7 Last-Edited Flash Pattern
+
+When a computed value (e.g., line-item total) changes, flash its background for 700ms to draw
+the biller's eye to the updated figure:
+
+```tsx
+const [isFlash, setIsFlash] = useState(false);
+const prevRef = useRef(value);
+
+useEffect(() => {
+  if (prevRef.current !== value) {
+    prevRef.current = value;
+    if (value !== 0 && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIsFlash(true);
+      const timer = setTimeout(() => setIsFlash(false), 700);
+      return () => clearTimeout(timer);
+    }
+  }
+}, [value]);
+
+// Apply: base has `transition-[background-color] duration-500`, append `bg-accent` when flashing
+```
+
+**Rules:** Duration 500ms fade-out via `transition-[background-color]`. No rotation, scale, or
+spring. Always respect `prefers-reduced-motion: reduce` — skip the flash entirely if set.
 
 ---
 
@@ -401,10 +430,22 @@ Is it a focused/active input?
 | Add a new chart color beyond chart-5                                        | chart-6/7/8 were intentionally removed. Rotate.                                    |
 | Mix multiple surface tokens on one element                                  | `bg-card bg-muted` is a design error. Pick one elevation.                          |
 | Use `text-white` or `text-black`                                            | Use `text-primary-foreground`, `text-sidebar-foreground`, or semantic foregrounds. |
+| Use `bg-accent/NN` opacity suffix                                           | `--accent` is tuned to its perceptual floor. Opacity modulation below 100% defeats the calibration. Use `bg-accent` plain. |
+| Use `text-[NNpx]` or `text-[0.XXrem]` arbitrary font sizes                  | Enforced by ESLint (`no-restricted-syntax`). Use the token scale (§3.4). |
+| Use `focus:` for ring indicators instead of `focus-visible:`                | `focus:` shows the ring on mouse click, creating visual noise. `focus-visible:` only fires for keyboard navigation. |
 
 ---
 
-## 9. Extension Guide
+## 9. Screenshot Ladder Test (Mandatory Pre-Merge)
+
+Before merging any UI change, screenshot the billing page at zoom **0.75**, **1.00**, and
+**1.25** on the development machine. If any border, focus ring, or hover state becomes invisible
+at any zoom level, the change is not ready. Every perceptual edge must hold across the full zoom
+range — the production laptop may be set to any of these levels by the biller.
+
+---
+
+## 10. Extension Guide
 
 ### Adding a new CSS color token
 
@@ -457,7 +498,7 @@ because all components reference `var(--primary)` through the token chain.
 
 ---
 
-## 10. File Reference
+## 11. File Reference
 
 | File                                           | Role                                                                    |
 | ---------------------------------------------- | ----------------------------------------------------------------------- |
@@ -468,7 +509,7 @@ because all components reference `var(--primary)` through the token chain.
 
 ---
 
-## 11. Quick Reference Card
+## 12. Quick Reference Card
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗

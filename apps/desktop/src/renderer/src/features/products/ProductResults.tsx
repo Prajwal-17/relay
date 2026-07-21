@@ -32,15 +32,15 @@ export default function ProductResults() {
     <Card className="border-border bg-background flex min-h-0 flex-1 flex-col border py-2 shadow-sm">
       {status === "pending" ? (
         <div className="my-8 flex justify-center gap-3">
-          <div className="text-muted-foreground text-xl font-semibold">Loading</div>
-          <LoaderCircle className="text-primary animate-spin" size={26} />
+          <div className="text-muted-foreground text-sm font-semibold">Loading</div>
+          <LoaderCircle className="text-primary animate-spin" size={18} />
         </div>
       ) : (
         <>
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground p-16 text-center">
-              <Search className="mx-auto mb-6 h-16 w-16 opacity-30" />
-              <h3 className="text-foreground mb-3 text-xl font-semibold">No products found</h3>
+              <Search className="mx-auto mb-4 size-12 opacity-30" />
+              <h3 className="text-foreground mb-2 text-lg font-semibold">No products found</h3>
               <p className="text-muted-foreground font-medium">Try adjusting your search</p>
             </div>
           ) : (
@@ -75,7 +75,7 @@ export default function ProductResults() {
               </div>
               {!hasNextPage && searchResults.length > 0 && (
                 <div className="text-muted-foreground flex flex-col items-center py-4 text-center">
-                  <div className="text-2xl font-medium">No more products</div>
+                  <div className="text-base font-medium">No more products</div>
                   <p className="mt-2 text-base opacity-75">
                     You&apos;ve reached the end of the list
                   </p>

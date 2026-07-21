@@ -12,7 +12,7 @@ import { UPDATE_QTY_ACTION } from "@shared/types";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import { paisaToRupeeString } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
 import QuantityPresets from "./QuantityPresets";
@@ -54,6 +54,22 @@ const LineItemRow = memo(
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
 
+    const [isFlash, setIsFlash] = useState(false);
+    const prevTotalRef = useRef(item.totalPrice);
+    useEffect(() => {
+      if (prevTotalRef.current !== item.totalPrice) {
+        prevTotalRef.current = item.totalPrice;
+        if (
+          item.totalPrice !== 0 &&
+          !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+          setIsFlash(true);
+          const timer = setTimeout(() => setIsFlash(false), 700);
+          return () => clearTimeout(timer);
+        }
+      }
+    }, [item.totalPrice]);
+
     if (!activeTabId) return null;
 
     return (
@@ -69,12 +85,12 @@ const LineItemRow = memo(
                 <GripVertical
                   {...dragHandle.attributes}
                   {...dragHandle.listeners}
-                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground active:bg-accent visible cursor-grab rounded-lg focus:outline-none active:cursor-grabbing"
+                  className="text-muted-foreground/60 hover:bg-accent hover:text-foreground active:bg-accent visible cursor-grab rounded-lg active:cursor-grabbing focus:outline-none"
                   size={20}
                 />
               ) : (
                 <GripVertical
-                  className="text-muted-foreground/60 hover:bg-accent/70 hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab"
+                  className="text-muted-foreground/60 hover:bg-accent hover:text-foreground invisible rounded-lg group-hover:visible hover:cursor-grab focus:outline-none"
                   size={20}
                 />
               )}
@@ -94,7 +110,7 @@ const LineItemRow = memo(
           <div className="col-span-7 px-1 py-1">
             <input
               value={item.productSnapshot}
-              className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-10 w-full rounded-lg border px-3 py-2 text-base font-bold shadow-none transition-all focus:ring-2 focus:ring-offset-0 focus:outline-none"
+              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-10 w-full rounded-lg border px-3 py-2 text-base font-bold shadow-none transition-all focus-visible:ring-[3px]"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -124,7 +140,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
+                className="bg-background text-foreground hover:bg-accent border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-l-lg border-r py-2 transition-colors"
               >
                 <Plus size={18} strokeWidth={2.5} />
               </button>
@@ -136,7 +152,7 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity}
-                className="focus:border-ring focus:ring-ring placeholder-muted-foreground min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-base font-semibold tabular-nums transition-all"
+                className="focus-visible:border-ring focus-visible:ring-ring/50 placeholder:text-muted-foreground/60 min-w-0 flex-1 appearance-none rounded-md bg-transparent px-1 py-2 text-center text-base font-semibold tabular-nums transition-all focus-visible:ring-[3px] focus-visible:ring-offset-0"
                 onChange={(e) => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -150,7 +166,7 @@ const LineItemRow = memo(
               />
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent/80 border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent border-border/70 flex h-full w-9 cursor-pointer items-center justify-center rounded-r-lg border-l py-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -190,7 +206,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="focus:border-ring focus:ring-ring bg-background text-foreground placeholder-muted-foreground border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-base font-semibold tabular-nums focus:ring-2 focus:outline-none disabled:cursor-not-allowed"
+                className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/60 border-border/80 h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-base font-semibold tabular-nums focus-visible:ring-[3px] disabled:cursor-not-allowed"
               />
             </div>
           </div>
@@ -199,7 +215,9 @@ const LineItemRow = memo(
               <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
                 <IndianRupee size={14} />
               </span>
-              <div className="bg-muted/40 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums">
+              <div
+                className={`bg-muted/40 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-base font-semibold tabular-nums transition-[background-color] duration-500 ${isFlash ? "bg-accent" : ""}`}
+              >
                 {item.totalPrice ? paisaToRupeeString(item.totalPrice) : "0"}
               </div>
             </div>

@@ -43,13 +43,13 @@ export const TopProductsChart = () => {
   return (
     <Card className="h-full py-4">
       <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-xl">Top Products</CardTitle>
+        <CardTitle className="text-base">Top Products</CardTitle>
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="flex flex-1 justify-center gap-3">
-            <span className="text-muted-foreground text-lg font-semibold">Loading</span>
-            <LoaderCircle className="text-primary animate-spin" size={24} />
+          <div className="flex flex-1 justify-center gap-2">
+            <span className="text-muted-foreground text-sm font-medium">Loading</span>
+            <LoaderCircle className="text-primary animate-spin" size={18} />
           </div>
         ) : colorizedData.length === 0 ? (
           <div className="text-muted-foreground flex h-75 items-center justify-center">
