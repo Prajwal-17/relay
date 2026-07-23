@@ -28,16 +28,14 @@ const SCALE_STEP = 5;
 const SearchDropdownSizeField = () => {
   const { config, updateConfig, isUpdating } = useAppPreferences();
   const scale = config?.billing?.searchDropdown?.scale ?? 1;
-  const [localPercent, setLocalPercent] = useState<number>(() => Math.round(scale * 100));
+  const [localPercent, setLocalPercent] = useState(() => Math.round(scale * 100));
 
-  useEffect(() => {
-    setLocalPercent(Math.round(scale * 100));
-  }, [scale]);
+  useEffect(() => setLocalPercent(Math.round(scale * 100)), [scale]);
 
   return (
     <SettingsField
-      label="Search dropdown size"
-      hint="Enlarge or shrink the product search popup in bills."
+      label="Product results height"
+      hint="Controls how many product matches are visible without using CSS zoom."
       defaultValue="100%"
       onReset={() => {
         setLocalPercent(100);
@@ -45,8 +43,8 @@ const SearchDropdownSizeField = () => {
       }}
       isResetting={isUpdating}
     >
-      <div className="flex items-center gap-4">
-        <span className="text-muted-foreground w-12 text-right text-sm tabular-nums">
+      <div className="flex items-center gap-3">
+        <span className="text-muted-foreground w-10 text-right text-xs tabular-nums">
           {SCALE_MIN}%
         </span>
         <Slider
@@ -54,19 +52,15 @@ const SearchDropdownSizeField = () => {
           min={SCALE_MIN}
           max={SCALE_MAX}
           step={SCALE_STEP}
-          onValueChange={(v) => setLocalPercent(v[0]!)}
-          onValueCommit={(v) =>
-            updateConfig({ billing: { searchDropdown: { scale: v[0]! / 100 } } })
+          onValueChange={(value) => setLocalPercent(value[0]!)}
+          onValueCommit={(value) =>
+            updateConfig({ billing: { searchDropdown: { scale: value[0]! / 100 } } })
           }
           className="flex-1"
         />
-        <span className="text-muted-foreground w-12 text-sm tabular-nums">{SCALE_MAX}%</span>
+        <span className="text-muted-foreground w-10 text-xs tabular-nums">{SCALE_MAX}%</span>
       </div>
-      <div className="mt-1 text-center">
-        <span className="text-foreground text-base font-semibold tabular-nums">
-          {localPercent}%
-        </span>
-      </div>
+      <div className="mt-1 text-center text-sm font-semibold tabular-nums">{localPercent}%</div>
     </SettingsField>
   );
 };
@@ -113,7 +107,7 @@ export const BillingSection = () => {
               id="settings-default-customer"
               variant="outline"
               className={cn(
-                "h-11 w-full justify-between text-base font-normal",
+                "w-full justify-between text-sm font-normal",
                 !selectedCustomerName && "text-muted-foreground"
               )}
               disabled={isUpdating}
@@ -131,18 +125,16 @@ export const BillingSection = () => {
           </PopoverTrigger>
           <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
             <Command>
-              <CommandInput placeholder="Search customers…" className="h-11 text-base" />
+              <CommandInput placeholder="Search customers…" className="h-9 text-sm" />
               <CommandList>
-                <CommandEmpty className="py-4 text-center text-base">
-                  No customer found.
-                </CommandEmpty>
+                <CommandEmpty className="py-4 text-center text-sm">No customer found.</CommandEmpty>
                 <CommandGroup>
                   {customers?.map((customer) => (
                     <CommandItem
                       key={customer.id}
                       value={customer.name}
                       onSelect={() => handleCustomerSelect(customer.id)}
-                      className="py-2.5 text-base"
+                      className="text-sm"
                     >
                       <Check
                         className={cn(

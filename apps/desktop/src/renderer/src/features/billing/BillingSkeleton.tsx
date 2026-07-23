@@ -17,17 +17,17 @@ const BillingSkeleton = () => {
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="bg-muted h-4 w-24 rounded"></div>
-              <div className="bg-muted h-12 w-full rounded-lg"></div>
+              <div className="bg-muted h-9 w-full rounded-lg"></div>
             </div>
             <div className="space-y-2">
               <div className="bg-muted h-4 w-24 rounded"></div>
-              <div className="bg-muted h-12 w-full rounded-lg"></div>
+              <div className="bg-muted h-9 w-full rounded-lg"></div>
             </div>
           </div>
         </div>
 
         <div className="border-border bg-card flex min-h-0 flex-1 animate-pulse flex-col rounded-xl border p-6 shadow-sm">
-          <div className="bg-muted mb-4 h-12 w-full shrink-0 rounded-lg"></div>
+          <div className="bg-muted mb-4 h-9 w-full shrink-0 rounded-lg"></div>
 
           <div className="flex-1 space-y-3 overflow-hidden">
             {[1, 2, 3].map((i) => (
@@ -45,9 +45,9 @@ const BillingSkeleton = () => {
           <div className="border-border mt-4 border-t pt-4">
             <div className="flex items-center justify-end">
               <div className="flex gap-3">
-                <div className="bg-warning/20 h-12 w-32 rounded-md opacity-50"></div>
-                <div className="bg-muted h-12 w-24 rounded-md"></div>
-                <div className="bg-muted h-12 w-24 rounded-md"></div>
+                <div className="bg-warning/20 h-9 w-32 rounded-md opacity-50"></div>
+                <div className="bg-muted h-9 w-24 rounded-md"></div>
+                <div className="bg-muted h-9 w-24 rounded-md"></div>
               </div>
             </div>
           </div>

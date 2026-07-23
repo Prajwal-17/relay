@@ -33,7 +33,7 @@ export const ProductViewMode = () => {
       className="flex flex-col gap-9 md:flex-row md:items-start"
     >
       <div className="flex w-full shrink-0 flex-col gap-6 md:w-76">
-        <div className="bg-secondary/60 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-4xl border shadow-sm">
+        <div className="bg-secondary/60 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-(--radius-panel) border">
           {formData.imageUrl ? (
             <img
               src={`${PROTOCOL_NAME}${formData.imageUrl}`}
@@ -56,7 +56,7 @@ export const ProductViewMode = () => {
 
       <div className="flex min-w-0 flex-1 flex-col gap-5">
         <div className="flex min-w-0 items-start justify-between gap-4">
-          <h3 className="text-foreground truncate text-3xl font-extrabold tracking-tight">
+          <h3 className="text-foreground truncate text-xl font-semibold tracking-tight">
             {productSnapshot || "Untitled Product"}
           </h3>
         </div>
@@ -92,7 +92,7 @@ export const ProductViewMode = () => {
           valueClassName="text-lg font-semibold"
         />
 
-        <div className="bg-secondary/10 border-border/50 mt-1 rounded-2xl border px-5 py-2">
+        <div className="bg-secondary/10 border-border/50 mt-1 rounded-(--radius-panel) border px-3 py-2">
           <div className="divide-border/50 divide-y">
             <InfoRow
               label="Total Qty Sold"

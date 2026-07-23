@@ -1,7 +1,9 @@
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { type PreviewTab, usePreviewTabStore } from "@/store/billing/previewTabStore";
+import { PanelRightClose } from "lucide-react";
 import { useEffect } from "react";
 import { BillPreview } from "./BillPreview";
 import { CustomerAccountTab } from "./CustomerAccountTab";
@@ -14,9 +16,10 @@ const BillingPreviewPanel = () => {
   const activePreviewTab = usePreviewTabStore((state) =>
     activeTabId ? (state.tabs[activeTabId] ?? "bill") : "bill"
   );
+  const isPanelOpen = usePreviewTabStore((state) => state.isPanelOpen);
+  const setPanelOpen = usePreviewTabStore((state) => state.setPanelOpen);
   const setActivePreviewTab = usePreviewTabStore((state) => state.setActiveTab);
 
-  // ensure every billing tab has an entry (defaults to "bill")
   useEffect(() => {
     if (!activeTabId) return;
     if (!usePreviewTabStore.getState().tabs[activeTabId]) {
@@ -24,36 +27,42 @@ const BillingPreviewPanel = () => {
     }
   }, [activeTabId, setActivePreviewTab]);
 
-  if (!activeTabId || !session) return null;
+  if (!activeTabId || !session || !isPanelOpen) return null;
 
   const handleValueChange = (value: string) => {
-    if (activeTabId && (value === "bill" || value === "customer")) {
+    if (value === "bill" || value === "customer") {
       setActivePreviewTab(activeTabId, value as PreviewTab);
     }
   };
 
   return (
-    <div className="flex w-1/4 min-w-0 flex-col">
+    <aside className="border-l-frame bg-card fixed inset-y-0 right-0 z-40 flex w-[min(24rem,calc(100vw-1rem))] min-w-0 shrink-0 flex-col border-l shadow-lg min-[1280px]:static min-[1280px]:z-auto min-[1280px]:w-[clamp(18rem,27vw,24rem)] min-[1280px]:shadow-none">
       <Tabs
         value={activePreviewTab}
         onValueChange={handleValueChange}
         className="flex h-full min-h-0 flex-1 flex-col gap-0"
       >
-        <div className="bg-card border-border/60 mx-2 mt-2 shrink-0 rounded-xl border p-1 shadow-sm">
-          <TabsList className="grid h-11 w-full grid-cols-2">
-            <TabsTrigger value="bill" className="cursor-pointer text-base font-semibold">
+        <div className="flex h-10 shrink-0 items-center gap-1 border-b px-2">
+          <TabsList className="grid h-8 min-w-0 flex-1 grid-cols-2">
+            <TabsTrigger value="bill" className="cursor-pointer text-sm">
               Preview
             </TabsTrigger>
-            <TabsTrigger value="customer" className="cursor-pointer text-base font-semibold">
+            <TabsTrigger value="customer" className="cursor-pointer text-sm">
               Customer
             </TabsTrigger>
           </TabsList>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setPanelOpen(false)}
+            aria-label="Close preview panel"
+          >
+            <PanelRightClose />
+          </Button>
         </div>
 
-        <TabsContent
-          value="bill"
-          className="border-success bg-muted min-h-0 flex-1 overflow-y-auto border"
-        >
+        <TabsContent value="bill" className="bg-muted min-h-0 flex-1 overflow-y-auto">
           <BillPreview />
         </TabsContent>
 
@@ -61,7 +70,7 @@ const BillingPreviewPanel = () => {
           <CustomerAccountTab />
         </TabsContent>
       </Tabs>
-    </div>
+    </aside>
   );
 };
 

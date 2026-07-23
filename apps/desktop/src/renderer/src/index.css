@@ -15,56 +15,79 @@
   --font-sans: "InterVariable", system-ui, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
-  --font-roboto: var(--font-sans);
 
-  /* Surfaces */
-  --canvas: oklch(0.965 0.003 255);
-  --surface-1: oklch(0.992 0.002 255);
-  --surface-2: oklch(0.94 0.004 255);
-  --surface-3: oklch(0.94 0.004 255);
-  --surface-4: oklch(0.992 0.002 255);
+  /* Density primitives */
+  --app-header-height: 3rem;
+  --sidebar-width: 14.5rem;
+  --sidebar-compact-width: 3.5rem;
+  --sidebar-min-width: 13.5rem;
+  --sidebar-max-width: 17.5rem;
+  --nav-row-height: 2.5rem;
+  --control-height: 2.25rem;
+  --control-height-compact: 2rem;
+  --control-height-large: 2.5rem;
+  --billing-row-height: 2.625rem;
+  --table-row-height: 2.625rem;
+  --product-row-height: 3.75rem;
+  --page-padding: 0.75rem;
+  --panel-padding: 0.75rem;
+  --gap-common: 0.5rem;
+  --gap-section: 0.75rem;
+  --radius-control: 0.375rem;
+  --radius-panel: 0.5rem;
+  --font-size-body: 0.875rem;
+  --font-size-label: 0.75rem;
+  --font-size-page-title: 1.125rem;
+  --font-size-financial: 1.375rem;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
-  /* Borders */
-  --hairline: oklch(0.87 0.004 255);
-  --frame: oklch(0.82 0.005 255);
-  --hairline-strong: oklch(0.78 0.005 255);
+  /* Neutral palette */
+  --canvas: #f4f3ef;
+  --surface-1: #ffffff;
+  --surface-2: #eceae3;
+  --surface-3: #e2dfd5;
+  --border-standard: #d8d5cc;
+  --border-frame: #c3bfb4;
+  --border-strong: #999487;
+  --ink: #1d1e1b;
+  --ink-muted: #4b4e46;
+  --ink-subtle: #696c63;
 
-  /* Text */
-  --ink: oklch(0.21 0.02 255);
-  --ink-muted: oklch(0.42 0.018 255);
-  --ink-subtle: oklch(0.52 0.014 255);
-  --ink-tertiary: oklch(0.62 0.012 255);
-
-  /* Brand */
-  --primary: oklch(0.43 0.08 258);
-  --primary-hover: oklch(0.37 0.08 258);
-  --primary-focus: oklch(0.43 0.08 258 / 0.4);
+  /* Brand and actions */
+  --primary: #292b26;
+  --primary-hover: #171815;
+  --primary-focus: rgb(41 43 38 / 0.28);
   --on-primary: #ffffff;
+  --brand: #4b6cb0;
+  --brand-hover: #3b5690;
+  --brand-soft: #e3e9f4;
+  --brand-foreground: #21375d;
 
   /* Sidebar */
-  --sidebar: oklch(0.955 0.003 255);
-  --sidebar-foreground: oklch(0.25 0.02 255);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--on-primary);
-  --sidebar-accent: oklch(0.945 0.005 258);
+  --sidebar: var(--surface-1);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--brand-soft);
   --sidebar-accent-foreground: var(--ink);
 
   /* Semantic states */
-  --success: oklch(0.55 0.12 150);
+  --success: #25613c;
   --success-foreground: #ffffff;
-  --warning: oklch(0.72 0.13 70);
-  --warning-foreground: var(--ink);
-  --destructive: oklch(0.52 0.18 25);
+  --warning: #9a5a0a;
+  --warning-foreground: #ffffff;
+  --destructive: #b33a2e;
   --destructive-foreground: #ffffff;
-  --info: oklch(0.5 0.13 250);
+  --info: #3e6478;
   --info-foreground: #ffffff;
 
   /* Charts */
-  --chart-1: oklch(0.48 0.085 258);
-  --chart-2: oklch(0.55 0.09 195);
-  --chart-3: oklch(0.62 0.085 70);
-  --chart-4: oklch(0.55 0.07 150);
-  --chart-5: oklch(0.5 0.06 230);
+  --chart-1: var(--brand);
+  --chart-2: #3f7450;
+  --chart-3: #b86745;
+  --chart-4: #527187;
+  --chart-5: #42443e;
 
   /* Semantic token map */
   --background: var(--canvas);
@@ -82,66 +105,67 @@
   --secondary: var(--surface-2);
   --secondary-foreground: var(--ink);
 
-  --accent: oklch(0.918 0.012 258);
-  --accent-foreground: var(--ink-muted);
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--brand-foreground);
 
-  --muted: var(--surface-3);
+  --muted: var(--surface-2);
   --muted-foreground: var(--ink-muted);
 
-  --border: var(--hairline);
-  --borderprimary: var(--primary);
-  --input: var(--hairline-strong);
+  --border: var(--border-standard);
+  --borderprimary: var(--border-strong);
+  --input: var(--border-standard);
 
-  --ring: var(--primary);
+  --ring: var(--brand);
 
   /* Onboarding */
-  --onboarding-gradient-start: oklch(0.25 0.04 255);
-  --onboarding-gradient-mid: oklch(0.18 0.03 255);
-  --onboarding-gradient-end: oklch(0.12 0.02 255);
-  --onboarding-text-muted: oklch(0.7 0.012 255);
-  --onboarding-text-footer: oklch(0.45 0.012 255);
-  --onboarding-icon-bg: oklch(0.43 0.08 258 / 0.15);
-  --onboarding-feature-text: oklch(0.8 0.01 255);
-  --onboarding-icon-dark: oklch(0.43 0.08 258);
+  --onboarding-gradient-start: #30312c;
+  --onboarding-gradient-mid: #242520;
+  --onboarding-gradient-end: #171815;
+  --onboarding-text-muted: #c9c5b8;
+  --onboarding-text-footer: #aaa596;
+  --onboarding-icon-bg: rgb(75 108 176 / 0.18);
+  --onboarding-feature-text: #eceae3;
+  --onboarding-icon-dark: var(--brand);
 
   /* Product Dialog */
   --product-label: var(--ink-muted);
   --product-value: var(--ink);
   --product-surface: var(--surface-1);
-  --product-surface-hover: var(--surface-3);
-  --product-divider: var(--hairline);
-  --product-badge-bg: oklch(0.33 0.07 258 / 0.08);
-  --product-badge-text: oklch(0.33 0.07 258);
+  --product-surface-hover: var(--surface-2);
+  --product-divider: var(--border-standard);
+  --product-badge-bg: var(--brand-soft);
+  --product-badge-text: var(--brand-foreground);
 
   /* Search Dropdown */
-  --search-highlight: oklch(0.85 0.16 80);
+  --search-highlight: oklch(93% 0.14 95);
   --search-icon-bg-from: var(--surface-1);
-  --search-icon-bg-to: var(--surface-3);
+  --search-icon-bg-to: var(--surface-2);
   --search-icon-fg: var(--primary);
 
   /* Product Badges */
-  --badge-mrp-border: oklch(0.68 0.12 75 / 0.35);
-  --badge-mrp-bg: oklch(0.68 0.12 75 / 0.1);
-  --badge-mrp-text: oklch(0.54 0.12 75);
+  --badge-mrp-border: #c4924c;
+  --badge-mrp-bg: #f5e7d0;
+  --badge-mrp-text: #72470d;
 
-  /* Invoice Template */
-  --invoice-bg: var(--surface-1);
-  --invoice-text: var(--ink);
-  --invoice-text-muted: var(--ink-muted);
-  --invoice-accent: var(--primary);
-  --invoice-border: var(--hairline);
-  --invoice-table-header-bg: var(--surface-3);
+  /* Invoice-only tokens: intentionally isolated from the screen theme. */
+  --invoice-bg: #ffffff;
+  --invoice-text: #171815;
+  --invoice-text-muted: #4b4e46;
+  --invoice-accent: #292b26;
+  --invoice-brand: var(--brand);
+  --invoice-border: #aaa596;
+  --invoice-table-header-bg: #eceae3;
 
   /* Shadows */
-  --shadow-xs: 0 1px 0 0 rgb(15 23 42 / 0.08);
-  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.09), 0 1px 1px 0 rgb(15 23 42 / 0.06);
-  --shadow-md: 0 4px 8px -2px rgb(15 23 42 / 0.12), 0 2px 4px -2px rgb(15 23 42 / 0.08);
-  --shadow-lg: 0 12px 24px -6px rgb(15 23 42 / 0.1), 0 4px 8px -4px rgb(15 23 42 / 0.06);
-  --shadow-xl: 0 20px 40px -8px rgb(15 23 42 / 0.14), 0 8px 16px -6px rgb(15 23 42 / 0.08);
-  --shadow-2xl: 0 32px 64px -12px rgb(15 23 42 / 0.18), 0 12px 24px -8px rgb(15 23 42 / 0.1);
+  --shadow-xs: 0 1px 2px rgb(29 30 27 / 0.08);
+  --shadow-sm: 0 2px 5px rgb(29 30 27 / 0.1);
+  --shadow-md: 0 8px 20px -6px rgb(29 30 27 / 0.22);
+  --shadow-lg: 0 16px 36px -10px rgb(29 30 27 / 0.28);
+  --shadow-xl: 0 24px 48px -12px rgb(29 30 27 / 0.32);
+  --shadow-2xl: 0 32px 64px -14px rgb(29 30 27 / 0.36);
 
   /* Radius */
-  --radius: 0.5rem;
+  --radius: var(--radius-panel);
   --spacing: 0.25rem;
 }
 
@@ -149,7 +173,6 @@
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
-  --font-roboto: var(--font-roboto);
 
   --color-background: var(--background);
   --color-background-secondary: var(--background-secondary);
@@ -162,7 +185,12 @@
   --color-popover-foreground: var(--popover-foreground);
 
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-foreground: var(--brand-foreground);
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -192,7 +220,8 @@
   --color-chart-5: var(--chart-5);
 
   --color-border: var(--border);
-  --color-frame: var(--frame);
+  --color-frame: var(--border-frame);
+  --color-border-strong: var(--border-strong);
   --color-borderprimary: var(--borderprimary);
   --color-input: var(--input);
 
@@ -234,6 +263,7 @@
   --color-invoice-text: var(--invoice-text);
   --color-invoice-text-muted: var(--invoice-text-muted);
   --color-invoice-accent: var(--invoice-accent);
+  --color-invoice-brand: var(--invoice-brand);
   --color-invoice-border: var(--invoice-border);
   --color-invoice-table-header-bg: var(--invoice-table-header-bg);
 
@@ -252,6 +282,14 @@
 }
 
 @layer base {
+  html,
+  body,
+  #root {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+  }
+
   ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -262,14 +300,14 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--hairline);
+    background-color: var(--border-standard);
     border-radius: var(--radius-sm);
     border: 2px solid transparent;
     background-clip: content-box;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background-color: var(--hairline-strong);
+    background-color: var(--border-strong);
     background-clip: content-box;
   }
 
@@ -290,12 +328,11 @@
   body {
     @apply bg-background text-foreground;
     font-weight: 400;
-    font-size: 14px;
+    font-size: var(--font-size-body);
     font-feature-settings: "cv05" 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     font-kerning: normal;
+    overflow: hidden;
   }
 
   h1,
@@ -313,8 +350,20 @@
   }
 
   ::selection {
-    background-color: oklch(0.43 0.08 258 / 0.16);
-    color: var(--ink);
+    background-color: var(--brand);
+    color: var(--on-primary);
+  }
+
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  :focus-visible {
+    scroll-margin: var(--gap-section);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -336,6 +385,9 @@
     body {
       margin: 0;
       padding: 0;
+      overflow: visible;
+      background: var(--invoice-bg);
+      color: var(--invoice-text);
     }
 
     .receipt {
@@ -348,6 +400,14 @@
   }
 }
 
+@media (max-height: 680px) {
+  :root {
+    --page-padding: 0.625rem;
+    --panel-padding: 0.625rem;
+    --gap-section: 0.625rem;
+  }
+}
+
 @utility scrollbar-none {
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -355,8 +415,34 @@
   }
 }
 
+@utility page-shell {
+  padding: var(--page-padding);
+}
+
+@utility panel-density {
+  padding: var(--panel-padding);
+}
+
+@utility financial-nums {
+  font-size: var(--font-size-financial);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+@utility billing-grid {
+  grid-template-columns:
+    minmax(4.25rem, 0.55fr) minmax(16rem, 3.4fr) minmax(8.5rem, 1.3fr)
+    minmax(7rem, 1fr) minmax(7.5rem, 1.15fr) minmax(3.5rem, 0.55fr);
+}
+
+@utility billing-grid-count {
+  grid-template-columns:
+    minmax(4.25rem, 0.55fr) minmax(14rem, 3fr) minmax(8.5rem, 1.3fr)
+    minmax(6.5rem, 1fr) minmax(7rem, 1.1fr) minmax(3.5rem, 0.55fr)
+    minmax(4.5rem, 0.7fr) minmax(5rem, 0.8fr);
+}
+
 body.dragging-active,
 body.dragging-active * {
   cursor: grabbing !important;
 }
-

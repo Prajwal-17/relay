@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import useReceiptPrint from "@/hooks/billing/useReceiptPrint";
 import useTransaction from "@/hooks/billing/useTransaction";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
@@ -70,7 +71,10 @@ export const SummaryFooter = () => {
   }, [waitForSync, navigate]);
 
   const handleExportPdf = useCallback(async () => {
-    if (!id || !type) return;
+    if (!id || !type) {
+      toast.error("Save this bill before exporting a PDF.");
+      return;
+    }
     setLoadingAction("pdf");
     try {
       const synced = await waitForSync();
@@ -88,7 +92,7 @@ export const SummaryFooter = () => {
                   window.exportApi.showItemInFolder(filePath);
                   toast.dismiss(t.id);
                 }}
-                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
+                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-sm font-medium transition-colors hover:underline"
               >
                 Open
                 <ArrowUpRight size={18} />
@@ -114,74 +118,50 @@ export const SummaryFooter = () => {
   }
 
   return (
-    <footer className="absolute right-6 bottom-1 z-20">
-      <div className="bg-background/80 border-border/50 flex items-center gap-6 rounded-lg border py-1.5 pr-1.5 pl-6 shadow-xl backdrop-blur-xs">
-        <div className="flex items-end gap-6">
-          <div className="flex items-end gap-2">
-            <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
-              Subtotal:
-            </span>
-            <span className="text-foreground text-lg font-semibold">{subtotal}</span>
-          </div>
-
-          <div className="bg-border/60 h-8 w-px shrink-0" />
-
-          <div className="flex items-end gap-2">
-            <span className="text-muted-foreground self-end text-sm font-semibold uppercase">
-              Total:
-            </span>
-            <span className="text-foreground bg-accent/40 rounded-md px-2 py-0.5 text-2xl font-bold tabular-nums">
-              {grandTotal}
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-border/60 h-8 w-px shrink-0" />
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="default"
-            className="hover:bg-primary/90 h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-semibold shadow-sm"
-            disabled={loadingAction !== null}
-            onClick={handleSaveAndPrint}
-          >
-            {loadingAction === "print" ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
-              <Printer size={18} />
-            )}
-            {loadingAction === "print" ? "Saving..." : "Save & Print"}
-          </Button>
-
-          <Button
-            variant="outline"
-            className="border-border/60 hover:bg-accent h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
-            disabled={loadingAction !== null}
-            onClick={handleSaveAndExit}
-          >
-            {loadingAction === "exit" ? (
-              <Loader2 size={18} className="text-muted-foreground animate-spin" />
-            ) : (
-              <Save size={18} className="text-muted-foreground" />
-            )}
-            {loadingAction === "exit" ? "Saving..." : "Save & Exit"}
-          </Button>
-
-          <Button
-            variant="outline"
-            className="border-border/60 hover:bg-accent h-10 cursor-pointer gap-3 rounded-lg px-5 text-base font-medium transition-colors"
-            disabled={loadingAction !== null}
-            onClick={handleExportPdf}
-          >
-            {loadingAction === "pdf" ? (
-              <Loader2 size={18} className="text-muted-foreground animate-spin" />
-            ) : (
-              <FileText size={18} className="text-muted-foreground" />
-            )}
-            {loadingAction === "pdf" ? "Saving..." : "Save PDF"}
-          </Button>
-        </div>
+    <footer className="bg-card border-t-frame flex h-[3.25rem] shrink-0 items-center justify-end gap-3 border-t px-3">
+      <div className="hidden items-baseline gap-1.5 min-[1100px]:flex">
+        <span className="text-muted-foreground text-xs font-medium">Subtotal</span>
+        <span className="text-sm font-semibold tabular-nums">{subtotal}</span>
       </div>
+
+      <div className="bg-border hidden h-6 w-px min-[1100px]:block" />
+
+      <div className="flex items-baseline gap-1.5 pr-1">
+        <span className="text-muted-foreground text-xs font-semibold">Total</span>
+        <span className="financial-nums text-foreground font-bold">{grandTotal}</span>
+      </div>
+
+      <div className="bg-border h-6 w-px" />
+
+      <Button
+        size="lg"
+        disabled={loadingAction !== null}
+        onClick={handleSaveAndPrint}
+        className={cn(
+          "min-w-36",
+          type === "sales"
+            ? "bg-success text-success-foreground hover:bg-success/90"
+            : "bg-info text-info-foreground hover:bg-info/90"
+        )}
+      >
+        {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
+        {loadingAction === "print" ? "Saving..." : "Save & Print"}
+      </Button>
+
+      <Button variant="outline" disabled={loadingAction !== null} onClick={handleSaveAndExit}>
+        {loadingAction === "exit" ? <Loader2 className="animate-spin" /> : <Save />}
+        {loadingAction === "exit" ? "Saving..." : "Save & Exit"}
+      </Button>
+
+      <Button
+        variant="outline"
+        disabled={loadingAction !== null}
+        onClick={handleExportPdf}
+        title={!id ? "Save the bill before exporting a PDF" : "Save as PDF"}
+      >
+        {loadingAction === "pdf" ? <Loader2 className="animate-spin" /> : <FileText />}
+        {loadingAction === "pdf" ? "Saving..." : "Save PDF"}
+      </Button>
     </footer>
   );
 };

@@ -16,8 +16,8 @@ import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
 import { useAppPreferences } from "../../../hooks/useAppPreferences";
 
-const inputClass = "h-12 text-base! font-medium";
-const selectTriggerClass = "h-11 text-base w-full";
+const inputClass = "text-sm font-medium";
+const selectTriggerClass = "w-full text-sm";
 const DESCRIPTION = "Where your files are saved.";
 const RESETTABLE_FIELDS_COUNT = 3;
 
@@ -68,7 +68,7 @@ export const ExportsSection = () => {
         }
         isResetting={isUpdating}
       >
-        <div className="flex h-11 items-center">
+        <div className="flex h-9 items-center">
           <Switch
             id="settings-ask-before-saving"
             checked={config.exports.askBeforeSavingPdf}
@@ -101,7 +101,7 @@ export const ExportsSection = () => {
           <Button
             id="settings-browse-folder"
             variant="outline"
-            className="h-11 shrink-0 px-5 text-base"
+            className="shrink-0 px-3 text-sm"
             onClick={handleBrowseFolder}
             disabled={isBrowsing || isUpdating}
           >
@@ -134,9 +134,7 @@ export const ExportsSection = () => {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="pdf" className="py-2.5 text-base">
-              PDF
-            </SelectItem>
+            <SelectItem value="pdf">PDF</SelectItem>
           </SelectContent>
         </Select>
       </SettingsField>

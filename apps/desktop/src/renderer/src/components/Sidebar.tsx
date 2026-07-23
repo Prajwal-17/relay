@@ -6,14 +6,13 @@ import { useSidebarStore } from "@/store/sidebarStore";
 import type { StoreProfile } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, ShoppingCart } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 
-const MIN_SIDEBAR_WIDTH = 220;
-const MAX_SIDEBAR_WIDTH = 400;
-const DEFAULT_SIDEBAR_WIDTH = 288;
+const MIN_SIDEBAR_WIDTH = 216;
+const MAX_SIDEBAR_WIDTH = 280;
+const DEFAULT_SIDEBAR_WIDTH = 232;
 const SIDEBAR_WIDTH_STORAGE_KEY = "quickcart-sidebar-width";
 
 const mainLinks = navLinks.filter((item) => item.href !== "/settings");
@@ -25,14 +24,6 @@ type SidebarProps = {
 
 export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   const { pathname } = useLocation();
-  const { id } = useParams();
-  const billingPages = [
-    "/billing/sales/create",
-    "/billing/estimates/create",
-    `/billing/sales/${id}/edit`,
-    `/billing/estimates/${id}/edit`
-  ];
-  const isBillingPage = billingPages.includes(pathname);
 
   const { data: storeProfile } = useQuery({
     queryKey: ["storeProfile"],
@@ -52,7 +43,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   const dragStartWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
   const sidebarWidthRef = useRef(DEFAULT_SIDEBAR_WIDTH);
   const animationFrameRef = useRef<number | null>(null);
-  const suppressHoverOpenUntilRef = useRef(0);
 
   const [sidebarWidth, setSidebarWidth] = useState(() => {
     if (typeof window === "undefined") {
@@ -73,7 +63,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
   const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
   const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
-  const isDndDragging = useSidebarStore((state) => state.isDndDragging);
 
   const applySidebarWidth = (width: number) => {
     if (!sidebarRef.current) {
@@ -106,7 +95,20 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   }, [isOverlay, setIsSidebarOpen, setIsSidebarPinned]);
 
   useEffect(() => {
-    if (!isBillingPage || !isOverlay) {
+    if (!isOverlay || !isSidebarOpen) return;
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsSidebarOpen(false);
+      setIsSidebarPinned(false);
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isOverlay, isSidebarOpen, setIsSidebarOpen, setIsSidebarPinned]);
+
+  useEffect(() => {
+    if (!isOverlay) {
       return;
     }
 
@@ -124,7 +126,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isBillingPage, isOverlay, isSidebarOpen, setIsSidebarOpen, setIsSidebarPinned]);
+  }, [isOverlay, isSidebarOpen, setIsSidebarOpen, setIsSidebarPinned]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -189,7 +191,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       return;
     }
 
-    suppressHoverOpenUntilRef.current = Date.now() + 350;
     setIsSidebarPinned(false);
     setIsSidebarOpen(false);
   };
@@ -204,6 +205,8 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
   const renderNavItem = (item: (typeof navLinks)[number]) => {
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const isSaleLink = item.href === "/dashboard/sales";
+    const isEstimateLink = item.href === "/dashboard/estimates";
 
     return (
       <Link
@@ -215,24 +218,32 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           }
         }}
         className={cn(
-          "relative flex h-12 w-full items-center gap-3 rounded-lg px-2.5 text-base font-medium transition-colors duration-150 outline-none",
+          "relative flex h-(--nav-row-height) w-full items-center gap-2 rounded-(--radius-control) px-2 text-sm font-medium transition-colors duration-150 outline-none",
           "focus-visible:ring-ring focus-visible:ring-offset-sidebar focus-visible:ring-2 focus-visible:ring-offset-2",
           isActive
-            ? "bg-accent text-accent-foreground font-semibold"
-            : "text-sidebar-foreground/70 hover:bg-accent/50 hover:text-sidebar-foreground"
+            ? isSaleLink
+              ? "bg-success/10 text-success font-semibold"
+              : isEstimateLink
+                ? "bg-info/10 text-info font-semibold"
+                : "bg-accent text-accent-foreground font-semibold"
+            : "text-sidebar-foreground/70 hover:bg-muted hover:text-sidebar-foreground"
         )}
       >
         <span
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors duration-150 [&_svg]:size-[22px]",
+            "flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) transition-colors duration-150 [&_svg]:size-4.5",
             isActive
-              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              ? isSaleLink
+                ? "bg-success text-success-foreground"
+                : isEstimateLink
+                  ? "bg-info text-info-foreground"
+                  : "bg-sidebar-primary text-sidebar-primary-foreground"
               : "bg-sidebar-accent text-sidebar-foreground/55"
           )}
         >
           {item.icon}
         </span>
-        <span className="truncate text-base">{item.title}</span>
+        <span className="truncate text-sm">{item.title}</span>
       </Link>
     );
   };
@@ -243,7 +254,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       onMouseLeave={handleBillingSidebarMouseLeave}
       className={cn(
         "bg-sidebar text-sidebar-foreground border-r-frame relative h-full shrink-0 overflow-hidden border-r",
-        isOverlay && "shadow-xl"
+        isOverlay && "shadow-lg"
       )}
       style={{
         width: sidebarWidth,
@@ -253,7 +264,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="border-b-frame flex h-14 shrink-0 items-center border-b px-4">
+        <div className="border-b-frame flex h-(--app-header-height) shrink-0 items-center border-b px-3">
           <Link
             to="/"
             onClick={() => {
@@ -261,9 +272,9 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
                 setIsSidebarOpen(false);
               }
             }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-2"
           >
-            <div className="bg-background border-frame flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border p-2 shadow-xs">
+            <div className="bg-background border-border flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) border p-1.5">
               <img
                 src={quickcartLogo}
                 alt="QuickCart logo"
@@ -271,54 +282,48 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               />
             </div>
             <div className="min-w-0">
-              <span className="block truncate text-lg font-semibold">QuickCart</span>
-              <span className="text-sidebar-foreground/55 block truncate text-sm">Workspace</span>
+              <span className="block truncate text-base font-semibold">QuickCart</span>
+              <span className="text-muted-foreground block truncate text-xs">
+                Counter workspace
+              </span>
             </div>
           </Link>
         </div>
 
-        <div className="flex flex-1 flex-col overflow-y-auto px-3 py-4">
-          <div className="flex flex-col gap-2">
-            <Link
-              to="/billing/sales/create"
-              className="block w-full"
-              onClick={handleBillingShortcutClick}
+        <div className="flex flex-1 flex-col overflow-y-auto px-2 py-3">
+          <div className="flex flex-col gap-1.5">
+            <Button
+              asChild
+              size="lg"
+              className="hover:bg-primary-hover h-10 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-semibold"
             >
-              <Button
-                variant="default"
-                size="lg"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
-              >
-                <ShoppingCart className="h-5 w-5" />
+              <Link to="/billing/sales/create" onClick={handleBillingShortcutClick}>
+                <ShoppingCart className="size-4.5" />
                 <span>New Sale</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
 
-            <Link
-              to="/billing/estimates/create"
-              className="block w-full"
-              onClick={handleBillingShortcutClick}
+            <Button
+              asChild
+              variant="outline"
+              className="border-info/40 bg-info/10 text-info hover:bg-info/15 h-9 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-medium"
             >
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-12 w-full cursor-pointer justify-center gap-2 px-4 text-base font-medium transition-[background-color,box-shadow] duration-150 hover:shadow-sm"
-              >
-                <FileText className="h-5 w-5" />
+              <Link to="/billing/estimates/create" onClick={handleBillingShortcutClick}>
+                <FileText className="size-4.5" />
                 <span>New Estimate</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
-          <nav className="mt-7 flex flex-col">
+          <nav className="mt-4 flex flex-col">
             <div className="flex flex-col">
-              <span className="text-sidebar-foreground/50 mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-sidebar-foreground/50 mb-1 px-2 text-xs font-semibold tracking-wide uppercase">
                 Main
               </span>
               <div className="flex flex-col gap-0.5">{mainLinks.map(renderNavItem)}</div>
             </div>
 
-            <div className="mt-6 flex flex-col">
+            <div className="mt-4 flex flex-col">
               <span className="text-sidebar-foreground/50 mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
                 System
               </span>
@@ -327,33 +332,48 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           </nav>
         </div>
 
-        <div className="border-t-frame shrink-0 border-t px-4 py-3">
+        <div className="border-t-frame shrink-0 border-t px-2 py-2">
           <Link
-            to="/settings"
+            to="/settings/store-profile"
             onClick={() => {
               if (isOverlay) {
                 setIsSidebarOpen(false);
               }
             }}
-            className="hover:bg-sidebar-accent flex h-14 items-center gap-3 rounded-xl px-3 py-2.5 transition-colors duration-150"
+            className="hover:bg-sidebar-accent flex h-11 items-center gap-2 rounded-(--radius-control) px-2 transition-colors duration-150"
           >
-            <div className="bg-success/15 text-success flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-              {storeInitials}
+            <div className="bg-brand-soft text-brand-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
+              {storeInitials || "QC"}
             </div>
             <div className="min-w-0">
               <span className="block truncate text-sm font-semibold">
-                {storeProfile?.storeName}
+                {storeProfile?.storeName || "Store profile"}
               </span>
               <span className="text-sidebar-foreground/55 block truncate text-xs">
-                {storeProfile?.email}
+                {storeProfile?.email || "Settings"}
               </span>
             </div>
           </Link>
         </div>
 
         <div
+          role="separator"
+          aria-label="Resize navigation"
+          aria-orientation="vertical"
+          aria-valuemin={MIN_SIDEBAR_WIDTH}
+          aria-valuemax={MAX_SIDEBAR_WIDTH}
+          aria-valuenow={Math.round(sidebarWidth)}
+          tabIndex={0}
           onMouseDown={handleResizeStart}
-          className="hover:bg-foreground/5 group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-200"
+          onKeyDown={(event) => {
+            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+            event.preventDefault();
+            const direction = event.key === "ArrowRight" ? 1 : -1;
+            setSidebarWidth((current) =>
+              Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, current + direction * 8))
+            );
+          }}
+          className="hover:bg-muted focus-visible:bg-brand group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 outline-none"
         >
           <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>
@@ -362,40 +382,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
   );
 
   if (isOverlay) {
-    return (
-      <>
-        {!isSidebarOpen && (
-          <div
-            className="fixed inset-y-0 left-0 z-40 w-4 lg:w-3"
-            onMouseEnter={() => {
-              if (isDndDragging) {
-                return;
-              }
-              if (Date.now() < suppressHoverOpenUntilRef.current) {
-                return;
-              }
-
-              setIsSidebarPinned(false);
-              setIsSidebarOpen(true);
-            }}
-          />
-        )}
-
-        <AnimatePresence initial={false}>
-          {isSidebarOpen && (
-            <motion.div
-              initial={{ x: -28, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -28, opacity: 0 }}
-              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-              className="fixed inset-y-0 left-0 z-50 transform-gpu"
-            >
-              {shell}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </>
-    );
+    return isSidebarOpen ? <div className="fixed inset-y-0 left-0 z-50">{shell}</div> : null;
   }
 
   return shell;

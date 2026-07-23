@@ -40,12 +40,12 @@ function MiniStat({
   icon: React.ReactNode;
 }) {
   return (
-    <div className="bg-card border-border/60 flex flex-col gap-1.5 rounded-lg border px-3 py-2.5 shadow-xs">
+    <div className="bg-card border-border/60 flex min-w-0 flex-col gap-1.5 overflow-hidden rounded-lg border px-3 py-2.5 shadow-xs">
       <div className="text-muted-foreground flex items-center gap-1.5">
         <span className="text-muted-foreground/80">{icon}</span>
         <span className="text-xs font-semibold tracking-wider uppercase">{label}</span>
       </div>
-      <span className="text-foreground text-base font-bold tracking-[-0.02em] tabular-nums">
+      <span className="text-foreground truncate text-sm font-bold tracking-[-0.02em] tabular-nums">
         {value}
       </span>
       {sub && <span className="text-muted-foreground text-xs font-medium">{sub}</span>}
@@ -165,7 +165,7 @@ function CustomerAccountBody({
       </section>
 
       {/* Balance tile */}
-      <section className="bg-card border-border/60 flex items-center justify-between gap-2 rounded-xl border p-4 shadow-xs">
+      <section className="bg-card border-border/60 flex min-w-0 items-center justify-between gap-3 rounded-xl border p-4 shadow-xs">
         <div className="flex min-w-0 items-center gap-3">
           <span
             className={cn(
@@ -185,7 +185,12 @@ function CustomerAccountBody({
           </div>
         </div>
         <div className="flex shrink-0 items-baseline justify-end gap-1">
-          <span className={cn("text-xl font-bold tracking-[-0.02em] tabular-nums", balanceTone)}>
+          <span
+            className={cn(
+              "text-lg font-bold tracking-[-0.02em] whitespace-nowrap tabular-nums",
+              balanceTone
+            )}
+          >
             {isSettled ? "Settled" : formatRupee(Math.abs(currentBalance))}
           </span>
         </div>

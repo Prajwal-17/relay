@@ -159,7 +159,7 @@ export const useProductSearch = (type: ProductSearchType) => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? searchResults.length + 1 : searchResults.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 95,
+    estimateSize: () => (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? 60 : 54),
     overscan: 8
   });
 

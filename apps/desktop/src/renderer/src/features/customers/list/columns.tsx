@@ -23,8 +23,10 @@ export const colSpans = [
 export function renderNameCell(row: CustomerListRow) {
   return (
     <div className="min-w-0">
-      <p className="text-foreground truncate text-sm font-semibold">{row.name}</p>
-      <p className="text-muted-foreground truncate text-sm">{row.contact ?? "No contact"}</p>
+      <p className="text-foreground truncate text-sm leading-tight font-semibold">{row.name}</p>
+      <p className="text-muted-foreground truncate text-xs leading-tight">
+        {row.contact ?? "No contact"}
+      </p>
     </div>
   );
 }
@@ -35,7 +37,7 @@ export function renderTypeCell(row: CustomerListRow) {
     <Badge
       variant="outline"
       className={cn(
-        "px-2 py-0.5 text-sm font-medium capitalize",
+        "px-1.5 py-0 text-xs font-medium capitalize",
         typeBadgeClass[t] ?? typeBadgeClass.cash
       )}
     >

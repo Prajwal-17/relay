@@ -53,7 +53,7 @@ export const useInfiniteScroll = (type: string) => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? transactionData.length + 1 : transactionData.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 60
+    estimateSize: () => 44
     // overscan: 5
   });
 

@@ -96,7 +96,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
   return (
     <section
       className={cn(
-        "bg-card border-border/60 flex h-full flex-col rounded-2xl border p-4 shadow-sm",
+        "bg-card border-border flex h-full flex-col rounded-(--radius-panel) border p-3",
         className
       )}
     >
@@ -137,7 +137,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
           </div>
         </div>
         <div className="relative">
-          <IndianRupee className="text-muted-foreground/70 pointer-events-none absolute top-1/2 left-3.5 size-5 -translate-y-1/2" />
+          <IndianRupee className="text-muted-foreground/70 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             type="number"
             inputMode="decimal"
@@ -146,7 +146,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
             value={amountReceived}
             onChange={(e) => handleAmountChange(e.target.value)}
             placeholder="0.00"
-            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring/50 bg-background placeholder:text-muted-foreground/60 h-12 [appearance:textfield] rounded-lg border pr-3 pl-10 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] focus-visible:ring-[3px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring/50 bg-background placeholder:text-muted-foreground/60 h-10 [appearance:textfield] rounded-(--radius-control) border pr-3 pl-9 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] focus-visible:ring-[3px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
           />
         </div>
       </div>
@@ -164,7 +164,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
                 type="button"
                 onClick={() => handlePaymentModeChange(value)}
                 className={cn(
-                  "flex h-9 cursor-pointer items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold capitalize transition-colors",
+                  "flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold capitalize transition-colors",
                   selected
                     ? "border-primary bg-primary text-primary-foreground shadow-sm"
                     : "border-border/70 bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -178,7 +178,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
         </div>
       </div>
 
-      <div className="bg-muted/40 border-border/70 mt-auto overflow-hidden rounded-xl border">
+      <div className="bg-muted/40 border-border/70 mt-auto overflow-hidden rounded-(--radius-panel) border">
         <div className="flex items-center justify-between px-3 py-1.5">
           <span className="text-muted-foreground text-xs font-medium">Bill Amount</span>
           <span className="text-foreground text-sm font-semibold tabular-nums">
@@ -196,7 +196,7 @@ const PaymentSection = ({ className }: PaymentSectionProps) => {
           <span className="text-foreground text-xs font-semibold">
             {isOverpaid ? "Change Due" : "Balance Due"}
           </span>
-          <span className={cn("text-2xl font-bold tabular-nums", statusStyle.amount)}>
+          <span className={cn("financial-nums text-xl font-bold", statusStyle.amount)}>
             {formatRupee(displayBalance)}
           </span>
         </div>

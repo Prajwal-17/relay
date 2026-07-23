@@ -88,9 +88,8 @@ export function DetailHeader({ customer }: { customer: Customer }) {
         </DropdownMenu>*/}
 
         <Button
-          variant="outline"
           size="sm"
-          className="cursor-pointer"
+          className="hover:bg-primary-hover cursor-pointer"
           onClick={() =>
             navigate("/billing/sales/create", {
               state: { prefillCustomer: { id: customer.id, name: customer.name } }

@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CompactCard as Card,
+  CompactCardContent as CardContent,
+  CompactCardHeader as CardHeader,
+  CardTitle
+} from "@/components/app-ui/compact-card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHomeDashboard } from "@/hooks/useHomeDashboard";
 import { apiClient } from "@/lib/apiClient";
@@ -38,11 +43,17 @@ export function RecentActivitiesTable() {
         <CardTitle className="text-xl">Recent Transactions</CardTitle>
         <Tabs value={type} onValueChange={(value) => setType(value as TransactionType)}>
           <TabsList>
-            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.SALE}>
+            <TabsTrigger
+              className="data-[state=active]:bg-success/10 data-[state=active]:text-success cursor-pointer"
+              value={TRANSACTION_TYPE.SALE}
+            >
               {TRANSACTION_TYPE.SALE.charAt(0).toUpperCase()}
               {TRANSACTION_TYPE.SALE.slice(1)}
             </TabsTrigger>
-            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.ESTIMATE}>
+            <TabsTrigger
+              className="data-[state=active]:bg-info/10 data-[state=active]:text-info cursor-pointer"
+              value={TRANSACTION_TYPE.ESTIMATE}
+            >
               {TRANSACTION_TYPE.ESTIMATE.charAt(0).toUpperCase()}
               {TRANSACTION_TYPE.ESTIMATE.slice(1)}
             </TabsTrigger>

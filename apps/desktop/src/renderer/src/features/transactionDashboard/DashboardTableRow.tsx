@@ -151,39 +151,39 @@ const DashboardTableRow = ({
           ) : null}
         </div>
       ) : (
-        <div className="hover:bg-accent border-border/70 grid grid-cols-12 items-center gap-2 border-b px-4 py-3.5 text-base transition-colors last:border-b-0">
+        <div className="hover:bg-accent border-border grid min-h-11 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors last:border-b-0">
           <div className="col-span-2 flex flex-col justify-center">
-            <span className="text-foreground text-base font-semibold tabular-nums">
+            <span className="text-foreground text-xs font-semibold tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).fullDate
                 : "-"}
             </span>
-            <span className="text-muted-foreground text-sm tabular-nums">
+            <span className="text-muted-foreground text-xs leading-tight tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).timePart
                 : "-"}
             </span>
           </div>
           <div className="col-span-3 flex items-center gap-2">
-            <div className="bg-accent text-accent-foreground flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold">
+            <div className="bg-accent text-accent-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
               {transaction.customerName.charAt(0).toUpperCase()}
             </div>
-            <span className="text-foreground truncate text-base font-medium">
+            <span className="text-foreground truncate text-sm font-medium">
               {transaction.customerName}
             </span>
           </div>
 
-          <div className="text-muted-foreground col-span-2 flex items-center text-base tabular-nums">
+          <div className="text-muted-foreground col-span-2 flex items-center text-sm tabular-nums">
             #{transaction.transactionNo}
           </div>
-          <div className="text-foreground col-span-2 flex items-center text-base font-semibold tabular-nums">
+          <div className="text-foreground col-span-2 flex items-center text-sm font-semibold tabular-nums">
             {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
           </div>
           <div className="col-span-1 flex items-center justify-start">
             {transaction.isPaid ? (
-              <Badge className="bg-success/10 text-success border-success/20 text-sm">Paid</Badge>
+              <Badge className="bg-success/10 text-success border-success/20 text-xs">Paid</Badge>
             ) : (
-              <Badge className="border-destructive/20 bg-destructive/10 text-destructive text-sm">
+              <Badge className="border-destructive/20 bg-destructive/10 text-destructive text-xs">
                 Unpaid
               </Badge>
             )}
@@ -192,9 +192,9 @@ const DashboardTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={handleView}
-                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
+                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
-                <Eye className="size-5" />
+                <Eye className="size-4" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-sm">View</p>
@@ -204,9 +204,9 @@ const DashboardTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={handleEdit}
-                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
+                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
-                <Edit className="size-5" />
+                <Edit className="size-4" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-sm">Edit</p>
@@ -216,9 +216,9 @@ const DashboardTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={() => setActiveDialog("delete")}
-                className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2"
+                className="hover:bg-accent text-destructive cursor-pointer rounded-md p-1.5"
               >
-                <Trash2 className="size-5" />
+                <Trash2 className="size-4" />
               </TooltipTrigger>
               <TooltipContent>
                 <p className="text-sm">Delete</p>
@@ -249,8 +249,8 @@ const DashboardTableRow = ({
             </AlertDialog>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2">
-                <MoreVertical className="size-5" />
+              <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5">
+                <MoreVertical className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-44" align="end">
                 <DropdownMenuItem
@@ -261,12 +261,12 @@ const DashboardTableRow = ({
                   {transaction.isPaid ? (
                     <>
                       <CircleOff className="mr-2 size-4" />
-                      <span className="text-base">Mark as unpaid</span>
+                      <span className="text-sm">Mark as unpaid</span>
                     </>
                   ) : (
                     <>
                       <CircleCheckBig className="mr-2 size-4" />
-                      <span className="text-base">Mark as paid</span>
+                      <span className="text-sm">Mark as paid</span>
                     </>
                   )}
                 </DropdownMenuItem>
@@ -276,7 +276,7 @@ const DashboardTableRow = ({
                   className="cursor-pointer"
                 >
                   <RefreshCcw className="mr-2 size-4" />
-                  <span className="text-base">Convert</span>
+                  <span className="text-sm">Convert</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
@@ -285,7 +285,7 @@ const DashboardTableRow = ({
                   disabled={duplicateMutation.isPending}
                 >
                   <Copy className="mr-2 size-4" />
-                  <span className="text-base">Duplicate</span>
+                  <span className="text-sm">Duplicate</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
@@ -300,12 +300,12 @@ const DashboardTableRow = ({
                   ) : (
                     <FileDown className="mr-2 size-4" />
                   )}
-                  <span className="text-base">{pdfLoading ? "Exporting…" : "Export PDF"}</span>
+                  <span className="text-sm">{pdfLoading ? "Exporting…" : "Export PDF"}</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem disabled>
                   <Printer className="mr-2 size-4" />
-                  <span className="text-base">Print</span>
+                  <span className="text-sm">Print</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

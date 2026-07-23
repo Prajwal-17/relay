@@ -6,13 +6,13 @@ import { motion } from "motion/react";
 // Mirrors index.css tokens (motion cannot tween CSS vars directly, so values
 // are duplicated — keep in sync with :root when tokens change).
 const STEP_COLORS = {
-  completed: "oklch(0.550 0.120 150)", // --success
-  active: "oklch(0.430 0.080 258)", // --primary
-  inactive: "oklch(0.940 0.004 255)", // --surface-2
-  activeBorder: "oklch(0.430 0.080 258 / 0.5)", // --ring
-  inactiveBorder: "oklch(0.870 0.004 255)", // --hairline
-  activeText: "oklch(0.210 0.020 255)", // --ink
-  inactiveText: "oklch(0.520 0.014 255)" // --ink-subtle
+  completed: "#25613c", // --success
+  active: "#4b6cb0", // --brand
+  inactive: "#eceae3", // --surface-2
+  activeBorder: "#3b5690", // --brand-hover
+  inactiveBorder: "#d8d5cc", // --border-standard
+  activeText: "#ffffff", // --on-primary
+  inactiveText: "#696c63" // --ink-subtle
 };
 
 type OnboardingStepperProps = {
@@ -52,7 +52,7 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
                 }}
                 transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 className={cn(
-                  "flex h-11 w-11 items-center justify-center rounded-full border-2 text-base font-semibold"
+                  "flex size-8 items-center justify-center rounded-full border text-sm font-semibold"
                 )}
               >
                 {isCompleted ? (
@@ -67,14 +67,14 @@ export const OnboardingStepper = ({ currentStep, totalSteps }: OnboardingStepper
                 animate={{
                   color: isActive ? STEP_COLORS.activeText : STEP_COLORS.inactiveText
                 }}
-                className="text-sm font-medium whitespace-nowrap"
+                className="text-xs font-medium whitespace-nowrap"
               >
                 {label}
               </motion.span>
             </div>
 
             {stepNum < formStepsTotal && (
-              <div className="bg-border mx-4 mb-6 h-0.5 w-16 overflow-hidden rounded-full">
+              <div className="bg-border mx-3 mb-5 h-0.5 w-12 overflow-hidden rounded-full">
                 <motion.div
                   animate={{ scaleX: isCompleted ? 1 : 0 }}
                   initial={{ scaleX: 0 }}

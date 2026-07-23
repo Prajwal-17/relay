@@ -24,12 +24,12 @@ export const SettingsField = ({
   const showMeta = defaultValue != null || showReset;
 
   return (
-    <div className="grid gap-3 py-5 lg:grid-cols-[minmax(0,1fr)_minmax(340px,460px)] lg:items-start">
+    <div className="grid gap-3 py-3 lg:grid-cols-[minmax(0,1fr)_minmax(300px,420px)] lg:items-start">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Label className="text-foreground text-base font-medium">{label}</Label>
+          <Label className="text-foreground text-sm font-medium">{label}</Label>
         </div>
-        {hint ? <p className="text-muted-foreground text-sm">{hint}</p> : null}
+        {hint ? <p className="text-muted-foreground text-xs">{hint}</p> : null}
       </div>
 
       <div className="w-full space-y-2">

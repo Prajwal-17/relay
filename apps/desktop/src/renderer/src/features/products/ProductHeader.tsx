@@ -60,16 +60,16 @@ export default function ProductHeader() {
     (hasPurchasePrice ? 1 : 0);
 
   return (
-    <div className="sticky top-0 z-10 space-y-2.5">
-      <div className="border-border bg-card flex items-center gap-3 rounded-xl border px-4 py-2.5 shadow-sm">
+    <div className="sticky top-0 z-10 space-y-2">
+      <div className="border-border bg-card flex items-center gap-2 rounded-(--radius-panel) border px-3 py-2">
         <div className="relative min-w-0 flex-1">
-          <Search className="text-muted-foreground absolute top-1/2 left-3.5 size-5 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4.5 -translate-y-1/2" />
           <Input
             ref={inputRef}
             placeholder="Search products…"
             value={productsSearchParam}
             onChange={(e) => setProductsSearchParam(e.target.value)}
-            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-11 rounded-xl border-transparent pr-11 pl-12 text-lg! font-medium shadow-none transition-colors"
+            className="bg-card focus-visible:border-ring h-10 rounded-(--radius-control) pr-10 pl-10 text-base font-medium shadow-none md:text-base"
           />
           {productsSearchParam && (
             <button
@@ -263,7 +263,7 @@ export default function ProductHeader() {
             setActionType("add");
             setOpenProductDialog();
           }}
-          className="bg-primary hover:bg-primary/85 text-primary-foreground h-10 cursor-pointer gap-2 rounded-lg px-4 text-sm font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+          className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
         >
           <Plus className="size-4" strokeWidth={2.5} />
           Add Product
@@ -271,8 +271,8 @@ export default function ProductHeader() {
       </div>
 
       {/* active filters */}
-      <div className="border-border/60 bg-card flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-2">
-        <div className="flex flex-wrap items-center gap-2.5">
+      <div className="border-border bg-card flex flex-wrap items-center justify-between gap-2 rounded-(--radius-panel) border px-3 py-1.5">
+        <div className="flex flex-wrap items-center gap-2">
           <FilterChip
             label="Status"
             value={PRODUCT_STATUS_OPTIONS.find((s) => s.value === filterType)?.label ?? filterType}

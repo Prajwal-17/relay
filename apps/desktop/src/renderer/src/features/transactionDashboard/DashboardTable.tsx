@@ -19,20 +19,20 @@ export const DashboardTable = () => {
   return (
     <>
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="text-muted-foreground pb-2 pl-1 text-sm font-medium">
+        <div className="text-muted-foreground pb-1.5 pl-1 text-xs font-medium">
           Showing <span className="text-foreground font-medium">{totalTransactions}</span> results
         </div>
 
         {status === "pending" ? (
-          <div className="bg-card border-border flex min-h-48 flex-1 items-center justify-center rounded-xl border shadow-xs">
+          <div className="bg-card border-border flex min-h-48 flex-1 items-center justify-center rounded-(--radius-panel) border">
             <div className="flex flex-col items-center gap-3">
               <LoaderCircle className="text-muted-foreground size-8 animate-spin" />
               <p className="text-muted-foreground text-sm">Loading transactions…</p>
             </div>
           </div>
         ) : (
-          <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
-            <div className="bg-muted text-muted-foreground grid grid-cols-12 items-center gap-2 px-4 py-3 text-base font-semibold">
+          <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
+            <div className="bg-muted text-muted-foreground grid h-9 grid-cols-12 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer</div>
               <div className="col-span-2 flex items-center">
@@ -48,7 +48,7 @@ export const DashboardTable = () => {
             </div>
 
             {transactionData.length > 0 ? (
-              <div ref={parentRef} className="min-h-0 flex-1 overflow-auto scroll-smooth">
+              <div ref={parentRef} className="min-h-0 flex-1 overflow-auto overscroll-contain">
                 <div
                   style={{
                     height: `${rowVirtualizer.getTotalSize()}px`,

@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CompactCard as Card,
+  CompactCardContent as CardContent,
+  CompactCardHeader as CardHeader,
+  CardTitle
+} from "@/components/app-ui/compact-card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import {
   Select,
@@ -45,11 +50,11 @@ export function SalesEstimateChart() {
   }, [error, isError]);
 
   return (
-    <Card className="py-4">
+    <Card>
       <CardHeader className="flex flex-row items-center justify-between">
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
           <CardTitle className="text-base">Sales vs Estimates</CardTitle>
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1">
               <div className="bg-chart-1 h-2.5 w-2.5 rounded-sm" />
               <span className="text-muted-foreground text-sm font-medium">Sales</span>
@@ -83,7 +88,7 @@ export function SalesEstimateChart() {
         {isSuccess && data && (
           <>
             {data.length <= 0 ? (
-              <div className="border-muted bg-secondary flex h-75 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
+              <div className="border-muted bg-secondary flex h-68 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
                 <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
                   <ChartColumnIncreasing className="text-muted-foreground" />
                 </div>
@@ -96,10 +101,10 @@ export function SalesEstimateChart() {
               </div>
             ) : (
               <div>
-                <ChartContainer config={chartConfig} className="h-75 w-full">
+                <ChartContainer config={chartConfig} className="h-68 w-full">
                   <BarChart
                     data={data}
-                    margin={{ top: 20, right: 10, bottom: 20, left: 0 }}
+                    margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
                     maxBarSize={40}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />

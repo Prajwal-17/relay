@@ -120,3 +120,9 @@ If that fails:
 ```bash
 rm -rf node_modules && pnpm install
 ```
+
+## Desktop display contract
+
+QuickCart targets a provisional **1280 × 650 effective CSS viewport at 100% Electron zoom**, with **1024 × 600** as the supported fallback. The application window is sized from the display work area with content-size-aware bounds. Production hides the native menu bar by default; Alt reveals it, and zoom commands remain available through shortcuts and Settings.
+
+The supported zoom preference is 85%–125%; 100% is recommended. Before shop deployment, record the laptop’s effective inner viewport, device-pixel ratio, OS scaling, and Electron zoom, then validate the route matrix in [docs/DESIGN.md](docs/DESIGN.md).

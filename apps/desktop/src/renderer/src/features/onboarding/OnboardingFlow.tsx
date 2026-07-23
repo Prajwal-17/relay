@@ -28,47 +28,47 @@ export const OnboardingFlow = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.2 }}
       className="bg-background-secondary fixed inset-0 z-50 flex items-stretch"
     >
       {/* left panel */}
-      <div className="from-onboarding-gradient-start via-onboarding-gradient-mid to-onboarding-gradient-end relative hidden w-[44%] shrink-0 flex-col justify-between overflow-hidden bg-linear-to-br p-14 lg:flex">
+      <div className="from-onboarding-gradient-start via-onboarding-gradient-mid to-onboarding-gradient-end relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden bg-linear-to-br p-8 lg:flex">
         <div className="bg-primary pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-20 blur-3xl" />
 
         <div className="relative z-10 flex items-center gap-3.5">
           <img
             src={quickcartLogo}
             alt={`${PRODUCT_NAME} logo`}
-            className="h-12 w-auto rounded-xl object-contain"
+            className="h-10 w-auto rounded-(--radius-panel) object-contain"
           />
-          <span className="text-2xl font-bold tracking-tight text-white">{PRODUCT_NAME}</span>
+          <span className="text-xl font-bold tracking-tight text-white">{PRODUCT_NAME}</span>
         </div>
 
-        <div className="relative z-10 flex flex-col gap-10">
-          <div className="flex flex-col gap-4">
-            <h2 className="text-5xl leading-tight font-bold text-white">
+        <div className="relative z-10 flex flex-col gap-6">
+          <div className="flex flex-col gap-3">
+            <h2 className="text-4xl leading-tight font-bold text-white">
               Billing made{" "}
               <span className="text-primary inline-block rounded-lg px-1">effortless</span>
             </h2>
-            <p className="text-onboarding-text-muted text-lg leading-relaxed">
+            <p className="text-onboarding-text-muted text-sm leading-relaxed">
               Set up your store once. Track Customers, Generate invoices, and grow your business all
               without an internet connection.
             </p>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {ONBOARDING_FEATURES.map(({ icon: Icon, text }, i) => (
               <motion.div
                 key={text}
                 initial={{ opacity: 0, x: -16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: 0.1 + i * 0.08, ease: [0.23, 1, 0.32, 1] }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-3"
               >
-                <div className="bg-onboarding-icon-bg flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                <div className="bg-onboarding-icon-bg flex size-8 shrink-0 items-center justify-center rounded-(--radius-control)">
                   <Icon className="text-primary h-5 w-5" />
                 </div>
-                <span className="text-onboarding-feature-text text-base font-medium">{text}</span>
+                <span className="text-onboarding-feature-text text-sm font-medium">{text}</span>
               </motion.div>
             ))}
           </div>
@@ -80,7 +80,7 @@ export const OnboardingFlow = () => {
       </div>
 
       {/* right panel */}
-      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto p-10 lg:p-16">
+      <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto p-6 lg:p-8">
         <div className="w-full max-w-lg">
           {/* steps */}
           <AnimatePresence>
@@ -90,7 +90,7 @@ export const OnboardingFlow = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
-                className="mb-10"
+                className="mb-5"
               >
                 <OnboardingStepper currentStep={currentStep} totalSteps={ONBOARDING_STEPS} />
               </motion.div>

@@ -42,7 +42,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setProductId = useProductsStore((state) => state.setProductId);
 
   const { config } = useAppPreferences();
-  const scale = config?.billing?.searchDropdown?.scale ?? 1;
+  const dropdownScale = config?.billing?.searchDropdown?.scale ?? 1;
 
   const {
     dropdownRef,
@@ -163,7 +163,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       }
 
       // img preview card
-      const PREVIEW_SIZE = 144 * scale;
+      const PREVIEW_SIZE = 112 * dropdownScale;
       setPreviewStyle({
         position: "fixed",
         top: rowRect.top + rowRect.height / 2 - PREVIEW_SIZE / 2,
@@ -174,7 +174,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     } else {
       setPreviewStyle({ display: "none" });
     }
-  }, [delayedPreviewProduct, hoveredIndex, parentRef, scale]);
+  }, [delayedPreviewProduct, dropdownScale, hoveredIndex, parentRef]);
 
   useEffect(() => {
     updatePreviewPosition();
@@ -195,7 +195,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     const el = dropdownContainerRef.current;
     if (!el) return;
     el.style.scrollMarginBottom = "10rem";
-    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    el.scrollIntoView({ block: "nearest" });
   }, []);
 
   const openNewProductDialog = () => {
@@ -318,8 +318,11 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               transition={{ type: "spring", stiffness: 600, damping: 35 }}
               style={previewStyle}
             >
-              <div className="relative h-36 w-36" style={{ zoom: scale }}>
-                <div className="ring-border h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1">
+              <div
+                className="relative"
+                style={{ width: 112 * dropdownScale, height: 112 * dropdownScale }}
+              >
+                <div className="ring-border h-full w-full overflow-hidden rounded-(--radius-panel) shadow-md ring-1">
                   <img
                     src={`${PROTOCOL_NAME}${delayedPreviewProduct.imageUrl}`}
                     alt="Preview"
@@ -332,7 +335,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                     initial={{ opacity: 0, y: 3 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                    className="bg-foreground text-card font-roboto absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
+                    className="bg-foreground text-card absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
                   >
                     {delayedPreviewProduct.weight}
                     {delayedPreviewProduct.unit}
@@ -348,11 +351,15 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          style={{ zoom: scale }}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-[10.7%] z-30 flex max-h-96 w-[64%] flex-col overflow-hidden rounded-2xl border shadow-xl"
+          style={
+            {
+              "--search-dropdown-max-height": `${Math.round(352 * dropdownScale)}px`
+            } as React.CSSProperties
+          }
+          className="bg-popover border-frame absolute top-[calc(100%+0.25rem)] right-[clamp(3.5rem,7%,6rem)] left-[clamp(4.25rem,7%,6rem)] z-30 flex max-h-[min(var(--search-dropdown-max-height),calc(100dvh-8rem))] flex-col overflow-hidden rounded-(--radius-panel) border shadow-lg"
         >
           {searchResults.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
+            <div className="text-muted-foreground flex flex-col items-center px-4 py-4 text-center">
               <div className="bg-muted/70 mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
                 <Search className="h-6 w-6 opacity-60" />
               </div>
@@ -360,19 +367,15 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               <p className="mb-5 max-w-sm text-sm font-medium">
                 Add the product now and continue billing without leaving this screen.
               </p>
-              <Button
-                variant="outline"
-                onClick={openNewProductDialog}
-                className="h-11 cursor-pointer rounded-xl px-5 text-sm font-semibold shadow-none"
-              >
+              <Button variant="outline" onClick={openNewProductDialog} className="cursor-pointer">
                 <PackagePlus className="mr-2 h-4 w-4" />
                 New Product
               </Button>
             </div>
           ) : (
             <>
-              <div className="border-border/70 bg-background flex shrink-0 items-center gap-3 border-b px-3.5 py-2">
-                <div className="text-muted-foreground flex items-center gap-1.5 text-sm font-semibold">
+              <div className="border-border/70 bg-background flex h-8 shrink-0 items-center gap-2 border-b px-2.5">
+                <div className="text-muted-foreground flex items-center gap-1 text-xs font-semibold">
                   <ListFilter className="h-3.5 w-3.5" />
                   Sort by
                 </div>
@@ -391,7 +394,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => toggleSort(field)}
-                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold transition ${
+                            className={`inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-2 text-xs font-semibold transition-colors ${
                               isActive
                                 ? "bg-foreground text-background"
                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -415,7 +418,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 </div>
               </div>
 
-              <div ref={parentRef} className="flex-1 overflow-y-auto scroll-smooth py-1">
+              <div ref={parentRef} className="flex-1 overflow-y-auto py-1">
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
@@ -438,10 +441,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
+                            className={`group flex min-h-13 items-center gap-2 rounded-(--radius-control) border px-2 py-1.5 transition-[background-color,border-color] duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
-                                ? "border-foreground bg-foreground/6 ring-foreground/15 ring-1"
-                                : "hover:bg-accent border-transparent"
+                                ? "border-frame bg-accent"
+                                : "hover:bg-muted border-transparent"
                             }`}
                             onClick={() => {
                               if (!activeTabId) return;
@@ -474,7 +477,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
                                   <div className="mb-1 flex items-center gap-2">
-                                    <h4 className="text-foreground truncate text-lg font-semibold">
+                                    <h4 className="text-foreground truncate text-sm font-semibold">
                                       <HighlightedText text={product.name} query={itemQuery} />
                                     </h4>
                                     {product.weight !== null &&
@@ -500,7 +503,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   </div>
                                 </div>
                                 <div className="shrink-0 text-right">
-                                  <span className="text-success text-xl font-bold">
+                                  <span className="text-success text-base font-bold">
                                     ₹ {paisaToRupeeString(product.price)}
                                   </span>
                                 </div>
@@ -513,7 +516,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="outline"
                                     size="icon"
-                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    className="text-muted-foreground hover:text-foreground size-8 shrink-0 cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setProductId(product.id);
@@ -537,7 +540,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="outline"
                                     size="icon"
-                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg transition-all duration-150 active:scale-[0.95]"
+                                    className="text-muted-foreground hover:text-foreground size-8 shrink-0 cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setProductId(product.id);
@@ -561,7 +564,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-muted-foreground/70 hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    className="text-muted-foreground hover:text-foreground size-8 shrink-0 cursor-pointer"
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
@@ -587,11 +590,9 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   </div>
                 </div>
                 {!hasNextPage && searchResults.length > 0 && (
-                  <div className="text-muted-foreground flex flex-col items-center py-10 text-center">
-                    <div className="text-2xl font-medium">No more products</div>
-                    <p className="mt-2 text-base opacity-75">
-                      You&apos;ve reached the end of the list
-                    </p>
+                  <div className="text-muted-foreground flex flex-col items-center py-4 text-center">
+                    <div className="text-sm font-medium">End of product list</div>
+                    <p className="mt-1 text-xs">You&apos;ve reached the end of the list</p>
                   </div>
                 )}
               </div>

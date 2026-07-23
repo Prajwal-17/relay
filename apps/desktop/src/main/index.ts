@@ -1,5 +1,5 @@
 import { is } from "@electron-toolkit/utils";
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, screen } from "electron";
 import { fork, type ChildProcess } from "node:child_process";
 import path, { join, resolve } from "node:path";
 import { initDb } from "./db/db";
@@ -93,11 +93,18 @@ function createWindow(): void {
   const store = appStore;
   const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
 
+  const { width: workAreaWidth, height: workAreaHeight } = screen.getPrimaryDisplay().workAreaSize;
+  const contentWidth = Math.min(1280, Math.max(1024, workAreaWidth - 24));
+  const contentHeight = Math.min(650, Math.max(600, workAreaHeight - 72));
+
   mainWindow = new BrowserWindow({
     show: false,
-    height: 768,
-    width: 1366,
-    autoHideMenuBar: false,
+    width: contentWidth,
+    height: contentHeight,
+    minWidth: 1024,
+    minHeight: 600,
+    useContentSize: true,
+    autoHideMenuBar: !isDevBuild,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
@@ -130,7 +137,7 @@ function createWindow(): void {
     // mainWindow.maximize();
   });
 
-  import("./setupMenu").then(({ setupMenu }) => setupMenu());
+  import("./setupMenu").then(({ setupMenu }) => setupMenu({ autoHideMenuBar: !isDevBuild }));
 
   // catch keyboard events
   // https://stackoverflow.com/a/75716165/25649886

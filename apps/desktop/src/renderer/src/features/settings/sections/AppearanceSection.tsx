@@ -85,11 +85,11 @@ export const AppearanceSection = () => {
     <SettingsSection title="Appearance" description={DESCRIPTION}>
       <SettingsField
         label="Zoom level"
-        hint="Adjust the zoom level of the app."
+        hint="100% is recommended. Use zoom only for personal readability."
         defaultValue="100%"
         onReset={handleReset}
       >
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span className="text-muted-foreground w-12 text-right text-sm tabular-nums">
             {minPercent}%
           </span>
@@ -105,7 +105,7 @@ export const AppearanceSection = () => {
           <span className="text-muted-foreground w-12 text-sm tabular-nums">{maxPercent}%</span>
         </div>
         <div className="mt-1 text-center">
-          <span className="text-foreground text-base font-semibold tabular-nums">
+          <span className="text-foreground text-sm font-semibold tabular-nums">
             {sliderPercent}%
           </span>
         </div>

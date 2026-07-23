@@ -1,39 +1,21 @@
-import { Input } from "@/components/ui/input";
-import { PanelLeftClose, PanelLeftOpen, Search } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useSidebarStore } from "@/store/sidebarStore";
+import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Outlet, matchPath, useLocation } from "react-router-dom";
 import { Sidebar } from "../Sidebar";
+import { BillingSidebar } from "./BillingSidebar";
+
+const COMPACT_SHELL_QUERY = "(max-width: 1119px)";
 
 const getPageTitle = (pathname: string) => {
-  if (matchPath("/", pathname)) {
-    return "Dashboard";
-  }
-
-  if (matchPath("/products", pathname)) {
-    return "Products";
-  }
-
-  if (matchPath("/customers", pathname)) {
-    return "Customers";
-  }
-
-  if (matchPath("/dashboard/sales", pathname)) {
-    return "Sales Overview";
-  }
-
-  if (matchPath("/dashboard/estimates", pathname)) {
-    return "Estimates Overview";
-  }
-
-  if (matchPath("/reports", pathname)) {
-    return "Reports";
-  }
-
-  if (matchPath("/settings/*", pathname)) {
-    return "Settings";
-  }
-
+  if (matchPath("/", pathname)) return "Dashboard";
+  if (matchPath("/products", pathname)) return "Products";
+  if (matchPath("/customers", pathname)) return "Customers";
+  if (matchPath("/dashboard/sales", pathname)) return "Sales Overview";
+  if (matchPath("/dashboard/estimates", pathname)) return "Estimates Overview";
+  if (matchPath("/reports", pathname)) return "Reports";
+  if (matchPath("/settings/*", pathname)) return "Settings";
   return "Workspace";
 };
 
@@ -42,65 +24,71 @@ const AppShell = () => {
   const pageTitle = getPageTitle(pathname);
   const isBillingPage = pathname.startsWith("/billing/");
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isCompactViewport, setIsCompactViewport] = useState(
+    () => window.matchMedia(COMPACT_SHELL_QUERY).matches
+  );
+  const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
+  const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
+  const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
+
+  useEffect(() => {
+    const media = window.matchMedia(COMPACT_SHELL_QUERY);
+    const handleChange = (event: MediaQueryListEvent) => setIsCompactViewport(event.matches);
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
+  const usesOverlaySidebar = !isBillingPage && isCompactViewport;
+  const isNavigationOpen = usesOverlaySidebar ? isSidebarOpen : isSidebarVisible;
+
+  const toggleSidebar = () => {
+    if (usesOverlaySidebar) {
+      const nextOpen = !isSidebarOpen;
+      setIsSidebarPinned(nextOpen);
+      setIsSidebarOpen(nextOpen);
+      return;
+    }
+    setIsSidebarVisible((current) => !current);
+  };
 
   return (
-    <div className="bg-background flex h-screen w-full overflow-hidden">
-      {!isBillingPage && (
-        <AnimatePresence initial={false}>
-          {isSidebarVisible && (
-            <motion.div
-              initial={{ width: 0, opacity: 0, x: -28 }}
-              animate={{ width: "auto", opacity: 1, x: 0 }}
-              exit={{ width: 0, opacity: 0, x: -28 }}
-              transition={{ duration: 0.35, ease: [0.23, 1, 0.32, 1] }}
-              className="origin-left·transform-gpu h-full shrink-0 overflow-hidden"
-            >
-              <Sidebar />
-            </motion.div>
-          )}
-        </AnimatePresence>
+    <div className="bg-background flex h-full w-full overflow-hidden">
+      {isBillingPage && <BillingSidebar />}
+
+      {!isBillingPage && !usesOverlaySidebar && isSidebarVisible && (
+        <div className="h-full shrink-0 overflow-hidden">
+          <Sidebar />
+        </div>
       )}
 
-      {isBillingPage && <Sidebar variant="overlay" />}
+      {!isBillingPage && usesOverlaySidebar && <Sidebar variant="overlay" />}
 
       <main className="flex min-w-0 flex-1 flex-col">
         {!isBillingPage && (
-          <header className="bg-background/95 border-b-frame flex h-14 items-center border-b px-6">
-            <div className="flex w-full items-center justify-between gap-6">
-              <div className="flex min-w-0 items-center gap-3">
-                <motion.button
-                  type="button"
-                  whileHover={{ y: -1 }}
-                  whileTap={{ scale: 0.97 }}
-                  transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                  onClick={() => setIsSidebarVisible((current) => !current)}
-                  className="text-muted-foreground hover:text-foreground hover:bg-accent/60 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-all duration-150 active:scale-[0.97]"
-                >
-                  {isSidebarVisible ? (
-                    <PanelLeftClose className="h-5 w-5" />
-                  ) : (
-                    <PanelLeftOpen className="h-5 w-5" />
-                  )}
-                </motion.button>
-
-                <div className="min-w-0 flex-1">
-                  <h1 className="truncate text-xl font-semibold">{pageTitle}</h1>
-                </div>
-              </div>
-
-              <div className="relative ml-auto w-full max-w-md">
-                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2" />
-                <Input
-                  type="text"
-                  placeholder="Search anything..."
-                  className="bg-muted/60 h-10 pl-12 text-base"
-                />
-              </div>
+          <header className="bg-card border-b-frame flex h-(--app-header-height) shrink-0 items-center border-b px-3">
+            <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                aria-label={isNavigationOpen ? "Close navigation" : "Open navigation"}
+                className={cn(
+                  "text-muted-foreground hover:text-foreground hover:bg-accent inline-flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) transition-colors outline-none",
+                  "focus-visible:ring-ring/30 focus-visible:ring-2"
+                )}
+              >
+                {(!usesOverlaySidebar && isSidebarVisible) ||
+                (usesOverlaySidebar && isSidebarOpen) ? (
+                  <PanelLeftClose className="size-4.5" />
+                ) : (
+                  <PanelLeftOpen className="size-4.5" />
+                )}
+              </button>
+              <h1 className="truncate text-lg font-semibold tracking-[-0.02em]">{pageTitle}</h1>
             </div>
           </header>
         )}
 
-        <section className="flex-1 overflow-y-auto">
+        <section className="min-h-0 flex-1 overflow-y-auto">
           <Outlet />
         </section>
       </main>

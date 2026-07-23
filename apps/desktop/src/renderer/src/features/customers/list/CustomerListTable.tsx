@@ -49,7 +49,7 @@ export function CustomerListTable({
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? rows.length + 1 : rows.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 64
+    estimateSize: () => 44
   });
 
   const virtualItems = rowVirtualizer.getVirtualItems();
@@ -94,8 +94,8 @@ export function CustomerListTable({
   const isEmpty = status === "success" && rows.length === 0;
 
   return (
-    <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
-      <div className="bg-muted text-muted-foreground grid grid-cols-11 items-center gap-2 px-4 py-2.5 text-sm font-semibold">
+    <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
+      <div className="bg-muted text-muted-foreground grid h-9 grid-cols-11 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
         {colInfo.map((c, i) => (
           <div key={i} className={cn("flex", c.span, c.align)}>
             {c.label}
@@ -211,7 +211,7 @@ export function CustomerListTable({
                         onClick={() => onRowClick(row)}
                         className={cn(
                           "border-border/70 hover:bg-accent relative w-full border-b text-left transition-colors",
-                          "grid cursor-pointer grid-cols-11 items-center gap-2 px-4 py-3 text-sm",
+                          "grid min-h-11 cursor-pointer grid-cols-11 items-center gap-2 px-3 py-1 text-sm",
                           "last:border-b-0",
                           virtualRow.index === activeIndex && "bg-accent"
                         )}
@@ -247,7 +247,7 @@ export function CustomerListTable({
             </div>
 
             {!hasNextPage && rows.length > 0 && (
-              <div className="text-muted-foreground flex flex-col items-center py-4 text-center">
+              <div className="text-muted-foreground flex flex-col items-center py-2 text-center">
                 <span className="text-sm font-medium">No more customers</span>
               </div>
             )}

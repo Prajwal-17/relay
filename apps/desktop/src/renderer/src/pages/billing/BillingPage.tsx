@@ -129,16 +129,15 @@ const BillingPage = () => {
   return (
     <div className="flex h-full flex-col">
       <BillingTabBar />
-      <div className="flex flex-1 gap-2 overflow-hidden">
-        <div className="bg-background-secondary relative flex h-full flex-1 flex-col">
-          <div className="flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        <div className="bg-background-secondary relative flex min-w-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
-            <div className="mx-4 mt-3 mb-2 grid grid-cols-1 gap-3 lg:grid-cols-5">
+            <div className="mx-3 mt-2 mb-3 grid grid-cols-1 gap-2 lg:grid-cols-5">
               <BillingNotes className={isSale ? "lg:col-span-2" : "lg:col-span-5"} />
               {isSale && <PaymentSection className="lg:col-span-3" />}
             </div>
-            <div className="h-24 w-full shrink-0" aria-hidden="true" />
           </div>
           <SummaryFooter />
         </div>

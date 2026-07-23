@@ -143,13 +143,17 @@ export const CustomerNameInput = () => {
         <Button
           variant="outline"
           role="combobox"
-          className="border-border/60 hover:bg-accent h-10 w-96 justify-between bg-transparent px-4 text-base font-normal"
+          className="h-9 w-full min-w-0 justify-between px-3 text-sm font-normal"
         >
           <span className="truncate">{customerName ? customerName : "Select Customer..."}</span>
-          <ChevronsUpDown className="ml-3 h-5 w-5 shrink-0 opacity-40" />
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="z-40 w-96 p-0" align="start" onKeyDown={onKeyDown}>
+      <PopoverContent
+        className="z-40 w-(--radix-popover-trigger-width) min-w-80 p-0"
+        align="start"
+        onKeyDown={onKeyDown}
+      >
         <div className="border-border/70 shrink-0 border-b px-2 py-1.5">
           <div className="relative">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
@@ -176,11 +180,7 @@ export const CustomerNameInput = () => {
           </div>
         </div>
 
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="max-h-[220px] shrink-0 overflow-auto"
-        >
+        <div ref={scrollRef} onScroll={handleScroll} className="max-h-55 shrink-0 overflow-auto">
           {isPending ? (
             <div className="flex items-center justify-center py-6">
               <LoaderCircle className="text-muted-foreground size-4 animate-spin" />

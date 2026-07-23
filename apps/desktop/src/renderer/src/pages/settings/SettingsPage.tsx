@@ -3,9 +3,9 @@ import { settingsNavigation } from "../../features/settings/settingsNavigation";
 
 const SettingsPage = () => {
   return (
-    <div className="bg-background h-full px-4 py-4 lg:px-6">
-      <div className="mx-auto h-full w-full max-w-280">
-        <div className="grid h-full gap-20 lg:grid-cols-[240px_minmax(0,1fr)]">
+    <div className="bg-background h-full p-3">
+      <div className="mx-auto h-full w-full max-w-260">
+        <div className="grid h-full gap-6 lg:grid-cols-[200px_minmax(0,1fr)]">
           <aside className="sticky top-0 grid h-fit gap-1.5" aria-label="Settings sections">
             {settingsNavigation.map((item) => (
               <NavLink
@@ -13,8 +13,10 @@ const SettingsPage = () => {
                 to={item.id}
                 className={({ isActive }) =>
                   [
-                    "rounded-xl px-4 py-3 text-lg leading-tight font-medium transition-colors",
-                    isActive ? "bg-foreground text-background" : "text-foreground hover:bg-muted/70"
+                    "flex h-9 items-center rounded-(--radius-control) px-3 text-sm leading-tight font-medium transition-colors",
+                    isActive
+                      ? "bg-foreground text-background"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   ].join(" ")
                 }
               >

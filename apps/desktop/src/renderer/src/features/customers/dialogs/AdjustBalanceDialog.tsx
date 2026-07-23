@@ -55,8 +55,8 @@ export function AdjustBalanceDialog({
                 onClick={() => setDirection("due")}
                 className={
                   direction === "due"
-                    ? "border-destructive/25 bg-destructive/10 text-destructive h-12 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
-                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-12 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    ? "border-destructive/25 bg-destructive/10 text-destructive h-9 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
+                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
                 Add Due
@@ -66,8 +66,8 @@ export function AdjustBalanceDialog({
                 onClick={() => setDirection("paid")}
                 className={
                   direction === "paid"
-                    ? "border-success/25 bg-success/15 text-success h-12 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
-                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-12 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    ? "border-success/25 bg-success/15 text-success h-9 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
+                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
                 Record Payment
@@ -84,7 +84,7 @@ export function AdjustBalanceDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-12 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="h-9 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
@@ -95,7 +95,7 @@ export function AdjustBalanceDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Reason for adjustment…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-14 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
             />
           </div>
         </div>

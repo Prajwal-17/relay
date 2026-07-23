@@ -341,7 +341,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
                         <td
                           key={cell.id}
                           className={cn(
-                            "h-14 px-4 align-middle",
+                            "h-11 px-3 align-middle",
                             meta?.width,
                             meta?.align === TXN_TABLE_ALIGN.RIGHT
                               ? "text-right"

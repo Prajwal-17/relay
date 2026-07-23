@@ -33,16 +33,16 @@ export const SettingsSection = ({
   const canReset = resettableFieldsCount != null && onResetSection != null;
 
   return (
-    <section className="border-border bg-card rounded-xl border shadow-xs">
-      <header className="border-border/70 border-b px-6 py-5">
-        <h2 className="text-foreground text-xl font-semibold tracking-[-0.02em]">{title}</h2>
+    <section className="border-frame bg-card rounded-(--radius-panel) border">
+      <header className="border-border border-b px-4 py-3">
+        <h2 className="text-foreground text-lg font-semibold tracking-[-0.02em]">{title}</h2>
         <p className="text-muted-foreground mt-1 text-sm">{description}</p>
       </header>
 
-      <div className="divide-border/70 divide-y px-6">{children}</div>
+      <div className="divide-border divide-y px-4">{children}</div>
 
       {canReset ? (
-        <footer className="border-border/70 flex justify-end border-t px-6 py-4">
+        <footer className="border-border flex justify-end border-t px-4 py-3">
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" disabled={isResetting}>

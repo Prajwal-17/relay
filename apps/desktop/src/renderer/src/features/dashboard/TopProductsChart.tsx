@@ -1,4 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CompactCard as Card,
+  CompactCardContent as CardContent,
+  CompactCardHeader as CardHeader,
+  CardTitle
+} from "@/components/app-ui/compact-card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { apiClient } from "@/lib/apiClient";
 import type { TopProductDataPoint } from "@shared/types";
@@ -41,7 +46,7 @@ export const TopProductsChart = () => {
   }, [data]);
 
   return (
-    <Card className="h-full py-4">
+    <Card className="h-full">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-base">Top Products</CardTitle>
       </CardHeader>
@@ -52,13 +57,13 @@ export const TopProductsChart = () => {
             <LoaderCircle className="text-primary animate-spin" size={18} />
           </div>
         ) : colorizedData.length === 0 ? (
-          <div className="text-muted-foreground flex h-75 items-center justify-center">
+          <div className="text-muted-foreground flex h-68 items-center justify-center">
             No data available
           </div>
         ) : (
           <>
             {colorizedData.length > 0 && (
-              <ChartContainer config={chartConfig} className="h-75 w-full">
+              <ChartContainer config={chartConfig} className="h-68 w-full">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Pie
@@ -67,7 +72,7 @@ export const TopProductsChart = () => {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={100}
+                    outerRadius={88}
                     label={({ name, value }) => `${name}: ${value}%`}
                   >
                     {colorizedData.map((entry, index) => (

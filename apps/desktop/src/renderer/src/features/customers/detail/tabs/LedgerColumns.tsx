@@ -16,8 +16,8 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { isWithinTwoDays } from "@shared/utils/dateUtils";
 
 const typePillClass: Record<LedgerEntryType, string> = {
-  [LEDGER_ENTRY_TYPE.SALE]: "border-info/25 bg-info/15 text-info",
-  [LEDGER_ENTRY_TYPE.QUICK_SALE]: "border-primary/25 bg-primary/15 text-primary",
+  [LEDGER_ENTRY_TYPE.SALE]: "border-success/25 bg-success/10 text-success",
+  [LEDGER_ENTRY_TYPE.QUICK_SALE]: "border-success/25 bg-success/10 text-success",
   [LEDGER_ENTRY_TYPE.PAYMENT]: "border-success/25 bg-success/15 text-success",
   [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "border-warning/30 bg-warning/15 text-warning",
   [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "bg-secondary text-muted-foreground border-border"

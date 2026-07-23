@@ -121,7 +121,7 @@ export function ProductTransactionsTable() {
                   delay: idx * 0.025,
                   ease: [0.23, 1, 0.32, 1]
                 }}
-                className="hover:bg-muted/40 bg-card border-border/50 grid grid-cols-12 gap-4 border-b px-6 py-3 text-lg"
+                className="hover:bg-muted/40 bg-card border-border/50 grid min-h-11 grid-cols-12 items-center gap-3 border-b px-3 py-1 text-sm"
               >
                 <div className="col-span-2 flex flex-col items-start justify-center">
                   <span className="text-foreground text-base font-semibold">
@@ -136,8 +136,8 @@ export function ProductTransactionsTable() {
                   <span
                     className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold tracking-wide ${
                       txn.type === TRANSACTION_TYPE.SALE
-                        ? "bg-product-badge-bg text-product-badge-text"
-                        : "bg-secondary text-secondary-foreground"
+                        ? "bg-success/10 text-success"
+                        : "bg-info/10 text-info"
                     }`}
                   >
                     {txn.type === TRANSACTION_TYPE.SALE ? "Sale" : "Estimate"}
@@ -192,7 +192,7 @@ export function ProductTransactionsTable() {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center justify-between px-6 py-3">
+      <div className="flex shrink-0 items-center justify-between px-3 py-2">
         <p className="text-muted-foreground text-sm">
           Showing <span className="text-foreground font-medium">{startItem}</span>–
           <span className="text-foreground font-medium">{endItem}</span> of{" "}

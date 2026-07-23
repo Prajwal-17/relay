@@ -9,6 +9,7 @@ import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatINR, formatRupee, paisaToRupees } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { useQuery } from "@tanstack/react-query";
+import { FileWarning, LoaderCircle } from "lucide-react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 export default function PdfInvoicePage() {
@@ -31,16 +32,25 @@ export default function PdfInvoicePage() {
 
   if (isLoading) {
     return (
-      <div className="bg-background flex h-screen w-full items-center justify-center">
-        <p className="text-muted-foreground animate-pulse">Loading ...</p>
+      <div className="bg-background flex h-screen w-full items-center justify-center p-3">
+        <div className="border-border bg-card flex min-w-56 flex-col items-center gap-3 rounded-(--radius-panel) border p-4">
+          <LoaderCircle className="text-brand size-7 animate-spin" />
+          <p className="text-muted-foreground text-sm font-medium">Preparing invoice…</p>
+        </div>
       </div>
     );
   }
 
   if (!transaction) {
     return (
-      <div className="bg-background flex h-screen w-full items-center justify-center">
-        <p className="text-destructive font-semibold">Transaction not found</p>
+      <div className="bg-background flex h-screen w-full items-center justify-center p-3">
+        <div className="border-border bg-card flex min-w-64 flex-col items-center gap-2 rounded-(--radius-panel) border p-4 text-center">
+          <FileWarning className="text-destructive size-6" />
+          <p className="text-foreground text-sm font-semibold">Transaction not found</p>
+          <p className="text-muted-foreground text-xs">
+            Close this window and try exporting again.
+          </p>
+        </div>
       </div>
     );
   }
@@ -107,7 +117,7 @@ export default function PdfInvoicePage() {
         </div>
 
         <div className="mb-6 flex flex-col gap-0.5 text-sm">
-          <p className="text-invoice-text-muted text-[10px] font-semibold tracking-wider uppercase">
+          <p className="text-invoice-text-muted text-xs font-semibold tracking-wider uppercase">
             Billed To:
           </p>
           <p className="text-invoice-text text-xs">

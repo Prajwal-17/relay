@@ -85,7 +85,7 @@ export function ProductHistoryTimeline() {
 
   return (
     <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-2xl px-8 py-6">
+      <div className="mx-auto w-full max-w-2xl p-4">
         <div className="mb-6">
           <h3 className="text-foreground flex items-center gap-2 text-2xl font-bold tracking-tight">
             Pricing History
@@ -115,8 +115,8 @@ export function ProductHistoryTimeline() {
                     {entry.createdAt ? formatDateStrToISTDateTimeStr(entry.createdAt) : "-"}
                   </div>
 
-                  <div className="bg-card/70 border-border/40 hover:border-border/80 overflow-hidden rounded-2xl border shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
-                    <div className="flex flex-col gap-0 px-6 py-4">
+                  <div className="bg-card/70 border-border/40 hover:border-border/80 overflow-hidden rounded-(--radius-panel) border transition-colors">
+                    <div className="flex flex-col gap-0 px-3 py-2">
                       <DiffRow
                         label="Selling Price"
                         oldVal={entry.oldPrice}

@@ -77,14 +77,6 @@ export const router = createHashRouter([
             element: <BillingPage />
           },
           {
-            path: ":type/create",
-            element: <BillingPage />
-          },
-          {
-            path: ":type/:id/edit",
-            element: <BillingPage />
-          },
-          {
             path: ":type/:id/edit",
             element: <BillingPage />
           }

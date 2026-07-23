@@ -23,16 +23,7 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
-import {
-  CheckCheck,
-  ChevronDown,
-  PackagePlus,
-  PanelRightClose,
-  PanelRightOpen,
-  Plus,
-  Search,
-  X
-} from "lucide-react";
+import { CheckCheck, ChevronDown, Columns3, PackagePlus, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SortableLineItemRow } from "./LineItemRow";
 
@@ -142,152 +133,121 @@ const LineItemsTable = () => {
   };
 
   return (
-    <div className="mx-4">
-      <div className="border-border/70 bg-background relative w-full flex-1 rounded-xl border px-4 pb-4 shadow-lg">
-        <div className="bg-muted sticky top-0 z-10 mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3">
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={openNewProductDialog}
-            className="border-border bg-background hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
-          >
-            <PackagePlus className="mr-2 h-4 w-4" />
-            New Product
+    <section className="mx-3 mt-2">
+      <div className="border-frame bg-card w-full overflow-visible rounded-(--radius-panel) border px-2 pb-2">
+        <div className="bg-card sticky top-0 z-10 flex h-11 items-center gap-2 border-b">
+          <Button variant="outline" size="sm" onClick={openNewProductDialog}>
+            <PackagePlus />
+            New product
           </Button>
 
-          <div className="relative w-64 min-w-0">
-            <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <div className="relative w-52 min-w-36">
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search items…"
-              className="border-muted bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-10 rounded-lg pr-9 pl-9 text-sm shadow-none transition-colors"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Find bill item…"
+              className="h-8 pr-8 pl-8"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2 rounded-sm p-0.5"
+                aria-label="Clear item search"
               >
-                <X className="size-4" />
+                <X className="size-3.5" />
               </button>
             )}
           </div>
 
-          <div className="ml-auto flex flex-wrap items-center gap-x-5 gap-y-2">
-            <div className="text-muted-foreground flex flex-wrap items-center gap-x-5 gap-y-1 text-base font-medium">
-              <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Items</span>
-                <span className="text-foreground text-lg font-semibold">{totalItems}</span>
-              </div>
-              <div className="bg-border/80 hidden h-5 w-px md:block" />
-              <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Qty</span>
-                <span className="text-foreground text-lg font-semibold">{totalQty}</span>
-              </div>
-              <div className="bg-border/80 hidden h-5 w-px md:block" />
-              <div className="flex items-center gap-2">
-                <span className="tracking-wider uppercase">Checked</span>
-                {allChecked ? (
-                  <span className="text-success flex items-center gap-1.5 text-base font-semibold">
-                    <CheckCheck className="h-4 w-4" />
-                    All Checked
-                  </span>
-                ) : (
-                  <span
-                    className={`text-base font-semibold ${
-                      totalChecked > 0 ? "text-warning" : "text-foreground"
-                    }`}
-                  >
-                    {totalChecked} / {totalQty}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-border/80 bg-muted/60 hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold shadow-none"
-                >
-                  Actions
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end" className="min-w-44 rounded-xl p-1">
-                <DropdownMenuItem
-                  onClick={() => {
-                    const tabId = getActiveTabId();
-                    if (!tabId) return;
-                    setAllChecked(tabId, true);
-                    processSyncQueue(tabId);
-                  }}
-                  className="text-success/80 focus:text-success cursor-pointer px-3 py-2.5 text-sm font-medium"
-                >
-                  <CheckCheck className="mr-2 h-4 w-4" />
-                  Check All
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
-                  onClick={() => {
-                    const tabId = getActiveTabId();
-                    if (!tabId) return;
-                    setAllChecked(tabId, false);
-                    processSyncQueue(tabId);
-                  }}
-                  className="text-destructive/80 focus:text-destructive cursor-pointer px-3 py-2.5 text-sm font-medium"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  Uncheck All
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              variant="ghost"
-              onClick={() => {
-                const tabId = getActiveTabId();
-                if (!tabId) return;
-                updateField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
-              }}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 h-10 cursor-pointer rounded-xl px-4 text-sm font-semibold"
-              title={isCountColumnVisible ? "Hide count column" : "Show count column"}
-            >
-              {isCountColumnVisible ? (
-                <PanelRightClose className="mr-2 h-4 w-4" />
-              ) : (
-                <PanelRightOpen className="mr-2 h-4 w-4" />
-              )}
-              Count
-            </Button>
+          <div className="text-muted-foreground ml-auto flex items-center gap-3 text-xs font-medium tabular-nums">
+            <span>
+              Items <strong className="text-foreground ml-1">{totalItems}</strong>
+            </span>
+            <span>
+              Qty <strong className="text-foreground ml-1">{totalQty}</strong>
+            </span>
+            <span className={allChecked ? "text-success" : totalChecked > 0 ? "text-warning" : ""}>
+              Checked{" "}
+              <strong className="ml-1">
+                {allChecked ? "All" : String(totalChecked) + "/" + String(totalQty)}
+              </strong>
+            </span>
           </div>
+
+          <Button
+            type="button"
+            variant={isCountColumnVisible ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => {
+              const tabId = getActiveTabId();
+              if (!tabId) return;
+              updateField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
+            }}
+            aria-pressed={isCountColumnVisible}
+            className="gap-1.5"
+          >
+            <Columns3 />
+            {isCountColumnVisible ? "Count on" : "Count off"}
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                Actions
+                <ChevronDown />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-44">
+              <DropdownMenuItem
+                onClick={() => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
+                  setAllChecked(tabId, true);
+                  processSyncQueue(tabId);
+                }}
+              >
+                <CheckCheck />
+                Check all
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const tabId = getActiveTabId();
+                  if (!tabId) return;
+                  setAllChecked(tabId, false);
+                  processSyncQueue(tabId);
+                }}
+              >
+                <X />
+                Uncheck all
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div
-          className={`text-muted-foreground border-border/80 grid items-center border-b border-dashed px-2 pb-2 text-sm font-semibold tracking-wider uppercase ${
-            isCountColumnVisible ? "grid-cols-23" : "grid-cols-19"
-          }`}
+          className={
+            isCountColumnVisible
+              ? "billing-grid-count text-muted-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
+              : "billing-grid text-muted-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
+          }
         >
-          <div className="col-span-2 px-3 text-center">#</div>
-          <div className="col-span-7 px-4 text-left">Item</div>
-          <div className="col-span-3 px-4 text-left">Qty</div>
-          <div className="col-span-3 px-4 text-left">Price</div>
-          <div className="col-span-3 px-4 text-left">Amount</div>
-          {isCountColumnVisible ? (
+          <div className="text-center">Row</div>
+          <div>Product</div>
+          <div className="text-center">Quantity</div>
+          <div className="text-right">Price</div>
+          <div className="text-right">Amount</div>
+          <div className="text-center">Checked</div>
+          {isCountColumnVisible && (
             <>
-              <div className="col-span-1 px-2 text-center">Box</div>
-              <div className="col-span-2 px-2 text-center">Count</div>
-              <div className="col-span-2 px-2 text-center">Adjust</div>
+              <div className="text-center">Count</div>
+              <div className="text-center">Adjust</div>
             </>
-          ) : (
-            <div className="col-span-1 px-2 text-center">Box</div>
           )}
         </div>
 
-        <div className="relative space-y-1 pt-2.5">
+        <div className="relative space-y-1 py-1">
           <DndContext
             sensors={sensors}
             collisionDetection={collisionDetection}
@@ -296,13 +256,13 @@ const LineItemsTable = () => {
             onDragCancel={handleDragCancel}
           >
             <SortableContext
-              items={visibleItems.map((i) => i.rowId)}
+              items={visibleItems.map((item) => item.rowId)}
               strategy={verticalListSortingStrategy}
             >
-              {visibleItems.map((item: LineItem, idx: number) => (
+              {visibleItems.map((item: LineItem, index: number) => (
                 <SortableLineItemRow
                   key={item.rowId}
-                  idx={idx}
+                  idx={index}
                   item={item}
                   isCountColumnVisible={isCountColumnVisible}
                   disableDrag={isSearchActive}
@@ -312,28 +272,26 @@ const LineItemsTable = () => {
           </DndContext>
 
           {isSearchActive && visibleItems.length === 0 && (
-            <div className="text-muted-foreground py-8 text-center text-sm">
+            <div className="text-muted-foreground py-6 text-center text-sm">
               No items match &ldquo;{searchQuery}&rdquo;.
             </div>
           )}
 
-          <div className="flex items-center justify-between px-1 pt-1">
-            <Button
-              size="lg"
-              onClick={() => {
-                const tabId = getActiveTabId();
-                if (!tabId) return;
-                addEmptyLineItem(tabId, "button");
-              }}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground h-10 cursor-pointer rounded-xl px-5 text-sm font-semibold shadow-md"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Row
-            </Button>
-          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              const tabId = getActiveTabId();
+              if (!tabId) return;
+              addEmptyLineItem(tabId, "button");
+            }}
+            className="mt-1"
+          >
+            <Plus />
+            Add row
+          </Button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

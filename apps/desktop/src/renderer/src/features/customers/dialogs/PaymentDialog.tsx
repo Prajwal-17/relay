@@ -76,7 +76,7 @@ export function PaymentDialog({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder=""
-                className="border-ring/20 focus-visible:border-ring h-14 [appearance:textfield] overflow-hidden border-2 pr-20 text-2xl! font-semibold tracking-[-0.02em] text-ellipsis tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="border-ring/20 focus-visible:border-ring h-10 [appearance:textfield] overflow-hidden border-2 pr-20 text-xl! font-semibold tracking-[-0.02em] text-ellipsis tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
               {outstanding > 0 && (
                 <button
@@ -93,7 +93,7 @@ export function PaymentDialog({
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="pay-mode">Payment Mode</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
-              <SelectTrigger id="pay-mode" className="h-12">
+              <SelectTrigger id="pay-mode" className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -113,7 +113,7 @@ export function PaymentDialog({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Optional note…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-14 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
             />
           </div>
 

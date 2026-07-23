@@ -9,7 +9,7 @@ import toast from "react-hot-toast";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
 
-const inputClass = "h-12 text-base! font-medium";
+const inputClass = "text-sm font-medium";
 
 const DESCRIPTION = "Details about your shop.";
 
@@ -169,10 +169,10 @@ export const StoreProfileSection = () => {
           onChange={(e) => updateField("gstin", e.target.value || null)}
         />
       </SettingsField>
-      <div className="flex justify-end py-5">
+      <div className="flex justify-end py-3">
         <Button
           id="settings-save-profile"
-          className="h-11 px-6 text-base"
+          className="px-4 text-sm"
           onClick={handleSave}
           disabled={!isDirty || mutation.isPending}
         >

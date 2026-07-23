@@ -154,7 +154,7 @@ export function CustomerFormDialog({
         onInteractOutside={(e) => saving && e.preventDefault()}
         className="bg-card flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-xl"
       >
-        <div className="border-border/70 flex items-center justify-between border-b px-6 py-4">
+        <div className="border-border/70 flex items-center justify-between border-b px-4 py-3">
           <div>
             <h2 className="text-foreground text-lg font-bold tracking-tight">
               {mode === "add" ? "New Customer" : "Edit Customer"}
@@ -175,8 +175,8 @@ export function CustomerFormDialog({
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+        <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-3">
             <div className="col-span-2">
               <FormField
                 label="Name"
@@ -187,7 +187,7 @@ export function CustomerFormDialog({
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
                   placeholder="Enter customer name"
-                  className="h-12 text-xl! font-bold"
+                  className="h-9 text-sm! font-semibold"
                 />
               </FormField>
             </div>
@@ -199,13 +199,13 @@ export function CustomerFormDialog({
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="10-digit phone"
-                className="h-12 text-lg! font-semibold tabular-nums"
+                className="h-9 text-sm! font-medium tabular-nums"
               />
             </FormField>
 
             <FormField label="Type">
               <Select value={form.customerType} onValueChange={(v) => set("customerType", v)}>
-                <SelectTrigger className="text-md h-12 font-semibold">
+                <SelectTrigger className="h-9 text-sm font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -230,7 +230,7 @@ export function CustomerFormDialog({
                 onChange={(e) => set("creditLimit", onlyUnsignedDecimal(e.target.value))}
                 onFocus={selectOnFocus}
                 placeholder="0"
-                className="h-12 text-lg! font-semibold tabular-nums"
+                className="h-9 text-sm! font-medium tabular-nums"
               />
             </FormField>
 
@@ -241,7 +241,7 @@ export function CustomerFormDialog({
                 onChange={(e) => set("outstandingBalance", onlySignedDecimal(e.target.value))}
                 onFocus={selectOnFocus}
                 placeholder="0"
-                className="h-12 text-lg! font-semibold tabular-nums"
+                className="h-9 text-sm! font-medium tabular-nums"
               />
             </FormField>
 
@@ -251,24 +251,24 @@ export function CustomerFormDialog({
                   value={form.address}
                   onChange={(e) => set("address", e.target.value)}
                   placeholder="Street, area, city, state, PIN"
-                  className="min-h-24 resize-y text-lg font-semibold"
+                  className="min-h-16 resize-y text-sm font-medium"
                 />
               </FormField>
             </div>
           </div>
         </div>
 
-        <div className="border-border/70 flex items-center justify-end gap-3 border-t px-6 py-4">
+        <div className="border-border/70 flex items-center justify-end gap-3 border-t px-4 py-3">
           <Button
             variant="outline"
-            className="h-11 cursor-pointer px-6 text-base font-semibold"
+            className="h-9 cursor-pointer px-4 text-sm font-semibold"
             onClick={onClose}
             disabled={saving}
           >
             Cancel
           </Button>
           <Button
-            className="hover:bg-primary-hover h-11 cursor-pointer px-6 text-base font-semibold"
+            className="hover:bg-primary-hover h-9 cursor-pointer px-4 text-sm font-semibold"
             disabled={!canSave || saving}
             onClick={handleSave}
           >

@@ -102,14 +102,14 @@ export function ProductDialog() {
         onKeyDownCapture={(e) => {
           if (productMutation.isPending) e.preventDefault();
         }}
-        className="flex h-[88vh] max-h-screen w-full min-w-7xl flex-col overflow-hidden p-0"
+        className="flex h-[min(760px,calc(100dvh-1.5rem))] w-[calc(100vw-1.5rem)] min-w-0 flex-col overflow-hidden p-0 sm:max-w-6xl"
       >
         <Tabs
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as InitialTab)}
           className="flex h-full flex-col gap-0"
         >
-          <div className="border-border/50 bg-background/50 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b px-7 py-3 backdrop-blur-md">
+          <div className="border-border bg-card grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-2">
             <div className="min-w-0 pr-2">
               <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
                 {isAddMode ? "New Product" : productName || "Product Details"}
@@ -144,24 +144,24 @@ export function ProductDialog() {
             </div>
 
             <div className="flex shrink-0 justify-center">
-              <TabsList className="bg-secondary/60 border-border/40 flex h-auto w-full gap-1 rounded-3xl border p-1 shadow-xs sm:w-fit">
+              <TabsList className="bg-secondary/60 border-border/40 flex h-9 w-full gap-1 rounded-(--radius-control) border p-0.5 sm:w-fit">
                 <TabsTrigger
                   value={INITIAL_TAB.INFO}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
                 >
                   <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   Product Info
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.HISTORY}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
                 >
                   <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   History
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.TRANSACTIONS}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-full px-5 py-2 text-[0.95rem] font-bold tracking-wide transition-all data-[state=active]:shadow-md sm:flex-none"
+                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
                 >
                   <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
                   Transactions
@@ -306,17 +306,17 @@ export function ProductDialog() {
                         initial={{ opacity: 0, x: -16 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.05, ease: [0.23, 1, 0.32, 1] }}
-                        className="border-border bg-background-secondary hidden w-[35%] shrink-0 overflow-y-auto border-r p-7 md:block"
+                        className="border-border bg-background-secondary hidden w-[34%] shrink-0 overflow-y-auto border-r p-4 xl:block"
                       >
                         <ProductPreview />
                       </motion.div>
 
-                      <div className="flex min-h-0 flex-1 flex-col p-6">
+                      <div className="flex min-h-0 flex-1 flex-col p-4">
                         <ProductEditForm />
                       </div>
                     </motion.div>
                   ) : (
-                    <motion.div key="view" className="h-full overflow-y-auto px-7 py-6">
+                    <motion.div key="view" className="h-full overflow-y-auto p-4">
                       <ProductViewMode />
                     </motion.div>
                   )}

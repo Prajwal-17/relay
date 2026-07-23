@@ -417,7 +417,12 @@ export function CustomerTxnTable({
               state: { prefillCustomer: { id: customerId, name: customerName } }
             })
           }
-          className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
+          className={cn(
+            "h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold",
+            type === TRANSACTION_TYPE.SALE
+              ? "hover:bg-primary-hover"
+              : "bg-info text-info-foreground hover:bg-info/90"
+          )}
         >
           <Plus className="size-4" />
           {addLabel}
@@ -500,7 +505,7 @@ export function CustomerTxnTable({
                         <td
                           key={cell.id}
                           className={cn(
-                            "h-14 px-4 align-middle",
+                            "h-11 px-3 align-middle",
                             meta?.width,
                             meta?.align === "right"
                               ? "text-right"

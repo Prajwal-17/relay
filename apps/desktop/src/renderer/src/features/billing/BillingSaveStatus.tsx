@@ -13,7 +13,7 @@ export const BillingSaveStatus = () => {
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-base font-semibold ring-1 transition-colors duration-300",
+        "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-semibold ring-1 transition-colors duration-150",
         currentStatus === "saving" && "bg-info/15 text-info ring-info/25",
         currentStatus === "saved" && "bg-success/15 text-success ring-success/25",
         currentStatus === "unsaved" && "bg-warning/15 text-warning ring-warning/25",
@@ -30,7 +30,7 @@ export const BillingSaveStatus = () => {
       {currentStatus === "saved" && (
         <>
           <CheckCircle2 size={15} />
-          <span>Saved Changes</span>
+          <span>Saved</span>
         </>
       )}
 

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ViewModal } from "@/features/dashboard/ViewModal";
 import { DashboardCard } from "@/features/transactionDashboard/DashboardCard";
 import { useInfiniteScroll } from "@/hooks/dashboard/useInfiniteScroll";
+import { cn } from "@/lib/utils";
 import { useViewModalStore } from "@/store/viewModalStore";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";
@@ -17,49 +18,50 @@ const Dashboard = ({ type }: { type: DashboardType }) => {
   const transactionId = useViewModalStore((state) => state.transactionId);
 
   return (
-    <>
-      <div className="bg-background flex h-full flex-1 flex-col overflow-hidden px-6 py-4">
-        <div className="mb-3 flex items-center justify-between gap-4">
-          <div className="bg-card flex w-full items-center gap-6 rounded-lg border px-4 py-2.5">
-            <div className="flex items-center gap-2">
-              <div className="bg-success/15 text-success flex size-8 items-center justify-center rounded-md">
-                <IndianRupee className="size-4" />
-              </div>
-              <span className="text-muted-foreground text-sm font-medium">Revenue</span>
-              <span className="text-foreground text-lg font-semibold tabular-nums">
-                {formatRupee(totalRevenue ?? 0)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="bg-secondary text-secondary-foreground flex size-8 items-center justify-center rounded-md">
-                <ShoppingCart className="size-4" />
-              </div>
-              <span className="text-muted-foreground text-sm font-medium">Transactions</span>
-              <span className="text-foreground text-lg font-semibold tabular-nums">
-                {totalTransactions}
-              </span>
-            </div>
+    <div className="bg-background flex h-full flex-1 flex-col overflow-hidden p-3">
+      <div className="mb-2 flex shrink-0 items-center gap-2">
+        <div className="border-border bg-card flex min-h-11 min-w-0 flex-1 items-center gap-5 rounded-(--radius-panel) border px-3 py-1.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <span
+              className={cn(
+                "flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)",
+                isSales ? "bg-success/10 text-success" : "bg-info/10 text-info"
+              )}
+            >
+              <IndianRupee className="size-3.5" />
+            </span>
+            <span className="text-muted-foreground text-xs font-medium">Revenue</span>
+            <span className="text-foreground truncate text-base font-semibold tabular-nums">
+              {formatRupee(totalRevenue ?? 0)}
+            </span>
           </div>
-
-          <Button
-            onClick={() => {
-              if (isSales) {
-                navigate("/billing/sales/create");
-              } else {
-                navigate("/billing/estimates/create");
-              }
-            }}
-            className="hover:bg-primary-hover cursor-pointer gap-1.5"
-          >
-            <Plus className="size-4" />
-            {isSales ? "New Sale" : "New Estimate"}
-          </Button>
+          <div className="bg-border h-5 w-px shrink-0" />
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="bg-secondary text-secondary-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)">
+              <ShoppingCart className="size-3.5" />
+            </span>
+            <span className="text-muted-foreground text-xs font-medium">Transactions</span>
+            <span className="text-foreground text-base font-semibold tabular-nums">
+              {totalTransactions}
+            </span>
+          </div>
         </div>
 
-        <DashboardCard />
-        {isViewModalOpen && <ViewModal type={type} id={transactionId} />}
+        <Button
+          onClick={() => navigate(isSales ? "/billing/sales/create" : "/billing/estimates/create")}
+          className={cn(
+            "h-9 cursor-pointer gap-1.5 px-3",
+            isSales ? "hover:bg-primary-hover" : "bg-info text-info-foreground hover:bg-info/90"
+          )}
+        >
+          <Plus className="size-4" />
+          {isSales ? "New Sale" : "New Estimate"}
+        </Button>
       </div>
-    </>
+
+      <DashboardCard />
+      {isViewModalOpen && <ViewModal type={type} id={transactionId} />}
+    </div>
   );
 };
 

@@ -7,7 +7,7 @@ import { setZoom } from "./zoom";
 // - https://www.electronjs.org/docs/latest/api/menu#examples
 // - https://stackoverflow.com/questions/45811603/create-electron-menu-in-typescript
 
-export function setupMenu() {
+export function setupMenu({ autoHideMenuBar = true }: { autoHideMenuBar?: boolean } = {}) {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: "View",
@@ -60,4 +60,9 @@ export function setupMenu() {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.setAutoHideMenuBar(autoHideMenuBar);
+    window.setMenuBarVisibility(!autoHideMenuBar);
+  }
 }

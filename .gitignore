@@ -9,3 +9,4 @@ node_modules/
 .commandcode/*
 .agents/*
 skills-lock.json
+.impeccable

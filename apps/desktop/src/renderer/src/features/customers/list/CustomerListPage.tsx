@@ -23,7 +23,6 @@ import {
   type CustomerType
 } from "@shared/types";
 import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
-import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCustomerActions } from "../customerActions";
@@ -111,6 +110,7 @@ export function CustomerListPage() {
   const hasFilters = search !== "" || hasTypeFilter || includeArchived;
 
   const filterCount = (hasTypeFilter ? 1 : 0) + (includeArchived ? 1 : 0);
+  const showFilterBar = hasTypeFilter || includeArchived || hasSort;
 
   const clearFilters = () => {
     setSearch("");
@@ -121,22 +121,17 @@ export function CustomerListPage() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 p-4" onKeyDown={handleKeyDown}>
-      <div className="shrink-0 space-y-2.5">
-        <motion.div
-          initial={{ opacity: 0, y: -3 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" as const }}
-          className="border-border bg-card flex items-center gap-2.5 rounded-xl border px-3 py-2.5 shadow-xs"
-        >
-          <div className="relative w-96 min-w-0">
+    <div className="flex h-full w-full flex-col gap-2 p-3" onKeyDown={handleKeyDown}>
+      <div className="shrink-0 space-y-2">
+        <div className="border-border bg-card flex items-center gap-2 rounded-(--radius-panel) border px-3 py-2">
+          <div className="relative max-w-xl min-w-0 flex-1">
             <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers…"
-              className="bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-9 rounded-md border-transparent pr-9 pl-9 text-base shadow-none transition-colors"
+              className="bg-background focus-visible:border-ring h-9 pr-9 pl-9 text-sm shadow-none"
             />
             {search && (
               <button
@@ -156,7 +151,7 @@ export function CustomerListPage() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="border-border bg-muted/50 text-foreground hover:bg-muted/60 relative h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+                className="border-border bg-background text-foreground hover:bg-muted relative h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
               >
                 <SlidersHorizontal className="size-4" />
                 Filter
@@ -233,7 +228,7 @@ export function CustomerListPage() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="border-border bg-muted/50 text-foreground hover:bg-muted/60 h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+                className="border-border bg-background text-foreground hover:bg-muted h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
               >
                 <ArrowDownAZ className="size-4" />
                 {activeSortLabel ?? "Sort"}
@@ -288,40 +283,37 @@ export function CustomerListPage() {
             <Plus className="size-4" />
             New Customer
           </Button>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: -3 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.15, ease: "easeOut" as const }}
-          className="border-border/60 bg-card flex flex-wrap items-center gap-2.5 rounded-xl border px-3 py-2.5"
-        >
-          <FilterChip
-            label="Type"
-            value={activeTypeLabel}
-            onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
-          />
-          {includeArchived && (
-            <FilterChip label="Archived" value="Yes" onRemove={() => setIncludeArchived(false)} />
-          )}
-          {hasSort && (
+        {showFilterBar && (
+          <div className="border-border bg-card flex flex-wrap items-center gap-2 rounded-(--radius-panel) border px-3 py-1.5">
             <FilterChip
-              label="Sort"
-              value={activeSortLabel ?? sortBy}
-              onRemove={() => setSortBy(CUSTOMER_SORT_BY.NAME_ASC)}
+              label="Type"
+              value={activeTypeLabel}
+              onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
             />
-          )}
-          {(hasTypeFilter || includeArchived || hasSort) && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-destructive hover:bg-destructive/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors"
-            >
-              <X className="size-3.5" />
-              Clear all
-            </button>
-          )}
-        </motion.div>
+            {includeArchived && (
+              <FilterChip label="Archived" value="Yes" onRemove={() => setIncludeArchived(false)} />
+            )}
+            {hasSort && (
+              <FilterChip
+                label="Sort"
+                value={activeSortLabel ?? sortBy}
+                onRemove={() => setSortBy(CUSTOMER_SORT_BY.NAME_ASC)}
+              />
+            )}
+            {(hasTypeFilter || includeArchived || hasSort) && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="text-destructive hover:bg-destructive/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors"
+              >
+                <X className="size-3.5" />
+                Clear all
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">
