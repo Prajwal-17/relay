@@ -1,128 +1,152 @@
-# QuickCart
+# QuickCart Desktop
 
-Offline first desktop billing app for managing invoices, estimates, products, and customers.
+The production application in the QuickCart monorepo. It combines an Electron shell, a React
+renderer, a forked Hono API server, and a local SQLite database into one offline-first desktop
+package.
 
-## Features
+For repository setup and workspace commands, see the [root README](../../README.md).
 
-- **Products** — Full CRUD, soft delete, image upload/crop, price history, search, filter, sort, grid/list view, enable/disable toggle.
-- **Billing** — Ring up products, assign customers, checkout. Tracks totals and payment status.
-- **Invoices** — Generate and print. Product snapshots keep past invoices accurate when prices change.
-- **Estimates** — Quotes without impacting revenue.
-- **Customers** — Directory for assigning to sales and estimates.
-- **Dashboard** — Charts and metrics.
-- **Onboarding** — First-launch wizard to set up store details.
+## Runtime architecture
 
-## Getting Started
+```text
+Electron main process
+  ├─ configures app paths and native IPC handlers
+  ├─ initializes and migrates SQLite
+  ├─ forks the Hono API child process
+  └─ creates the renderer window
+
+React renderer ── local HTTP ──> Hono ──> service ──> repository ──> SQLite
+       │
+       └──────── preload bridge ────────> native print/file/image/PDF operations
+```
+
+| Area     | Location        | Responsibility                                             |
+| -------- | --------------- | ---------------------------------------------------------- |
+| Main     | `src/main/`     | Electron lifecycle, database, API, IPC, packaging behavior |
+| Preload  | `src/preload/`  | Context-isolated native API exposed to the renderer        |
+| Renderer | `src/renderer/` | React UI, routing, queries, and client state               |
+| Shared   | `src/shared/`   | Types, Zod schemas, constants, and utilities               |
+
+The renderer uses a hash router because production is loaded through Electron's `file://`
+protocol. Normal application data travels over HTTP; IPC is reserved for Electron-only
+capabilities.
+
+## Development
+
+From the repository root:
 
 ```bash
-git clone https://github.com/Prajwal-17/pos.git
-cd pos
 pnpm install
+pnpm --dir apps/desktop dev
+```
+
+Or from this directory:
+
+```bash
 pnpm dev
 ```
 
-## Build
-
-```bash
-pnpm build:win    # Windows
-pnpm build:linux  # Linux
-```
-
-Output in `dist/`.
+`pnpm dev` rebuilds the native SQLite module for Electron before starting hot reload. For
+renderer-only debugging, `pnpm dev:standalone` starts the Hono server and browser Vite client;
+native preload features are unavailable in that mode.
 
 ## Commands
 
-| Command                | Description                    |
-| ---------------------- | ------------------------------ |
-| `pnpm dev`             | Start dev mode with hot reload |
-| `pnpm build`           | Typecheck and build            |
-| `pnpm start`           | Preview production build       |
-| `pnpm seed`            | Seed database                  |
-| `pnpm db:migrate:dev`  | Run migrations (dev)           |
-| `pnpm db:migrate:prod` | Run migrations (prod)          |
-| `pnpm db:push:dev`     | Push schema to dev DB          |
-| `pnpm db:push:prod`    | Push schema to prod DB         |
-| `pnpm db:studio:dev`   | Open Drizzle Studio (dev)      |
-| `pnpm db:studio:prod`  | Open Drizzle Studio (prod)     |
+Run these from `apps/desktop` unless shown otherwise.
 
-## Tech Stack
+| Command               | Purpose                                            |
+| --------------------- | -------------------------------------------------- |
+| `pnpm dev`            | Start Electron development mode                    |
+| `pnpm dev:standalone` | Start the local API and browser renderer           |
+| `pnpm build`          | Typecheck and create the production Electron build |
+| `pnpm start`          | Preview the production build                       |
+| `pnpm lint`           | Run ESLint                                         |
+| `pnpm typecheck`      | Typecheck main/preload and renderer code           |
+| `pnpm test --run`     | Run Vitest once                                    |
+| `pnpm format`         | Format the desktop package                         |
+| `pnpm seed`           | Seed the development database                      |
+| `pnpm db:migrate:dev` | Apply development migrations                       |
+| `pnpm db:studio:dev`  | Open Drizzle Studio for development data           |
+| `pnpm db:push:dev`    | Push the schema to the development database        |
+| `pnpm build:win`      | Build the Windows installer                        |
+| `pnpm build:linux`    | Build AppImage and Debian packages                 |
 
-**Frontend:** React, Vite, Tailwind CSS, Shadcn, Zustand, TanStack Query, React Router v7, recharts, zod.
-**Backend:** Electron, Hono, better-sqlite3, Drizzle ORM.
+Production database commands use the corresponding `:prod` suffix. Packaging output is written
+to `dist/`; Electron build output is written to `out/`.
 
-## Architecture
+## Local data and environment
 
-Three directories under `src/`:
+- Development app name: `QuickCart-Dev`
+- Production app name: `QuickCart`
+- Development API port: `4723`
+- Production API port: `4722`
+- Database: `<Electron userData>/pos.db`
+- Product images: `<Electron userData>/product-images/`
 
-- `main/` — Electron process, SQLite, Hono API server.
-- `renderer/` — React UI.
-- `shared/` — Types, constants, Zod schemas, Utils.
+SQLite runs in WAL mode. Migrations are applied during startup and the `drizzle/` directory is
+bundled into packaged applications.
 
-## Database
+The main process loads `.env`, then `.env.<MODE>`, without overriding variables already present
+in the environment. Main-process variables use the `M_VITE_` prefix; renderer variables use
+`VITE_`. See `.env.example` for supported project-specific values. Development and production
+data remain isolated.
 
-Tables: app_instance, store_profile, customers, products, product_history, sales, sale_items, estimates, estimate_items.
+## Application conventions
 
-DB file locations:
+- API modules under `src/main/modules/` follow controller → service → repository layering.
+- Money is stored as integer paisa and formatted with utilities in `src/shared/utils/utils.ts`.
+- Fractional quantities use integer milli-units via `src/shared/utils/milliUnits.ts`.
+- Product snapshots are stored on transaction items to preserve historical invoice text.
+- Products are soft-deleted by default.
+- Server data belongs in TanStack Query; cross-component client workflow state belongs in
+  Zustand.
+- Billing rows auto-sync after an 800 ms debounce and must be flushed before navigation, print,
+  or export.
 
-- Linux: `/home/<user>/.config/quickcart/<dbname>.db`
-- Windows: `C:\Users\<username>\AppData\Roaming\quickcart\<dbname>.db`
+Detailed implementation rules live in [AGENTS.md](../../AGENTS.md).
 
-## Common Errors & Fixes
+## Display contract
 
-### 1. Chrome Sandbox Error (Linux only)
+The reference viewport is **1280 × 650 CSS pixels at 100% Electron zoom**; **1024 × 600** is the
+supported fallback. The supported zoom range is 85%–125%, with 100% as the design baseline.
 
-```
-FATAL:sandbox/linux/suid/client/setuid_sandbox_host.cc:169]
-The SUID sandbox helper binary was found, but is not configured correctly.
-```
+All UI work must follow the canonical [DESIGN.md](../../DESIGN.md), including density tokens,
+billing behavior, print isolation, accessibility, and viewport verification.
 
-Fix option 1 (set env var):
+## Tests
 
-```bash
-ELECTRON_DISABLE_SANDBOX=1 pnpm dev
-```
+Vitest covers the sales, estimates, and customer-ledger flows with in-memory SQLite integration
+tests under `src/main/tests/`. Shared currency, date, quantity, and product-snapshot utilities
+have unit tests alongside their source in `src/shared/utils/`.
 
-The dev script in package.json already includes this.
+Use `src/main/tests/helpers/index.ts` for test database creation and fixtures.
 
-Fix option 2 (set permissions):
+## Packaging and releases
 
-```bash
-sudo chown root <path-to-electron>/chrome-sandbox
-sudo chmod 4755 <path-to-electron>/chrome-sandbox
-```
+- A push to `dev` builds and uploads unsigned Windows and Linux development artifacts.
+- A push to `master` builds production artifacts and creates a GitHub release.
+- Windows output is an NSIS installer.
+- Linux output includes AppImage and Debian packages.
 
-Example:
+## Troubleshooting
 
-```bash
-sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-```
+### Native module version mismatch
 
-Example:
-
-```bash
-sudo chown root /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-sudo chmod 4755 /media/hdd/code/temp/pnpm/node_modules/.pnpm/electron@37.2.3/node_modules/electron/dist/chrome-sandbox
-```
-
-### 2. better-sqlite3 NODE_MODULE_VERSION Mismatch
-
-Error: `better-sqlite3` was compiled against a different Node.js version. This happens because `better-sqlite3` is a native C++ addon. The system Node.js and Electron's embedded Node.js have different version fingerprints.
-
-Fix for dev (Electron runtime):
-
-```bash
-pnpm rebuild better-sqlite3
-```
-
-If that fails:
+`better-sqlite3` must match the runtime ABI:
 
 ```bash
-rm -rf node_modules && pnpm install
+pnpm rebuild:electron  # before Electron development
+pnpm rebuild:node      # before Node-only scripts or tests
 ```
 
-## Desktop display contract
+The main development, seed, and database scripts already perform the appropriate rebuild.
 
-QuickCart targets a provisional **1280 × 650 effective CSS viewport at 100% Electron zoom**, with **1024 × 600** as the supported fallback. The application window is sized from the display work area with content-size-aware bounds. Production hides the native menu bar by default; Alt reveals it, and zoom commands remain available through shortcuts and Settings.
+### Linux Chromium sandbox
 
-The supported zoom preference is 85%–125%; 100% is recommended. Before shop deployment, record the laptop’s effective inner viewport, device-pixel ratio, OS scaling, and Electron zoom, then validate the route matrix in [docs/DESIGN.md](docs/DESIGN.md).
+The development script sets `ELECTRON_DISABLE_SANDBOX=1`. If Electron is launched outside that
+script, use the same environment setting or configure the installed Chromium sandbox correctly.
+
+### Port already in use
+
+Close other QuickCart development instances before restarting. The API uses fixed ports `4723`
+in development and `4722` in production.
