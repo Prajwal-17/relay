@@ -44,6 +44,12 @@ typography:
     fontWeight: 400
     lineHeight: 1.4
     letterSpacing: "normal"
+  navigation:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 500
+    lineHeight: 1.35
+    letterSpacing: "normal"
   secondary:
     fontFamily: "InterVariable, system-ui, sans-serif"
     fontSize: "12px"
@@ -121,7 +127,7 @@ components:
     padding: "{spacing.panel}"
   navigation-row:
     textColor: "{colors.ink-muted}"
-    typography: "{typography.body}"
+    typography: "{typography.navigation}"
     rounded: "{rounded.control}"
     padding: "0 8px"
     height: "40px"
@@ -183,6 +189,7 @@ Use the frontmatter roles instead of choosing a size by eye:
 
 - `page-title` names the current workspace or major section.
 - `body` is the default for controls, tables, forms, and descriptions.
+- `navigation` is the 15px label role for expanded sidebar destinations.
 - `secondary` supports timestamps, hints, metadata, and secondary labels.
 - `label` is for compact field labels, table headings, and short section kickers.
 - `financial-total` is reserved for the most important total in the current task.
@@ -272,7 +279,7 @@ Do not copy a primitive into a feature folder to avoid understanding it. Do not 
 - **Inputs and selects:** Default to 36px with body text. Labels remain visible outside the field; placeholders show format or example, never the only label. Invalid state includes specific inline text and `aria-invalid`, not color alone.
 - **Cards:** Use `CompactCard` for dense application panels. Card padding does not create page layout; the parent owns inter-panel spacing. Avoid nested cards when a divider or section heading is sufficient.
 - **Dialogs:** Header and footer stay visible; the body owns vertical scrolling. Content must fit within the 650px baseline with viewport-safe maximum height. Focus is trapped, Escape closes when safe, and focus returns to the trigger. Destructive confirmations name the object and consequence.
-- **Tabs:** Use tabs only for peer views of the same object. The active state has text and surface change, not a thin color line alone. Tab bars remain one compact row; overflow scrolls horizontally without widening the page.
+- **Tabs:** Use tabs only for peer views of the same object. The shared tab list uses the control radius, a standard border, compact internal padding and spacing, muted inactive labels, and a brand-soft active surface. Sale and estimate tabs may replace only the active color with their semantic success or info treatment. Tab bars remain one compact row; overflow scrolls horizontally without widening the page.
 - **Tooltips:** Support unfamiliar icon-only controls and billing-rail navigation. They never contain essential instructions and never replace accessible names.
 - **Badges and statuses:** Use short nouns or past-participle states. Preserve the semantic color mapping and include readable text. Avoid using badges as decoration.
 

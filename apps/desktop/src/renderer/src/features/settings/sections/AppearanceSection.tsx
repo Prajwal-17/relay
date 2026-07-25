@@ -6,7 +6,7 @@ import { SettingsSection } from "../SettingsSection";
 
 const DESCRIPTION = "Customize the appearance of the app.";
 
-const STEP = 0.05;
+const STEP_PERCENT = 1;
 
 function factorToPercent(factor: number): number {
   return Math.round(factor * 100);
@@ -97,7 +97,7 @@ export const AppearanceSection = () => {
             value={[sliderPercent]}
             min={minPercent}
             max={maxPercent}
-            step={factorToPercent(STEP)}
+            step={STEP_PERCENT}
             onValueChange={handleSliderDrag}
             onValueCommit={handleSliderCommit}
             className="flex-1"

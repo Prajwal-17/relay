@@ -144,26 +144,26 @@ export function ProductDialog() {
             </div>
 
             <div className="flex shrink-0 justify-center">
-              <TabsList className="bg-secondary/60 border-border/40 flex h-9 w-full gap-1 rounded-(--radius-control) border p-0.5 sm:w-fit">
+              <TabsList className="flex h-9 w-full sm:w-fit">
                 <TabsTrigger
                   value={INITIAL_TAB.INFO}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
+                  className="group relative flex-1 font-semibold sm:flex-none"
                 >
-                  <Info className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  <Info className="mr-2 h-4 w-4 transition-colors" />
                   Product Info
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.HISTORY}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
+                  className="group relative flex-1 font-semibold sm:flex-none"
                 >
-                  <Clock className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  <Clock className="mr-2 h-4 w-4 transition-colors" />
                   History
                 </TabsTrigger>
                 <TabsTrigger
                   value={INITIAL_TAB.TRANSACTIONS}
-                  className="data-[state=active]:text-foreground data-[state=active]:bg-background ring-offset-background text-muted-foreground group relative flex-1 rounded-(--radius-control) px-3 py-1 text-sm font-semibold transition-colors sm:flex-none"
+                  className="group relative flex-1 font-semibold sm:flex-none"
                 >
-                  <ReceiptText className="text-muted-foreground/50 group-data-[state=active]:text-foreground mr-2 h-4 w-4 transition-colors" />
+                  <ReceiptText className="mr-2 h-4 w-4 transition-colors" />
                   Transactions
                 </TabsTrigger>
               </TabsList>

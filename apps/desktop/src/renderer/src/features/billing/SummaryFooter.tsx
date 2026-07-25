@@ -85,7 +85,7 @@ export const SummaryFooter = () => {
         const filePath = response.data;
         toast.success(
           (t) => (
-            <div className="flex items-center gap-4 whitespace-nowrap">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
               <span className="font-medium">PDF saved successfully</span>
               <button
                 onClick={() => {
@@ -99,7 +99,7 @@ export const SummaryFooter = () => {
               </button>
             </div>
           ),
-          { duration: 4000, style: { maxWidth: "fit-content" } }
+          { duration: 4000 }
         );
         navigate(`/dashboard/${type}`);
       } else {
@@ -118,7 +118,7 @@ export const SummaryFooter = () => {
   }
 
   return (
-    <footer className="bg-card border-t-frame flex h-[3.25rem] shrink-0 items-center justify-end gap-3 border-t px-3">
+    <footer className="bg-card border-t-frame flex h-13 shrink-0 items-center justify-end gap-3 border-t px-3">
       <div className="hidden items-baseline gap-1.5 min-[1100px]:flex">
         <span className="text-muted-foreground text-xs font-medium">Subtotal</span>
         <span className="text-sm font-semibold tabular-nums">{subtotal}</span>

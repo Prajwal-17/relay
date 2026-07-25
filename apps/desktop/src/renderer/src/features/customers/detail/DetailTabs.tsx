@@ -43,13 +43,9 @@ export function DetailTabs({
       onValueChange={(v) => onTabChange(v as TabValue)}
       className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3"
     >
-      <TabsList className="bg-muted h-9 w-fit shrink-0 flex-wrap gap-0.5 p-1">
+      <TabsList className="h-9 w-fit shrink-0">
         {TAB_VALUES.map((value) => (
-          <TabsTrigger
-            key={value}
-            value={value}
-            className="data-[state=active]:bg-background data-[state=active]:text-foreground text-muted-foreground cursor-pointer px-3 text-sm font-medium transition-colors"
-          >
+          <TabsTrigger key={value} value={value} className="cursor-pointer">
             {TAB_LABELS[value]}
           </TabsTrigger>
         ))}

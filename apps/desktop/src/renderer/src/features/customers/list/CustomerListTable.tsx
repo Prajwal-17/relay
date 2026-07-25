@@ -44,6 +44,8 @@ export function CustomerListTable({
   clearFilters
 }: CustomerListTableProps) {
   const parentRef = useRef<HTMLDivElement>(null);
+  const previousActiveIndexRef = useRef(activeIndex);
+  const hasPositionedActiveRowRef = useRef(false);
   const { openAddForm } = useCustomerActions();
 
   const rowVirtualizer = useVirtualizer({
@@ -74,8 +76,18 @@ export function CustomerListTable({
   ]);
 
   useEffect(() => {
-    if (rows.length === 0) return;
-    rowVirtualizer.scrollToIndex(activeIndex, { align: "auto" });
+    if (rows.length === 0) {
+      hasPositionedActiveRowRef.current = false;
+      return;
+    }
+
+    const activeIndexChanged = previousActiveIndexRef.current !== activeIndex;
+    if (!hasPositionedActiveRowRef.current || activeIndexChanged) {
+      rowVirtualizer.scrollToIndex(activeIndex, { align: "auto" });
+    }
+
+    previousActiveIndexRef.current = activeIndex;
+    hasPositionedActiveRowRef.current = true;
   }, [activeIndex, rows.length, rowVirtualizer]);
 
   const colInfo = useMemo(

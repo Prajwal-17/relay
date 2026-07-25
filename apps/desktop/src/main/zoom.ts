@@ -1,8 +1,9 @@
 import type { WebContents } from "electron";
 import type Store from "electron-store";
+import { ZOOM_FACTOR_BOUNDS } from "../shared/utils/zoomUtils";
 
-export const MIN_ZOOM = 0.85;
-export const MAX_ZOOM = 1.25;
+export const MIN_ZOOM = ZOOM_FACTOR_BOUNDS.min;
+export const MAX_ZOOM = ZOOM_FACTOR_BOUNDS.max;
 
 export type ZoomStore = Store<{ zoomFactor: number }>;
 

@@ -81,7 +81,7 @@ export const BillingSidebar = () => {
         </IconTooltip>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto px-2 py-2">
+      <div className="flex min-h-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto px-2 py-2">
         <div className="flex flex-col gap-1.5">
           <IconTooltip label="New Sale">
             <Button asChild size="icon-lg" className="hover:bg-primary-hover">

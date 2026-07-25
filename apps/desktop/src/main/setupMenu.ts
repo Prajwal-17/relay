@@ -1,4 +1,5 @@
 import { BrowserWindow, Menu } from "electron";
+import { getZoomFactorForShortcut } from "../shared/utils/zoomUtils";
 import { store } from "./electronStore";
 import { checkForUpdates } from "./updater";
 import { setZoom } from "./zoom";
@@ -21,7 +22,11 @@ export function setupMenu({ autoHideMenuBar = true }: { autoHideMenuBar?: boolea
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            setZoom(win.webContents, store, win.webContents.getZoomFactor() + 0.1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "increase")
+            );
           }
         },
         {
@@ -30,7 +35,11 @@ export function setupMenu({ autoHideMenuBar = true }: { autoHideMenuBar?: boolea
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            setZoom(win.webContents, store, win.webContents.getZoomFactor() - 0.1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "decrease")
+            );
           }
         },
         {
@@ -39,7 +48,11 @@ export function setupMenu({ autoHideMenuBar = true }: { autoHideMenuBar?: boolea
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            setZoom(win.webContents, store, 1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "reset")
+            );
           }
         }
       ]

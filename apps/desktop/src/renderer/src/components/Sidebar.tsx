@@ -218,7 +218,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           }
         }}
         className={cn(
-          "relative flex h-(--nav-row-height) w-full items-center gap-2 rounded-(--radius-control) px-2 text-sm font-medium transition-colors duration-150 outline-none",
+          "relative flex h-(--nav-row-height) w-full items-center gap-2 rounded-(--radius-control) px-2 font-medium transition-colors duration-150 outline-none",
           "focus-visible:ring-ring focus-visible:ring-offset-sidebar focus-visible:ring-2 focus-visible:ring-offset-2",
           isActive
             ? isSaleLink
@@ -243,7 +243,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         >
           {item.icon}
         </span>
-        <span className="truncate text-sm">{item.title}</span>
+        <span className="text-navigation truncate">{item.title}</span>
       </Link>
     );
   };
@@ -299,7 +299,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             >
               <Link to="/billing/sales/create" onClick={handleBillingShortcutClick}>
                 <ShoppingCart className="size-4.5" />
-                <span>New Sale</span>
+                <span className="text-navigation">New Sale</span>
               </Link>
             </Button>
 
@@ -310,7 +310,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             >
               <Link to="/billing/estimates/create" onClick={handleBillingShortcutClick}>
                 <FileText className="size-4.5" />
-                <span>New Estimate</span>
+                <span className="text-navigation">New Estimate</span>
               </Link>
             </Button>
           </div>
@@ -346,7 +346,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               {storeInitials || "QC"}
             </div>
             <div className="min-w-0">
-              <span className="block truncate text-sm font-semibold">
+              <span className="text-navigation block truncate font-semibold">
                 {storeProfile?.storeName || "Store profile"}
               </span>
               <span className="text-sidebar-foreground/55 block truncate text-xs">

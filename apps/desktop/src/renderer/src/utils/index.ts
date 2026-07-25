@@ -48,15 +48,14 @@ export const updateCheckedQuantity = (
 };
 
 /**
- * To be get status color of LineItem in Billing Page(light orange, green or white)
- * @returns tailwind color class
+ * Return the billing row surface for unchecked, completed, and partially checked items.
  */
 export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
-  let bgColor = "bg-background";
+  let bgColor = "bg-card";
   if (checkedQty === quantity && quantity > 0) {
-    bgColor = "bg-success/15";
+    bgColor = "bg-success/10";
   } else if (checkedQty > 0 && checkedQty < quantity) {
-    bgColor = "bg-warning/15";
+    bgColor = "bg-info/10";
   }
   return bgColor;
 };

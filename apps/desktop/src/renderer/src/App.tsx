@@ -19,7 +19,12 @@ const App = () => {
         <Toaster
           position="bottom-center"
           toastOptions={{
-            className: "text-lg font-medium"
+            className: "text-sm leading-snug font-medium whitespace-normal",
+            style: {
+              maxWidth: "20rem",
+              padding: "0.5rem 0.75rem",
+              overflowWrap: "anywhere"
+            }
           }}
         />
       </QueryClientProvider>

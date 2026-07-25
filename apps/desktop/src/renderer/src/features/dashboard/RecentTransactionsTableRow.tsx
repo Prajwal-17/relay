@@ -19,13 +19,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
+import { getCustomerAvatarStyle } from "@/lib/customerAvatar";
+import { cn } from "@/lib/utils";
 import { TRANSACTION_TYPE, type TransactionType, type UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { Download, Edit, Eye, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const RecentTransactionsTableRow = ({
   type,
@@ -55,6 +57,21 @@ const RecentTransactionsTableRow = ({
     convertMutation.mutate({ type: type, id: transaction.id });
   }, [convertMutation, type, transaction.id]);
 
+  const customerIdentity = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-semibold",
+          getCustomerAvatarStyle(transaction.customerId, transaction.customer.name)
+        )}
+      >
+        {transaction.customer.name.charAt(0).toUpperCase()}
+      </span>
+      <span className="truncate">{transaction.customer.name}</span>
+    </>
+  );
+
   return (
     <div>
       <div className="hover:bg-muted/40 bg-card border-border/50 grid grid-cols-12 gap-4 border-b px-6 py-2 text-lg">
@@ -71,10 +88,16 @@ const RecentTransactionsTableRow = ({
           </span>
         </div>
         <div className="col-span-3 flex items-center gap-2 font-medium">
-          <div className="bg-accent text-accent-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-full">
-            {transaction.customer.name.charAt(0)}
-          </div>
-          <span className="truncate">{transaction.customer.name}</span>
+          {transaction.customerId ? (
+            <Link
+              to={`/customers/${transaction.customerId}`}
+              className="focus-visible:ring-ring flex min-w-0 items-center gap-2 rounded-(--radius-control) outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+            >
+              {customerIdentity}
+            </Link>
+          ) : (
+            <div className="flex min-w-0 items-center gap-2">{customerIdentity}</div>
+          )}
         </div>
 
         <div className="text-muted-foreground col-span-2 flex items-center font-medium">
@@ -200,7 +223,8 @@ function memoComparator(prev: any, next: any) {
 
   if (p?.id !== n?.id) return false;
   if (p.transactionNo !== n.transactionNo) return false;
-  if (p.customerName !== n.customerName) return false;
+  if (p.customerId !== n.customerId) return false;
+  if (p.customer?.name !== n.customer?.name) return false;
   if (p.grandTotal !== n.grandTotal) return false;
   if (p.isPaid !== n.isPaid) return false;
   if (p.createdAt !== n.createdAt) return false;

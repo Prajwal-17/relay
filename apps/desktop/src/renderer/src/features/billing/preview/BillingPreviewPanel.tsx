@@ -44,10 +44,10 @@ const BillingPreviewPanel = () => {
       >
         <div className="flex h-10 shrink-0 items-center gap-1 border-b px-2">
           <TabsList className="grid h-8 min-w-0 flex-1 grid-cols-2">
-            <TabsTrigger value="bill" className="cursor-pointer text-sm">
+            <TabsTrigger value="bill" className="cursor-pointer">
               Preview
             </TabsTrigger>
-            <TabsTrigger value="customer" className="cursor-pointer text-sm">
+            <TabsTrigger value="customer" className="cursor-pointer">
               Customer
             </TabsTrigger>
           </TabsList>

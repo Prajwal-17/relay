@@ -73,7 +73,7 @@ const LineItemRow = memo(
     if (!activeTabId) return null;
 
     return (
-      <div key={item.rowId} className="relative">
+      <div key={item.rowId} data-billing-row-id={item.rowId} className="relative">
         <div
           className={`group ${checkedColor} border-border focus-within:border-border-strong grid min-h-(--billing-row-height) w-full items-center gap-1 rounded-(--radius-control) border px-1 transition-[background-color,border-color] duration-150 ${
             dragHandle?.isDragging ? "ring-primary/30 shadow-lg ring-2" : ""
@@ -110,10 +110,10 @@ const LineItemRow = memo(
               </button>
             </div>
           </div>
-          <div className="min-w-0">
+          <div className="relative min-w-0">
             <input
               value={item.productSnapshot}
-              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-9 w-full rounded-(--radius-control) border px-3 py-2 text-sm font-medium shadow-none transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2"
+              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-9 w-full rounded-(--radius-control) border px-3 py-2 text-sm font-semibold shadow-none transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -128,12 +128,16 @@ const LineItemRow = memo(
               }}
               placeholder="Search products"
             />
+
+            {isDropdownOpen && activeRowId === item.rowId && (
+              <MemoizedSearchDropdown rowId={item.rowId} />
+            )}
           </div>
           <div className="min-w-0">
             <div className="bg-muted/60 border-border/70 relative mx-auto flex h-9 w-full items-center rounded-(--radius-control) border font-bold">
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-[var(--radius-control)] border-r transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-(--radius-control) border-r transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -169,7 +173,7 @@ const LineItemRow = memo(
                 placeholder="0"
               />
               <button
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-[var(--radius-control)] border-l transition-colors"
+                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-(--radius-control) border-l transition-colors"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -298,10 +302,6 @@ const LineItemRow = memo(
             </>
           )}
         </div>
-
-        {isDropdownOpen && activeRowId === item.rowId && (
-          <MemoizedSearchDropdown rowId={item.rowId} />
-        )}
       </div>
     );
   },

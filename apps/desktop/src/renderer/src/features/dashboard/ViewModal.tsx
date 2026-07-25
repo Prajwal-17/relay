@@ -132,7 +132,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
     if (!filePath) return;
     toast.success(
       (t) => (
-        <div className="flex items-center gap-4 whitespace-nowrap">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           <span className="font-medium">PDF saved successfully</span>
           <button
             onClick={() => {
@@ -146,7 +146,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
           </button>
         </div>
       ),
-      { duration: 4000, style: { maxWidth: "fit-content" } }
+      { duration: 4000 }
     );
   }, [exportPdf]);
 

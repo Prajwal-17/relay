@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { MutationVariables, StatusMutationVariables } from "@/hooks/dashboard/useDashboard";
+import { getCustomerAvatarStyle } from "@/lib/customerAvatar";
+import { cn } from "@/lib/utils";
 import type { UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
@@ -39,7 +41,7 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const DashboardTableRow = ({
   pathname,
@@ -112,7 +114,7 @@ const DashboardTableRow = ({
         const filePath = response.data;
         toast.success(
           (t) => (
-            <div className="flex items-center gap-4 whitespace-nowrap">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
               <span className="text-sm font-medium">PDF saved successfully</span>
               <button
                 onClick={() => {
@@ -126,7 +128,7 @@ const DashboardTableRow = ({
               </button>
             </div>
           ),
-          { duration: 4000, style: { maxWidth: "fit-content" } }
+          { duration: 4000 }
         );
       } else {
         toast.error(response?.error?.message || "Failed to generate PDF");
@@ -138,6 +140,23 @@ const DashboardTableRow = ({
       setPdfLoading(false);
     }
   }, [transaction.id, transaction.type]);
+
+  const customerIdentity = (
+    <>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "flex size-7 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold",
+          getCustomerAvatarStyle(transaction.customerId, transaction.customerName)
+        )}
+      >
+        {transaction.customerName.charAt(0).toUpperCase()}
+      </span>
+      <span className="text-foreground truncate text-sm font-medium">
+        {transaction.customerName}
+      </span>
+    </>
+  );
 
   return (
     <div>
@@ -153,24 +172,28 @@ const DashboardTableRow = ({
       ) : (
         <div className="hover:bg-accent border-border grid min-h-11 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors last:border-b-0">
           <div className="col-span-2 flex flex-col justify-center">
-            <span className="text-foreground text-xs font-semibold tabular-nums">
+            <span className="text-foreground text-sm leading-tight font-semibold tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).fullDate
                 : "-"}
             </span>
-            <span className="text-muted-foreground text-xs leading-tight tabular-nums">
+            <span className="text-muted-foreground text-sm leading-tight tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).timePart
                 : "-"}
             </span>
           </div>
           <div className="col-span-3 flex items-center gap-2">
-            <div className="bg-accent text-accent-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
-              {transaction.customerName.charAt(0).toUpperCase()}
-            </div>
-            <span className="text-foreground truncate text-sm font-medium">
-              {transaction.customerName}
-            </span>
+            {transaction.customerId ? (
+              <Link
+                to={`/customers/${transaction.customerId}`}
+                className="focus-visible:ring-ring flex min-w-0 items-center gap-2 rounded-(--radius-control) outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+              >
+                {customerIdentity}
+              </Link>
+            ) : (
+              <div className="flex min-w-0 items-center gap-2">{customerIdentity}</div>
+            )}
           </div>
 
           <div className="text-muted-foreground col-span-2 flex items-center text-sm tabular-nums">

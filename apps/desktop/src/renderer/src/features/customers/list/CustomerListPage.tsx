@@ -110,7 +110,6 @@ export function CustomerListPage() {
   const hasFilters = search !== "" || hasTypeFilter || includeArchived;
 
   const filterCount = (hasTypeFilter ? 1 : 0) + (includeArchived ? 1 : 0);
-  const showFilterBar = hasTypeFilter || includeArchived || hasSort;
 
   const clearFilters = () => {
     setSearch("");
@@ -285,35 +284,31 @@ export function CustomerListPage() {
           </Button>
         </div>
 
-        {showFilterBar && (
-          <div className="border-border bg-card flex flex-wrap items-center gap-2 rounded-(--radius-panel) border px-3 py-1.5">
-            <FilterChip
-              label="Type"
-              value={activeTypeLabel}
-              onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
-            />
-            {includeArchived && (
-              <FilterChip label="Archived" value="Yes" onRemove={() => setIncludeArchived(false)} />
-            )}
-            {hasSort && (
-              <FilterChip
-                label="Sort"
-                value={activeSortLabel ?? sortBy}
-                onRemove={() => setSortBy(CUSTOMER_SORT_BY.NAME_ASC)}
-              />
-            )}
-            {(hasTypeFilter || includeArchived || hasSort) && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="text-destructive hover:bg-destructive/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors"
-              >
-                <X className="size-3.5" />
-                Clear all
-              </button>
-            )}
-          </div>
-        )}
+        <div className="border-border bg-card flex flex-wrap items-center gap-2 rounded-(--radius-panel) border px-3 py-1.5">
+          <FilterChip
+            label="Type"
+            value={activeTypeLabel}
+            onRemove={hasTypeFilter ? () => setTypeFilter(CUSTOMER_TYPE.ALL) : undefined}
+          />
+          <FilterChip
+            label="Sort"
+            value={activeSortLabel ?? sortBy}
+            onRemove={hasSort ? () => setSortBy(CUSTOMER_SORT_BY.NAME_ASC) : undefined}
+          />
+          {includeArchived && (
+            <FilterChip label="Archived" value="Yes" onRemove={() => setIncludeArchived(false)} />
+          )}
+          {(hasTypeFilter || includeArchived || hasSort) && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-destructive hover:bg-destructive/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors"
+            >
+              <X className="size-3.5" />
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col">

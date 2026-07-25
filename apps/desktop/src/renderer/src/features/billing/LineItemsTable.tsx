@@ -168,7 +168,7 @@ const LineItemsTable = () => {
             <span>
               Qty <strong className="text-foreground ml-1">{totalQty}</strong>
             </span>
-            <span className={allChecked ? "text-success" : totalChecked > 0 ? "text-warning" : ""}>
+            <span className={allChecked ? "text-success" : totalChecked > 0 ? "text-info" : ""}>
               Checked{" "}
               <strong className="ml-1">
                 {allChecked ? "All" : String(totalChecked) + "/" + String(totalQty)}

@@ -131,7 +131,7 @@ const BillingPage = () => {
       <BillingTabBar />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="bg-background-secondary relative flex min-w-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div data-billing-scroll-container className="min-h-0 flex-1 overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
             <div className="mx-3 mt-2 mb-3 grid grid-cols-1 gap-2 lg:grid-cols-5">
