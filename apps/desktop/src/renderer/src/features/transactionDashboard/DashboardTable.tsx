@@ -32,7 +32,7 @@ export const DashboardTable = () => {
           </div>
         ) : (
           <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
-            <div className="bg-muted text-muted-foreground grid h-9 grid-cols-12 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
+            <div className="bg-muted text-muted-foreground border-border grid h-9 grid-cols-12 items-center gap-2 border-b px-3 text-xs font-semibold tracking-wide uppercase">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer</div>
               <div className="col-span-2 flex items-center">

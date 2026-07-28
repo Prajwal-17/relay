@@ -19,27 +19,6 @@ export const useDateRangePicker = () => {
     }
   }, [date]);
 
-  // Ref -> https://daypicker.dev/api/enumerations/UI
-  const calendarClassNames = {
-    month: "space-y-4",
-    table: "w-full border-collapse space-y-1",
-    month_caption: "flex justify-center items-center gap-2 text-sm font-semibold",
-    caption_label: "text-sm flex items-center px-1 gap-1 font-semibold",
-    dropdowns: "flex gap-2 items-center",
-    dropdown_month: "px-2 py-1 rounded-md border text-sm font-medium",
-    dropdown_year: "px-2 py-1 rounded-md border text-sm font-medium",
-    weekdays: "flex",
-    weekday: "text-foreground rounded-md w-9 font-medium text-xs text-center",
-    week: "flex w-full mt-2",
-    day: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent",
-    day_button:
-      "h-9 w-9 p-0 font-medium text-sm aria-selected:opacity-100 hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground data-[selected=true]:bg-primary data-[selected=true]:text-primary-foreground data-[range-start=true]:bg-primary data-[range-end=true]:bg-primary",
-    day_today: "bg-accent text-accent-foreground font-semibold",
-    day_outside: "text-muted-foreground opacity-50",
-    day_disabled: "text-muted-foreground opacity-50",
-    day_hidden: "invisible"
-  };
-
   const formatters = {
     formatWeekdayName: (date: Date, options?: { locale?: Intl.LocalesArgument }) => {
       const weekDayName = new Intl.DateTimeFormat(options?.locale, { weekday: "long" }).format(
@@ -92,7 +71,6 @@ export const useDateRangePicker = () => {
     dropdown,
     selectedPreset,
     setSelectedPreset,
-    calendarClassNames,
     formatters,
     handleApplyDateRange,
     handleCancel,

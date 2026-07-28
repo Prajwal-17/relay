@@ -64,9 +64,9 @@ const QuantityPresets = ({
     <>
       <div
         ref={popDownRef}
-        className="bg-muted absolute top-full left-1/2 z-50 mt-1.5 w-max -translate-x-1/2 rounded-lg px-1 py-1.5 shadow-2xl"
+        className="bg-popover border-border absolute top-full left-1/2 z-50 mt-1.5 w-72 -translate-x-1/2 rounded-(--radius-panel) border p-2 shadow-md"
       >
-        <div className="grid w-max grid-flow-row grid-cols-4 gap-1 px-0.5">
+        <div className="grid w-full grid-cols-5 gap-1">
           {weights.map((w, idx) => (
             <Button
               key={idx}
@@ -74,7 +74,7 @@ const QuantityPresets = ({
               data-value={w.weight}
               type="button"
               size="sm"
-              className="col-span-1"
+              className="h-7 px-2 text-xs"
               onClick={(e) => {
                 handlePresetClick(e);
               }}
@@ -84,14 +84,14 @@ const QuantityPresets = ({
           ))}
         </div>
 
-        <Separator className="bg-border my-2 w-full" />
+        <Separator className="bg-border my-1.5 w-full" />
 
-        <div className="grid max-h-40 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-1 py-0.5">
+        <div className="grid w-full grid-cols-8 gap-1">
           {numbers.map((i) => (
             <Button
               variant="outline"
               size="sm"
-              className="h-8 w-full hover:cursor-pointer"
+              className="h-7 w-full px-0 text-xs hover:cursor-pointer"
               key={i}
               data-value={i}
               onClick={(e) => {

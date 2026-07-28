@@ -160,6 +160,8 @@ const BillingHeader = () => {
   };
 
   const { customer } = useCustomer(session?.customerId ?? undefined);
+  const customerType =
+    customer?.customerType ?? (!session?.customerId && customerName ? "cash" : null);
   const outstandingBalance = customer?.outstandingBalance ?? 0;
   const isDue = outstandingBalance > 0;
 
@@ -193,7 +195,11 @@ const BillingHeader = () => {
           <div className="bg-muted border-border flex items-center rounded-(--radius-control) border p-0.5">
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="sm" className="bg-transparent px-2 text-xs">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="bg-transparent px-2 text-sm font-medium"
+                >
                   <CalendarDays className="text-muted-foreground" />
                   {formatDateObjToStringMedium(billingDate)}
                 </Button>
@@ -231,7 +237,7 @@ const BillingHeader = () => {
                 <TimePickerInput segment="period" className="text-xs font-medium" />
                 <TimePickerTrigger className="text-muted-foreground ml-0.5 shrink-0" />
               </TimePickerInputGroup>
-              <TimePickerContent align="end">
+              <TimePickerContent align="end" className="max-w-none">
                 <TimePickerHour />
                 <TimePickerMinute />
                 <TimePickerPeriod />
@@ -247,7 +253,6 @@ const BillingHeader = () => {
             className="gap-1.5 px-2.5 text-xs"
           >
             <PanelRightOpen />
-            {isPreviewOpen ? "Hide preview" : "Show preview"}
           </Button>
 
           {id && (
@@ -273,11 +278,11 @@ const BillingHeader = () => {
       </div>
 
       <div className="mt-2 flex min-w-0 items-end gap-2">
-        <div className="min-w-56 flex-1">
+        <div className="w-full max-w-3xl min-w-56">
           <span className="text-muted-foreground mb-1 block text-xs font-semibold">
             Customer details
           </span>
-          <CustomerNameInput />
+          <CustomerNameInput customerType={customerType} />
         </div>
         {hasRealCustomer && (
           <span

@@ -13,7 +13,6 @@ export const DateRangePicker = () => {
     dropdown,
     selectedPreset,
     setSelectedPreset,
-    calendarClassNames,
     formatters,
     handleApplyDateRange,
     handleCancel,
@@ -25,7 +24,7 @@ export const DateRangePicker = () => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="bg-secondary text-foreground hover:bg-secondary/80 flex h-9 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium">
+        <button className="bg-secondary text-foreground hover:bg-secondary/80 flex h-8 cursor-pointer items-center gap-1.5 rounded-(--radius-control) px-2.5 text-sm font-medium">
           <CalendarIcon className="text-foreground size-4" />
           {date?.from?.toLocaleDateString("en-IN", {
             dateStyle: "medium"
@@ -37,14 +36,17 @@ export const DateRangePicker = () => {
           <ChevronDownIcon className="text-muted-foreground size-3.5" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto space-y-4 px-4 py-4" align="end">
-        <div className="flex flex-wrap gap-1.5">
+      <PopoverContent
+        className="max-h-(--radix-popover-content-available-height) w-auto space-y-2.5 overflow-y-auto p-3"
+        align="end"
+      >
+        <div className="grid grid-cols-5 gap-1">
           {calendarPresets.map((preset, idx) => (
             <Button
               variant={selectedPreset === preset.value ? "default" : "outline"}
               size="sm"
               key={idx}
-              className={`cursor-pointer font-medium ${selectedPreset === preset.value ? "" : "hover:bg-accent hover:text-accent-foreground"}`}
+              className={`h-7 cursor-pointer px-2 text-xs font-medium ${selectedPreset === preset.value ? "" : "hover:bg-accent hover:text-accent-foreground"}`}
               onClick={() => {
                 const dateValue = preset.getRange();
                 setTempDate(dateValue);
@@ -66,7 +68,10 @@ export const DateRangePicker = () => {
             onSelect={(range) => handleOnDateSelect(range)}
             captionLayout={dropdown}
             className="p-0"
-            classNames={calendarClassNames}
+            classNames={{
+              day_button:
+                "transition-none data-[selected-single=true]:hover:bg-primary data-[selected-single=true]:hover:text-primary-foreground data-[range-start=true]:hover:bg-primary data-[range-start=true]:hover:text-primary-foreground data-[range-end=true]:hover:bg-primary data-[range-end=true]:hover:text-primary-foreground"
+            }}
             numberOfMonths={2}
           />
         </div>

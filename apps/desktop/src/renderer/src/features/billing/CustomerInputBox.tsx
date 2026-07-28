@@ -19,7 +19,7 @@ function rowHeight() {
   return 40;
 }
 
-export const CustomerNameInput = () => {
+export const CustomerNameInput = ({ customerType }: { customerType?: string | null }) => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
@@ -145,8 +145,21 @@ export const CustomerNameInput = () => {
           role="combobox"
           className="h-9 w-full min-w-0 justify-between px-3 text-sm font-normal"
         >
-          <span className="truncate">{customerName ? customerName : "Select Customer..."}</span>
-          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-60" />
+          <span className="min-w-0 flex-1 truncate text-left" title={customerName || undefined}>
+            {customerName ? customerName : "Select Customer..."}
+          </span>
+          {customerName && customerType && (
+            <Badge
+              variant="outline"
+              className={cn(
+                "shrink-0 px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
+                typeBadgeClass[customerType] ?? typeBadgeClass.cash
+              )}
+            >
+              {customerType}
+            </Badge>
+          )}
+          <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent

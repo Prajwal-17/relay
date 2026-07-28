@@ -136,21 +136,18 @@ const LineItemRow = memo(
           <div className="min-w-0">
             <div className="bg-muted/60 border-border/70 relative mx-auto flex h-9 w-full items-center rounded-(--radius-control) border font-bold">
               <button
-                disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-(--radius-control) border-r transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-(--radius-control) border-r transition-colors"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   const currentQty = parseFloat(item.quantity) || 0;
-                  if (currentQty >= 1) {
-                    const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
-                    updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
-                    processSyncQueue(tabId);
-                  }
+                  const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
+                  updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
+                  processSyncQueue(tabId);
                 }}
-                aria-label="Decrease quantity"
+                aria-label="Increase quantity"
               >
-                <Minus size={16} strokeWidth={2.5} />
+                <Plus size={16} strokeWidth={2.5} />
               </button>
               <input
                 type="text"
@@ -173,18 +170,21 @@ const LineItemRow = memo(
                 placeholder="0"
               />
               <button
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-(--radius-control) border-l transition-colors"
+                disabled={parseFloat(item.quantity || "0") <= 1}
+                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-(--radius-control) border-l transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   const currentQty = parseFloat(item.quantity) || 0;
-                  const newQty = fromMilliUnits(toMilliUnits(currentQty + 1));
-                  updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
-                  processSyncQueue(tabId);
+                  if (currentQty >= 1) {
+                    const newQty = fromMilliUnits(toMilliUnits(currentQty - 1));
+                    updateLineItem(tabId, item.rowId, "quantity", newQty.toString());
+                    processSyncQueue(tabId);
+                  }
                 }}
-                aria-label="Increase quantity"
+                aria-label="Decrease quantity"
               >
-                <Plus size={16} strokeWidth={2.5} />
+                <Minus size={16} strokeWidth={2.5} />
               </button>
               <QuantityPresets
                 rowId={item.rowId}
