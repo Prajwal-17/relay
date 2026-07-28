@@ -103,4 +103,11 @@ export async function startServer() {
   return server;
 }
 
-startServer();
+startServer()
+  .then(() => {
+    process.send?.("server-ready");
+  })
+  .catch((error) => {
+    console.error("Failed to start the QuickCart server", error);
+    process.exitCode = 1;
+  });

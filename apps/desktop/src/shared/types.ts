@@ -666,3 +666,28 @@ export interface ZoomApi {
   setZoom: (factor: number) => Promise<{ zoomFactor: number }>;
   getBounds: () => Promise<{ min: number; max: number; default: number }>;
 }
+
+export type DatabaseUpgradeStatus = {
+  state:
+    | "checking"
+    | "backing_up"
+    | "schema"
+    | "data"
+    | "verifying"
+    | "starting"
+    | "failed"
+    | "complete";
+  label: string;
+  currentStep: number;
+  totalSteps: number;
+  backupAvailable: boolean;
+  errorMessage?: string;
+};
+
+export interface DatabaseUpgradeApi {
+  getStatus(): Promise<DatabaseUpgradeStatus>;
+  onStatus(listener: (status: DatabaseUpgradeStatus) => void): () => void;
+  retry(): Promise<void>;
+  openBackupFolder(): Promise<void>;
+  quit(): void;
+}

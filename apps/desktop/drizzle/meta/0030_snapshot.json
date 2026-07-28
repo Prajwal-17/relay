@@ -1,9 +1,34 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "0fad43ab-27e3-451a-9b46-5bdb0911002b",
+  "id": "47622901-f887-47c1-90b8-68242b2a7d4e",
   "prevId": "a76c68a2-a2f8-47ab-b160-4472ef23bf89",
   "tables": {
+    "app_data_migrations": {
+      "name": "app_data_migrations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "applied_at": {
+          "name": "applied_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "app_instance": {
       "name": "app_instance",
       "columns": {
@@ -197,7 +222,15 @@
           "default": "(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "customer_ledger_sale_id_unique": {
+          "name": "customer_ledger_sale_id_unique",
+          "columns": [
+            "sale_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "customer_ledger_customer_id_customers_id_fk": {
           "name": "customer_ledger_customer_id_customers_id_fk",
@@ -303,13 +336,20 @@
           "autoincrement": false,
           "default": 0
         },
-        "credit_limit": {
-          "name": "credit_limit",
+        "is_archived": {
+          "name": "is_archived",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false,
-          "default": 0
+          "default": false
+        },
+        "archived_at": {
+          "name": "archived_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -590,14 +630,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "is_paid": {
-          "name": "is_paid",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
         },
         "notes": {
           "name": "notes",
@@ -1193,35 +1225,20 @@
           "notNull": false,
           "autoincrement": false
         },
-        "amount_paid": {
-          "name": "amount_paid",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "payment_mode": {
-          "name": "payment_mode",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "is_paid": {
-          "name": "is_paid",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
         "notes": {
           "name": "notes",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "recorded_at": {
+          "name": "recorded_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))"
         },
         "created_at": {
           "name": "created_at",

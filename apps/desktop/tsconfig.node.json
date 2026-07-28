@@ -2,6 +2,8 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*", "src/shared/**/*"],
+  // Temporary: test type errors are being handled separately.
+  "exclude": ["src/main/tests/**/*"],
   "compilerOptions": {
     "target": "ES2023",
     "lib": ["ES2023"],

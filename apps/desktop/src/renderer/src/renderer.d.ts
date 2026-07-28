@@ -1,4 +1,10 @@
-import type { DialogApi, ExportApi, ProductsApi, ZoomApi } from "src/shared/types";
+import type {
+  DatabaseUpgradeApi,
+  DialogApi,
+  ExportApi,
+  ProductsApi,
+  ZoomApi
+} from "src/shared/types";
 
 declare global {
   interface Window {
@@ -6,6 +12,7 @@ declare global {
     dialogApi: DialogApi;
     exportApi: ExportApi;
     zoomApi: ZoomApi;
+    databaseUpgradeApi: DatabaseUpgradeApi;
     env: {
       API_URL: string;
     };

@@ -301,6 +301,13 @@ export const appPreferences = sqliteTable("app_preferences", {
     .notNull()
 });
 
+export const appDataMigrations = sqliteTable("app_data_migrations", {
+  id: text("id").primaryKey(),
+  appliedAt: text("applied_at")
+    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+    .notNull()
+});
+
 // drizzle relations are only for querying
 export const salesRelations = relations(sales, ({ one, many }) => ({
   customer: one(customers, {

@@ -1,5 +1,13 @@
 import { contextBridge, ipcRenderer } from "electron";
-import type { DialogApi, ExportApi, ProductsApi, TransactionType, ZoomApi } from "../shared/types";
+import type {
+  DatabaseUpgradeApi,
+  DatabaseUpgradeStatus,
+  DialogApi,
+  ExportApi,
+  ProductsApi,
+  TransactionType,
+  ZoomApi
+} from "../shared/types";
 
 const productsApi: ProductsApi = {
   saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl)
@@ -21,6 +29,20 @@ const zoomApi: ZoomApi = {
   getBounds: () => ipcRenderer.invoke("zoom:bounds")
 };
 
+const databaseUpgradeApi: DatabaseUpgradeApi = {
+  getStatus: () => ipcRenderer.invoke("database-upgrade:get-status"),
+  onStatus: (listener: (status: DatabaseUpgradeStatus) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, status: DatabaseUpgradeStatus) => {
+      listener(status);
+    };
+    ipcRenderer.on("database-upgrade:status", handler);
+    return () => ipcRenderer.removeListener("database-upgrade:status", handler);
+  },
+  retry: () => ipcRenderer.invoke("database-upgrade:retry"),
+  openBackupFolder: () => ipcRenderer.invoke("database-upgrade:open-backup-folder"),
+  quit: () => ipcRenderer.send("database-upgrade:quit")
+};
+
 const apiArg = process.argv.find((a) => a.startsWith("--api-port="));
 const apiPort = apiArg ? Number(apiArg.split("=")[1]) : 4722;
 
@@ -33,6 +55,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("dialogApi", dialogApi);
     contextBridge.exposeInMainWorld("exportApi", exportApi);
     contextBridge.exposeInMainWorld("zoomApi", zoomApi);
+    contextBridge.exposeInMainWorld("databaseUpgradeApi", databaseUpgradeApi);
     contextBridge.exposeInMainWorld("env", {
       API_URL: `http://localhost:${apiPort}`
     });
@@ -50,6 +73,8 @@ if (process.contextIsolated) {
   window.exportApi = exportApi;
   // @ts-ignore (define in ts)
   window.zoomApi = zoomApi;
+  // @ts-ignore (define in ts)
+  window.databaseUpgradeApi = databaseUpgradeApi;
   // @ts-ignore (define in ts)
   window.env = { API_URL: `http://localhost:${apiPort}` };
 }

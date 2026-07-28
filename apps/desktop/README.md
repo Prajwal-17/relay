@@ -82,13 +82,39 @@ to `dist/`; Electron build output is written to `out/`.
 - Database: `<Electron userData>/pos.db`
 - Product images: `<Electron userData>/product-images/`
 
-SQLite runs in WAL mode. Migrations are applied during startup and the `drizzle/` directory is
-bundled into packaged applications.
+SQLite runs in WAL mode. Schema and data migrations are applied automatically during startup. The
+`drizzle/` directory is required at runtime and is bundled into packaged applications; a missing
+migration directory is a startup-blocking error.
 
 The main process loads `.env`, then `.env.<MODE>`, without overriding variables already present
 in the environment. Main-process variables use the `M_VITE_` prefix; renderer variables use
 `VITE_`. See `.env.example` for supported project-specific values. Development and production
 data remain isolated.
+
+## Automatic database upgrades
+
+Before opening the application, the main process checks both the Drizzle schema journal and
+`app_data_migrations`. An up-to-date database follows the normal startup path without showing an
+upgrade window. Pending upgrades use a compact splash to report backup, schema, named data-repair,
+verification, and server-start phases. The forked API server repeats the initialization check, but
+all completed work is tracked and therefore skipped.
+
+Data repairs are registered under `src/main/db/dataMigrations/`. Every repair runs in its own SQLite
+transaction and inserts its migration ID only after the repair succeeds. Failed repairs roll back
+and Retry resumes from the first unapplied ID. Fresh empty databases skip legacy placeholder data
+and continue to onboarding; non-empty legacy databases receive the required default store, walk-in
+customer, and preferences.
+
+Before changing a non-empty database, QuickCart uses SQLite's consistent backup API and an atomic
+temporary-file rename. Only the latest pre-upgrade backup is kept at
+`<Electron userData>/backups/pos-before-upgrade-latest.db`. A small adjacent marker prevents Retry
+from replacing that backup with partially upgraded data. Backup, migration, or integrity-check
+failures block the API and main window. QuickCart does not restore automatically; the failure window
+provides Retry, Open backup folder, and Quit.
+
+Packaged builds must include the complete `drizzle/` directory through `extraResources`. Keep the
+development and packaged migration paths covered whenever startup or packaging configuration
+changes.
 
 ## Application conventions
 
