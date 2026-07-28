@@ -1,5 +1,5 @@
 import type { SyncStatus } from "@/types";
-import type { BillStatus, PaymentMode, TransactionType } from "@shared/types";
+import type { BillStatus, TransactionType } from "@shared/types";
 
 export type LineItem = {
   id: string | null; // saleItem.id | estimateItem.id
@@ -37,7 +37,6 @@ export type BillingSessionData = {
   status: BillStatus;
   isCountColumnVisible: boolean;
   notes: string | null;
-  amountPaid: string;
-  paymentMode: PaymentMode | null;
+  addToAccounting: boolean;
   lineItems: LineItem[];
 };

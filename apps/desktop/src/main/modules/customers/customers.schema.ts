@@ -1,10 +1,5 @@
 import z from "zod";
-import {
-  CUSTOMER_SORT_BY,
-  CUSTOMER_TXN_SORT,
-  CUSTOMER_TXN_STATUS,
-  CUSTOMER_TYPE
-} from "../../../shared/types";
+import { CUSTOMER_SORT_BY, CUSTOMER_TXN_SORT, CUSTOMER_TYPE } from "../../../shared/types";
 
 export const listCustomersSchema = z.object({
   pageNo: z.coerce.number().min(1).positive().default(1),
@@ -31,9 +26,6 @@ export const getSalesByCustomerSchema = z.object({
   pageNo: z.coerce.number().min(1).positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(10),
   search: z.string().trim().default(""),
-  status: z
-    .enum([CUSTOMER_TXN_STATUS.ALL, CUSTOMER_TXN_STATUS.PAID, CUSTOMER_TXN_STATUS.UNPAID])
-    .default(CUSTOMER_TXN_STATUS.ALL),
   sort: z
     .enum([
       CUSTOMER_TXN_SORT.DATE_DESC,

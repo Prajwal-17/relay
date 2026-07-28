@@ -74,9 +74,8 @@ export function RecentActivitiesTable() {
               <div className="col-span-2 flex items-center">
                 {type === TRANSACTION_TYPE.SALE ? "Invoice No" : "Estimate No"}
               </div>
-              <div className="col-span-2 flex items-center">Amount</div>
-              <div className="col-span-2 flex items-center">Status</div>
-              <div className="col-span-1 flex items-center">Actions</div>
+              <div className="col-span-3 flex items-center">Amount</div>
+              <div className="col-span-2 flex items-center justify-center">Actions</div>
             </div>
 
             {data && data.length > 0 ? (

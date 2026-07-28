@@ -22,7 +22,6 @@ export type Customer = {
   notes: string | null;
   address: string | null;
   outstandingBalance: number | null;
-  creditLimit: number | null;
   isArchived: boolean;
   archivedAt: string | null;
   lastPurchaseAt?: string | null;
@@ -92,7 +91,6 @@ export type ProductTransaction = {
   quantity: number;
   price: number;
   totalPrice: number;
-  isPaid: boolean;
   createdAt: string;
 };
 
@@ -105,9 +103,9 @@ export type UnifiedTransaction = {
   notes: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  amountPaid: number;
-  paymentMode: PaymentMode | null;
-  isPaid: boolean;
+  isAddedToAccounting?: boolean;
+  canModify?: boolean;
+  recordedAt?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -140,9 +138,7 @@ export type Sale = {
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  amountPaid: number;
-  paymentMode: PaymentMode | null;
-  isPaid: boolean;
+  recordedAt: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -153,7 +149,6 @@ export type Estimate = {
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  isPaid: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -229,7 +224,7 @@ export type SalePayload = {
   customerContact: string | null;
   grandTotal: number;
   totalQuantity: number | null;
-  isPaid: boolean;
+  addToAccounting: boolean;
   createdAt?: string;
   items: SalePayloadItem[];
 };
@@ -255,7 +250,6 @@ export type EstimatePayload = {
   customerContact: string | null;
   grandTotal: number;
   totalQuantity: number | null;
-  isPaid: boolean;
   createdAt: string;
   items: EstimatePayloadItem[];
 };
@@ -356,12 +350,6 @@ export const CUSTOMER_TXN_SORT = {
   AMOUNT_ASC: "amount_asc"
 } as const;
 
-export const CUSTOMER_TXN_STATUS = {
-  ALL: "all",
-  PAID: "paid",
-  UNPAID: "unpaid"
-} as const;
-
 export const LEDGER_ENTRY_TYPE = {
   SALE: "sale",
   QUICK_SALE: "quick_sale",
@@ -417,8 +405,6 @@ export type RecentSalePreview = {
   id: string;
   invoiceNo: number;
   grandTotal: number;
-  amountPaid: number;
-  isPaid: boolean;
   createdAt: string;
 };
 
@@ -453,12 +439,6 @@ export type CreatePaymentPayload = {
 };
 
 export type CreatePaymentResult = {
-  allocations: {
-    saleId: string;
-    allocatedPaisa: number;
-    ledgerEntryId: null;
-  }[];
-  leftoverPaisa: number;
   ledgerEntryId: string;
 };
 
@@ -480,11 +460,6 @@ export type UpdateLedgerEntryPayload = {
   notes?: string;
 };
 
-export type CreateOpeningBalancePayload = {
-  amount: number;
-  notes?: string;
-};
-
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"
@@ -501,8 +476,6 @@ export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SO
 export type CustomerSortByType = (typeof CUSTOMER_SORT_BY)[keyof typeof CUSTOMER_SORT_BY];
 
 export type CustomerTxnSort = (typeof CUSTOMER_TXN_SORT)[keyof typeof CUSTOMER_TXN_SORT];
-
-export type CustomerTxnStatus = (typeof CUSTOMER_TXN_STATUS)[keyof typeof CUSTOMER_TXN_STATUS];
 
 export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 

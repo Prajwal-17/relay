@@ -1,18 +1,12 @@
 import { apiClient } from "@/lib/apiClient";
 import { toSentenceCase } from "@/utils";
-import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
+import { type TransactionType } from "@shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 export type MutationVariables = {
   type: TransactionType;
   id: string;
-};
-
-export type StatusMutationVariables = {
-  type: TransactionType;
-  id: string;
-  isPaid: boolean;
 };
 
 export const useCustomerTxnMutations = (customerId: string, type: TransactionType) => {
@@ -40,21 +34,10 @@ export const useCustomerTxnMutations = (customerId: string, type: TransactionTyp
   });
 
   const convertMutation = useMutation<{ id: string }, Error, MutationVariables>({
-    mutationFn: ({ id }) => apiClient.post(`/api/${type}s/${id}/convert`),
+    mutationFn: ({ id }) => apiClient.post(`/api/estimates/${id}/convert`),
     onSuccess: () => {
       invalidate();
-      toast.success(
-        `Successfully converted ${toSentenceCase(type)} to ${type === TRANSACTION_TYPE.SALE ? "Estimate" : "Sale"}`
-      );
-    },
-    onError: (error) => toast.error(error.message)
-  });
-
-  const txnStatusMutation = useMutation<{ message: string }, Error, StatusMutationVariables>({
-    mutationFn: ({ id, isPaid }) => apiClient.patch(`/api/${type}s/${id}`, { isPaid }),
-    onSuccess: (response) => {
-      invalidate();
-      toast.success(response.message);
+      toast.success("Successfully converted Estimate to Sale");
     },
     onError: (error) => toast.error(error.message)
   });
@@ -68,5 +51,5 @@ export const useCustomerTxnMutations = (customerId: string, type: TransactionTyp
     onError: (error) => toast.error(error.message)
   });
 
-  return { deleteMutation, convertMutation, txnStatusMutation, duplicateMutation };
+  return { deleteMutation, convertMutation, duplicateMutation };
 };

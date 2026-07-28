@@ -18,13 +18,15 @@ export const ItemRow = ({
   item,
   index,
   type,
-  updateQtyMutation
+  updateQtyMutation,
+  canModify
 }: {
   id: string;
   item: UnifiedTransactionItem;
   index: number;
   type: DashboardType;
   updateQtyMutation: UseMutationResult<null, Error, MutationVariables>;
+  canModify: boolean;
 }) => {
   const checked = item.quantity > 0 && item.checkedQty === item.quantity;
   const partial = item.checkedQty > 0 && item.checkedQty < item.quantity;
@@ -75,6 +77,7 @@ export const ItemRow = ({
           type="button"
           onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.SET)}
           aria-label={checked ? "Uncheck item" : "Check item"}
+          disabled={!canModify}
           className={cn(
             "mx-auto flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md border transition-colors",
             checked
@@ -96,7 +99,7 @@ export const ItemRow = ({
           variant="outline"
           size="sm"
           onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
-          disabled={checked}
+          disabled={!canModify || checked}
           aria-label="Increment checked quantity"
           className="flex size-7 cursor-pointer items-center justify-center bg-transparent p-0"
         >
@@ -108,7 +111,7 @@ export const ItemRow = ({
           variant="outline"
           size="sm"
           onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.DECREMENT)}
-          disabled={item.checkedQty === 0}
+          disabled={!canModify || item.checkedQty === 0}
           aria-label="Decrement checked quantity"
           className="flex size-7 cursor-pointer items-center justify-center bg-transparent p-0"
         >

@@ -9,7 +9,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +40,7 @@ const RecentTransactionsTableRow = ({
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
 }) => {
   const navigate = useNavigate();
+  const canModify = type !== TRANSACTION_TYPE.SALE || transaction.canModify !== false;
   const handleEdit = useCallback(() => {
     if (type === TRANSACTION_TYPE.SALE) {
       navigate(`/billing/sales/${transaction.id}/edit`);
@@ -103,22 +103,14 @@ const RecentTransactionsTableRow = ({
         <div className="text-muted-foreground col-span-2 flex items-center font-medium">
           # {transaction.transactionNo}
         </div>
-        <div className="col-span-2 flex items-center font-semibold">
+        <div className="col-span-3 flex items-center font-semibold">
           {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
         </div>
-        <div className="col-span-2 flex items-center">
-          {transaction.isPaid ? (
-            <Badge className="bg-success/10 text-success border-success/20 text-sm">Paid</Badge>
-          ) : (
-            <Badge className="border-destructive/20 bg-destructive/10 text-destructive text-sm">
-              Unpaid
-            </Badge>
-          )}
-        </div>
-        <div className="col-span-1 flex items-center justify-center gap-1">
+        <div className="col-span-2 flex items-center justify-center gap-1">
           <Tooltip>
             <TooltipTrigger
               onClick={handleEdit}
+              hidden={!canModify}
               className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-2"
             >
               <Edit size={20} />
@@ -131,7 +123,10 @@ const RecentTransactionsTableRow = ({
           <AlertDialog>
             <Tooltip>
               <AlertDialogTrigger asChild>
-                <TooltipTrigger className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2">
+                <TooltipTrigger
+                  hidden={!canModify}
+                  className="hover:bg-accent text-destructive cursor-pointer rounded-md p-2"
+                >
                   <Trash2 size={20} />
                 </TooltipTrigger>
               </AlertDialogTrigger>
@@ -166,7 +161,11 @@ const RecentTransactionsTableRow = ({
             <DropdownMenuContent className="w-40" align="end">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="cursor-pointer">
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    hidden={type !== TRANSACTION_TYPE.ESTIMATE}
+                    className="cursor-pointer"
+                  >
                     <RefreshCcw className="mr-1 h-4 w-4 cursor-pointer" />
                     <span className="text-lg">Convert</span>
                   </DropdownMenuItem>
@@ -226,8 +225,8 @@ function memoComparator(prev: any, next: any) {
   if (p.customerId !== n.customerId) return false;
   if (p.customer?.name !== n.customer?.name) return false;
   if (p.grandTotal !== n.grandTotal) return false;
-  if (p.isPaid !== n.isPaid) return false;
   if (p.createdAt !== n.createdAt) return false;
+  if (p.canModify !== n.canModify) return false;
 
   if (prev.deleteMutation?.isPending !== next.deleteMutation?.isPending) return false;
   if (prev.convertMutation?.isPending !== next.convertMutation?.isPending) return false;

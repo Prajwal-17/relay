@@ -27,7 +27,6 @@ type BatchUpdateMutationVariables = {
 };
 
 type ActionVariables = { type: DashboardType; id: string };
-type StatusVariables = { type: DashboardType; id: string; isPaid: boolean };
 
 export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) => {
   const queryClient = useQueryClient();
@@ -68,7 +67,7 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
   });
 
   const convertMutation = useMutation<{ id: string }, Error, ActionVariables>({
-    mutationFn: ({ type, id }) => apiClient.post(`/api/${type}/${id}/convert`),
+    mutationFn: ({ id }) => apiClient.post(`/api/estimates/${id}/convert`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [type], exact: false });
       toast.success("Transaction converted");
@@ -81,16 +80,6 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [type], exact: false });
       toast.success("Transaction duplicated");
-    },
-    onError: (err) => toast.error(err.message)
-  });
-
-  const statusMutation = useMutation<{ message: string }, Error, StatusVariables>({
-    mutationFn: ({ type, id, isPaid }) => apiClient.patch(`/api/${type}/${id}`, { isPaid }),
-    onSuccess: (res) => {
-      queryClient.invalidateQueries({ queryKey: [type, id], exact: false });
-      queryClient.invalidateQueries({ queryKey: [type], exact: false });
-      toast.success(res.message);
     },
     onError: (err) => toast.error(err.message)
   });
@@ -134,14 +123,12 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
   const totalQty = items.reduce((s, it) => s + Number(it.quantity || 0), 0);
   const totalCheckedQty = items.reduce((s, it) => s + Number(it.checkedQty || 0), 0);
   const itemsCount = items.length;
-  const balanceDue = data ? (data.grandTotal ?? 0) - (data.amountPaid ?? 0) : 0;
 
   return {
     data,
     isLoading,
     subtotal,
     grandTotal,
-    balanceDue,
     itemsCount,
     totalQty,
     totalCheckedQty,
@@ -150,7 +137,6 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
     deleteMutation,
     convertMutation,
     duplicateMutation,
-    statusMutation,
     exportPdf,
     pdfLoading
   };

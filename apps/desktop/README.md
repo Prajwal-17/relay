@@ -64,7 +64,6 @@ Run these from `apps/desktop` unless shown otherwise.
 | `pnpm typecheck`      | Typecheck main/preload and renderer code           |
 | `pnpm test --run`     | Run Vitest once                                    |
 | `pnpm format`         | Format the desktop package                         |
-| `pnpm seed`           | Seed the development database                      |
 | `pnpm db:migrate:dev` | Apply development migrations                       |
 | `pnpm db:studio:dev`  | Open Drizzle Studio for development data           |
 | `pnpm db:push:dev`    | Push the schema to the development database        |
@@ -105,6 +104,31 @@ data remain isolated.
 
 Detailed implementation rules live in [AGENTS.md](../../AGENTS.md).
 
+## Accounting model
+
+Sales and customer accounting are intentionally separate. Every sale contributes its full
+`grandTotal` to sales and tax reporting. A sale changes a customer balance only when the biller
+selects **Add this sale to customer accounting**; that selection maintains one full-total ledger
+row linked by sale ID. Repeated billing autosaves update that row instead of creating duplicates.
+The configured default/walk-in customer cannot be added to Accounting.
+
+`Record Payment` creates an unallocated customer-level Payment row and stores Cash, UPI, or Card;
+it never changes a sale. `Quick Sale` adds an amount owed, while `Adjust Balance` can increase or
+decrease the overall balance. Overpayments are valid and produce an advance. Customer
+`outstanding_balance` is a recomputed ledger cache and is never directly editable. Credit limits
+do not exist.
+
+Opening Balance is optional only while creating a customer. A positive amount creates the customer
+and one Opening ledger row in the same transaction; existing customers have no later set-opening
+operation. Opening, Quick Sale, Payment, and Adjustment rows may be edited or deleted for 48 hours
+from their immutable ledger `created_at`, then lock permanently. Sale-linked ledger rows are
+changed only through their sale.
+
+Sales use immutable `recorded_at` for the same 48-hour Edit/Delete window; the displayed invoice
+`created_at` cannot extend it. Deleting within the window is a hard, atomic deletion that reverses
+inventory, removes the linked ledger row, and recomputes the customer balance. Estimates remain
+non-payable, and Estimate → Sale creates a normal sale without opting into Accounting.
+
 ## Display contract
 
 The reference viewport is **1280 × 650 CSS pixels at 100% Electron zoom**; **1024 × 600** is the
@@ -139,7 +163,7 @@ pnpm rebuild:electron  # before Electron development
 pnpm rebuild:node      # before Node-only scripts or tests
 ```
 
-The main development, seed, and database scripts already perform the appropriate rebuild.
+The development and database commands already perform the appropriate rebuild.
 
 ### Linux Chromium sandbox
 

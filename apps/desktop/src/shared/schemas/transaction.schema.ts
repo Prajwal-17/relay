@@ -17,18 +17,28 @@ export const lineItemSchema = z.object({
   isDeleted: z.boolean()
 });
 
-export const payloadDataSchema = z.object({
+const baseTransactionPayloadSchema = z.object({
   transactionNo: z.number().positive().nullable().optional(),
-  transactionType: z.enum(TRANSACTION_TYPE),
   customerId: z.uuidv4(),
-  amountPaid: z.number().int().nonnegative().default(0),
-  paymentMode: z.enum(["cash", "upi", "card"]).nullable().default(null),
-  isPaid: z.boolean(),
   items: z.array(lineItemSchema),
   notes: z.string().nullable().default(null),
   createdAt: z.iso.datetime().optional()
 });
 
-export const txnPayloadSchema = z.object({
-  data: payloadDataSchema
+export const salePayloadDataSchema = baseTransactionPayloadSchema.extend({
+  transactionType: z.literal(TRANSACTION_TYPE.SALE),
+  addToAccounting: z.boolean()
 });
+
+export const estimatePayloadDataSchema = baseTransactionPayloadSchema.extend({
+  transactionType: z.literal(TRANSACTION_TYPE.ESTIMATE)
+});
+
+export const payloadDataSchema = z.discriminatedUnion("transactionType", [
+  salePayloadDataSchema,
+  estimatePayloadDataSchema
+]);
+
+export const txnPayloadSchema = z.object({ data: payloadDataSchema });
+export const saleTxnPayloadSchema = z.object({ data: salePayloadDataSchema });
+export const estimateTxnPayloadSchema = z.object({ data: estimatePayloadDataSchema });

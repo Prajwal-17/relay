@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 import DashboardTableRow from "./DashboardTableRow";
 
 export const DashboardTable = () => {
-  const { deleteMutation, convertMutation, txnStatusMutation, duplicateMutation } = useDashboard();
+  const { deleteMutation, convertMutation, duplicateMutation } = useDashboard();
   const { type } = useParams();
   const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
     useInfiniteScroll(type as DashboardType);
@@ -42,8 +42,7 @@ export const DashboardTable = () => {
                     ? "Estimate No"
                     : "Transaction No"}
               </div>
-              <div className="col-span-2 flex items-center">Amount</div>
-              <div className="col-span-1 flex items-center justify-start">Status</div>
+              <div className="col-span-3 flex items-center">Amount</div>
               <div className="col-span-2 flex items-center justify-center">Actions</div>
             </div>
 
@@ -79,7 +78,6 @@ export const DashboardTable = () => {
                             isLoaderRow={isLoaderRow}
                             deleteMutation={deleteMutation}
                             convertMutation={convertMutation}
-                            txnStatusMutation={txnStatusMutation}
                             duplicateMutation={duplicateMutation}
                             hasNextPage={hasNextPage}
                             setIsViewModalOpen={setIsViewModalOpen}

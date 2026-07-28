@@ -3,13 +3,12 @@ import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import {
   TRANSACTION_TYPE,
-  type PaymentMode,
   type TransactionType,
   type UnifiedTransctionWithItems
 } from "@shared/types";
-import { paisaToRupees } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const useLoadTransactionDetails = (
@@ -17,6 +16,7 @@ const useLoadTransactionDetails = (
   id?: string,
   tabId?: string | null // here pass activeTabId
 ) => {
+  const navigate = useNavigate();
   const currentSession = tabId ? useBillingSessionStore.getState().sessions[tabId] : undefined;
   const activeTabRoutePath = tabId
     ? useBillingTabsStore.getState().tabs.find((t) => t.id === tabId)?.routePath
@@ -48,6 +48,12 @@ const useLoadTransactionDetails = (
   useEffect(() => {
     if (!tabId || !isSuccess || !data) return;
 
+    if (data.type === TRANSACTION_TYPE.SALE && data.canModify === false) {
+      toast.error("This sale is permanently locked after 48 hours.");
+      navigate("/dashboard/sales", { replace: true });
+      return;
+    }
+
     const sessions = useBillingSessionStore.getState().sessions;
     if (!sessions[tabId]) return;
 
@@ -60,14 +66,13 @@ const useLoadTransactionDetails = (
         customerId: data.customerId,
         customerName: data.customer.name,
         notes: data.notes,
-        amountPaid: data.amountPaid ? paisaToRupees(data.amountPaid).toString() : "",
-        paymentMode: data.paymentMode as PaymentMode | null
+        addToAccounting: data.type === TRANSACTION_TYPE.SALE && Boolean(data.isAddedToAccounting)
       });
       setLineItems(tabId, data.items);
       useBillingTabsStore.getState().updateTab(tabId, { transactionNo: data.transactionNo });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSuccess, data, tabId]);
+  }, [isSuccess, data, tabId, navigate]);
   const isDetailsLoading = shouldFetch && isLoading;
   return { status, isLoading: isDetailsLoading, isFetched };
 };

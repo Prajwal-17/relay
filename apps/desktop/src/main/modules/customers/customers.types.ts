@@ -1,9 +1,4 @@
-import type {
-  CustomerSortByType,
-  CustomerTxnSort,
-  CustomerTxnStatus,
-  CustomerType
-} from "../../../shared/types";
+import type { CustomerSortByType, CustomerTxnSort, CustomerType } from "../../../shared/types";
 
 export type PaginatedQuery = {
   pageNo: number;
@@ -24,7 +19,6 @@ export type TxnByCustomerParams = {
   pageNo: number;
   pageSize: number;
   search: string;
-  status: CustomerTxnStatus;
   sort: CustomerTxnSort;
 };
 

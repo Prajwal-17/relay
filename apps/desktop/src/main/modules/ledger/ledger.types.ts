@@ -1,6 +1,5 @@
 import type {
   CreateAdjustmentPayload,
-  CreateOpeningBalancePayload,
   CreatePaymentPayload,
   CreateQuickSalePayload,
   LedgerSort,
@@ -32,27 +31,10 @@ export type CreateQuickSaleParams = {
   payload: CreateQuickSalePayload;
 };
 
-export type CreateOpeningBalanceParams = {
-  customerId: string;
-  payload: CreateOpeningBalancePayload;
-};
-
 export type InsertSaleEntryParams = {
   customerId: string;
   saleId: string;
   amountDue: number;
-};
-
-export type OpenSale = {
-  id: string;
-  grandTotal: number | null;
-  amountPaid: number;
-  isPaid: boolean;
-};
-
-export type FifoAllocation = {
-  saleId: string;
-  allocatedPaisa: number;
 };
 
 export type UpdateLedgerEntryParams = {

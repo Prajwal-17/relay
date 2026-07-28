@@ -1,5 +1,5 @@
 import { relations, sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { v4 as uuidv4 } from "uuid";
 import type { AppConfig } from "../../shared/types";
 import type { CustomerRole } from "./enum";
@@ -52,7 +52,6 @@ export const customers = sqliteTable(
     notes: text("notes"),
     address: text("address"),
     outstandingBalance: integer("outstanding_balance", { mode: "number" }).default(0),
-    creditLimit: integer("credit_limit", { mode: "number" }).default(0),
     isArchived: integer("is_archived", { mode: "boolean" }).notNull().default(false),
     archivedAt: text("archived_at"),
     createdAt: text("created_at")
@@ -65,29 +64,33 @@ export const customers = sqliteTable(
   (table) => [index("customer_store_id_idx").on(table.storeId)]
 );
 
-export const customerLedger = sqliteTable("customer_ledger", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv4()),
-  customerId: text("customer_id")
-    .references(() => customers.id)
-    .notNull(),
-  storeId: text("store_id").references(() => storeProfile.id, {
-    onDelete: "cascade"
-  }),
-  type: text("type").notNull(),
-  saleId: text("sale_id").references(() => sales.id),
-  amountDue: integer("amount_due").default(0),
-  amountPaid: integer("amount_paid").default(0),
-  paymentMode: text("payment_mode"),
-  notes: text("notes"),
-  createdAt: text("created_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull(),
-  updatedAt: text("updated_at")
-    .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
-    .notNull()
-});
+export const customerLedger = sqliteTable(
+  "customer_ledger",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => uuidv4()),
+    customerId: text("customer_id")
+      .references(() => customers.id)
+      .notNull(),
+    storeId: text("store_id").references(() => storeProfile.id, {
+      onDelete: "cascade"
+    }),
+    type: text("type").notNull(),
+    saleId: text("sale_id").references(() => sales.id),
+    amountDue: integer("amount_due").default(0),
+    amountPaid: integer("amount_paid").default(0),
+    paymentMode: text("payment_mode"),
+    notes: text("notes"),
+    createdAt: text("created_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
+    updatedAt: text("updated_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull()
+  },
+  (table) => [uniqueIndex("customer_ledger_sale_id_unique").on(table.saleId)]
+);
 
 export const products = sqliteTable(
   "products",
@@ -166,10 +169,10 @@ export const sales = sqliteTable(
       .notNull(),
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
-    amountPaid: integer("amount_paid", { mode: "number" }).default(0).notNull(),
-    paymentMode: text("payment_mode"),
-    isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
     notes: text("notes"),
+    recordedAt: text("recorded_at")
+      .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
+      .notNull(),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),
@@ -234,7 +237,6 @@ export const estimates = sqliteTable(
       .notNull(),
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
-    isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(true),
     notes: text("notes"),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)

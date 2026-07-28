@@ -13,7 +13,7 @@ import { useCustomer } from "@/hooks/customers/useCustomer";
 import { useUpdateCustomer } from "@/hooks/customers/useUpdateCustomer";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { formatRupee, paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
+import { formatRupee } from "@shared/utils/utils";
 import { Check, Copy, LoaderCircle, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -23,8 +23,6 @@ type BasicInfoForm = {
   name: string;
   contact: string;
   customerType: string;
-  creditLimit: string;
-  outstandingBalance: string;
 };
 
 type AddressForm = { address: string };
@@ -34,9 +32,7 @@ type EditingSection = "basic" | "address" | null;
 const EMPTY_BASIC: BasicInfoForm = {
   name: "",
   contact: "",
-  customerType: "cash",
-  creditLimit: "",
-  outstandingBalance: ""
+  customerType: "cash"
 };
 
 const EMPTY_ADDRESS: AddressForm = { address: "" };
@@ -45,13 +41,7 @@ function basicInfoFromCustomer(c: Customer): BasicInfoForm {
   return {
     name: c.name,
     contact: c.contact ?? "",
-    customerType: c.customerType,
-    creditLimit:
-      c.creditLimit != null && c.creditLimit !== 0 ? String(paisaToRupees(c.creditLimit)) : "",
-    outstandingBalance:
-      c.outstandingBalance != null && c.outstandingBalance !== 0
-        ? String(paisaToRupees(c.outstandingBalance))
-        : ""
+    customerType: c.customerType
   };
 }
 
@@ -65,11 +55,6 @@ function basicInfoDirty(c: Customer, f: BasicInfoForm) {
   const contact = f.contact.trim() === "" ? null : f.contact.trim();
   if (contact !== c.contact) dirty.contact = contact;
   if (f.customerType !== c.customerType) dirty.customerType = f.customerType;
-  const credit = f.creditLimit.trim() === "" ? 0 : rupeesToPaisa(Number(f.creditLimit));
-  if (credit !== (c.creditLimit ?? 0)) dirty.creditLimit = credit;
-  const outstanding =
-    f.outstandingBalance.trim() === "" ? 0 : rupeesToPaisa(Number(f.outstandingBalance));
-  if (outstanding !== (c.outstandingBalance ?? 0)) dirty.outstandingBalance = outstanding;
   return dirty;
 }
 
@@ -113,8 +98,6 @@ function FieldShell({
     </div>
   );
 }
-
-const selectOnFocus = (e: React.FocusEvent<HTMLInputElement>) => e.target.select();
 
 export function AboutTab({ customerId }: { customerId: string }) {
   const { customer } = useCustomer(customerId);
@@ -263,36 +246,12 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 </SelectContent>
               </Select>
             </FieldShell>
-            <FieldShell label="Credit Limit (₹)" htmlFor="about-credit">
-              <Input
-                id="about-credit"
-                inputMode="decimal"
-                min={0}
-                value={basicForm.creditLimit}
-                onChange={(e) => setBasic("creditLimit", e.target.value)}
-                onFocus={selectOnFocus}
-                placeholder="0"
-                className="h-10 tabular-nums"
-              />
-            </FieldShell>
-            <FieldShell label="Outstanding (₹)" htmlFor="about-outstanding">
-              <Input
-                id="about-outstanding"
-                inputMode="decimal"
-                value={basicForm.outstandingBalance}
-                onChange={(e) => setBasic("outstandingBalance", e.target.value)}
-                onFocus={selectOnFocus}
-                placeholder="0"
-                className="h-10 tabular-nums"
-              />
-            </FieldShell>
           </div>
         ) : (
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <DisplayField label="Name" value={customer.name} />
             <DisplayField label="Contact" value={customer.contact} />
             <DisplayField label="Type" value={customer.customerType} />
-            <DisplayField label="Credit Limit" value={formatRupee(customer.creditLimit ?? 0)} />
             <DisplayField
               label="Outstanding"
               value={formatRupee(customer.outstandingBalance ?? 0)}

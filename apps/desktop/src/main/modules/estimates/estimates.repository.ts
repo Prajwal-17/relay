@@ -83,7 +83,6 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
       .values({
         estimateNo: finalEstimateNo,
         customerId: payload.customerId,
-        isPaid: payload.isPaid,
         notes: payload.notes,
         createdAt: payload.createdAt
           ? payload.createdAt
@@ -252,7 +251,6 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
     tx.update(estimates)
       .set({
         customerId: payload.customerId,
-        isPaid: payload.isPaid,
         notes: payload.notes,
         createdAt: payload.createdAt,
         updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
@@ -341,7 +339,6 @@ const convertEstimateToSale = async (id: string) => {
         customerId: estimate.customerId,
         grandTotal: estimate.grandTotal,
         totalQuantity: estimate.totalQuantity,
-        isPaid: false,
         notes: estimate.notes
       })
       .returning({ id: sales.id })
@@ -426,16 +423,6 @@ const batchCheckItems = async (estimateId: string, action: BatchCheckAction) => 
     .run();
 };
 
-const updateEstimateStatus = async (id: string, isPaid: boolean) => {
-  return db
-    .update(estimates)
-    .set({
-      isPaid: isPaid
-    })
-    .where(and(eq(estimates.id, id), eq(estimates.isPaid, !isPaid)))
-    .run();
-};
-
 const duplicateEstimateById = async (id: string) => {
   return db.transaction((tx) => {
     const originalEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
@@ -463,7 +450,6 @@ const duplicateEstimateById = async (id: string) => {
         customerId: originalEstimate.customerId,
         grandTotal: originalEstimate.grandTotal,
         totalQuantity: originalEstimate.totalQuantity,
-        isPaid: originalEstimate.isPaid,
         notes: originalEstimate.notes,
         createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
       })
@@ -520,7 +506,6 @@ export const estimatesRepository = {
   convertEstimateToSale,
   updateCheckedQty,
   batchCheckItems,
-  updateEstimateStatus,
   deleteEstimateById,
   duplicateEstimateById
 };

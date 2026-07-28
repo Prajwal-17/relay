@@ -5,7 +5,6 @@ import { AppError } from "../../utils/appError";
 import { ledgerRepository } from "./ledger.repository";
 import type {
   CreateAdjustmentParams,
-  CreateOpeningBalanceParams,
   CreateQuickSaleParams,
   DeleteLedgerEntryParams,
   GetLedgerParams,
@@ -61,24 +60,11 @@ const createQuickSale = async ({ customerId, payload }: CreateQuickSaleParams) =
   });
 };
 
-const createOpeningBalance = async ({ customerId, payload }: CreateOpeningBalanceParams) => {
-  assertCustomerExists(customerId);
-
-  return db.transaction((tx) => {
-    if (ledgerRepository.hasOpeningBalance(tx, customerId)) {
-      throw new AppError("Opening balance already exists for this customer", 400);
-    }
-    const entry = ledgerRepository.insertOpeningBalance(tx, customerId, payload);
-    ledgerRepository.recomputeOutstanding(tx, customerId);
-    return entry;
-  });
-};
-
 const TWO_DAYS_MS = 48 * 60 * 60 * 1000;
 
 const ensureWithinTwoDays = (createdAt: string) => {
   if (Date.now() - new Date(createdAt).getTime() > TWO_DAYS_MS) {
-    throw new AppError("Can only edit or delete entries within 2 days of creation", 400);
+    throw new AppError("This ledger entry is permanently locked after 48 hours", 409);
   }
 };
 
@@ -108,15 +94,21 @@ const updateLedgerEntry = async ({ entryId, customerId, payload }: UpdateLedgerE
   return db.transaction((tx) => {
     const entry = findAndGuardEntry(tx, entryId, customerId);
 
-    const updated = ledgerRepository.updateLedgerEntry(tx, entryId, payload);
-
-    if (
-      entry.type === LEDGER_ENTRY_TYPE.PAYMENT &&
-      payload.amountPaid !== undefined &&
-      payload.amountPaid !== (entry.amountPaid ?? 0)
-    ) {
-      ledgerRepository.replayPaymentsForCustomer(tx, customerId);
+    if (entry.type !== LEDGER_ENTRY_TYPE.PAYMENT && payload.paymentMode !== undefined) {
+      throw new AppError("Payment mode is only allowed on Payment entries", 400);
     }
+    if (entry.type === LEDGER_ENTRY_TYPE.PAYMENT && payload.amountDue !== undefined) {
+      throw new AppError("Payment entries cannot contain an amount due", 400);
+    }
+    if (
+      entry.type !== LEDGER_ENTRY_TYPE.PAYMENT &&
+      entry.type !== LEDGER_ENTRY_TYPE.ADJUSTMENT &&
+      payload.amountPaid !== undefined
+    ) {
+      throw new AppError("This ledger entry cannot contain an amount paid", 400);
+    }
+
+    const updated = ledgerRepository.updateLedgerEntry(tx, entryId, payload);
 
     ledgerRepository.recomputeOutstanding(tx, customerId);
     return updated;
@@ -127,13 +119,9 @@ const deleteLedgerEntry = async ({ entryId, customerId }: DeleteLedgerEntryParam
   assertCustomerExists(customerId);
 
   return db.transaction((tx) => {
-    const entry = findAndGuardEntry(tx, entryId, customerId);
+    findAndGuardEntry(tx, entryId, customerId);
 
     ledgerRepository.deleteLedgerEntryById(tx, entryId);
-
-    if (entry.type === LEDGER_ENTRY_TYPE.PAYMENT) {
-      ledgerRepository.replayPaymentsForCustomer(tx, customerId);
-    }
 
     ledgerRepository.recomputeOutstanding(tx, customerId);
   });
@@ -145,7 +133,6 @@ export const ledgerService = {
   createPayment,
   createAdjustment,
   createQuickSale,
-  createOpeningBalance,
   updateLedgerEntry,
   deleteLedgerEntry
 };

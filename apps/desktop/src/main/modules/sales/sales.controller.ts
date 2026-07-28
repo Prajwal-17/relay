@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { txnPayloadSchema } from "../../../shared/schemas/transaction.schema";
+import { saleTxnPayloadSchema } from "../../../shared/schemas/transaction.schema";
 import { validateRequest } from "../../middleware/validation";
-import { actionSchema, batchActionSchema, idSchema, itemIdSchema, statusSchema } from "../../zod";
+import { actionSchema, batchActionSchema, idSchema, itemIdSchema } from "../../zod";
 import { filterSalesParamsSchema } from "./sales.schema";
 import { salesService } from "./sales.service";
 
@@ -28,7 +28,7 @@ salesController.get("/", validateRequest("query", filterSalesParamsSchema), asyn
 });
 
 // create new Sale
-salesController.post("/create", validateRequest("json", txnPayloadSchema), async (c) => {
+salesController.post("/create", validateRequest("json", saleTxnPayloadSchema), async (c) => {
   const payload = c.req.valid("json");
   const result = await salesService.createSale(payload.data);
   return c.json(result, 200);
@@ -37,7 +37,7 @@ salesController.post("/create", validateRequest("json", txnPayloadSchema), async
 salesController.post(
   "/:id/sync",
   validateRequest("param", idSchema),
-  validateRequest("json", txnPayloadSchema),
+  validateRequest("json", saleTxnPayloadSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const payload = c.req.valid("json");
@@ -46,14 +46,7 @@ salesController.post(
   }
 );
 
-// convert Sale To Estimate
-salesController.post("/:id/convert", validateRequest("param", idSchema), async (c) => {
-  const { id } = c.req.valid("param");
-  const result = await salesService.convertSaleToEstimate(id);
-  return c.json(result, 200);
-});
-
-// update checked-qty of a sale item - action "inc", "dec", "set"
+// update checked-qty of a sale item
 salesController.post(
   "/:id/items/:itemId/checked-qty",
   validateRequest("param", itemIdSchema),
@@ -76,18 +69,6 @@ salesController.post(
     const { action } = c.req.valid("json");
     await salesService.batchCheckItemsService(id, action);
     return c.body(null, 204);
-  }
-);
-
-salesController.patch(
-  "/:id",
-  validateRequest("param", idSchema),
-  validateRequest("json", statusSchema),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const { isPaid } = c.req.valid("json");
-    const result = await salesService.updateSaleStatus(id, isPaid);
-    return c.json(result, 200);
   }
 );
 

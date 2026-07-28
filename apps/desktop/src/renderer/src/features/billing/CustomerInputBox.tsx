@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCustomersInfinite } from "@/hooks/customers/useCustomersInfinite";
+import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
@@ -30,6 +31,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
 
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
+  const { config } = useAppPreferences();
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +82,9 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   const handleSelectCustomer = (customer: Customer) => {
     updateField(activeTabId, "customerId", customer.id);
     updateField(activeTabId, "customerName", customer.name);
+    if (customer.id === config?.billing.defaultCustomerId || customer.name === "DEFAULT") {
+      updateField(activeTabId, "addToAccounting", false);
+    }
     setOpen(false);
     if (activeTabId) processSyncQueue(activeTabId);
   };

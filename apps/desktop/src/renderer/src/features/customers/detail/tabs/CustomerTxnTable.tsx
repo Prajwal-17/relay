@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -14,28 +13,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import {
   TXN_TABLE_PAGE_SIZE,
   TXN_TABLE_SEARCH_DEBOUNCE_MS,
-  TXN_TABLE_SORT_OPTIONS,
-  TXN_TABLE_STATUS_OPTIONS
+  TXN_TABLE_SORT_OPTIONS
 } from "@/constants";
 import {
   useCustomerTransactions,
   type CustomerTxn,
-  type TxnSortBy,
-  type TxnStatusFilter
+  type TxnSortBy
 } from "@/hooks/customers/useCustomerTransactions";
-import type {
-  MutationVariables,
-  StatusMutationVariables
-} from "@/hooks/customers/useCustomerTxnMutations";
+import type { MutationVariables } from "@/hooks/customers/useCustomerTxnMutations";
 import { useCustomerTxnMutations } from "@/hooks/customers/useCustomerTxnMutations";
 import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types";
-import {
-  CUSTOMER_TXN_SORT,
-  CUSTOMER_TXN_STATUS,
-  TRANSACTION_TYPE,
-  type TransactionType
-} from "@shared/types";
+import { CUSTOMER_TXN_SORT, TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -62,7 +51,6 @@ type ColumnsOptions = {
   pageSize: number;
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
-  txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
   duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
 };
 
@@ -134,27 +122,6 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
       meta: { align: TXN_TABLE_ALIGN.RIGHT } as TxnTableColMeta
     },
     {
-      accessorKey: "isPaid",
-      header: "Status",
-      cell: ({ row }) => {
-        const isPaid = row.original.isPaid;
-        return (
-          <Badge
-            variant="outline"
-            className={cn(
-              "px-2 py-0.5 text-xs font-medium capitalize",
-              isPaid
-                ? "border-success/25 bg-success/15 text-success"
-                : "border-warning/30 bg-warning/15 text-warning"
-            )}
-          >
-            {isPaid ? "Paid" : "Unpaid"}
-          </Badge>
-        );
-      },
-      meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
-    },
-    {
       id: "actions",
       header: "Actions",
       enableSorting: false,
@@ -185,7 +152,6 @@ export function CustomerTxnTable({
   const [pageSize, setPageSize] = useState(TXN_TABLE_PAGE_SIZE);
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<TxnStatusFilter>(CUSTOMER_TXN_STATUS.ALL);
   const [sortValue, setSortValue] = useState<TxnSortBy>(CUSTOMER_TXN_SORT.DATE_DESC);
 
   const [pageSizeInput, setPageSizeInput] = useState(String(TXN_TABLE_PAGE_SIZE));
@@ -205,12 +171,13 @@ export function CustomerTxnTable({
     pageNo,
     pageSize,
     search: debouncedSearch,
-    status: statusFilter,
     sort: sortValue
   });
 
-  const { deleteMutation, convertMutation, txnStatusMutation, duplicateMutation } =
-    useCustomerTxnMutations(customerId, type);
+  const { deleteMutation, convertMutation, duplicateMutation } = useCustomerTxnMutations(
+    customerId,
+    type
+  );
 
   const columns = useMemo(
     () =>
@@ -221,19 +188,9 @@ export function CustomerTxnTable({
         pageSize,
         deleteMutation,
         convertMutation,
-        txnStatusMutation,
         duplicateMutation
       }),
-    [
-      type,
-      numberLabel,
-      pageNo,
-      pageSize,
-      deleteMutation,
-      convertMutation,
-      txnStatusMutation,
-      duplicateMutation
-    ]
+    [type, numberLabel, pageNo, pageSize, deleteMutation, convertMutation, duplicateMutation]
   );
 
   const table = useReactTable({
@@ -256,11 +213,6 @@ export function CustomerTxnTable({
 
   useEffect(() => setPageSizeInput(String(pageSize)), [pageSize]);
   useEffect(() => setPageNoInput(String(pageNo)), [pageNo]);
-
-  const applyStatus = (s: TxnStatusFilter) => {
-    setStatusFilter(s);
-    setPageNo(1);
-  };
 
   const applySort = (s: TxnSortBy) => {
     setSortValue(s);
@@ -290,15 +242,13 @@ export function CustomerTxnTable({
 
   const clearFilters = () => {
     setSearchInput("");
-    setStatusFilter(CUSTOMER_TXN_STATUS.ALL);
   };
 
   const addRoute =
     type === TRANSACTION_TYPE.SALE ? "/billing/sales/create" : "/billing/estimates/create";
   const activeSortLabel =
     TXN_TABLE_SORT_OPTIONS.find((o) => o.value === sortValue)?.label ?? "Sort";
-  const activeStatus = TXN_TABLE_STATUS_OPTIONS.find((s) => s.value === statusFilter)!;
-  const hasFilters = searchInput.trim() !== "" || statusFilter !== CUSTOMER_TXN_STATUS.ALL;
+  const hasFilters = searchInput.trim() !== "";
   const isFirstLoad = status === "pending" && transactions.length === 0;
   const isEmpty = !isFirstLoad && transactions.length === 0;
   const noun = type === TRANSACTION_TYPE.SALE ? "sales" : "estimates";
@@ -325,39 +275,6 @@ export function CustomerTxnTable({
             </button>
           )}
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
-            >
-              <Tags className="size-4" />
-              Status: {activeStatus.label}
-              <ChevronRight className="text-muted-foreground size-3.5 rotate-90" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Status
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={statusFilter}
-              onValueChange={(v) => applyStatus(v as TxnStatusFilter)}
-            >
-              {TXN_TABLE_STATUS_OPTIONS.map((option) => (
-                <DropdownMenuRadioItem
-                  key={option.value}
-                  value={option.value}
-                  className="cursor-pointer text-sm font-medium"
-                >
-                  {option.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -447,7 +364,7 @@ export function CustomerTxnTable({
           </h3>
           <p className="text-muted-foreground mt-1.5 max-w-sm text-sm">
             {hasFilters
-              ? "Try adjusting your search or status filter."
+              ? "Try adjusting your search."
               : `${docNoun} raised for this customer will appear here.`}
           </p>
           {hasFilters && (

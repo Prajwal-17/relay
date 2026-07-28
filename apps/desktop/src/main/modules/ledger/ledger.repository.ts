@@ -5,7 +5,6 @@ import {
   LEDGER_SORT,
   LEDGER_TYPE_FILTER,
   type CreateAdjustmentPayload,
-  type CreateOpeningBalancePayload,
   type CreatePaymentResult,
   type CreateQuickSalePayload,
   type LedgerEntry,
@@ -18,7 +17,6 @@ import type * as schema from "../../db/schema";
 import { customerLedger, customers, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import type { CreatePaymentParams, GetLedgerParams, InsertSaleEntryParams } from "./ledger.types";
-import { allocatePaymentFifo } from "./ledger.utils";
 
 type Tx = BetterSQLite3Database<typeof schema>;
 
@@ -193,40 +191,6 @@ const hasOpeningBalance = (tx: Tx, customerId: string): boolean => {
   return !!row;
 };
 
-const getOpenSalesByCustomerId = (tx: Tx, customerId: string) => {
-  return tx
-    .select({
-      id: sales.id,
-      grandTotal: sales.grandTotal,
-      amountPaid: sales.amountPaid,
-      isPaid: sales.isPaid
-    })
-    .from(sales)
-    .where(and(eq(sales.customerId, customerId), eq(sales.isPaid, false)))
-    .orderBy(asc(sales.createdAt), asc(sales.invoiceNo))
-    .all();
-};
-
-const applyAllocationToSale = (
-  tx: Tx,
-  params: { saleId: string; allocatedPaisa: number; closes: boolean; paymentMode: string }
-) => {
-  tx.update(sales)
-    .set({
-      amountPaid: sql`${sales.amountPaid} + ${params.allocatedPaisa}`,
-      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
-    })
-    .where(eq(sales.id, params.saleId))
-    .run();
-
-  if (params.closes) {
-    tx.update(sales)
-      .set({ isPaid: true, paymentMode: params.paymentMode })
-      .where(eq(sales.id, params.saleId))
-      .run();
-  }
-};
-
 const insertPaymentEntry = (
   tx: Tx,
   params: {
@@ -244,7 +208,7 @@ const insertPaymentEntry = (
       customerId: params.customerId,
       storeId: params.storeId,
       type: LEDGER_ENTRY_TYPE.PAYMENT,
-      saleId: params.saleId,
+      saleId: null,
       amountDue: 0,
       amountPaid: params.amountPaid,
       paymentMode: params.paymentMode,
@@ -283,7 +247,11 @@ const insertQuickSale = (tx: Tx, customerId: string, payload: CreateQuickSalePay
     .get();
 };
 
-const insertOpeningBalance = (tx: Tx, customerId: string, payload: CreateOpeningBalancePayload) => {
+const insertOpeningBalance = (
+  tx: Tx,
+  customerId: string,
+  payload: { amount: number; notes?: string }
+) => {
   return tx
     .insert(customerLedger)
     .values({
@@ -363,57 +331,6 @@ const upsertSaleEntry = (tx: Tx, params: InsertSaleEntryParams) => {
     .get();
 };
 
-const upsertPaymentForSale = (
-  tx: Tx,
-  params: { saleId: string; customerId: string; amountPaid: number; paymentMode: string | null }
-) => {
-  const existing = tx
-    .select()
-    .from(customerLedger)
-    .where(
-      and(
-        eq(customerLedger.saleId, params.saleId),
-        eq(customerLedger.type, LEDGER_ENTRY_TYPE.PAYMENT)
-      )
-    )
-    .get();
-
-  if (params.amountPaid <= 0) {
-    if (existing) {
-      tx.delete(customerLedger).where(eq(customerLedger.id, existing.id)).run();
-    }
-    return null;
-  }
-
-  if (existing) {
-    return tx
-      .update(customerLedger)
-      .set({
-        customerId: params.customerId,
-        amountPaid: params.amountPaid,
-        paymentMode: params.paymentMode,
-        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
-      })
-      .where(eq(customerLedger.id, existing.id))
-      .returning()
-      .get();
-  }
-
-  return tx
-    .insert(customerLedger)
-    .values({
-      customerId: params.customerId,
-      type: LEDGER_ENTRY_TYPE.PAYMENT,
-      saleId: params.saleId,
-      amountDue: 0,
-      amountPaid: params.amountPaid,
-      paymentMode: params.paymentMode,
-      createdAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
-    })
-    .returning()
-    .get();
-};
-
 const findLedgerEntryById = (tx: Tx, entryId: string) => {
   return tx.select().from(customerLedger).where(eq(customerLedger.id, entryId)).get();
 };
@@ -439,69 +356,6 @@ const deleteLedgerEntryById = (tx: Tx, entryId: string) => {
   return tx.delete(customerLedger).where(eq(customerLedger.id, entryId)).run();
 };
 
-const resetSalesForCustomer = (tx: Tx, customerId: string) => {
-  tx.update(sales)
-    .set({
-      amountPaid: 0,
-      isPaid: false,
-      paymentMode: null,
-      updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
-    })
-    .where(eq(sales.customerId, customerId))
-    .run();
-};
-
-const replayPaymentsForCustomer = (tx: Tx, customerId: string) => {
-  resetSalesForCustomer(tx, customerId);
-
-  const payments = tx
-    .select()
-    .from(customerLedger)
-    .where(
-      and(
-        eq(customerLedger.customerId, customerId),
-        eq(customerLedger.type, LEDGER_ENTRY_TYPE.PAYMENT)
-      )
-    )
-    .orderBy(asc(customerLedger.createdAt), asc(customerLedger.id))
-    .all();
-
-  for (const payment of payments) {
-    if (payment.saleId) {
-      const sale = tx
-        .select({ id: sales.id, grandTotal: sales.grandTotal, amountPaid: sales.amountPaid })
-        .from(sales)
-        .where(eq(sales.id, payment.saleId))
-        .get();
-
-      if (sale) {
-        const newAmountPaid = (sale.amountPaid ?? 0) + (payment.amountPaid ?? 0);
-        const closes = newAmountPaid >= (sale.grandTotal ?? 0);
-        applyAllocationToSale(tx, {
-          saleId: sale.id,
-          allocatedPaisa: payment.amountPaid ?? 0,
-          closes,
-          paymentMode: payment.paymentMode ?? "cash"
-        });
-      }
-    } else {
-      const openSales = getOpenSalesByCustomerId(tx, customerId);
-      const { allocations } = allocatePaymentFifo(payment.amountPaid ?? 0, openSales);
-      for (const alloc of allocations) {
-        const sale = openSales.find((s) => s.id === alloc.saleId)!;
-        const newAmountPaid = (sale.amountPaid ?? 0) + alloc.allocatedPaisa;
-        const closes = newAmountPaid >= (sale.grandTotal ?? 0);
-        applyAllocationToSale(tx, {
-          saleId: alloc.saleId,
-          allocatedPaisa: alloc.allocatedPaisa,
-          closes,
-          paymentMode: payment.paymentMode ?? "cash"
-        });
-      }
-    }
-  }
-};
-
 const findCustomerById = (tx: Tx, customerId: string) => {
   return tx.select().from(customers).where(eq(customers.id, customerId)).get();
 };
@@ -510,31 +364,7 @@ const createPayment = ({ customerId, payload }: CreatePaymentParams): CreatePaym
   return db.transaction((tx) => {
     const customer = findCustomerById(tx, customerId);
     if (!customer) {
-      throw new AppError(`Customer with ID ${customerId} not found`, 404);
-    }
-
-    const openSales = getOpenSalesByCustomerId(tx, customerId);
-    const { allocations, leftoverPaisa } = allocatePaymentFifo(payload.amount, openSales);
-
-    const appliedAllocations: CreatePaymentResult["allocations"] = [];
-
-    for (const alloc of allocations) {
-      const sale = openSales.find((s) => s.id === alloc.saleId)!;
-      const newAmountPaid = (sale.amountPaid ?? 0) + alloc.allocatedPaisa;
-      const closes = newAmountPaid >= (sale.grandTotal ?? 0);
-
-      applyAllocationToSale(tx, {
-        saleId: alloc.saleId,
-        allocatedPaisa: alloc.allocatedPaisa,
-        closes,
-        paymentMode: payload.mode
-      });
-
-      appliedAllocations.push({
-        saleId: alloc.saleId,
-        allocatedPaisa: alloc.allocatedPaisa,
-        ledgerEntryId: null
-      });
+      throw new AppError(`Customer with ID  not found`, 404);
     }
 
     const entry = insertPaymentEntry(tx, {
@@ -547,12 +377,7 @@ const createPayment = ({ customerId, payload }: CreatePaymentParams): CreatePaym
     });
 
     recomputeOutstanding(tx, customerId);
-
-    return {
-      allocations: appliedAllocations,
-      leftoverPaisa,
-      ledgerEntryId: entry.id
-    };
+    return { ledgerEntryId: entry.id };
   });
 };
 
@@ -581,8 +406,6 @@ export const ledgerRepository = {
   countLedgerByCustomerId,
   getLedgerSummary,
   hasOpeningBalance,
-  getOpenSalesByCustomerId,
-  applyAllocationToSale,
   insertPaymentEntry,
   insertAdjustment,
   insertQuickSale,
@@ -592,11 +415,8 @@ export const ledgerRepository = {
   deleteAllLedgerEntriesForSale,
   getLedgerEntriesForSale,
   upsertSaleEntry,
-  upsertPaymentForSale,
   findLedgerEntryById,
   updateLedgerEntry,
   deleteLedgerEntryById,
-  resetSalesForCustomer,
-  replayPaymentsForCustomer,
   recomputeOutstanding
 };

@@ -1,7 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import type {
   CreateAdjustmentPayload,
-  CreateOpeningBalancePayload,
   CreatePaymentPayload,
   CreatePaymentResult,
   CreateQuickSalePayload,
@@ -63,20 +62,6 @@ export function useCreateQuickSale(customerId: string) {
     onSuccess: () => {
       invalidate();
       toast.success("Quick sale recorded");
-    },
-    onError: (error) => toast.error(error.message)
-  });
-}
-
-export function useCreateOpeningBalance(customerId: string) {
-  const invalidate = useInvalidateLedger(customerId);
-
-  return useMutation<LedgerEntry, Error, CreateOpeningBalancePayload>({
-    mutationFn: (payload) =>
-      apiClient.post(`/api/customers/${customerId}/opening-balance`, payload),
-    onSuccess: () => {
-      invalidate();
-      toast.success("Opening balance set");
     },
     onError: (error) => toast.error(error.message)
   });

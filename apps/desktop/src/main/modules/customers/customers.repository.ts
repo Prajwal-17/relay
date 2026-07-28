@@ -49,7 +49,6 @@ const columns = {
   notes: customers.notes,
   address: customers.address,
   outstandingBalance: customers.outstandingBalance,
-  creditLimit: customers.creditLimit,
   isArchived: customers.isArchived,
   archivedAt: customers.archivedAt,
   createdAt: customers.createdAt,
@@ -290,8 +289,6 @@ const getRecentSales = async (params: {
       id: sales.id,
       invoiceNo: sales.invoiceNo,
       grandTotal: sales.grandTotal,
-      amountPaid: sales.amountPaid,
-      isPaid: sales.isPaid,
       createdAt: sales.createdAt
     })
     .from(sales)
@@ -303,8 +300,6 @@ const getRecentSales = async (params: {
       id: row.id,
       invoiceNo: row.invoiceNo,
       grandTotal: row.grandTotal ?? 0,
-      amountPaid: row.amountPaid ?? 0,
-      isPaid: row.isPaid,
       createdAt: row.createdAt
     }));
 };
@@ -318,7 +313,6 @@ const getCustomerActivity = async (params: {
       id: sales.id,
       invoiceNo: sales.invoiceNo,
       grandTotal: sales.grandTotal,
-      isPaid: sales.isPaid,
       createdAt: sales.createdAt
     })
     .from(sales)
@@ -332,7 +326,6 @@ const getCustomerActivity = async (params: {
       id: estimates.id,
       estimateNo: estimates.estimateNo,
       grandTotal: estimates.grandTotal,
-      isPaid: estimates.isPaid,
       createdAt: estimates.createdAt
     })
     .from(estimates)
@@ -373,7 +366,7 @@ const getCustomerActivity = async (params: {
     date: s.createdAt,
     kind: ACTIVITY_KIND.SALE,
     title: "Sale recorded",
-    description: `Invoice #${s.invoiceNo} for ${formatRupee(s.grandTotal ?? 0)} (${s.isPaid ? "Paid" : "Unpaid"})`
+    description: `Invoice #${s.invoiceNo} for ${formatRupee(s.grandTotal ?? 0)}`
   }));
 
   const estimateEvents: ActivityEvent[] = recentEstimates.map((e) => ({

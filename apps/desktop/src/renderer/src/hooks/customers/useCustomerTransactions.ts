@@ -2,7 +2,6 @@ import { apiClient } from "@/lib/apiClient";
 import {
   type CustomerTransaction,
   type CustomerTxnSort,
-  type CustomerTxnStatus,
   type PaginatedApiResponse,
   TRANSACTION_TYPE,
   type TransactionType
@@ -14,7 +13,6 @@ import toast from "react-hot-toast";
 export type CustomerTxn = CustomerTransaction;
 
 export type TxnSortBy = CustomerTxnSort;
-export type TxnStatusFilter = CustomerTxnStatus;
 
 export type UseCustomerTransactionsParams = {
   customerId: string;
@@ -22,12 +20,11 @@ export type UseCustomerTransactionsParams = {
   pageNo: number;
   pageSize: number;
   search: string;
-  status: TxnStatusFilter;
   sort: TxnSortBy;
 };
 
 export function useCustomerTransactions(params: UseCustomerTransactionsParams) {
-  const { customerId, type, pageNo, pageSize, search, status, sort } = params;
+  const { customerId, type, pageNo, pageSize, search, sort } = params;
 
   const {
     data,
@@ -37,7 +34,7 @@ export function useCustomerTransactions(params: UseCustomerTransactionsParams) {
     isFetching,
     refetch
   } = useQuery({
-    queryKey: ["customer-txns", customerId, type, pageNo, pageSize, search, status, sort],
+    queryKey: ["customer-txns", customerId, type, pageNo, pageSize, search, sort],
     queryFn: () => {
       const path =
         type === TRANSACTION_TYPE.SALE
@@ -48,7 +45,6 @@ export function useCustomerTransactions(params: UseCustomerTransactionsParams) {
         pageNo,
         pageSize,
         search,
-        status,
         sort
       });
     },

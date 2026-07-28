@@ -35,11 +35,6 @@ export const createQuickSaleSchema = z.object({
   notes: z.string().trim().optional()
 });
 
-export const createOpeningBalanceSchema = z.object({
-  amount: z.number().int().nonnegative(),
-  notes: z.string().trim().optional()
-});
-
 export const updateLedgerEntrySchema = z
   .object({
     amountDue: z.number().int().min(0).optional(),

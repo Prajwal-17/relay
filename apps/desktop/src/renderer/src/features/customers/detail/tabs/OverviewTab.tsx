@@ -64,7 +64,6 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
   const { openPayment, openAdjust, openQuickSale } = useCustomerActions();
 
   const outstanding = ledgerSummary?.currentBalance ?? customer.outstandingBalance ?? 0;
-  const creditLimit = customer.creditLimit ?? 0;
 
   const salesTotal = summary?.salesTotal ?? 0;
   const salesCount = summary?.salesCount ?? 0;
@@ -72,16 +71,14 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
   const avgInvoice = summary?.average ?? 0;
 
   const isSettled = outstanding === 0;
-  const isOverLimit = creditLimit > 0 && outstanding > creditLimit;
-  const usagePct =
-    creditLimit > 0 ? Math.min(100, Math.round((Math.max(0, outstanding) / creditLimit) * 100)) : 0;
+  const isAdvance = outstanding < 0;
 
-  const heroTone = isOverLimit
-    ? "bg-destructive/10 text-destructive border-destructive/25"
-    : isSettled
+  const heroTone = isSettled
+    ? "bg-muted text-muted-foreground border-border"
+    : isAdvance
       ? "bg-success/15 text-success border-success/25"
       : "bg-warning/15 text-warning border-warning/30";
-  const heroLabel = isOverLimit ? "Over limit" : isSettled ? "Settled" : "Due";
+  const heroLabel = isSettled ? "Settled" : isAdvance ? "Advance" : "Due";
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,22 +99,6 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
             <p className="text-foreground text-2xl font-semibold tracking-[-0.02em] tabular-nums">
               {formatRupee(outstanding)}
             </p>
-            {creditLimit > 0 && (
-              <div className="flex flex-col gap-1">
-                <div className="bg-muted h-1.5 w-56 overflow-hidden rounded-full">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-all",
-                      isOverLimit ? "bg-destructive" : "bg-primary"
-                    )}
-                    style={{ width: `${usagePct}%` }}
-                  />
-                </div>
-                <p className="text-muted-foreground text-xs font-medium tabular-nums">
-                  {usagePct}% of {formatRupee(creditLimit)} credit limit
-                </p>
-              </div>
-            )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <Button
@@ -152,7 +133,6 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                 label="Member Since"
                 value={customer.createdAt ? formatDateStr(customer.createdAt) : "—"}
               />
-              <InfoRow label="Credit Limit" value={formatRupee(creditLimit)} />
             </dl>
           </SectionCard>
         </div>
@@ -209,16 +189,6 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                         <span className="text-foreground text-sm font-semibold tabular-nums">
                           {formatRupee(sale.grandTotal)}
                         </span>
-                        <Badge
-                          variant="outline"
-                          className={
-                            sale.isPaid
-                              ? "bg-success/15 text-success border-success/25 px-2 py-0.5 text-xs font-medium capitalize"
-                              : "bg-warning/15 text-warning border-warning/30 px-2 py-0.5 text-xs font-medium capitalize"
-                          }
-                        >
-                          {sale.isPaid ? "Paid" : "Unpaid"}
-                        </Badge>
                       </div>
                     </li>
                   ))}

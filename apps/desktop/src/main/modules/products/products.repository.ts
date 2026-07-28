@@ -279,7 +279,6 @@ const getTransactionsByProductId = async (params: {
       quantity: saleItems.quantity,
       price: saleItems.price,
       totalPrice: saleItems.totalPrice,
-      isPaid: sales.isPaid,
       createdAt: sales.createdAt
     })
     .from(saleItems)
@@ -296,7 +295,6 @@ const getTransactionsByProductId = async (params: {
       quantity: estimateItems.quantity,
       price: estimateItems.price,
       totalPrice: estimateItems.totalPrice,
-      isPaid: estimates.isPaid,
       createdAt: estimates.createdAt
     })
     .from(estimateItems)

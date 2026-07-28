@@ -7,7 +7,6 @@ import { validateRequest } from "../../middleware/validation";
 import { idSchema } from "../../zod";
 import {
   createAdjustmentSchema,
-  createOpeningBalanceSchema,
   createPaymentSchema,
   createQuickSaleSchema,
   getLedgerSchema,
@@ -191,18 +190,6 @@ customersController.post(
     const { id } = c.req.valid("param");
     const payload = c.req.valid("json");
     const result = await ledgerService.createQuickSale({ customerId: id, payload });
-    return c.json(result, 201);
-  }
-);
-
-customersController.post(
-  "/:id/opening-balance",
-  validateRequest("param", idSchema),
-  validateRequest("json", createOpeningBalanceSchema),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const payload = c.req.valid("json");
-    const result = await ledgerService.createOpeningBalance({ customerId: id, payload });
     return c.json(result, 201);
   }
 );

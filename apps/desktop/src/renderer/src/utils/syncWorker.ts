@@ -44,8 +44,7 @@ const syncLogic = async (tabId: string) => {
     customerId,
     billingDate,
     notes,
-    amountPaid,
-    paymentMode,
+    addToAccounting,
     isMetaDataDirty
   } = session;
 
@@ -69,8 +68,7 @@ const syncLogic = async (tabId: string) => {
     customerId,
     items: normalizedItems,
     notes,
-    amountPaid,
-    paymentMode,
+    addToAccounting,
     createdAt: billingDate ? billingDate.toISOString() : new Date().toISOString()
   });
 

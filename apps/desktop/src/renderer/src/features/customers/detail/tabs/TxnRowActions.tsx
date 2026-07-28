@@ -17,17 +17,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CustomerTxn } from "@/hooks/customers/useCustomerTransactions";
-import type {
-  MutationVariables,
-  StatusMutationVariables
-} from "@/hooks/customers/useCustomerTxnMutations";
+import type { MutationVariables } from "@/hooks/customers/useCustomerTxnMutations";
 import { useViewModalStore } from "@/store/viewModalStore";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   ArrowUpRight,
-  CircleCheckBig,
-  CircleOff,
   Copy,
   Edit,
   Eye,
@@ -47,7 +42,6 @@ type TxnRowActionsProps = {
   type: TransactionType;
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
-  txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
   duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
 };
 
@@ -56,7 +50,6 @@ function TxnRowActionsInner({
   type,
   deleteMutation,
   convertMutation,
-  txnStatusMutation,
   duplicateMutation
 }: TxnRowActionsProps) {
   const navigate = useNavigate();
@@ -64,6 +57,7 @@ function TxnRowActionsInner({
   const setTransactionId = useViewModalStore((state) => state.setTransactionId);
   const [activeDialog, setActiveDialog] = useState<"delete" | "convert" | "idle">("idle");
   const [pdfLoading, setPdfLoading] = useState(false);
+  const canModify = type !== TRANSACTION_TYPE.SALE || txn.canModify !== false;
 
   const handleView = useCallback(() => {
     setTransactionId(txn.id);
@@ -86,10 +80,6 @@ function TxnRowActionsInner({
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type, id: txn.id });
   }, [duplicateMutation, type, txn.id]);
-
-  const onStatusToggle = useCallback(() => {
-    txnStatusMutation.mutate({ type, id: txn.id, isPaid: !txn.isPaid });
-  }, [txnStatusMutation, type, txn.id, txn.isPaid]);
 
   const handleSavePdf = useCallback(async () => {
     setPdfLoading(true);
@@ -133,6 +123,7 @@ function TxnRowActionsInner({
           <button
             type="button"
             onClick={handleView}
+            aria-label={`View ${type} ${txn.transactionNo}`}
             className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
           >
             <Eye className="size-4" />
@@ -141,65 +132,57 @@ function TxnRowActionsInner({
         <TooltipContent>View</TooltipContent>
       </Tooltip>
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={handleEdit}
-            className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
-          >
-            <Edit className="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Edit</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={() => setActiveDialog("delete")}
-            className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer rounded-md p-1.5 transition-colors"
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent>Delete</TooltipContent>
-      </Tooltip>
+      {canModify && (
+        <>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handleEdit}
+                aria-label={`Edit ${type} ${txn.transactionNo}`}
+                className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+              >
+                <Edit className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Edit</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => setActiveDialog("delete")}
+                aria-label={`Delete ${type} ${txn.transactionNo}`}
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer rounded-md p-1.5 transition-colors"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Delete</TooltipContent>
+          </Tooltip>
+        </>
+      )}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
+            aria-label={`More actions for ${type} ${txn.transactionNo}`}
             className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
           >
             <MoreVertical className="size-4" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
-          <DropdownMenuItem
-            onSelect={onStatusToggle}
-            className="cursor-pointer"
-            disabled={txnStatusMutation.isPending}
-          >
-            {txn.isPaid ? (
-              <>
-                <CircleOff className="mr-1.5 size-4" />
-                <span>Mark as unpaid</span>
-              </>
-            ) : (
-              <>
-                <CircleCheckBig className="mr-1.5 size-4" />
-                <span>Mark as paid</span>
-              </>
-            )}
-          </DropdownMenuItem>
-
-          <DropdownMenuItem onSelect={() => setActiveDialog("convert")} className="cursor-pointer">
-            <RefreshCcw className="mr-1.5 size-4" />
-            <span>Convert to {type === TRANSACTION_TYPE.SALE ? "Estimate" : "Sale"}</span>
-          </DropdownMenuItem>
-
+          {type === TRANSACTION_TYPE.ESTIMATE && (
+            <DropdownMenuItem
+              onSelect={() => setActiveDialog("convert")}
+              className="cursor-pointer"
+            >
+              <RefreshCcw className="mr-1.5 size-4" />
+              <span>Convert to Sale</span>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem
             onSelect={onDuplicate}
             className="cursor-pointer"
@@ -208,9 +191,7 @@ function TxnRowActionsInner({
             <Copy className="mr-1.5 size-4" />
             <span>Duplicate</span>
           </DropdownMenuItem>
-
           <DropdownMenuSeparator />
-
           <DropdownMenuItem
             onSelect={handleSavePdf}
             className="cursor-pointer"
@@ -223,7 +204,6 @@ function TxnRowActionsInner({
             )}
             <span>{pdfLoading ? "Exporting…" : "Export PDF"}</span>
           </DropdownMenuItem>
-
           <DropdownMenuItem disabled>
             <Printer className="mr-1.5 size-4" />
             <span>Print</span>
@@ -233,21 +213,20 @@ function TxnRowActionsInner({
 
       <AlertDialog
         open={activeDialog === "delete"}
-        onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
+        onOpenChange={(open) => !open && setActiveDialog("idle")}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete this {type}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete{" "}
-              <span className="text-foreground font-medium">#{txn.transactionNo}</span>. This action
-              cannot be undone.
+              This permanently deletes{" "}
+              <span className="text-foreground font-medium">#{txn.transactionNo}</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/80"
               onClick={onDelete}
             >
               {deleteMutation.isPending ? "Deleting…" : "Delete"}
@@ -258,26 +237,21 @@ function TxnRowActionsInner({
 
       <AlertDialog
         open={activeDialog === "convert"}
-        onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
+        onOpenChange={(open) => !open && setActiveDialog("idle")}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Convert this {type}?</AlertDialogTitle>
+            <AlertDialogTitle>Convert this estimate?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will create a new {type === TRANSACTION_TYPE.SALE ? "estimate" : "sale"} from{" "}
-              <span className="text-foreground font-medium">#{txn.transactionNo}</span>.
+              This creates a new sale from{" "}
+              <span className="text-foreground font-medium">#{txn.transactionNo}</span> and removes
+              the estimate.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
-              onClick={onConvert}
-              disabled={convertMutation.isPending}
-            >
-              {convertMutation.isPending
-                ? "Converting…"
-                : `Convert to ${type === TRANSACTION_TYPE.SALE ? "Estimate" : "Sale"}`}
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onConvert} disabled={convertMutation.isPending}>
+              {convertMutation.isPending ? "Converting…" : "Convert to Sale"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -286,19 +260,17 @@ function TxnRowActionsInner({
   );
 }
 
-function memoComparator(prev: any, next: any) {
-  if (prev.type !== next.type) return false;
-  const p = prev.txn || {};
-  const n = next.txn || {};
-  if (p.id !== n.id) return false;
-  if (p.isPaid !== n.isPaid) return false;
-  if (p.grandTotal !== n.grandTotal) return false;
-  if (p.totalQuantity !== n.totalQuantity) return false;
-  if (prev.deleteMutation?.isPending !== next.deleteMutation?.isPending) return false;
-  if (prev.convertMutation?.isPending !== next.convertMutation?.isPending) return false;
-  if (prev.duplicateMutation?.isPending !== next.duplicateMutation?.isPending) return false;
-  if (prev.txnStatusMutation?.isPending !== next.txnStatusMutation?.isPending) return false;
-  return true;
+function memoComparator(prev: TxnRowActionsProps, next: TxnRowActionsProps) {
+  return (
+    prev.type === next.type &&
+    prev.txn.id === next.txn.id &&
+    prev.txn.canModify === next.txn.canModify &&
+    prev.txn.grandTotal === next.txn.grandTotal &&
+    prev.txn.totalQuantity === next.txn.totalQuantity &&
+    prev.deleteMutation.isPending === next.deleteMutation.isPending &&
+    prev.convertMutation.isPending === next.convertMutation.isPending &&
+    prev.duplicateMutation.isPending === next.duplicateMutation.isPending
+  );
 }
 
 export const TxnRowActions = memo(TxnRowActionsInner, memoComparator);

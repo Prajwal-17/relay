@@ -1,207 +1,86 @@
-import { Input } from "@/components/ui/input";
+import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { cn } from "@/lib/utils";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
 import { processSyncQueue } from "@/utils/syncWorker";
-import { PAYMENT_MODE, TRANSACTION_TYPE, type PaymentMode } from "@shared/types";
-import { formatRupee, rupeesToPaisa } from "@shared/utils/utils";
-import { Banknote, CreditCard, IndianRupee, Smartphone, Wallet } from "lucide-react";
+import { TRANSACTION_TYPE } from "@shared/types";
+import { BookOpen, Check, Plus } from "lucide-react";
 
-type PaymentStatus = "PAID" | "PARTIAL" | "UNPAID";
-
-const PAYMENT_MODES = [
-  { value: PAYMENT_MODE.CASH, label: "Cash", Icon: Banknote },
-  { value: PAYMENT_MODE.UPI, label: "UPI", Icon: Smartphone },
-  { value: PAYMENT_MODE.CARD, label: "Card", Icon: CreditCard }
-] as const;
-
-const STATUS_STYLES: Record<PaymentStatus, { label: string; pill: string; amount: string }> = {
-  PAID: {
-    label: "Paid",
-    pill: "border-success/25 bg-success/15 text-success",
-    amount: "text-success"
-  },
-  PARTIAL: {
-    label: "Partial",
-    pill: "border-warning/30 bg-warning/15 text-warning",
-    amount: "text-warning"
-  },
-  UNPAID: {
-    label: "Unpaid",
-    pill: "border-destructive/25 bg-destructive/10 text-destructive",
-    amount: "text-destructive"
-  }
-};
-
-type PaymentSectionProps = { className?: string };
-
-const PaymentSection = ({ className }: PaymentSectionProps) => {
+const PaymentSection = ({ className }: { className?: string }) => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
   const updateField = useBillingSessionStore((state) => state.updateField);
-  const lineItems = useBillingSessionStore((state) =>
-    activeTabId ? (state.sessions[activeTabId]?.lineItems ?? []) : []
+  const { config } = useAppPreferences();
+
+  if (!session || session.billingType !== TRANSACTION_TYPE.SALE) return null;
+
+  const defaultCustomerId = config?.billing.defaultCustomerId;
+  const hasNamedCustomer = Boolean(session.customerId && session.customerName.trim());
+  const isDefaultCustomer = Boolean(
+    session.customerId &&
+    (session.customerId === defaultCustomerId || session.customerName === "DEFAULT")
   );
+  const disabled = !hasNamedCustomer || isDefaultCustomer;
 
-  if (!session || session.billingType !== TRANSACTION_TYPE.SALE) {
-    return null;
-  }
-
-  const amountReceived = session.amountPaid ?? "";
-  const paymentMode = session.paymentMode;
-
-  const grandTotalPaisa = lineItems.reduce((sum, item) => sum + Number(item.totalPrice || 0), 0);
-
-  const receivedRupees = amountReceived === "" ? 0 : Number(amountReceived);
-  const receivedPaisa =
-    Number.isFinite(receivedRupees) && receivedRupees >= 0 ? rupeesToPaisa(receivedRupees) : 0;
-  const balancePaisa = grandTotalPaisa - receivedPaisa;
-  const isOverpaid = balancePaisa < 0;
-
-  const status: PaymentStatus =
-    receivedPaisa <= 0 ? "UNPAID" : balancePaisa <= 0 ? "PAID" : "PARTIAL";
-  const statusStyle = STATUS_STYLES[status];
-
-  const commit = (field: "amountPaid" | "paymentMode", value: string | PaymentMode | null) => {
-    updateField(activeTabId!, field, value as never);
-    processSyncQueue(activeTabId!);
+  const handleToggle = () => {
+    if (!activeTabId || disabled) return;
+    updateField(activeTabId, "addToAccounting", !session.addToAccounting);
+    processSyncQueue(activeTabId);
   };
-
-  const handleAmountChange = (raw: string) => {
-    commit("amountPaid", raw === "" ? "" : raw.replace(/[^0-9.]/g, ""));
-  };
-
-  const handlePaymentModeChange = (mode: PaymentMode | null) => {
-    commit("paymentMode", paymentMode === mode ? null : mode);
-  };
-
-  const applyFull = () => commit("amountPaid", String(grandTotalPaisa / 100));
-  const applyHalf = () => commit("amountPaid", String(Math.round(grandTotalPaisa / 2) / 100));
-  const applyRoundOff = () => {
-    const rupees = grandTotalPaisa / 100;
-    commit("amountPaid", String(Math.ceil(rupees / 10) * 10));
-  };
-
-  const hasBillAmount = grandTotalPaisa > 0;
-  const displayBalance = isOverpaid ? Math.abs(balancePaisa) : Math.max(balancePaisa, 0);
-
-  const quickActions = [
-    { label: "Full", onClick: applyFull },
-    { label: "Half", onClick: applyHalf },
-    { label: "Round", onClick: applyRoundOff }
-  ];
 
   return (
-    <section
+    <button
+      type="button"
+      onClick={handleToggle}
+      disabled={disabled}
+      aria-pressed={session.addToAccounting}
+      aria-describedby="sale-accounting-help"
       className={cn(
-        "bg-card border-border flex h-full flex-col rounded-(--radius-panel) border p-3",
+        "border-border bg-card flex min-h-14 w-full items-center gap-3 rounded-(--radius-panel) border px-3 py-2 text-left transition-colors outline-none",
+        "hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-3",
+        "disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed",
+        session.addToAccounting && !disabled && "border-success bg-card",
         className
       )}
     >
-      <header className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="bg-muted/60 border-border/70 flex size-8 items-center justify-center rounded-lg border">
-            <Wallet className="text-primary size-4" />
-          </div>
-          <h2 className="text-foreground text-sm font-semibold tracking-tight">Payment</h2>
-        </div>
-        <span
-          className={cn(
-            "inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold tabular-nums",
-            statusStyle.pill
-          )}
-        >
-          {statusStyle.label}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "bg-secondary text-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control)",
+          session.addToAccounting && !disabled && "bg-success text-success-foreground"
+        )}
+      >
+        <BookOpen className="size-4" />
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="text-foreground block text-sm font-semibold">
+          {session.addToAccounting ? "Sale marked for account" : "Add sale to account"}
         </span>
-      </header>
-
-      <div className="mb-3 flex flex-col gap-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground/80 text-xs font-semibold tracking-wider uppercase">
-            Amount Received
-          </span>
-          <div className="flex items-center gap-1">
-            {quickActions.map((action) => (
-              <button
-                key={action.label}
-                type="button"
-                onClick={action.onClick}
-                disabled={!hasBillAmount}
-                className="border-border/70 bg-muted/60 text-foreground hover:bg-accent focus-visible:ring-ring/50 cursor-pointer rounded-md border px-2 py-0.5 text-xs font-semibold transition-colors focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="relative">
-          <IndianRupee className="text-muted-foreground/70 pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-          <Input
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step="0.01"
-            value={amountReceived}
-            onChange={(e) => handleAmountChange(e.target.value)}
-            placeholder="0.00"
-            className="border-input/80 focus-visible:border-ring focus-visible:ring-ring/50 bg-background placeholder:text-muted-foreground/60 h-10 [appearance:textfield] rounded-(--radius-control) border pr-3 pl-9 text-left text-xl! font-semibold tracking-tight tabular-nums shadow-xs transition-[color,box-shadow] focus-visible:ring-[3px] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-        </div>
-      </div>
-
-      <div className="mb-3 flex flex-col gap-1.5">
-        <span className="text-muted-foreground/80 text-xs font-semibold tracking-wider uppercase">
-          Payment Mode
+        <span id="sale-accounting-help" className="text-muted-foreground block text-xs">
+          {disabled
+            ? "Select a named customer first."
+            : session.addToAccounting
+              ? "The full total will be added to the customer ledger when saved."
+              : "Track the full sale total in the customer ledger."}
         </span>
-        <div className="grid grid-cols-3 gap-1.5">
-          {PAYMENT_MODES.map(({ value, label, Icon }) => {
-            const selected = paymentMode === value;
-            return (
-              <button
-                key={value}
-                type="button"
-                onClick={() => handlePaymentModeChange(value)}
-                className={cn(
-                  "flex h-8 cursor-pointer items-center justify-center gap-1.5 rounded-lg border text-sm font-semibold capitalize transition-colors",
-                  selected
-                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                    : "border-border/70 bg-background text-muted-foreground hover:bg-accent hover:text-foreground"
-                )}
-              >
-                <Icon className="size-4" />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
+      </span>
 
-      <div className="bg-muted/40 border-border/70 mt-auto overflow-hidden rounded-(--radius-panel) border">
-        <div className="flex items-center justify-between px-3 py-1.5">
-          <span className="text-muted-foreground text-xs font-medium">Bill Amount</span>
-          <span className="text-foreground text-sm font-semibold tabular-nums">
-            {formatRupee(grandTotalPaisa)}
-          </span>
-        </div>
-        <div className="flex items-center justify-between px-3 py-1.5">
-          <span className="text-muted-foreground text-xs font-medium">Received</span>
-          <span className="text-foreground text-sm font-semibold tabular-nums">
-            {receivedPaisa > 0 ? formatRupee(receivedPaisa) : "—"}
-          </span>
-        </div>
-        <div className="border-border/70 border-t border-dashed" />
-        <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-foreground text-xs font-semibold">
-            {isOverpaid ? "Change Due" : "Balance Due"}
-          </span>
-          <span className={cn("financial-nums text-xl font-bold", statusStyle.amount)}>
-            {formatRupee(displayBalance)}
-          </span>
-        </div>
-      </div>
-    </section>
+      <span
+        aria-hidden="true"
+        className={cn(
+          "border-border bg-background text-foreground flex h-8 min-w-20 shrink-0 items-center justify-center gap-1.5 rounded-(--radius-control) border px-2 text-xs font-semibold",
+          session.addToAccounting &&
+            !disabled &&
+            "border-success bg-success text-success-foreground"
+        )}
+      >
+        {session.addToAccounting ? <Check className="size-3.5" /> : <Plus className="size-3.5" />}
+        {session.addToAccounting ? "Selected" : "Add"}
+      </span>
+    </button>
   );
 };
 

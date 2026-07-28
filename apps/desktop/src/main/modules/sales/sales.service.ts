@@ -35,9 +35,9 @@ const getSaleById = async (id: string): Promise<UnifiedTransctionWithItems> => {
     customer: sale.customer,
     grandTotal: sale.grandTotal,
     totalQuantity: sale.totalQuantity,
-    amountPaid: sale.amountPaid,
-    paymentMode: sale.paymentMode as UnifiedTransctionWithItems["paymentMode"],
-    isPaid: sale.isPaid,
+    isAddedToAccounting: sale.customerLedgerEntries.length > 0,
+    canModify: Date.now() - new Date(sale.recordedAt).getTime() <= 48 * 60 * 60 * 1000,
+    recordedAt: sale.recordedAt,
     notes: sale.notes,
     items: items,
     createdAt: sale.createdAt,
@@ -99,9 +99,9 @@ const filterSalesByDate = async (
       customerName: txn.customer.name,
       grandTotal: txn.grandTotal,
       totalQuantity: txn.totalQuantity,
-      amountPaid: txn.amountPaid,
-      paymentMode: txn.paymentMode as UnifiedTransctionWithItems["paymentMode"],
-      isPaid: txn.isPaid,
+      isAddedToAccounting: txn.customerLedgerEntries.length > 0,
+      canModify: Date.now() - new Date(txn.recordedAt).getTime() <= 48 * 60 * 60 * 1000,
+      recordedAt: txn.recordedAt,
       notes: txn.notes,
       updatedAt: txn.updatedAt,
       createdAt: txn.createdAt
@@ -120,12 +120,14 @@ const filterSalesByDate = async (
   };
 };
 
-const createSale = async (payload: TxnPayloadData): Promise<SyncResponse> => {
+type SalePayloadData = Extract<TxnPayloadData, { transactionType: "sale" }>;
+
+const createSale = async (payload: SalePayloadData): Promise<SyncResponse> => {
   const result = await salesRepository.createSale(payload);
   return result;
 };
 
-const syncSale = async (id: string, payload: TxnPayloadData): Promise<SyncResponse> => {
+const syncSale = async (id: string, payload: SalePayloadData): Promise<SyncResponse> => {
   const existingSale = await salesRepository.getSaleById(id);
 
   if (!existingSale) {
@@ -137,32 +139,12 @@ const syncSale = async (id: string, payload: TxnPayloadData): Promise<SyncRespon
   return result;
 };
 
-const convertSaleToEstimate = async (id: string): Promise<{ id: string }> => {
-  const result = await salesRepository.convertSaleToEstimate(id);
-  return {
-    id: result.id
-  };
-};
-
 const updateCheckedQtyService = async (saleItemId: string, action: UpdateQtyAction) => {
   await salesRepository.updateCheckedQty(saleItemId, action);
 };
 
 const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
   await salesRepository.batchCheckItems(id, action);
-};
-
-const updateSaleStatus = async (id: string, isPaid: boolean): Promise<{ message: string }> => {
-  const result = await salesRepository.updateSaleStatus(id, isPaid);
-  if (result.changes > 0) {
-    return {
-      message: isPaid ? "Sale marked as paid" : "Sale marked as unpaid"
-    };
-  } else {
-    return {
-      message: isPaid ? "Sale already marked as paid" : "Sale already marked as unpaid"
-    };
-  }
 };
 
 const deleteSaleById = async (id: string) => {
@@ -179,10 +161,8 @@ export const salesService = {
   filterSalesByDate,
   createSale,
   syncSale,
-  convertSaleToEstimate,
   updateCheckedQtyService,
   batchCheckItemsService,
   deleteSaleById,
-  updateSaleStatus,
   duplicateSaleById
 };

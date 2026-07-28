@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateCustomer } from "@/hooks/customers/useUpdateCustomer";
 import { apiClient } from "@/lib/apiClient";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
-import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
+import { rupeesToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { LoaderCircle, X } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -23,8 +23,7 @@ type FormState = {
   name: string;
   contact: string;
   customerType: string;
-  creditLimit: string;
-  outstandingBalance: string;
+  openingBalance: string;
   address: string;
 };
 
@@ -32,8 +31,7 @@ const emptyForm: FormState = {
   name: "",
   contact: "",
   customerType: "cash",
-  creditLimit: "",
-  outstandingBalance: "",
+  openingBalance: "",
   address: ""
 };
 
@@ -42,25 +40,20 @@ function formFromCustomer(c: Customer): FormState {
     name: c.name,
     contact: c.contact ?? "",
     customerType: c.customerType,
-    creditLimit:
-      c.creditLimit != null && c.creditLimit !== 0 ? String(paisaToRupees(c.creditLimit)) : "",
-    outstandingBalance:
-      c.outstandingBalance != null && c.outstandingBalance !== 0
-        ? String(paisaToRupees(c.outstandingBalance))
-        : "",
+    openingBalance: "",
     address: c.address ?? ""
   };
 }
 
-function buildPayload(form: FormState) {
+function buildPayload(form: FormState, includeOpeningBalance: boolean) {
   return {
     name: form.name.trim(),
     contact: form.contact.trim() === "" ? null : form.contact.trim(),
     customerType: form.customerType,
-    creditLimit: form.creditLimit.trim() === "" ? 0 : rupeesToPaisa(Number(form.creditLimit)),
-    outstandingBalance:
-      form.outstandingBalance.trim() === "" ? 0 : rupeesToPaisa(Number(form.outstandingBalance)),
-    address: form.address.trim() === "" ? null : form.address.trim()
+    address: form.address.trim() === "" ? null : form.address.trim(),
+    ...(includeOpeningBalance && form.openingBalance.trim() !== ""
+      ? { openingBalance: rupeesToPaisa(Number(form.openingBalance)) }
+      : {})
   };
 }
 
@@ -94,13 +87,6 @@ const onlyUnsignedDecimal = (v: string) => {
   const parts = v.replace(/[^\d.]/g, "").split(".");
   return parts.length > 1 ? `${parts[0]}.${parts.slice(1).join("")}` : (parts[0] ?? "");
 };
-const onlySignedDecimal = (v: string) => {
-  let out = v.replace(/[^\d.-]/g, "");
-  if (out.includes("-")) out = `-${out.replace(/-/g, "")}`;
-  const parts = out.split(".");
-  return parts.length > 1 ? `${parts[0]}.${parts.slice(1).join("")}` : (parts[0] ?? "");
-};
-
 export function CustomerFormDialog({
   mode,
   customer,
@@ -114,7 +100,7 @@ export function CustomerFormDialog({
   const updateMutation = useUpdateCustomer();
 
   const createMutation = useMutation<Customer, Error, FormState>({
-    mutationFn: (f) => apiClient.post<Customer>("/api/customers", buildPayload(f)),
+    mutationFn: (f) => apiClient.post<Customer>("/api/customers", buildPayload(f, true)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers-infinite"], exact: false });
       toast.success("Customer created");
@@ -139,7 +125,7 @@ export function CustomerFormDialog({
 
   const handleSave = () => {
     if (!canSave || saving) return;
-    const payload = buildPayload(form) as Partial<UpdateCustomerPayload>;
+    const payload = buildPayload(form, false) as Partial<UpdateCustomerPayload>;
     if (mode === "edit" && customer) {
       updateMutation.mutate({ id: customer.id, payload }, { onSuccess: onClose });
     } else {
@@ -222,28 +208,19 @@ export function CustomerFormDialog({
               </Select>
             </FormField>
 
-            <FormField label="Credit Limit (₹)">
-              <Input
-                inputMode="decimal"
-                min={0}
-                value={form.creditLimit}
-                onChange={(e) => set("creditLimit", onlyUnsignedDecimal(e.target.value))}
-                onFocus={selectOnFocus}
-                placeholder="0"
-                className="h-9 text-sm! font-medium tabular-nums"
-              />
-            </FormField>
-
-            <FormField label="Outstanding (₹)">
-              <Input
-                inputMode="decimal"
-                value={form.outstandingBalance}
-                onChange={(e) => set("outstandingBalance", onlySignedDecimal(e.target.value))}
-                onFocus={selectOnFocus}
-                placeholder="0"
-                className="h-9 text-sm! font-medium tabular-nums"
-              />
-            </FormField>
+            {mode === "add" && (
+              <FormField label="Opening balance (₹)">
+                <Input
+                  inputMode="decimal"
+                  min={0}
+                  value={form.openingBalance}
+                  onChange={(e) => set("openingBalance", onlyUnsignedDecimal(e.target.value))}
+                  onFocus={selectOnFocus}
+                  placeholder="Optional"
+                  className="h-9 text-sm! font-medium tabular-nums"
+                />
+              </FormField>
+            )}
 
             <div className="col-span-2">
               <FormField label="Address">

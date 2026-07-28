@@ -28,8 +28,6 @@ import { formatRupee } from "@shared/utils/utils";
 import {
   ArrowUpRight,
   CheckCheck,
-  CircleCheckBig,
-  CircleOff,
   Copy,
   Edit,
   FileDown,
@@ -78,7 +76,6 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
     isLoading,
     subtotal,
     grandTotal,
-    balanceDue,
     itemsCount,
     totalQty,
     totalCheckedQty,
@@ -87,7 +84,6 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
     deleteMutation,
     convertMutation,
     duplicateMutation,
-    statusMutation,
     exportPdf,
     pdfLoading
   } = useViewModal({ type, id });
@@ -97,7 +93,8 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
   const close = useCallback(() => setIsViewModalOpen(false), [setIsViewModalOpen]);
 
   const isSales = type === "sales";
-  const convertLabel = isSales ? "Convert to Estimate" : "Convert to Sale";
+  const canModify = !isSales || data?.canModify !== false;
+  const convertLabel = "Convert to Sale";
 
   const handleEdit = useCallback(() => {
     close();
@@ -121,11 +118,6 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type, id });
   }, [duplicateMutation, type, id]);
-
-  const onToggleStatus = useCallback(() => {
-    if (!data) return;
-    statusMutation.mutate({ type, id, isPaid: !data.isPaid });
-  }, [statusMutation, type, id, data]);
 
   const handleExportPdf = useCallback(async () => {
     const filePath = await exportPdf();
@@ -166,17 +158,6 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
         <div className="border-border bg-card flex shrink-0 items-start justify-between gap-4 border-b px-6 py-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              {data ? (
-                data.isPaid ? (
-                  <Badge className="bg-success/15 text-success border-success/25 rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    Paid
-                  </Badge>
-                ) : (
-                  <Badge className="bg-destructive/10 text-destructive border-destructive/25 rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    Unpaid
-                  </Badge>
-                )
-              ) : null}
               <h2 className="text-foreground truncate text-xl font-semibold tracking-[-0.02em]">
                 {isSales ? "Sale" : "Estimate"} Details
               </h2>
@@ -283,23 +264,13 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
 
               {/* Summary metrics */}
               <div className="bg-muted rounded-lg px-4 py-3">
-                <div className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-3 lg:grid-cols-6">
+                <div className="grid grid-cols-3 gap-x-4 gap-y-3">
                   <Metric
                     label="Grand Total"
                     value={data.grandTotal != null ? formatRupee(data.grandTotal) : "—"}
                     emphasize
                   />
-                  <Metric label="Amount Paid" value={formatRupee(data.amountPaid ?? 0)} />
-                  <Metric
-                    label="Balance Due"
-                    value={formatRupee(balanceDue)}
-                    tone={balanceDue > 0 ? "destructive" : balanceDue < 0 ? "success" : "default"}
-                  />
                   <Metric label="Total Qty" value={String(totalQty)} />
-                  <Metric
-                    label="Payment Mode"
-                    value={data.paymentMode ? toTitleCase(data.paymentMode) : "—"}
-                  />
                   <Metric label="Items" value={String(itemsCount)} />
                 </div>
               </div>
@@ -327,7 +298,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                           action: BATCH_CHECK_ACTION.MARK_ALL
                         })
                       }
-                      disabled={batchUpdateQtyMutation.isPending}
+                      disabled={!canModify || batchUpdateQtyMutation.isPending}
                     >
                       <CheckCheck className="mr-1 size-4" />
                       Check All
@@ -343,7 +314,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                           action: BATCH_CHECK_ACTION.UNMARK_ALL
                         })
                       }
-                      disabled={batchUpdateQtyMutation.isPending}
+                      disabled={!canModify || batchUpdateQtyMutation.isPending}
                     >
                       <X className="mr-1 size-4" />
                       Uncheck All
@@ -382,6 +353,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
                       {data.items.map((item, index) => (
                         <ItemRow
                           key={item.id}
+                          canModify={canModify}
                           id={id}
                           item={item}
                           index={index + 1}
@@ -445,6 +417,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
               size="sm"
               className="hover:bg-primary-hover cursor-pointer"
               onClick={handleEdit}
+              hidden={!canModify}
             >
               <Edit className="mr-1 size-4" />
               Edit
@@ -458,24 +431,6 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onSelect={onToggleStatus}
-                  disabled={statusMutation.isPending}
-                  className="cursor-pointer"
-                >
-                  {data?.isPaid ? (
-                    <>
-                      <CircleOff className="mr-2 size-4" />
-                      <span className="text-sm">Mark as unpaid</span>
-                    </>
-                  ) : (
-                    <>
-                      <CircleCheckBig className="mr-2 size-4" />
-                      <span className="text-sm">Mark as paid</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
                   onSelect={onDuplicate}
                   disabled={duplicateMutation.isPending}
                   className="cursor-pointer"
@@ -488,6 +443,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
 
                 <DropdownMenuItem
                   onSelect={() => setActiveDialog("convert")}
+                  hidden={isSales}
                   className="cursor-pointer"
                 >
                   <RefreshCcw className="mr-2 size-4" />
@@ -496,6 +452,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
 
                 <DropdownMenuItem
                   onSelect={() => setActiveDialog("delete")}
+                  hidden={!canModify}
                   className="text-destructive focus:text-destructive cursor-pointer"
                 >
                   <Trash2 className="mr-2 size-4" />
@@ -541,7 +498,7 @@ export const ViewModal = ({ type, id }: { type: DashboardType; id: string }) => 
             <AlertDialogHeader>
               <AlertDialogTitle>{convertLabel}?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will create a new {isSales ? "estimate" : "sale"} from{" "}
+                This will create a new sale from{" "}
                 <span className="text-foreground font-medium">#{data?.transactionNo ?? ""}</span>.
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -591,8 +548,4 @@ function Metric({
       </p>
     </div>
   );
-}
-
-function toTitleCase(value: string): string {
-  return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 }

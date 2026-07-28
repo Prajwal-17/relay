@@ -246,9 +246,6 @@ importers:
       drizzle-kit:
         specifier: ^0.31.4
         version: 0.31.10
-      drizzle-seed:
-        specifier: ^0.3.1
-        version: 0.3.1(drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.11.1))
       electron:
         specifier: ^39.2.6
         version: 39.8.10
@@ -3493,14 +3490,6 @@ packages:
       sql.js:
         optional: true
       sqlite3:
-        optional: true
-
-  drizzle-seed@0.3.1:
-    resolution: {integrity: sha512-F/0lgvfOAsqlYoHM/QAGut4xXIOXoE5VoAdv2FIl7DpGYVXlAzKuJO+IphkKUFK3Dz+rFlOsQLnMNrvoQ0cx7g==}
-    peerDependencies:
-      drizzle-orm: '>=0.36.4'
-    peerDependenciesMeta:
-      drizzle-orm:
         optional: true
 
   dunder-proto@1.0.1:
@@ -8840,12 +8829,6 @@ snapshots:
     optionalDependencies:
       '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.11.1
-
-  drizzle-seed@0.3.1(drizzle-orm@0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.11.1)):
-    dependencies:
-      pure-rand: 6.1.0
-    optionalDependencies:
-      drizzle-orm: 0.44.7(@types/better-sqlite3@7.6.13)(better-sqlite3@12.11.1)
 
   dunder-proto@1.0.1:
     dependencies:

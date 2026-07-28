@@ -93,7 +93,7 @@ export function EditLedgerDialog({
         <DialogHeader>
           <DialogTitle>{titleByType[entry.type] ?? "Edit Entry"}</DialogTitle>
           <DialogDescription>
-            Modify the ledger entry. Changes are only allowed within 2 days of creation.
+            Modify the ledger entry. Changes are only allowed within 48 hours of creation.
           </DialogDescription>
         </DialogHeader>
 

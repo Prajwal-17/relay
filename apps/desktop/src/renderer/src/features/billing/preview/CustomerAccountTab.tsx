@@ -6,7 +6,6 @@ import { useCustomerLedgerSummary } from "@/hooks/customers/useCustomerLedger";
 import { cn } from "@/lib/utils";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import {
@@ -20,7 +19,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { UnpaidSalesList } from "./UnpaidSalesList";
 
 const typeBadgeClass: Record<string, string> = {
   cash: "bg-muted text-muted-foreground border-border",
@@ -60,9 +58,6 @@ export function CustomerAccountTab() {
   );
 
   const customerId = session?.customerId ?? null;
-  const billingType = session?.billingType ?? TRANSACTION_TYPE.SALE;
-  const isSale = billingType === TRANSACTION_TYPE.SALE;
-
   if (!customerId) {
     return (
       <div className="flex h-full min-h-64 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
@@ -79,26 +74,15 @@ export function CustomerAccountTab() {
     );
   }
 
-  return (
-    <CustomerAccountBody
-      customerId={customerId}
-      customerName={session?.customerName ?? ""}
-      isSale={isSale}
-      billingId={session?.billingId ?? null}
-    />
-  );
+  return <CustomerAccountBody customerId={customerId} customerName={session?.customerName ?? ""} />;
 }
 
 function CustomerAccountBody({
   customerId,
-  customerName,
-  isSale,
-  billingId
+  customerName
 }: {
   customerId: string;
   customerName: string;
-  isSale: boolean;
-  billingId: string | null;
 }) {
   const [paymentOpen, setPaymentOpen] = useState(false);
   const navigate = useNavigate();
@@ -215,16 +199,6 @@ function CustomerAccountBody({
           icon={<ArrowDownLeft className="size-3" />}
         />
       </section>
-
-      {/* Unpaid sales (sales context only) */}
-      {isSale && (
-        <section className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <h3 className="text-foreground text-sm font-bold tracking-[-0.02em]">Unpaid Sales</h3>
-          </div>
-          <UnpaidSalesList customerId={customerId} excludeId={billingId} />
-        </section>
-      )}
 
       {/* Actions */}
       <div className="flex flex-col gap-2">

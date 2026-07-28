@@ -149,9 +149,8 @@ const getSalesByCustomerId = async (
             customerId: s.customerId,
             grandTotal: s.grandTotal,
             totalQuantity: s.totalQuantity,
-            amountPaid: s.amountPaid ?? 0,
-            paymentMode: s.paymentMode as CustomerTransaction["paymentMode"],
-            isPaid: s.isPaid,
+            recordedAt: s.recordedAt,
+            canModify: Date.now() - new Date(s.recordedAt).getTime() <= 48 * 60 * 60 * 1000,
             notes: s.notes,
             updatedAt: s.updatedAt,
             createdAt: s.createdAt
@@ -182,9 +181,6 @@ const getEstimatesByCustomerId = async (
             customerId: e.customerId,
             grandTotal: e.grandTotal,
             totalQuantity: e.totalQuantity,
-            amountPaid: 0,
-            paymentMode: null,
-            isPaid: e.isPaid,
             notes: e.notes,
             updatedAt: e.updatedAt,
             createdAt: e.createdAt

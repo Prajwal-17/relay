@@ -35,9 +35,6 @@ const getEstimateById = async (id: string): Promise<UnifiedTransctionWithItems> 
     customer: estimate.customer,
     grandTotal: estimate.grandTotal,
     totalQuantity: estimate.totalQuantity,
-    amountPaid: 0,
-    paymentMode: null,
-    isPaid: estimate.isPaid,
     notes: estimate.notes,
     items: items,
     createdAt: estimate.createdAt,
@@ -99,9 +96,6 @@ const filterEstimateByDate = async (
       customerName: txn.customer.name,
       grandTotal: txn.grandTotal,
       totalQuantity: txn.totalQuantity,
-      amountPaid: 0,
-      paymentMode: null,
-      isPaid: txn.isPaid,
       notes: txn.notes,
       updatedAt: txn.updatedAt,
       createdAt: txn.createdAt
@@ -120,12 +114,14 @@ const filterEstimateByDate = async (
   };
 };
 
-const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> => {
+type EstimatePayloadData = Extract<TxnPayloadData, { transactionType: "estimate" }>;
+
+const createEstimate = async (payload: EstimatePayloadData): Promise<SyncResponse> => {
   const result = await estimatesRepository.createEstimate(payload);
   return result;
 };
 
-const syncEstimate = async (id: string, payload: TxnPayloadData): Promise<SyncResponse> => {
+const syncEstimate = async (id: string, payload: EstimatePayloadData): Promise<SyncResponse> => {
   const existingEstimate = await estimatesRepository.getEstimateById(id);
 
   if (!existingEstimate) {
@@ -152,19 +148,6 @@ const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
   await estimatesRepository.batchCheckItems(id, action);
 };
 
-const updateEstimateStatus = async (id: string, isPaid: boolean): Promise<{ message: string }> => {
-  const result = await estimatesRepository.updateEstimateStatus(id, isPaid);
-  if (result.changes > 0) {
-    return {
-      message: isPaid ? "Estimate marked as paid" : "Estimate marked as unpaid"
-    };
-  } else {
-    return {
-      message: isPaid ? "Estimate already marked as paid" : "Estimate already marked as unpaid"
-    };
-  }
-};
-
 const deleteEstimateById = async (id: string) => {
   await estimatesRepository.deleteEstimateById(id);
 };
@@ -182,7 +165,6 @@ export const estimatesService = {
   convertEstimateToSale,
   updateCheckedQtyService,
   batchCheckItemsService,
-  updateEstimateStatus,
   deleteEstimateById,
   duplicateEstimateById
 };

@@ -8,7 +8,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +16,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { MutationVariables, StatusMutationVariables } from "@/hooks/dashboard/useDashboard";
+import type { MutationVariables } from "@/hooks/dashboard/useDashboard";
 import { getCustomerAvatarStyle } from "@/lib/customerAvatar";
 import { cn } from "@/lib/utils";
 import type { UnifiedTransaction } from "@shared/types";
@@ -26,8 +25,6 @@ import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
   ArrowUpRight,
-  CircleCheckBig,
-  CircleOff,
   Copy,
   Edit,
   Eye,
@@ -50,7 +47,6 @@ const DashboardTableRow = ({
   hasNextPage,
   deleteMutation,
   convertMutation,
-  txnStatusMutation,
   duplicateMutation,
   setIsViewModalOpen,
   setTransactionId
@@ -61,15 +57,12 @@ const DashboardTableRow = ({
   hasNextPage: boolean;
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
-  txnStatusMutation: UseMutationResult<{ message: string }, Error, StatusMutationVariables>;
   duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
   setIsViewModalOpen: (value: boolean) => void;
   setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
-  const [activeDialog, setActiveDialog] = useState<"status" | "convert" | "delete" | "idle">(
-    "idle"
-  );
+  const [activeDialog, setActiveDialog] = useState<"convert" | "delete" | "idle">("idle");
 
   const handleView = useCallback(() => {
     setIsViewModalOpen(true);
@@ -96,13 +89,7 @@ const DashboardTableRow = ({
     duplicateMutation.mutate({ type: transaction.type, id: transaction.id });
   }, [duplicateMutation, transaction.type, transaction.id]);
 
-  const handleStatus = useCallback(() => {
-    txnStatusMutation.mutate({
-      type: transaction.type,
-      id: transaction.id,
-      isPaid: !transaction.isPaid
-    });
-  }, [txnStatusMutation, transaction.type, transaction.id, transaction.isPaid]);
+  const canModify = pathname !== "sales" || transaction.canModify !== false;
 
   const [pdfLoading, setPdfLoading] = useState(false);
 
@@ -199,17 +186,8 @@ const DashboardTableRow = ({
           <div className="text-muted-foreground col-span-2 flex items-center text-sm tabular-nums">
             #{transaction.transactionNo}
           </div>
-          <div className="text-foreground col-span-2 flex items-center text-sm font-semibold tabular-nums">
+          <div className="text-foreground col-span-3 flex items-center text-sm font-semibold tabular-nums">
             {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
-          </div>
-          <div className="col-span-1 flex items-center justify-start">
-            {transaction.isPaid ? (
-              <Badge className="bg-success/10 text-success border-success/20 text-xs">Paid</Badge>
-            ) : (
-              <Badge className="border-destructive/20 bg-destructive/10 text-destructive text-xs">
-                Unpaid
-              </Badge>
-            )}
           </div>
           <div className="col-span-2 flex items-center justify-center gap-0.5">
             <Tooltip>
@@ -227,6 +205,7 @@ const DashboardTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={handleEdit}
+                hidden={!canModify}
                 className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
                 <Edit className="size-4" />
@@ -239,6 +218,7 @@ const DashboardTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={() => setActiveDialog("delete")}
+                hidden={!canModify}
                 className="hover:bg-accent text-destructive cursor-pointer rounded-md p-1.5"
               >
                 <Trash2 className="size-4" />
@@ -277,25 +257,8 @@ const DashboardTableRow = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-44" align="end">
                 <DropdownMenuItem
-                  onSelect={() => handleStatus()}
-                  className="cursor-pointer"
-                  disabled={txnStatusMutation.isPending}
-                >
-                  {transaction.isPaid ? (
-                    <>
-                      <CircleOff className="mr-2 size-4" />
-                      <span className="text-sm">Mark as unpaid</span>
-                    </>
-                  ) : (
-                    <>
-                      <CircleCheckBig className="mr-2 size-4" />
-                      <span className="text-sm">Mark as paid</span>
-                    </>
-                  )}
-                </DropdownMenuItem>
-
-                <DropdownMenuItem
                   onSelect={() => setActiveDialog("convert")}
+                  hidden={pathname !== "estimates"}
                   className="cursor-pointer"
                 >
                   <RefreshCcw className="mr-2 size-4" />
@@ -351,43 +314,7 @@ const DashboardTableRow = ({
                     onClick={onConvert}
                     disabled={convertMutation.isPending}
                   >
-                    {convertMutation.isPending
-                      ? "Converting..."
-                      : pathname === "sales"
-                        ? "Convert to Estimate"
-                        : pathname === "estimates"
-                          ? "Convert to Sale"
-                          : ""}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog
-              open={activeDialog === "status"}
-              onOpenChange={(isOpen) => !isOpen && setActiveDialog("idle")}
-            >
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-lg">Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-sm">
-                    This will permanently convert the transaction.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
-                    onClick={onConvert}
-                    disabled={convertMutation.isPending}
-                  >
-                    {convertMutation.isPending
-                      ? "Converting..."
-                      : pathname === "sales"
-                        ? "Convert to Estimate"
-                        : pathname === "estimates"
-                          ? "Convert to Sale"
-                          : ""}
+                    {convertMutation.isPending ? "Converting..." : "Convert to Sale"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -414,8 +341,8 @@ function memoComparator(prev: any, next: any) {
   if (p.customerId !== n.customerId) return false;
   if (p.customerName !== n.customerName) return false;
   if (p.grandTotal !== n.grandTotal) return false;
-  if (p.isPaid !== n.isPaid) return false;
   if (p.createdAt !== n.createdAt) return false;
+  if (p.canModify !== n.canModify) return false;
 
   if (prev.deleteMutation?.isPending !== next.deleteMutation?.isPending) return false;
   if (prev.convertMutation?.isPending !== next.convertMutation?.isPending) return false;

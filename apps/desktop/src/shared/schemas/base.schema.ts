@@ -13,8 +13,6 @@ export const CustomerSchema = z.object({
     .nullable(),
   customerType: z.enum(CustomerRole),
   address: z.string().trim().nullable().optional(),
-  creditLimit: z.number().int().nonnegative().nullable().optional(),
-  outstandingBalance: z.number().int().nullable().optional(),
   lastPurchaseAt: z.string().nullable().optional(),
   lastPurchaseAmt: z.number().int().nullable().optional(),
   lastPaymentAt: z.string().nullable().optional(),
