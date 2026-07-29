@@ -167,9 +167,8 @@ billing behavior, print isolation, accessibility, and viewport verification.
 ## Tests
 
 Vitest covers API modules through Hono requests backed by a fresh, migrated in-memory SQLite
-database. Expanded suites live under `src/main/tests/integration/<module>/`; existing flat suites
-remain under `src/main/tests/`. Shared currency, date, quantity, and product-snapshot utilities
-have unit tests alongside their source in `src/shared/utils/`.
+database. API suites live under `src/main/tests/integration/<module>/`. Shared currency, date,
+quantity, and product-snapshot utilities have unit tests alongside their source in `src/shared/utils/`.
 
 Reusable integration support is split by responsibility and re-exported through
 `src/main/tests/helpers/index.ts`:

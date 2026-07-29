@@ -4,16 +4,6 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import path from "node:path";
 import * as schema from "../../db/schema";
-import {
-  customerLedger,
-  customers,
-  estimateItems,
-  estimates,
-  productHistory,
-  products,
-  saleItems,
-  sales
-} from "../../db/schema";
 
 export type DB = BetterSQLite3Database<typeof schema> & {
   $client: Database.Database;
@@ -34,15 +24,4 @@ export function createTestDb(): TestDb {
   sqlite.pragma("foreign_keys = ON");
 
   return { sqlite, db: db as DB };
-}
-
-export function cleanupDb(db: DB) {
-  db.delete(estimateItems).run();
-  db.delete(saleItems).run();
-  db.delete(estimates).run();
-  db.delete(customerLedger).run();
-  db.delete(sales).run();
-  db.delete(productHistory).run();
-  db.delete(products).run();
-  db.delete(customers).run();
 }

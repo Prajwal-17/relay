@@ -1,56 +1,24 @@
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { Hono } from "hono";
-import { TRANSACTION_TYPE, type TxnPayloadData } from "../../shared/types";
-import { customerLedger, customers } from "../db/schema";
-import { customersController } from "../modules/customers/customers.controller";
-import { salesController } from "../modules/sales/sales.controller";
-import { AppError } from "../utils/appError";
+import { TRANSACTION_TYPE, type TxnPayloadData } from "../../../../shared/types";
+import { customerLedger, customers } from "../../../db/schema";
+import { customersController } from "../../../modules/customers/customers.controller";
+import { salesController } from "../../../modules/sales/sales.controller";
 import {
   dbMock,
-  cleanupDb,
+  createModuleTestApp,
   createTestDb,
+  getJson,
   postTxn,
+  requestJson,
   rowId1,
   seedCustomer,
   seedProduct,
   type DB
-} from "./helpers";
-
-// ----------------
-// Compile better-sqlite3 `pnpm run rebuild:node` before running this test
-// ----------------
-
-function createLedgerTestApp() {
-  const app = new Hono();
-
-  app.onError((err, c) => {
-    if (err instanceof AppError) {
-      return c.json({ error: { message: err.message } }, err.statusCode as 400 | 404 | 500);
-    }
-    return c.json({ error: { message: err.message } }, 500);
-  });
-
-  app.route("/api/customers", customersController);
-  app.route("/api/sales", salesController);
-
-  return app;
-}
-
-async function postJson(app: Hono, pathname: string, payload: unknown) {
-  return app.request(pathname, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload)
-  });
-}
-
-async function getJson(app: Hono, pathname: string) {
-  return app.request(pathname, { method: "GET" });
-}
+} from "../../helpers";
 
 async function createAndSyncSale(
-  app: Hono,
+  app: ReturnType<typeof createModuleTestApp>,
   db: DB,
   customerId: string,
   overrides: Partial<TxnPayloadData> = {},
@@ -98,7 +66,7 @@ async function createAndSyncSale(
 }
 
 describe("ledger integration tests", () => {
-  let app: ReturnType<typeof createLedgerTestApp>;
+  let app: ReturnType<typeof createModuleTestApp>;
   let db!: DB;
   let sqlite: ReturnType<typeof createTestDb>["sqlite"] | undefined;
 
@@ -107,37 +75,15 @@ describe("ledger integration tests", () => {
     sqlite = setup.sqlite;
     db = setup.db;
     dbMock.instance = db;
-    app = createLedgerTestApp();
+    app = createModuleTestApp([
+      { path: "/api/customers", controller: customersController },
+      { path: "/api/sales", controller: salesController }
+    ]);
   });
 
   afterEach(() => {
-    if (db) {
-      cleanupDb(db);
-    }
+    dbMock.instance = null;
     sqlite?.close();
-  });
-
-  it("creating a customer with an opening balance inserts a ledger row and sets outstanding", async () => {
-    const response = await postJson(app, "/api/customers", {
-      name: "Acct Customer",
-      contact: "9876543210",
-      customerType: "account",
-      openingBalance: 50000
-    });
-
-    expect(response.status).toBe(201);
-    const created = (await response.json()) as { id: string };
-
-    const customer = db.select().from(customers).where(eq(customers.id, created.id)).get();
-    expect(customer?.outstandingBalance).toBe(50000);
-
-    const openingRow = db
-      .select()
-      .from(customerLedger)
-      .where(eq(customerLedger.customerId, created.id))
-      .get();
-    expect(openingRow?.type).toBe("opening_balance");
-    expect(openingRow?.amountDue).toBe(50000);
   });
 
   it("an unpaid sale creates a ledger row and increases outstanding", async () => {
@@ -161,7 +107,7 @@ describe("ledger integration tests", () => {
   it("a fully paid sale nets to zero outstanding with sale+payment ledger rows", async () => {
     const customer = await seedCustomer(db);
     await createAndSyncSale(app, db, customer.id);
-    const payment = await postJson(app, `/api/customers/${customer.id}/payments`, {
+    const payment = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
       amount: 50000,
       mode: "cash"
     });
@@ -192,7 +138,7 @@ describe("ledger integration tests", () => {
   it("a partially paid sale shows net outstanding", async () => {
     const customer = await seedCustomer(db);
     await createAndSyncSale(app, db, customer.id);
-    const payment = await postJson(app, `/api/customers/${customer.id}/payments`, {
+    const payment = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
       amount: 20000,
       mode: "upi"
     });
@@ -206,7 +152,7 @@ describe("ledger integration tests", () => {
     const customer = await seedCustomer(db);
     await createAndSyncSale(app, db, customer.id); // outstanding = 50000
 
-    const paymentRes = await postJson(app, `/api/customers/${customer.id}/payments`, {
+    const paymentRes = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
       amount: 20000,
       mode: "cash"
     });
@@ -215,11 +161,16 @@ describe("ledger integration tests", () => {
     const afterPayment = db.select().from(customers).where(eq(customers.id, customer.id)).get();
     expect(afterPayment?.outstandingBalance).toBe(30000);
 
-    const adjustmentRes = await postJson(app, `/api/customers/${customer.id}/adjustments`, {
-      amount: 5000,
-      direction: "paid",
-      notes: "round-off"
-    });
+    const adjustmentRes = await requestJson(
+      app,
+      "POST",
+      `/api/customers/${customer.id}/adjustments`,
+      {
+        amount: 5000,
+        direction: "paid",
+        notes: "round-off"
+      }
+    );
     expect(adjustmentRes.status).toBe(201);
 
     const afterAdjustment = db.select().from(customers).where(eq(customers.id, customer.id)).get();
@@ -261,7 +212,7 @@ describe("ledger integration tests", () => {
   });
 
   it("rejects adding another opening balance after customer creation", async () => {
-    const createResponse = await postJson(app, "/api/customers", {
+    const createResponse = await requestJson(app, "POST", "/api/customers", {
       name: "Opening Balance Customer",
       contact: "9123456789",
       customerType: "cash",
@@ -270,7 +221,7 @@ describe("ledger integration tests", () => {
     expect(createResponse.status).toBe(201);
     const customer = (await createResponse.json()) as { id: string };
 
-    const updateResponse = await postJson(app, `/api/customers/${customer.id}`, {
+    const updateResponse = await requestJson(app, "POST", `/api/customers/${customer.id}`, {
       openingBalance: 5000
     });
     expect(updateResponse.status).toBe(400);

@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { TRANSACTION_TYPE, type SyncResponse, type TxnPayloadData } from "../../shared/types";
-import { products, saleItems, sales } from "../db/schema";
+import { TRANSACTION_TYPE, type SyncResponse, type TxnPayloadData } from "../../../../shared/types";
+import { products, saleItems, sales } from "../../../db/schema";
+import { salesController } from "../../../modules/sales/sales.controller";
 import {
   dbMock,
-  cleanupDb,
-  createTestApp,
+  createModuleTestApp,
   createTestDb,
   existingCustomRowId,
   postTxn,
@@ -17,14 +17,10 @@ import {
   seedInitialData,
   seedProduct,
   type DB
-} from "./helpers";
-
-// ----------------
-// Compile better-sqlite3 `pnpm run rebuild:node` before running this test
-// ----------------
+} from "../../helpers";
 
 describe("sales endpoint integration tests", () => {
-  let app: ReturnType<typeof createTestApp>;
+  let app: ReturnType<typeof createModuleTestApp>;
   let db!: DB;
   let sqlite: ReturnType<typeof createTestDb>["sqlite"] | undefined;
 
@@ -33,13 +29,11 @@ describe("sales endpoint integration tests", () => {
     sqlite = setup.sqlite;
     db = setup.db;
     dbMock.instance = db;
-    app = createTestApp();
+    app = createModuleTestApp([{ path: "/api/sales", controller: salesController }]);
   });
 
   afterEach(() => {
-    if (db) {
-      cleanupDb(db);
-    }
+    dbMock.instance = null;
     sqlite?.close();
   });
 

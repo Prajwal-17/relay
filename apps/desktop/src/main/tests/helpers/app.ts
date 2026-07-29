@@ -1,9 +1,7 @@
 import { SqliteError } from "better-sqlite3";
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
-import { estimatesController } from "../../modules/estimates/estimates.controller";
 import { productsController } from "../../modules/products/products.controller";
-import { salesController } from "../../modules/sales/sales.controller";
 import { AppError } from "../../utils/appError";
 
 type TestEnv = {
@@ -56,13 +54,6 @@ export function createModuleTestApp(routes: ModuleRoute[]) {
   }
 
   return app;
-}
-
-export function createTestApp() {
-  return createModuleTestApp([
-    { path: "/api/sales", controller: salesController },
-    { path: "/api/estimates", controller: estimatesController }
-  ]);
 }
 
 export function createProductsTestApp() {
