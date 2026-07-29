@@ -3,7 +3,6 @@ import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillingPreviewPanel from "@/features/billing/preview/BillingPreviewPanel";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import BillingNotes from "@/features/billing/BillingNotes";
-import PaymentSection from "@/features/billing/PaymentSection";
 import { ProductDialogWrapper } from "@/features/billing/ProductDailogWrapper";
 import { SummaryFooter } from "@/features/billing/SummaryFooter";
 import BillingTabBar from "@/features/billing/tabs/BillingTabBar";
@@ -124,8 +123,6 @@ const BillingPage = () => {
     return <BillingSkeleton />;
   }
 
-  const isSale = session.billingType === TRANSACTION_TYPE.SALE;
-
   return (
     <div className="flex h-full flex-col">
       <BillingTabBar />
@@ -134,9 +131,8 @@ const BillingPage = () => {
           <div data-billing-scroll-container className="min-h-0 flex-1 overflow-y-auto">
             <BillingHeader />
             <LineItemsTable />
-            <div className="mx-3 mt-2 mb-3 grid grid-cols-1 gap-2 lg:grid-cols-5">
-              <BillingNotes className={isSale ? "lg:col-span-2" : "lg:col-span-5"} />
-              {isSale && <PaymentSection className="lg:col-span-3" />}
+            <div className="mx-3 mt-2 mb-3">
+              <BillingNotes />
             </div>
           </div>
           <SummaryFooter />

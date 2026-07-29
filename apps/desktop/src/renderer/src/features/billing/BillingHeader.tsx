@@ -45,6 +45,7 @@ import { useState, type CSSProperties } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
+import SaleAccountControl from "./SaleAccountControl";
 
 const BillingHeader = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -278,7 +279,7 @@ const BillingHeader = () => {
       </div>
 
       <div className="mt-2 flex min-w-0 items-end gap-2">
-        <div className="w-full max-w-3xl min-w-56">
+        <div className="w-full max-w-xl min-w-56 flex-1">
           <span className="text-muted-foreground mb-1 block text-xs font-semibold">
             Customer details
           </span>
@@ -295,6 +296,7 @@ const BillingHeader = () => {
             {isDue ? "Due " + formatRupee(outstandingBalance) : "Settled"}
           </span>
         )}
+        <SaleAccountControl />
       </div>
 
       {id && (

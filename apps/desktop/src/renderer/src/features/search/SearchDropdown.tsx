@@ -332,7 +332,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                     initial={{ opacity: 0, y: 3 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                    className="bg-foreground text-card font-roboto absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
+                    className="bg-foreground text-card absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
                   >
                     {delayedPreviewProduct.weight}
                     {delayedPreviewProduct.unit}

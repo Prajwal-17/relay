@@ -88,6 +88,15 @@ export function CustomerListPage() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    const target = e.target;
+    const isSearchInput = target === searchInputRef.current;
+    const isInteractiveChild =
+      target instanceof Element &&
+      target.closest(
+        "button, input, textarea, select, [contenteditable='true'], [role='menuitem'], [role='menuitemradio'], [role='switch']"
+      );
+
+    if (!isSearchInput && isInteractiveChild) return;
     if (rows.length === 0) return;
 
     if (e.key === "ArrowDown") {

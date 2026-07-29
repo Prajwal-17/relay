@@ -15,6 +15,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import {
+  getScrollTopForActiveRow,
+  hasPointerMoved,
+  type PointerPosition
+} from "../customers/listNavigation";
 
 function rowHeight() {
   return 40;
@@ -34,6 +39,8 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   const { config } = useAppPreferences();
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const navigationIntentRef = useRef<"keyboard" | "pointer">("keyboard");
+  const pointerPositionRef = useRef<PointerPosition | null>(null);
 
   const {
     customersData,
@@ -50,13 +57,18 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   useEffect(() => {
     if (open) {
       setSearch("");
+      navigationIntentRef.current = "keyboard";
+      pointerPositionRef.current = null;
       setActiveIndex(0);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [open, setSearch]);
 
   useEffect(() => {
+    navigationIntentRef.current = "keyboard";
+    pointerPositionRef.current = null;
     setActiveIndex(0);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [search]);
 
   const createCustomerMutation = useMutation<Customer, Error, string>({
@@ -101,12 +113,15 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
       return;
     }
 
+    if (e.target !== inputRef.current) return;
     if (customersData.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      navigationIntentRef.current = "keyboard";
       setActiveIndex((i) => Math.min(i + 1, customersData.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+      navigationIntentRef.current = "keyboard";
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -116,16 +131,29 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   };
 
   useEffect(() => {
-    if (customersData.length > 0 && scrollRef.current) {
+    if (
+      navigationIntentRef.current === "keyboard" &&
+      customersData.length > 0 &&
+      scrollRef.current
+    ) {
       const el = scrollRef.current;
-      const targetTop = activeIndex * rowHeight();
-      const visibleStart = el.scrollTop;
-      const visibleEnd = visibleStart + el.clientHeight;
-      if (targetTop < visibleStart || targetTop + rowHeight() > visibleEnd) {
-        el.scrollTop = Math.max(0, targetTop - el.clientHeight / 2 + rowHeight() / 2);
-      }
+      el.scrollTop = getScrollTopForActiveRow({
+        activeIndex,
+        rowHeight: rowHeight(),
+        scrollTop: el.scrollTop,
+        clientHeight: el.clientHeight
+      });
     }
   }, [activeIndex, customersData.length]);
+
+  const handlePointerMove = (index: number, event: React.PointerEvent) => {
+    const nextPosition = { x: event.clientX, y: event.clientY };
+    if (!hasPointerMoved(pointerPositionRef.current, nextPosition)) return;
+
+    pointerPositionRef.current = nextPosition;
+    navigationIntentRef.current = "pointer";
+    setActiveIndex(index);
+  };
 
   const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
     const { scrollTop, clientHeight, scrollHeight } = event.currentTarget;
@@ -218,7 +246,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
                   isActive={index === activeIndex}
                   isSelected={customerId === customer.id}
                   onSelect={() => handleSelectCustomer(customer)}
-                  onHover={() => setActiveIndex(index)}
+                  onPointerMove={(event) => handlePointerMove(index, event)}
                 />
               ))}
               {isFetchingNextPage && (
@@ -259,13 +287,13 @@ function CustomerRow({
   isActive,
   isSelected,
   onSelect,
-  onHover
+  onPointerMove
 }: {
   customer: Customer;
   isActive: boolean;
   isSelected: boolean;
   onSelect: () => void;
-  onHover: () => void;
+  onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
   const outstanding = customer.outstandingBalance ?? 0;
   const isDue = outstanding > 0;
@@ -273,7 +301,7 @@ function CustomerRow({
   return (
     <button
       type="button"
-      onMouseEnter={onHover}
+      onPointerMove={onPointerMove}
       onClick={onSelect}
       style={{ height: rowHeight() }}
       className={cn(

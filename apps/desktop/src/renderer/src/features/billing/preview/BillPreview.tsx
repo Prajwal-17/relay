@@ -43,7 +43,7 @@ export function BillPreview() {
   return (
     <div
       ref={localReceiptRef}
-      className="receipt no-break font-roboto border-success bg-card text-foreground mt-0 mb-24 border px-1 pt-1"
+      className="receipt no-break border-success bg-card text-foreground mt-0 mb-24 border px-1 pt-1"
     >
       <div className="mb-2 space-y-2 pb-4 text-center">
         <h1 className="text-lg font-bold tracking-tight">SRI MANJUNATHESHWARA STORES</h1>

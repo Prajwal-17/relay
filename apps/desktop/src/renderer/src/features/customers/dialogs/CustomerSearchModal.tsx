@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useCustomersInfinite } from "@/hooks/customers/useCustomersInfinite";
@@ -7,15 +8,24 @@ import { formatRupee } from "@shared/utils/utils";
 import { LoaderCircle, Search, Users, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getScrollTopForActiveRow, hasPointerMoved, type PointerPosition } from "../listNavigation";
 
 function rowHeight() {
   return 44;
 }
 
+const typeBadgeClass: Record<string, string> = {
+  cash: "bg-muted text-muted-foreground border-border",
+  account: "bg-info/15 text-info border-info/25",
+  hotel: "bg-primary/10 text-primary border-primary/25"
+};
+
 export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const navigationIntentRef = useRef<"keyboard" | "pointer">("keyboard");
+  const pointerPositionRef = useRef<PointerPosition | null>(null);
 
   const {
     customersData,
@@ -35,7 +45,10 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   }, []);
 
   useEffect(() => {
+    navigationIntentRef.current = "keyboard";
+    pointerPositionRef.current = null;
     setActiveIndex(0);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   }, [search]);
 
   const select = (customer: Customer) => {
@@ -50,12 +63,15 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
       return;
     }
 
+    if (e.target !== inputRef.current) return;
     if (customersData.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
+      navigationIntentRef.current = "keyboard";
       setActiveIndex((i) => Math.min(i + 1, customersData.length - 1));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
+      navigationIntentRef.current = "keyboard";
       setActiveIndex((i) => Math.max(i - 1, 0));
     } else if (e.key === "Enter") {
       e.preventDefault();
@@ -65,16 +81,29 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   };
 
   useEffect(() => {
-    if (customersData.length > 0 && scrollRef.current) {
+    if (
+      navigationIntentRef.current === "keyboard" &&
+      customersData.length > 0 &&
+      scrollRef.current
+    ) {
       const el = scrollRef.current;
-      const targetTop = activeIndex * rowHeight();
-      const visibleStart = el.scrollTop;
-      const visibleEnd = visibleStart + el.clientHeight;
-      if (targetTop < visibleStart || targetTop + rowHeight() > visibleEnd) {
-        el.scrollTop = Math.max(0, targetTop - el.clientHeight / 2 + rowHeight() / 2);
-      }
+      el.scrollTop = getScrollTopForActiveRow({
+        activeIndex,
+        rowHeight: rowHeight(),
+        scrollTop: el.scrollTop,
+        clientHeight: el.clientHeight
+      });
     }
   }, [activeIndex, customersData.length]);
+
+  const handlePointerMove = (index: number, event: React.PointerEvent) => {
+    const nextPosition = { x: event.clientX, y: event.clientY };
+    if (!hasPointerMoved(pointerPositionRef.current, nextPosition)) return;
+
+    pointerPositionRef.current = nextPosition;
+    navigationIntentRef.current = "pointer";
+    setActiveIndex(index);
+  };
 
   const isPending = status === "pending";
   const isEmpty = !isPending && customersData.length === 0;
@@ -148,7 +177,7 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
                   customer={customer}
                   isActive={index === activeIndex}
                   onSelect={() => select(customer)}
-                  onHover={() => setActiveIndex(index)}
+                  onPointerMove={(event) => handlePointerMove(index, event)}
                 />
               ))}
               {isFetchingNextPage && (
@@ -177,12 +206,12 @@ function CustomerRow({
   customer,
   isActive,
   onSelect,
-  onHover
+  onPointerMove
 }: {
   customer: Customer;
   isActive: boolean;
   onSelect: () => void;
-  onHover: () => void;
+  onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
   const outstanding = customer.outstandingBalance ?? 0;
   const isDue = outstanding > 0;
@@ -190,10 +219,11 @@ function CustomerRow({
   return (
     <button
       type="button"
-      onMouseEnter={onHover}
+      onPointerMove={onPointerMove}
       onClick={onSelect}
+      style={{ height: rowHeight() }}
       className={cn(
-        "relative flex w-full items-center justify-between gap-3 py-2.5 pr-3 pl-4 text-left transition-colors",
+        "relative flex w-full items-center justify-between gap-3 pr-3 pl-4 text-left transition-colors",
         "hover:bg-accent",
         isActive && "bg-accent"
       )}
@@ -205,19 +235,32 @@ function CustomerRow({
         )}
       />
       <div className="min-w-0">
-        <p className="text-foreground truncate text-sm font-medium">{customer.name}</p>
-        <p className="text-muted-foreground truncate text-xs font-medium">
+        <p className="text-foreground truncate text-sm leading-tight font-medium">
+          {customer.name}
+        </p>
+        <p className="text-muted-foreground truncate text-xs leading-tight font-medium">
           {customer.contact ? customer.contact : "No contact"}
         </p>
       </div>
-      <span
-        className={cn(
-          "shrink-0 text-sm font-semibold tabular-nums",
-          isDue ? "text-destructive" : "text-muted-foreground"
-        )}
-      >
-        {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}
-      </span>
+      <div className="flex shrink-0 items-center gap-2">
+        <Badge
+          variant="outline"
+          className={cn(
+            "px-1.5 py-0 text-xs leading-tight font-medium capitalize",
+            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
+          )}
+        >
+          {customer.customerType}
+        </Badge>
+        <span
+          className={cn(
+            "min-w-16 text-right text-sm font-semibold tabular-nums",
+            isDue ? "text-destructive" : "text-muted-foreground"
+          )}
+        >
+          {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}
+        </span>
+      </div>
     </button>
   );
 }

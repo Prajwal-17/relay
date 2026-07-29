@@ -159,7 +159,8 @@ non-payable, and Estimate → Sale creates a normal sale without opting into Acc
 ## Display contract
 
 The reference viewport is **1280 × 650 CSS pixels at 100% Electron zoom**; **1024 × 600** is the
-supported fallback. The supported zoom range is 85%–125%, with 100% as the design baseline.
+supported fallback. The main window opens maximized by default. The supported zoom range is
+85%–125%, with 100% as the design baseline.
 
 All UI work must follow the canonical [DESIGN.md](../../DESIGN.md), including density tokens,
 billing behavior, print isolation, accessibility, and viewport verification.

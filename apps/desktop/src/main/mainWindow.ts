@@ -64,6 +64,7 @@ export function createMainWindow({ isDevBuild, store }: MainWindowOptions): Main
   const ready = new Promise<BrowserWindow>((resolveReady, rejectReady) => {
     window.once("ready-to-show", () => {
       if (store) restoreZoom(web, store);
+      window.maximize();
       resolveReady(window);
     });
     web.once("did-fail-load", (_event, errorCode, errorDescription) => {
