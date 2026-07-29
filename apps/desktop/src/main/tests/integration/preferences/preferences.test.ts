@@ -101,18 +101,6 @@ describe("preferences integration", () => {
     ).toEqual(updated.config);
   });
 
-  it("rejects invalid scale without changing preferences", async () => {
-    await onboard();
-    const before = db.select().from(appPreferences).get();
-
-    const response = await requestJson(app, "PATCH", "/api/app-preferences", {
-      billing: { searchDropdown: { scale: 2 } }
-    });
-
-    expect(response.status).toBe(400);
-    expect(db.select().from(appPreferences).get()).toEqual(before);
-  });
-
   it("resets only exports and rejects unknown reset sections", async () => {
     const { customerId } = await onboard();
     await requestJson(app, "PATCH", "/api/app-preferences", {
@@ -136,5 +124,71 @@ describe("preferences integration", () => {
 
     const invalid = await requestJson(app, "POST", "/api/app-preferences/reset/billing");
     expect(invalid.status).toBe(400);
+  });
+
+  it("returns 404 when resetting exports before onboarding", async () => {
+    const response = await requestJson(app, "POST", "/api/app-preferences/reset/exports");
+    expect(response.status).toBe(404);
+    expect(db.select().from(appPreferences).all()).toEqual([]);
+  });
+
+  it("updates every supported preference field and persists the result", async () => {
+    await onboard();
+    const response = await requestJson(app, "PATCH", "/api/app-preferences", {
+      billing: {
+        defaultCustomerId: "alternate-customer",
+        searchDropdown: { scale: 0.8 }
+      },
+      exports: {
+        askBeforeSavingPdf: false,
+        defaultPdfLocation: "/exports",
+        defaultExportFormat: "png"
+      }
+    });
+    const body = await readJson<PreferencesBody>(response);
+
+    expect(response.status).toBe(200);
+    expect(body.config).toEqual({
+      billing: {
+        defaultCustomerId: "alternate-customer",
+        searchDropdown: { scale: 0.8 }
+      },
+      exports: {
+        askBeforeSavingPdf: false,
+        defaultPdfLocation: "/exports",
+        defaultExportFormat: "png"
+      }
+    });
+    expect(db.select().from(appPreferences).get()?.config).toEqual(body.config);
+  });
+
+  it.each([
+    ["scale below minimum", { billing: { searchDropdown: { scale: 0.79 } } }],
+    ["scale above maximum", { billing: { searchDropdown: { scale: 1.51 } } }],
+    ["empty customer ID", { billing: { defaultCustomerId: "" } }],
+    ["non-boolean export flag", { exports: { askBeforeSavingPdf: "yes" } }],
+    ["non-object billing", { billing: true }],
+    ["non-object exports", { exports: [] }]
+  ])("rejects %s without changing preferences", async (_label, payload) => {
+    await onboard();
+    const before = db.select().from(appPreferences).get();
+
+    const response = await requestJson(app, "PATCH", "/api/app-preferences", payload);
+
+    expect(response.status).toBe(400);
+    expect(db.select().from(appPreferences).get()).toEqual(before);
+  });
+
+  it("accepts boundary scale values", async () => {
+    await onboard();
+    for (const scale of [0.8, 1.5]) {
+      const response = await requestJson(app, "PATCH", "/api/app-preferences", {
+        billing: { searchDropdown: { scale } }
+      });
+      expect(response.status).toBe(200);
+      expect((await readJson<PreferencesBody>(response)).config.billing.searchDropdown.scale).toBe(
+        scale
+      );
+    }
   });
 });

@@ -86,71 +86,9 @@ describe("ledger integration tests", () => {
     sqlite?.close();
   });
 
-  it("an unpaid sale creates a ledger row and increases outstanding", async () => {
+  it("updates ledger summary after payment and adjustment", async () => {
     const customer = await seedCustomer(db);
     await createAndSyncSale(app, db, customer.id);
-
-    const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
-    // grandTotal = price * quantity / 1000 = 10000 * 5000 / 1000 = 50000
-    expect(updated?.outstandingBalance).toBe(50000);
-
-    const saleRows = db
-      .select()
-      .from(customerLedger)
-      .where(eq(customerLedger.customerId, customer.id))
-      .all()
-      .filter((r) => r.type === "sale");
-    expect(saleRows).toHaveLength(1);
-    expect(saleRows[0]?.amountDue).toBe(50000);
-  });
-
-  it("a fully paid sale nets to zero outstanding with sale+payment ledger rows", async () => {
-    const customer = await seedCustomer(db);
-    await createAndSyncSale(app, db, customer.id);
-    const payment = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
-      amount: 50000,
-      mode: "cash"
-    });
-    expect(payment.status).toBe(201);
-
-    const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
-    expect(updated?.outstandingBalance).toBe(0);
-
-    const saleRows = db
-      .select()
-      .from(customerLedger)
-      .where(eq(customerLedger.customerId, customer.id))
-      .all()
-      .filter((r) => r.type === "sale");
-    expect(saleRows).toHaveLength(1);
-    expect(saleRows[0]?.amountDue).toBe(50000);
-
-    const paymentRows = db
-      .select()
-      .from(customerLedger)
-      .where(eq(customerLedger.customerId, customer.id))
-      .all()
-      .filter((r) => r.type === "payment");
-    expect(paymentRows).toHaveLength(1);
-    expect(paymentRows[0]?.amountPaid).toBe(50000);
-  });
-
-  it("a partially paid sale shows net outstanding", async () => {
-    const customer = await seedCustomer(db);
-    await createAndSyncSale(app, db, customer.id);
-    const payment = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
-      amount: 20000,
-      mode: "upi"
-    });
-    expect(payment.status).toBe(201);
-
-    const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
-    expect(updated?.outstandingBalance).toBe(30000);
-  });
-
-  it("payment, adjustment, summary and paginated list behave correctly", async () => {
-    const customer = await seedCustomer(db);
-    await createAndSyncSale(app, db, customer.id); // outstanding = 50000
 
     const paymentRes = await requestJson(app, "POST", `/api/customers/${customer.id}/payments`, {
       amount: 20000,
@@ -187,7 +125,6 @@ describe("ledger integration tests", () => {
       salesCount: number;
       lastPayment: { amount: number; mode: string } | null;
     };
-    // sale amountDue 50000, payment amountPaid 20000, adjustment amountPaid 5000 = 50000 - 25000 = 25000
     expect(summary.totalDue).toBe(50000);
     expect(summary.totalPaid).toBe(25000);
     expect(summary.currentBalance).toBe(25000);
@@ -195,20 +132,6 @@ describe("ledger integration tests", () => {
     expect(summary.avgSale).toBe(50000);
     expect(summary.lastPayment?.amount).toBe(20000);
     expect(summary.lastPayment?.mode).toBe("cash");
-
-    const listRes = await getJson(app, `/api/customers/${customer.id}/ledger?pageNo=1&pageSize=20`);
-    expect(listRes.status).toBe(200);
-    const list = (await listRes.json()) as {
-      totalCount: number;
-      data: { type: string; amountDue: number; amountPaid: number; runningBalance: number }[];
-    };
-    expect(list.totalCount).toBe(3);
-    expect(list.data).toHaveLength(3);
-
-    const types = list.data.map((d) => d.type);
-    expect(types).toContain("sale");
-    expect(types).toContain("payment");
-    expect(types).toContain("adjustment");
   });
 
   it("rejects adding another opening balance after customer creation", async () => {

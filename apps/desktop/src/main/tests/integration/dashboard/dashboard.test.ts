@@ -189,4 +189,99 @@ describe("dashboard integration", () => {
     ).toBe(400);
     expect((await getJson(app, "/api/dashboard/recent-transactions/refund")).status).toBe(400);
   });
+
+  it("reports no change when today and yesterday revenues are equal", async () => {
+    const customer = await seedCustomer(db, { name: "Flat Trend" });
+    await seedSale(db, {
+      invoiceNo: 1201,
+      customerId: customer.id,
+      grandTotal: 10000,
+      createdAt: "2026-07-29T08:00:00.000Z"
+    });
+    await seedSale(db, {
+      invoiceNo: 1202,
+      customerId: customer.id,
+      grandTotal: 10000,
+      createdAt: "2026-07-28T08:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1301,
+      customerId: customer.id,
+      grandTotal: 5000,
+      createdAt: "2026-07-29T08:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1302,
+      customerId: customer.id,
+      grandTotal: 5000,
+      createdAt: "2026-07-28T08:00:00.000Z"
+    });
+
+    const body = await readJson<DashboardSummary>(await getJson(app, "/api/dashboard/summary"));
+    expect(body.sales).toMatchObject({ changePercent: 0, trend: "no change" });
+    expect(body.estimates).toMatchObject({ changePercent: 0, trend: "no change" });
+  });
+
+  it("returns this-week data and includes dates containing only estimates", async () => {
+    const customer = await seedCustomer(db, { name: "Weekly Chart" });
+    await seedSale(db, {
+      invoiceNo: 1401,
+      customerId: customer.id,
+      grandTotal: 10000,
+      createdAt: "2026-07-27T08:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1501,
+      customerId: customer.id,
+      grandTotal: 5000,
+      createdAt: "2026-07-27T08:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1502,
+      customerId: customer.id,
+      grandTotal: 7500,
+      createdAt: "2026-07-28T08:00:00.000Z"
+    });
+
+    const body = await readJson<Array<{ label: string; sales: number; estimates: number }>>(
+      await getJson(app, "/api/dashboard/sales-vs-estimates?timePeriod=this_week")
+    );
+    expect(body).toEqual([
+      { label: "27-Mon", sales: 100, estimates: 50 },
+      { label: "28-Tue", sales: 0, estimates: 75 }
+    ]);
+  });
+
+  it("returns recent-sale modification windows around 48 hours", async () => {
+    const customer = await seedCustomer(db, { name: "Modify Window" });
+    await seedSale(db, {
+      invoiceNo: 1601,
+      customerId: customer.id,
+      recordedAt: "2026-07-28T10:00:00.000Z",
+      createdAt: "2026-07-28T10:00:00.000Z"
+    });
+    await seedSale(db, {
+      invoiceNo: 1602,
+      customerId: customer.id,
+      recordedAt: "2026-07-26T09:00:00.000Z",
+      createdAt: "2026-07-29T09:00:00.000Z"
+    });
+
+    const body = await readJson<Array<{ transactionNo: number; canModify: boolean }>>(
+      await getJson(app, "/api/dashboard/recent-transactions/sale")
+    );
+    expect(body).toEqual([
+      expect.objectContaining({ transactionNo: 1602, canModify: false }),
+      expect.objectContaining({ transactionNo: 1601, canModify: true })
+    ]);
+  });
+
+  it("returns zero shares when products have no sold quantity", async () => {
+    await seedProduct(db, { name: "Unsold A", totalQuantitySold: 0 });
+    await seedProduct(db, { name: "Unsold B", totalQuantitySold: 0 });
+    const body = await readJson<Array<{ sharePercent: number }>>(
+      await getJson(app, "/api/dashboard/top-products")
+    );
+    expect(body.map((product) => product.sharePercent)).toEqual([0, 0]);
+  });
 });

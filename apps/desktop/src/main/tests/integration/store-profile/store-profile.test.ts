@@ -48,6 +48,14 @@ describe("store profile integration", () => {
     });
   });
 
+  it("returns 404 when updating before onboarding", async () => {
+    const response = await requestJson(app, "PATCH", "/api/store-profile", {
+      storeName: "Missing Store"
+    });
+    expect(response.status).toBe(404);
+    expect(db.select().from(storeProfile).all()).toEqual([]);
+  });
+
   it("retrieves the onboarded profile", async () => {
     await onboard();
 
@@ -92,14 +100,43 @@ describe("store profile integration", () => {
     );
   });
 
-  it("rejects invalid updates without changing persisted state", async () => {
+  it("clears nullable profile fields", async () => {
+    await onboard();
+    await requestJson(app, "PATCH", "/api/store-profile", {
+      addressLine2: "First Floor",
+      gstin: "29ABCDE1234F1Z5"
+    });
+
+    const response = await requestJson(app, "PATCH", "/api/store-profile", {
+      addressLine2: null,
+      gstin: null
+    });
+
+    expect(response.status).toBe(200);
+    expect(
+      db.select().from(storeProfile).where(eq(storeProfile.id, "default")).get()
+    ).toMatchObject({
+      addressLine2: null,
+      gstin: null
+    });
+  });
+
+  it.each([
+    ["short store name", { storeName: "AB" }],
+    ["short owner name", { ownerName: "Sam" }],
+    ["invalid phone", { phone: "123" }],
+    ["invalid email", { email: "invalid" }],
+    ["empty address", { addressLine1: "" }],
+    ["short country", { country: "IN" }],
+    ["short state", { state: "KA" }],
+    ["short city", { city: "BL" }],
+    ["invalid pincode", { pincode: "12" }],
+    ["invalid GSTIN", { gstin: "invalid" }]
+  ])("rejects %s without changing persisted state", async (_label, payload) => {
     await onboard();
     const before = db.select().from(storeProfile).where(eq(storeProfile.id, "default")).get();
 
-    const response = await requestJson(app, "PATCH", "/api/store-profile", {
-      phone: "123",
-      pincode: "12"
-    });
+    const response = await requestJson(app, "PATCH", "/api/store-profile", payload);
 
     expect(response.status).toBe(400);
     expect(db.select().from(storeProfile).where(eq(storeProfile.id, "default")).get()).toEqual(

@@ -37,7 +37,7 @@ describe("sales endpoint integration tests", () => {
     sqlite?.close();
   });
 
-  it("POST /api/sales/create persists the sale, its items, and product sold quantities", async () => {
+  it("creates a sale with items, totals, and product sold quantities", async () => {
     const customer = await seedCustomer(db);
     const product1 = await seedProduct(db, {
       name: "Amul Gold Milk 1L",
@@ -149,7 +149,7 @@ describe("sales endpoint integration tests", () => {
     expect(savedProduct2?.totalQuantitySold).toBe(25000);
   });
 
-  it("POST /api/sales/:id/sync updates, adds, and deletes items while keeping sale totals and product quantities correct", async () => {
+  it("syncs sale item updates, additions, deletions, totals, and product quantities", async () => {
     const initialData = await seedInitialData(db);
     const createdAt = "2026-04-28T08:00:00.000Z";
 

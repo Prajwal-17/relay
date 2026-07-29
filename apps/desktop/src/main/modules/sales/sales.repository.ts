@@ -63,7 +63,7 @@ const filterSalesByDate = async (
         customerLedgerEntries: true
       },
       orderBy: params.orderByClause,
-      limit: 20,
+      limit: params.pageSize,
       offset: offset
     })
   ]);

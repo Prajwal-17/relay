@@ -71,7 +71,7 @@ const getCustomersPaginated = async (
     })
   ]);
 
-  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+  const nextPageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   if (rows.length === 0) {
     return { nextPageNo, totalCount, data: [] };
@@ -130,12 +130,13 @@ const getDefaultCustomer = async (): Promise<Customer> => {
 const getSalesByCustomerId = async (
   params: SalesByCustomerParams
 ): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
+  await findById(params.customerId);
   const [rows, totalCount] = await Promise.all([
     customersRepository.getSalesByCustomerId(params),
     customersRepository.countSalesByCustomerId(params)
   ]);
 
-  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+  const nextPageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   return {
     nextPageNo,
@@ -162,12 +163,13 @@ const getSalesByCustomerId = async (
 const getEstimatesByCustomerId = async (
   params: EstimatesByCustomerParams
 ): Promise<PaginatedApiResponse<{ data: CustomerTransaction[] | [] }>> => {
+  await findById(params.customerId);
   const [rows, totalCount] = await Promise.all([
     customersRepository.getEstimatesByCustomerId(params),
     customersRepository.countEstimatesByCustomerId(params)
   ]);
 
-  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+  const nextPageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   return {
     nextPageNo,
@@ -190,6 +192,7 @@ const getEstimatesByCustomerId = async (
 };
 
 const getCustomerSummary = async (id: string): Promise<CustomerSummary> => {
+  await findById(id);
   const result = await customersRepository.getCustomerSummary(id);
   return result;
 };

@@ -65,13 +65,46 @@ describe("onboarding integration", () => {
     ]);
   });
 
-  it("rejects invalid registration without partial rows", async () => {
-    const response = await requestJson(
-      app,
-      "POST",
-      "/api/onboarding",
-      onboardingPayload({ phone: "123", email: "invalid" })
-    );
+  it("normalizes trimmed and omitted optional fields", async () => {
+    const payload = {
+      storeName: "  QuickCart Market  ",
+      ownerName: "  Prajwal Reddy  ",
+      phone: " 9876543210 ",
+      email: " owner@example.com ",
+      addressLine1: " 12 Market Road ",
+      country: "India",
+      state: "Karnataka",
+      city: "Bengaluru",
+      pincode: " 560001 "
+    };
+
+    const response = await requestJson(app, "POST", "/api/onboarding", payload);
+    expect(response.status).toBe(201);
+    expect(db.select().from(storeProfile).get()).toMatchObject({
+      storeName: "QuickCart Market",
+      ownerName: "Prajwal Reddy",
+      phone: "9876543210",
+      email: "owner@example.com",
+      addressLine1: "12 Market Road",
+      addressLine2: null,
+      pincode: "560001",
+      gstin: null
+    });
+  });
+
+  it.each([
+    ["short store name", { storeName: "AB" }],
+    ["short owner name", { ownerName: "Sam" }],
+    ["invalid phone", { phone: "123" }],
+    ["invalid email", { email: "invalid" }],
+    ["empty address", { addressLine1: "" }],
+    ["invalid pincode", { pincode: "12" }],
+    ["invalid GSTIN", { gstin: "invalid" }]
+  ])("rejects %s without partial rows", async (_label, overrides) => {
+    const response = await requestJson(app, "POST", "/api/onboarding", {
+      ...onboardingPayload(),
+      ...overrides
+    });
 
     expect(response.status).toBe(400);
     expect(db.select().from(appInstance).all()).toEqual([]);

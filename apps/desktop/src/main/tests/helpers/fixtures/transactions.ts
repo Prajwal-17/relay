@@ -1,4 +1,5 @@
 import { eq, sql } from "drizzle-orm";
+import { TRANSACTION_TYPE, type TxnPayloadData } from "../../../../shared/types";
 import { CustomerRole } from "../../../db/enum";
 import {
   customers,
@@ -18,6 +19,58 @@ export const rowId4 = "bdeb6f44-f71d-42dd-8d53-2bcac3e086b3";
 export const existingCustomRowId = "76db209d-c0e8-460f-a3af-f27a0d9e52d8";
 export const estimateCustomRowId = "f1f93c10-3b27-4118-b0c2-3a4448776e8c";
 
+type TransactionItem = TxnPayloadData["items"][number];
+type SalePayload = Extract<TxnPayloadData, { transactionType: "sale" }>;
+type EstimatePayload = Extract<TxnPayloadData, { transactionType: "estimate" }>;
+
+export function transactionItem(overrides: Partial<TransactionItem> = {}): TransactionItem {
+  return {
+    id: null,
+    rowId: crypto.randomUUID(),
+    productId: null,
+    name: "Test Item",
+    productSnapshot: "Test Item 1 pc",
+    weight: "1",
+    unit: "pc",
+    mrp: 10000,
+    price: 10000,
+    quantity: 1000,
+    checkedQty: 0,
+    position: 0,
+    isDeleted: false,
+    ...overrides
+  };
+}
+
+export function salePayload(
+  customerId: string,
+  overrides: Partial<Omit<SalePayload, "customerId" | "transactionType">> = {}
+): SalePayload {
+  return {
+    transactionNo: null,
+    transactionType: TRANSACTION_TYPE.SALE,
+    addToAccounting: false,
+    customerId,
+    items: [transactionItem()],
+    notes: null,
+    ...overrides
+  };
+}
+
+export function estimatePayload(
+  customerId: string,
+  overrides: Partial<Omit<EstimatePayload, "customerId" | "transactionType">> = {}
+): EstimatePayload {
+  return {
+    transactionNo: null,
+    transactionType: TRANSACTION_TYPE.ESTIMATE,
+    customerId,
+    items: [transactionItem()],
+    notes: null,
+    ...overrides
+  };
+}
+
 export async function seedCustomer(db: DB, overrides = {}) {
   const customer = {
     id: crypto.randomUUID(),
@@ -36,7 +89,7 @@ export async function seedSale(db: DB, overrides: Partial<typeof sales.$inferIns
   const sale = {
     id: overrides.id ?? crypto.randomUUID(),
     invoiceNo: overrides.invoiceNo ?? 1,
-    customerId: overrides.customerId ?? "", //
+    customerId: overrides.customerId ?? "",
     grandTotal: overrides.grandTotal ?? 0,
     totalQuantity: overrides.totalQuantity ?? 0,
     createdAt: new Date().toISOString(),
@@ -71,7 +124,8 @@ export async function seedSaleItem(
     unit: params.unit ?? "",
     quantity: params.quantity ?? 1000,
     totalPrice: params.totalPrice ?? 0,
-    checkedQty: params.checkedQty ?? 0
+    checkedQty: params.checkedQty ?? 0,
+    position: params.position ?? 0
   };
 
   db.insert(saleItems).values(saleItem).run();
@@ -117,7 +171,8 @@ export async function seedEstimateItem(
     unit: params.unit ?? "",
     quantity: params.quantity ?? 1000,
     totalPrice: params.totalPrice ?? 0,
-    checkedQty: params.checkedQty ?? 0
+    checkedQty: params.checkedQty ?? 0,
+    position: params.position ?? 0
   };
 
   db.insert(estimateItems).values(estimateItem).run();
@@ -223,7 +278,6 @@ export async function seedInitialData(db: DB) {
     saleItem1,
     saleItem2,
     saleItem3
-    // items: [saleItem1, saleItem2]
   };
 }
 

@@ -37,7 +37,7 @@ describe("estimates endpoint integration tests", () => {
     sqlite?.close();
   });
 
-  it("POST /api/estimates/create persists the estimate, estimate items, totals, and product sold quantities", async () => {
+  it("creates an estimate with items, totals, and product sold quantities", async () => {
     const customer = await seedCustomer(db, { name: "Estimate Walk-in Customer" });
     const product1 = await seedProduct(db, {
       name: "Estimate Milk 1L",
@@ -147,7 +147,7 @@ describe("estimates endpoint integration tests", () => {
     expect(savedProduct2?.totalQuantitySold).toBe(25000);
   });
 
-  it("POST /api/estimates/:id/sync handles item update, add, delete, totals, and product quantity adjustments", async () => {
+  it("syncs estimate item updates, additions, deletions, totals, and product quantities", async () => {
     const initialData = await seedInitialEstimateData(db);
 
     const payload: TxnPayloadData = {
