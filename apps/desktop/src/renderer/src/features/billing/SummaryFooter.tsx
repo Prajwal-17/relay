@@ -61,14 +61,14 @@ export const SummaryFooter = () => {
       const synced = await waitForSync();
       if (!synced) return;
       toast.success("Saved Successfully");
-      navigate("/");
+      navigate(`/dashboard/${type}`);
     } catch (error) {
       console.error("Save & Exit failed", error);
       toast.error("Failed to save. Please try again.");
     } finally {
       setLoadingAction(null);
     }
-  }, [waitForSync, navigate]);
+  }, [waitForSync, navigate, type]);
 
   const handleExportPdf = useCallback(async () => {
     if (!id || !type) {

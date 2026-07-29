@@ -8,9 +8,8 @@ import {
   type UnifiedTransctionWithItems,
   type UpdateQtyAction
 } from "@shared/types";
-import { formatRupee } from "@shared/utils/utils";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 export type MutationVariables = {
@@ -30,7 +29,7 @@ type ActionVariables = { type: DashboardType; id: string };
 
 export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) => {
   const queryClient = useQueryClient();
-  const { data, isError, error, isLoading } = useQuery({
+  const { data, isError, error, isLoading, isFetching, refetch } = useQuery({
     queryKey: [type, id],
     queryFn: () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}/${id}`)
   });
@@ -107,28 +106,19 @@ export const useViewModal = ({ type, id }: { type: DashboardType; id: string }) 
     }
   }, [id, txnType]);
 
-  useEffect(() => {
-    if (isError && error) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
-
   // Computed display values
   const items = data?.items ?? [];
-  const total = items.reduce((sum, currentItem) => {
-    return sum + Number(currentItem.totalPrice || 0);
-  }, 0);
-  const subtotal = formatRupee(total);
-  const grandTotal = formatRupee(Math.round(total));
-  const totalQty = items.reduce((s, it) => s + Number(it.quantity || 0), 0);
-  const totalCheckedQty = items.reduce((s, it) => s + Number(it.checkedQty || 0), 0);
+  const totalQty = items.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const totalCheckedQty = items.reduce((sum, item) => sum + Number(item.checkedQty || 0), 0);
   const itemsCount = items.length;
 
   return {
     data,
     isLoading,
-    subtotal,
-    grandTotal,
+    isError,
+    error,
+    retry: refetch,
+    isRetrying: isFetching && isError,
     itemsCount,
     totalQty,
     totalCheckedQty,
