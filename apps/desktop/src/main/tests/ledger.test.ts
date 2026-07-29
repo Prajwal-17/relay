@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Hono } from "hono";
 import { TRANSACTION_TYPE, type TxnPayloadData } from "../../shared/types";
 import { customerLedger, customers } from "../db/schema";
@@ -7,6 +7,7 @@ import { customersController } from "../modules/customers/customers.controller";
 import { salesController } from "../modules/sales/sales.controller";
 import { AppError } from "../utils/appError";
 import {
+  dbMock,
   cleanupDb,
   createTestDb,
   postTxn,
@@ -19,22 +20,6 @@ import {
 // ----------------
 // Compile better-sqlite3 `pnpm run rebuild:node` before running this test
 // ----------------
-
-const mocks = vi.hoisted(() => {
-  return {
-    db: {
-      instance: null as DB | null
-    }
-  };
-});
-
-vi.mock("../db/db", () => {
-  return {
-    get db() {
-      return mocks.db.instance;
-    }
-  };
-});
 
 function createLedgerTestApp() {
   const app = new Hono();
@@ -85,10 +70,8 @@ async function createAndSyncSale(
   const payload: TxnPayloadData = {
     transactionNo: undefined,
     transactionType: TRANSACTION_TYPE.SALE,
+    addToAccounting: true,
     customerId,
-    amountPaid: 0,
-    paymentMode: null,
-    isPaid: false,
     notes: null,
     items: [
       {
@@ -123,7 +106,7 @@ describe("ledger integration tests", () => {
     const setup = createTestDb();
     sqlite = setup.sqlite;
     db = setup.db;
-    mocks.db.instance = db;
+    dbMock.instance = db;
     app = createLedgerTestApp();
   });
 
@@ -177,7 +160,12 @@ describe("ledger integration tests", () => {
 
   it("a fully paid sale nets to zero outstanding with sale+payment ledger rows", async () => {
     const customer = await seedCustomer(db);
-    await createAndSyncSale(app, db, customer.id, { amountPaid: 50000, paymentMode: "cash" });
+    await createAndSyncSale(app, db, customer.id);
+    const payment = await postJson(app, `/api/customers/${customer.id}/payments`, {
+      amount: 50000,
+      mode: "cash"
+    });
+    expect(payment.status).toBe(201);
 
     const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
     expect(updated?.outstandingBalance).toBe(0);
@@ -203,7 +191,12 @@ describe("ledger integration tests", () => {
 
   it("a partially paid sale shows net outstanding", async () => {
     const customer = await seedCustomer(db);
-    await createAndSyncSale(app, db, customer.id, { amountPaid: 20000, paymentMode: "upi" });
+    await createAndSyncSale(app, db, customer.id);
+    const payment = await postJson(app, `/api/customers/${customer.id}/payments`, {
+      amount: 20000,
+      mode: "upi"
+    });
+    expect(payment.status).toBe(201);
 
     const updated = db.select().from(customers).where(eq(customers.id, customer.id)).get();
     expect(updated?.outstandingBalance).toBe(30000);
@@ -267,17 +260,31 @@ describe("ledger integration tests", () => {
     expect(types).toContain("adjustment");
   });
 
-  it("creating an opening balance twice is rejected", async () => {
-    const customer = await seedCustomer(db);
-
-    const first = await postJson(app, `/api/customers/${customer.id}/opening-balance`, {
-      amount: 10000
+  it("rejects adding another opening balance after customer creation", async () => {
+    const createResponse = await postJson(app, "/api/customers", {
+      name: "Opening Balance Customer",
+      contact: "9123456789",
+      customerType: "cash",
+      openingBalance: 10000
     });
-    expect(first.status).toBe(201);
+    expect(createResponse.status).toBe(201);
+    const customer = (await createResponse.json()) as { id: string };
 
-    const second = await postJson(app, `/api/customers/${customer.id}/opening-balance`, {
-      amount: 5000
+    const updateResponse = await postJson(app, `/api/customers/${customer.id}`, {
+      openingBalance: 5000
     });
-    expect(second.status).toBe(400);
+    expect(updateResponse.status).toBe(400);
+
+    const saved = db.select().from(customers).where(eq(customers.id, customer.id)).get();
+    expect(saved?.outstandingBalance).toBe(10000);
+
+    const openingRows = db
+      .select()
+      .from(customerLedger)
+      .where(eq(customerLedger.customerId, customer.id))
+      .all()
+      .filter((row) => row.type === "opening_balance");
+    expect(openingRows).toHaveLength(1);
+    expect(openingRows[0]?.amountDue).toBe(10000);
   });
 });

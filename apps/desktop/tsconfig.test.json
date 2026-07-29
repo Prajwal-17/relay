@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.node.json",
+  "include": ["src/main/tests/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "types": ["electron-vite/node", "vitest/globals"]
+  }
+}

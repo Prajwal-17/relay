@@ -61,7 +61,8 @@ Run these from `apps/desktop` unless shown otherwise.
 | `pnpm build`          | Typecheck and create the production Electron build |
 | `pnpm start`          | Preview the production build                       |
 | `pnpm lint`           | Run ESLint                                         |
-| `pnpm typecheck`      | Typecheck main/preload and renderer code           |
+| `pnpm typecheck`      | Typecheck application and test code                |
+| `pnpm typecheck:test` | Typecheck Vitest suites and helpers                |
 | `pnpm test --run`     | Run Vitest once                                    |
 | `pnpm format`         | Format the desktop package                         |
 | `pnpm db:migrate:dev` | Apply development migrations                       |
@@ -165,11 +166,35 @@ billing behavior, print isolation, accessibility, and viewport verification.
 
 ## Tests
 
-Vitest covers the sales, estimates, and customer-ledger flows with in-memory SQLite integration
-tests under `src/main/tests/`. Shared currency, date, quantity, and product-snapshot utilities
+Vitest covers API modules through Hono requests backed by a fresh, migrated in-memory SQLite
+database. Expanded suites live under `src/main/tests/integration/<module>/`; existing flat suites
+remain under `src/main/tests/`. Shared currency, date, quantity, and product-snapshot utilities
 have unit tests alongside their source in `src/shared/utils/`.
 
-Use `src/main/tests/helpers/index.ts` for test database creation and fixtures.
+Reusable integration support is split by responsibility and re-exported through
+`src/main/tests/helpers/index.ts`:
+
+```text
+src/main/tests/
+├── setup/database.mock.ts
+├── helpers/
+│   ├── app.ts
+│   ├── database.ts
+│   ├── http.ts
+│   └── fixtures/
+└── integration/<module>/
+```
+
+Rebuild the native dependency for Node before database tests. Run the complete suite or only the
+products integration suite with:
+
+```bash
+pnpm rebuild:node
+pnpm run typecheck:test
+pnpm run test --run
+pnpm run test --run src/main/tests/integration/products
+pnpm rebuild:electron
+```
 
 ## Packaging and releases
 

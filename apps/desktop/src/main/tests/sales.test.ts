@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { TRANSACTION_TYPE, type SyncResponse, type TxnPayloadData } from "../../shared/types";
 import { products, saleItems, sales } from "../db/schema";
 import {
+  dbMock,
   cleanupDb,
   createTestApp,
   createTestDb,
@@ -22,22 +23,6 @@ import {
 // Compile better-sqlite3 `pnpm run rebuild:node` before running this test
 // ----------------
 
-const mocks = vi.hoisted(() => {
-  return {
-    db: {
-      instance: null as DB | null
-    }
-  };
-});
-
-vi.mock("../db/db", () => {
-  return {
-    get db() {
-      return mocks.db.instance;
-    }
-  };
-});
-
 describe("sales endpoint integration tests", () => {
   let app: ReturnType<typeof createTestApp>;
   let db!: DB;
@@ -47,7 +32,7 @@ describe("sales endpoint integration tests", () => {
     const setup = createTestDb();
     sqlite = setup.sqlite;
     db = setup.db;
-    mocks.db.instance = db;
+    dbMock.instance = db;
     app = createTestApp();
   });
 
@@ -85,10 +70,8 @@ describe("sales endpoint integration tests", () => {
     const payload: TxnPayloadData = {
       transactionNo: 101,
       transactionType: TRANSACTION_TYPE.SALE,
+      addToAccounting: false,
       customerId: customer.id,
-      amountPaid: 0,
-      paymentMode: null,
-      isPaid: false,
       notes: null,
       createdAt,
       items: [
@@ -143,7 +126,7 @@ describe("sales endpoint integration tests", () => {
     const response = await postTxn(app, "/api/sales/create", payload);
     const body = (await response.json()) as SyncResponse;
 
-    expect(response.status).toBe(200);
+    expect(response.status, JSON.stringify(body)).toBe(200);
     expect(body.billingId).toBeTruthy();
     expect(body.deletedRowIds).toEqual([]);
     expect(body.syncedItems.map((item) => item.rowId)).toEqual([rowId1, rowId2, rowId3]);
@@ -160,7 +143,6 @@ describe("sales endpoint integration tests", () => {
     expect(createdSale).toMatchObject({
       invoiceNo: 101,
       customerId: customer.id,
-      isPaid: false,
       createdAt,
       grandTotal: 146100,
       totalQuantity: 57000
@@ -180,10 +162,8 @@ describe("sales endpoint integration tests", () => {
     const payload: TxnPayloadData = {
       transactionNo: initialData.sale.invoiceNo,
       transactionType: TRANSACTION_TYPE.SALE,
+      addToAccounting: false,
       customerId: initialData.customer.id,
-      amountPaid: 0,
-      paymentMode: null,
-      isPaid: true,
       notes: null,
       createdAt,
       items: [
@@ -253,7 +233,7 @@ describe("sales endpoint integration tests", () => {
     const response = await postTxn(app, `/api/sales/${initialData.sale.id}/sync`, payload);
     const body = (await response.json()) as SyncResponse;
 
-    expect(response.status).toBe(200);
+    expect(response.status, JSON.stringify(body)).toBe(200);
     expect(body.deletedRowIds).toEqual([rowId2]);
     expect(body.syncedItems.map((item) => item.rowId)).toEqual(
       expect.arrayContaining([rowId1, existingCustomRowId, rowId4])

@@ -1,8 +1,9 @@
 import { eq } from "drizzle-orm";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { TRANSACTION_TYPE, type SyncResponse, type TxnPayloadData } from "../../shared/types";
 import { estimateItems, estimates, products } from "../db/schema";
 import {
+  dbMock,
   cleanupDb,
   createTestApp,
   createTestDb,
@@ -22,22 +23,6 @@ import {
 // Compile better-sqlite3 `pnpm run rebuild:node` before running this test
 // ----------------
 
-const mocks = vi.hoisted(() => {
-  return {
-    db: {
-      instance: null as DB | null
-    }
-  };
-});
-
-vi.mock("../db/db", () => {
-  return {
-    get db() {
-      return mocks.db.instance;
-    }
-  };
-});
-
 describe("estimates endpoint integration tests", () => {
   let app: ReturnType<typeof createTestApp>;
   let db!: DB;
@@ -47,7 +32,7 @@ describe("estimates endpoint integration tests", () => {
     const setup = createTestDb();
     sqlite = setup.sqlite;
     db = setup.db;
-    mocks.db.instance = db;
+    dbMock.instance = db;
     app = createTestApp();
   });
 
@@ -85,9 +70,6 @@ describe("estimates endpoint integration tests", () => {
       transactionNo: 201,
       transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: customer.id,
-      amountPaid: 0,
-      paymentMode: null,
-      isPaid: false,
       notes: null,
       createdAt: "2026-04-27T11:45:00.000Z",
       items: [
@@ -162,7 +144,6 @@ describe("estimates endpoint integration tests", () => {
     expect(createdEstimate).toMatchObject({
       estimateNo: 201,
       customerId: customer.id,
-      isPaid: false,
       createdAt: "2026-04-27T11:45:00.000Z",
       grandTotal: 146100,
       totalQuantity: 57000
@@ -179,9 +160,6 @@ describe("estimates endpoint integration tests", () => {
       transactionNo: initialData.estimate.estimateNo,
       transactionType: TRANSACTION_TYPE.ESTIMATE,
       customerId: initialData.customer.id,
-      amountPaid: 0,
-      paymentMode: null,
-      isPaid: false,
       notes: null,
       createdAt: "2026-04-28T09:30:00.000Z",
       items: [
