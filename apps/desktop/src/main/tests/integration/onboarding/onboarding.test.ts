@@ -1,3 +1,4 @@
+import os from "node:os";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { appInstance, appPreferences, customers, storeProfile } from "../../../db/schema";
 import { onboardingController } from "../../../modules/onboarding/onboarding.controller";
@@ -51,11 +52,13 @@ describe("onboarding integration", () => {
     }>(response);
 
     expect(response.status).toBe(201);
-    expect(body.appInstance.id).toBe("default");
+    expect(body.appInstance).toEqual({ id: "default", os: os.platform() });
     expect(body.storeProfile).toMatchObject({ id: "default", storeName: "QuickCart Market" });
     expect(body.preferences.config.billing.defaultCustomerId).toBe(body.customerId);
 
-    expect(db.select().from(appInstance).all()).toHaveLength(1);
+    expect(db.select().from(appInstance).all()).toEqual([
+      expect.objectContaining({ id: "default", os: os.platform() })
+    ]);
     expect(db.select().from(storeProfile).all()).toHaveLength(1);
     expect(db.select().from(customers).all()).toEqual([
       expect.objectContaining({ id: body.customerId, name: "DEFAULT", storeId: "default" })
