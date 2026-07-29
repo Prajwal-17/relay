@@ -79,7 +79,11 @@ export const createLegacyDefaults: DataMigration = {
         .run(defaultCustomerId, STORE_ID, DEFAULT_CUSTOMER_NAME, "cash");
     }
 
-    const preferences = sqlite.prepare("SELECT id, config FROM app_preferences WHERE store_id IS NULL OR store_id = 'default'").all() as {
+    const preferences = sqlite
+      .prepare(
+        "SELECT id, config FROM app_preferences WHERE store_id IS NULL OR store_id = 'default'"
+      )
+      .all() as {
       id: string;
       config: string;
     }[];

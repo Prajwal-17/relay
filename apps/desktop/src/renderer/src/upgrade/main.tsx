@@ -14,7 +14,7 @@ const initialStatus: DatabaseUpgradeStatus = {
   backupAvailable: false
 };
 
-function UpgradeSplash() {
+export function UpgradeSplash() {
   const [status, setStatus] = useState(initialStatus);
   const [actionError, setActionError] = useState<string>();
   const isFresh = new URLSearchParams(window.location.search).get("kind") === "fresh";
@@ -44,7 +44,7 @@ function UpgradeSplash() {
   }
 
   return (
-    <main className="bg-background text-foreground flex h-screen min-h-0 flex-col overflow-hidden border border-borderprimary">
+    <main className="bg-background text-foreground border-borderprimary flex h-screen min-h-0 flex-col overflow-hidden border">
       <header className="border-border bg-card flex h-12 shrink-0 items-center gap-2.5 border-b px-4 text-sm font-semibold tracking-tight">
         <img src={quickcartLogo} alt="" className="size-7 shrink-0" />
         <span>QuickCart</span>
@@ -56,7 +56,7 @@ function UpgradeSplash() {
       >
         <div className="max-w-lg">
           <p className="text-muted-foreground mb-2 text-xs font-semibold">Local database</p>
-          <h1 id="upgrade-title" className="text-foreground mb-2 text-lg font-bold leading-tight">
+          <h1 id="upgrade-title" className="text-foreground mb-2 text-lg leading-tight font-bold">
             {isFailed
               ? "QuickCart could not update."
               : isFresh
@@ -74,7 +74,7 @@ function UpgradeSplash() {
           <div className="grid gap-3" role="alert">
             <div className="border-destructive bg-card flex max-h-32 gap-2.5 overflow-y-auto rounded-(--radius-control) border p-3">
               <CircleAlert className="text-destructive mt-0.5 size-4 shrink-0" aria-hidden="true" />
-              <p className="text-destructive min-w-0 whitespace-pre-wrap break-words text-xs leading-5 select-text">
+              <p className="text-destructive min-w-0 text-xs leading-5 break-words whitespace-pre-wrap select-text">
                 {status.errorMessage ?? "The database update failed."}
               </p>
             </div>
@@ -113,11 +113,7 @@ function UpgradeSplash() {
                 return (
                   <span
                     className={`h-1 flex-1 rounded-sm ${
-                      isComplete
-                        ? "bg-primary"
-                        : isCurrent
-                          ? "bg-brand animate-pulse"
-                          : "bg-border"
+                      isComplete ? "bg-primary" : isCurrent ? "bg-brand animate-pulse" : "bg-border"
                     }`}
                     key={step}
                   />
@@ -125,7 +121,7 @@ function UpgradeSplash() {
               })}
             </div>
             <div className="text-muted-foreground flex items-start justify-between gap-4 text-xs tabular-nums">
-              <span className="text-foreground min-w-0 font-medium leading-5 break-words">
+              <span className="text-foreground min-w-0 leading-5 font-medium break-words">
                 {status.label}
               </span>
               <span className="shrink-0 leading-5">

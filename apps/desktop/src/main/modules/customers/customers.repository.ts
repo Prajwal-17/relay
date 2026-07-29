@@ -392,6 +392,7 @@ const createCustomer = async (payload: CreateCustomerPayload) => {
     if (customer && openingBalance && openingBalance > 0) {
       ledgerRepository.insertOpeningBalance(tx, customer.id, { amount: openingBalance });
       ledgerRepository.recomputeOutstanding(tx, customer.id);
+      return tx.select().from(customers).where(eq(customers.id, customer.id)).get();
     }
 
     return customer;

@@ -21,10 +21,11 @@ const assertCustomerExists = (customerId: string) => {
 const getLedgerByCustomerId = async (
   params: GetLedgerParams
 ): Promise<PaginatedApiResponse<{ data: LedgerEntry[] }>> => {
+  assertCustomerExists(params.customerId);
   const rows = ledgerRepository.getLedgerByCustomerId(params);
   const totalCount = ledgerRepository.countLedgerByCustomerId(params);
 
-  const nextPageNo = rows.length === params.pageSize ? params.pageNo + 1 : null;
+  const nextPageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   return {
     nextPageNo,

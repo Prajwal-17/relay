@@ -108,14 +108,14 @@ const filterSalesByDate = async (
     };
   });
 
-  const nextpageNo = result.transactionsResult.length === 20 ? params.pageNo + 1 : null;
-
   const summary = result.summaryResult[0];
+  const totalTransactions = summary?.totalTransactions ?? 0;
+  const nextPageNo = params.pageNo * params.pageSize < totalTransactions ? params.pageNo + 1 : null;
 
   return {
-    nextPageNo: nextpageNo,
+    nextPageNo,
     totalRevenue: summary?.totalRevenue ?? 0,
-    totalTransactions: summary?.totalTransactions ?? 0,
+    totalTransactions,
     transactions
   };
 };

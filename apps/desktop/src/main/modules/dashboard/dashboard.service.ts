@@ -24,13 +24,13 @@ const getMetricsSummary = async (): Promise<MetricsSummary> => {
   const result = await dashboardRepository.getDashboardMetrics(dates);
 
   const saleChangePercent = result.yesterdaySaleRevenue
-    ? ((result.todaySaleRevenue - result.yesterdaySaleRevenue) / result.yesterdaySaleRevenue || 1) *
-      100
+    ? ((result.todaySaleRevenue - result.yesterdaySaleRevenue) / result.yesterdaySaleRevenue) * 100
     : 0;
 
   const estimateChangePercent = result.yesterdayEstimateRevenue
     ? ((result.todayEstimateRevenue - result.yesterdayEstimateRevenue) /
-        result.yesterdayEstimateRevenue || 1) * 100
+        result.yesterdayEstimateRevenue) *
+      100
     : 0;
 
   const saleTrend =
@@ -128,6 +128,26 @@ const getRecentTransactions = async (type: TransactionType): Promise<RecentTrans
   return [];
 };
 
+type DailyRevenueRows = Awaited<ReturnType<typeof dashboardRepository.getDailyRevenue>>;
+
+const toDailyChartData = ({ saleResults, estimateResults }: DailyRevenueRows): ChartDataType[] => {
+  const dates = [...new Set([...saleResults, ...estimateResults].map((row) => row.date))].sort(
+    (a, b) => Number(a) - Number(b)
+  );
+
+  return dates.map((date) => {
+    const sale = saleResults.find((row) => row.date === date);
+    const estimate = estimateResults.find((row) => row.date === date);
+    const dayIndex = Number(sale?.day ?? estimate?.day ?? 0);
+
+    return {
+      label: `${Number(date)}-${dayNames[dayIndex]}`,
+      sales: paisaToRupees(Number(sale?.total ?? 0)),
+      estimates: paisaToRupees(Number(estimate?.total ?? 0))
+    };
+  });
+};
+
 const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> => {
   const { startDate, endDate } = getThisWeekRange();
 
@@ -136,24 +156,7 @@ const getSalesEstimatesRevenueByThisWeek = async (): Promise<ChartDataType[]> =>
     endDate
   );
 
-  const chartData: ChartDataType[] = [];
-
-  for (let i = 0; i < saleResults.length; i++) {
-    const sale = saleResults[i]!;
-    const estimate = estimateResults.find((e) => e.date === sale.date);
-
-    const dayIndex = Number(sale.day);
-    const formattedDate = `${Number(sale.date)}-${dayNames[dayIndex]}`;
-
-    chartData.push({
-      label: formattedDate,
-      // convert to number, else throws error on undefined
-      sales: paisaToRupees(Number(sale?.total ?? 0)),
-      estimates: paisaToRupees(Number(estimate?.total ?? 0))
-    });
-  }
-
-  return chartData;
+  return toDailyChartData({ saleResults, estimateResults });
 };
 
 const getSalesEstimatesRevenueByMonth = async (): Promise<ChartDataType[]> => {
@@ -190,24 +193,7 @@ const getSalesEstimatesRevenueByLast7Days = async (): Promise<ChartDataType[]> =
     endDate
   );
 
-  const chartData: ChartDataType[] = [];
-
-  for (let i = 0; i < saleResults.length; i++) {
-    const sale = saleResults[i]!;
-    const estimate = estimateResults.find((e) => e.date === sale.date);
-
-    const dayIndex = Number(sale.day);
-    const formattedDate = `${Number(sale.date)}-${dayNames[dayIndex]}`;
-
-    chartData.push({
-      label: formattedDate,
-      // convert to number, else throws error on undefined
-      sales: paisaToRupees(Number(sale?.total ?? 0)),
-      estimates: paisaToRupees(Number(estimate?.total ?? 0))
-    });
-  }
-
-  return chartData;
+  return toDailyChartData({ saleResults, estimateResults });
 };
 
 const getChartMetrics = async (timePeriod: TimePeriodType): Promise<ChartDataType[]> => {

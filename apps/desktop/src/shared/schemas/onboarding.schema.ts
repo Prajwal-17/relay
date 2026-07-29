@@ -11,7 +11,7 @@ export const ownerContactSchema = z.object({
     .trim()
     .min(1, "Phone number is required")
     .regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian mobile number"),
-  email: z.email("Enter a valid email address").trim()
+  email: z.string().trim().email("Enter a valid email address")
 });
 
 export const locationSchema = z.object({

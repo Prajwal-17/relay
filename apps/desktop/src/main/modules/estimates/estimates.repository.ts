@@ -54,7 +54,7 @@ const filterEstimatesByDate = async (
         customer: true
       },
       orderBy: params.orderByClause,
-      limit: 20,
+      limit: params.pageSize,
       offset: offset
     })
   ]);
@@ -200,7 +200,18 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
           const newQty = item.quantity;
           const quantityDelta = newQty - oldQty;
 
-          if (item.productId && quantityDelta !== 0) {
+          if (oldItem.productId && oldItem.productId !== item.productId) {
+            tx.update(products)
+              .set({ totalQuantitySold: sql`${products.totalQuantitySold} - ${oldItem.quantity}` })
+              .where(eq(products.id, oldItem.productId))
+              .run();
+            if (item.productId) {
+              tx.update(products)
+                .set({ totalQuantitySold: sql`${products.totalQuantitySold} + ${item.quantity}` })
+                .where(eq(products.id, item.productId))
+                .run();
+            }
+          } else if (item.productId && quantityDelta !== 0) {
             tx.update(products)
               .set({
                 totalQuantitySold: sql`${products.totalQuantitySold} + ${quantityDelta}`
@@ -412,6 +423,15 @@ const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction)
 };
 
 const batchCheckItems = async (estimateId: string, action: BatchCheckAction) => {
+  const estimate = db
+    .select({ id: estimates.id })
+    .from(estimates)
+    .where(eq(estimates.id, estimateId))
+    .get();
+  if (!estimate) {
+    throw new AppError("Estimate not found", 404);
+  }
+
   const setCheckedQty = action === BATCH_CHECK_ACTION.MARK_ALL ? sql`${estimateItems.quantity}` : 0;
 
   return db
