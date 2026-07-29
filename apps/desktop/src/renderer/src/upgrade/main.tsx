@@ -14,7 +14,7 @@ const initialStatus: DatabaseUpgradeStatus = {
   backupAvailable: false
 };
 
-function UpgradeSplash() {
+export function UpgradeSplash() {
   const [status, setStatus] = useState(initialStatus);
   const [actionError, setActionError] = useState<string>();
   const isFresh = new URLSearchParams(window.location.search).get("kind") === "fresh";

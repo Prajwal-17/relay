@@ -14,7 +14,8 @@ const CHANNELS = {
 let activeController: UpgradeWindowController | undefined;
 let handlersRegistered = false;
 
-function registerHandlers(): void {
+function registerHandlers(controller: UpgradeWindowController): void {
+  activeController = controller;
   if (handlersRegistered) return;
   handlersRegistered = true;
 
@@ -41,8 +42,7 @@ export class UpgradeWindowController {
 
   constructor(private readonly options: UpgradeWindowOptions) {
     this.status = options.initialStatus;
-    activeController = this;
-    registerHandlers();
+    registerHandlers(this);
   }
 
   async create(): Promise<void> {
