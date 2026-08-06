@@ -1,5 +1,29 @@
 # Changelog
 
+## v4.3.1 — 05 Jul 2026
+
+### Features
+
+- Add manual GitHub build workflow
+- Add project design guide
+- Revamp the sidebar
+
+### Improvements
+
+- Update the app UI and colors
+- Improve search and product layout
+- Update weight, unit, and MRP colors
+- Remove unused fonts and old design files
+
+### Fixed
+
+- Fix missing preferences
+- Fix first billing item focus
+- Fix app refresh when switching windows
+- Fix search dropdown close and reset issues
+- Use a clearer search highlight color
+- Make product delete buttons destructive
+
 ## v4.3.0 — 04 Jul 2026
 
 **Major release — UI revamp, product images, onboarding, and event-driven sync**
