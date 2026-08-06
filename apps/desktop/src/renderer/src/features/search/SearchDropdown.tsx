@@ -519,7 +519,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 </div>
               </div>
 
-              <div ref={parentRef} className="flex-1 overflow-y-auto scroll-smooth px-1">
+              <div
+                ref={parentRef}
+                className="scrollbar-thick flex-1 overflow-y-auto scroll-smooth px-1"
+              >
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
@@ -544,8 +547,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           <div
                             className={`group relative flex h-[54px] items-center gap-2.5 rounded-(--radius-control) px-3 transition-colors duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
-                                ? "bg-accent"
-                                : "hover:bg-accent"
+                                ? "bg-brand/25 text-brand-foreground hover:bg-brand/25"
+                                : "hover:bg-brand/25 hover:text-brand-foreground"
                             }`}
                             onClick={() => {
                               if (!activeTabId) return;
@@ -564,7 +567,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           >
                             <span
                               aria-hidden="true"
-                              className={`bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity ${
+                              className={`bg-brand absolute top-0 left-0 h-full w-1 rounded-r-full transition-opacity ${
                                 highlightedIndex === virtualRow.index ? "opacity-100" : "opacity-0"
                               }`}
                             />
