@@ -1,10 +1,11 @@
-import { PROTOCOL_NAME } from "@/constants";
+import { ProductImage } from "@/components/app-ui/product-image";
+import { getProductImageUrl } from "@/constants";
 import { useProductsStore } from "@/store/productsStore";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import { formatRupee } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
-import { Check, Copy, ImageOff } from "lucide-react";
+import { Check, Copy } from "lucide-react";
 import { motion } from "motion/react";
 import { useState } from "react";
 import { StatusIndicator } from "./StatusIndicator";
@@ -33,22 +34,13 @@ export const ProductViewMode = () => {
       className="flex flex-col gap-9 md:flex-row md:items-start"
     >
       <div className="flex w-full shrink-0 flex-col gap-6 md:w-76">
-        <div className="bg-secondary/60 border-border/60 flex aspect-square w-full items-center justify-center overflow-hidden rounded-(--radius-panel) border">
-          {formData.imageUrl ? (
-            <img
-              src={`${PROTOCOL_NAME}${formData.imageUrl}`}
-              alt={formData.name || "Product-Image"}
-              className="h-full w-full object-contain"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-2.5">
-              <ImageOff className="text-muted-foreground/40 h-12 w-12" strokeWidth={1.5} />
-              <span className="text-muted-foreground/70 text-sm font-medium tracking-wide">
-                No image available
-              </span>
-            </div>
-          )}
-        </div>
+        <ProductImage
+          src={formData.imageUrl ? getProductImageUrl(formData.imageUrl) : null}
+          alt={formData.name || "Product"}
+          variant="detail"
+          editHint="Edit this product to add one."
+          className="max-w-none"
+        />
         <div className="flex justify-center">
           <StatusIndicator isDisabled={formData.isDisabled} size="lg" />
         </div>

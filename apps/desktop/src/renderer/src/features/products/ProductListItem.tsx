@@ -1,4 +1,5 @@
 import { HighlightedText } from "@/components/highlighted-text";
+import { ProductImage } from "@/components/app-ui/product-image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
+import { getProductImageUrl, ignoredWeight } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
 import {
@@ -26,7 +27,7 @@ import {
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee, paisaToRupeeString } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
-import { Clock, Edit, Eye, Image, RotateCcw, Trash2 } from "lucide-react";
+import { Clock, Edit, Eye, RotateCcw, Trash2 } from "lucide-react";
 
 export default function ProductListItem({ product }: { product: ProductSearchItemDTO }) {
   const setProductId = useProductsStore((state) => state.setProductId);
@@ -61,17 +62,11 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
 
   return (
     <div className="bg-card hover:bg-muted/50 active:bg-muted group flex min-h-(--product-row-height) items-center gap-2.5 border-b px-3 py-2 transition-colors">
-      <div className="border-border bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-(--radius-control) border">
-        {product.imageUrl ? (
-          <img
-            src={`${PROTOCOL_NAME}${product.imageUrl}`}
-            alt={product.name || "Product-Image"}
-            className="h-full w-full object-contain p-0.5"
-          />
-        ) : (
-          <Image className="text-muted-foreground/20 size-5" strokeWidth={1.25} />
-        )}
-      </div>
+      <ProductImage
+        src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
+        alt={product.name || "Product"}
+        imageClassName="p-0.5"
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
@@ -289,7 +284,12 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
-              onClick={() => permanentDeleteProductMutation.mutate(product.id)}
+              onClick={() =>
+                permanentDeleteProductMutation.mutate({
+                  productId: product.id,
+                  imageId: product.imageUrl
+                })
+              }
               disabled={permanentDeleteProductMutation.isPending}
             >
               {permanentDeleteProductMutation.isPending ? "Deleting..." : "Permanently Delete"}

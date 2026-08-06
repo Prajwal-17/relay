@@ -100,7 +100,10 @@ export const PRODUCT_STATUS_OPTIONS = [
   { value: PRODUCT_FILTER.ALL, label: "All" },
   { value: PRODUCT_FILTER.DELETED, label: "Deleted" }
 ] as const;
-export const PROTOCOL_NAME = "app-assets://";
+export const PRODUCT_IMAGE_PROTOCOL = "app-assets://product-images/";
+
+export const getProductImageUrl = (imageId: string) =>
+  `${PRODUCT_IMAGE_PROTOCOL}${encodeURIComponent(imageId)}`;
 
 export const weights = [
   {

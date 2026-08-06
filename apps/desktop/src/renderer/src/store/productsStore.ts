@@ -21,6 +21,7 @@ export type ProductsFormType = Omit<
   purchasePrice: string | null;
   isDeleted: boolean;
   imageUrl?: string | null;
+  persistedImageUrl?: string | null;
   pendingImageBlob?: Blob | null;
   pendingImagePreviewUrl?: string | null;
   lastSoldAt?: string | null;
@@ -84,6 +85,7 @@ function initialFormData(): ProductsFormType {
     isDisabled: false,
     isDeleted: false,
     imageUrl: null,
+    persistedImageUrl: null,
     pendingImageBlob: null,
     pendingImagePreviewUrl: null,
     lastSoldAt: null,

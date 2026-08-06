@@ -80,15 +80,17 @@ export function ProductDialog() {
 
   // add mode always shows edit form
   const showEditForm = isEditMode || isAddMode;
+  const closeProductDialog = (nextOpen = false) => {
+    if (nextOpen) return;
+    if (formDataState.pendingImagePreviewUrl) {
+      URL.revokeObjectURL(formDataState.pendingImagePreviewUrl);
+    }
+    setInitialTab(INITIAL_TAB.INFO);
+    setOpenProductDialog();
+  };
 
   return (
-    <Dialog
-      open={openProductDialog}
-      onOpenChange={() => {
-        setInitialTab(INITIAL_TAB.INFO);
-        setOpenProductDialog();
-      }}
-    >
+    <Dialog open={openProductDialog} onOpenChange={closeProductDialog}>
       <DialogContent
         showCloseButton={false}
         onOpenAutoFocus={(e) => {
@@ -245,8 +247,7 @@ export function ProductDialog() {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  setInitialTab(INITIAL_TAB.INFO);
-                  setOpenProductDialog();
+                  closeProductDialog();
                 }}
                 className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
               >
@@ -399,7 +400,13 @@ export function ProductDialog() {
               <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
               <AlertDialogAction
                 className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
-                onClick={() => productId && permanentDeleteProductMutation.mutate(productId)}
+                onClick={() =>
+                  productId &&
+                  permanentDeleteProductMutation.mutate({
+                    productId,
+                    imageId: formDataState.persistedImageUrl ?? formDataState.imageUrl
+                  })
+                }
                 disabled={permanentDeleteProductMutation.isPending}
               >
                 {permanentDeleteProductMutation.isPending ? "Deleting..." : "Permanently Delete"}

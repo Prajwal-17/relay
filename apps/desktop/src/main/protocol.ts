@@ -1,41 +1,50 @@
 import { app, net, protocol } from "electron/main";
-import path from "path";
-import { pathToFileURL } from "url";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { validate as isUuid } from "uuid";
 
-const protocolName = "app-assets";
+const PROTOCOL_NAME = "app-assets";
 
 export function registerProtocol() {
   protocol.registerSchemesAsPrivileged([
     {
-      scheme: protocolName,
+      scheme: PROTOCOL_NAME,
       privileges: {
         secure: true,
         standard: true,
         supportFetchAPI: true,
-        bypassCSP: true,
         corsEnabled: true
       }
     }
   ]);
 }
 
+function requestFileName(request: Request) {
+  try {
+    const pathname = decodeURIComponent(new URL(request.url).pathname);
+    if (!pathname.startsWith("/") || pathname.indexOf("/", 1) !== -1) return null;
+    const fileName = pathname.slice(1);
+    return fileName && path.basename(fileName) === fileName ? fileName : null;
+  } catch {
+    return null;
+  }
+}
+
+async function serveProductImage(request: Request) {
+  const value = requestFileName(request);
+  const imageId = value?.endsWith(".webp") ? value.slice(0, -5) : value;
+  if (!imageId || !isUuid(imageId)) {
+    return new Response("Access denied", { status: 403 });
+  }
+
+  const imagePath = path.join(app.getPath("userData"), "product-images", `${imageId}.webp`);
+  return net.fetch(pathToFileURL(imagePath).toString());
+}
+
 export function handleAssetsProtocol() {
-  protocol.handle("app-assets", (request) => {
-    //  strip protocol and end trailing slash
-    const url = request.url.replace(/^app-assets:\/\//i, "").replace(/\/$/, "");
-
-    const decodedUrl = decodeURIComponent(url);
-
-    const basePath = path.join(app.getPath("userData"), "product-images");
-    const absolutePath = path.normalize(path.join(basePath, decodedUrl));
-
-    if (!absolutePath.startsWith(path.normalize(basePath))) {
-      return new Response("Access Denied", { status: 403 });
-    }
-
-    // convert app protocol url into file protocol url
-    // /home/prajwal/.config/QuickCart-Dev/product-images/<file-name>.jpg -> file:///home/prajwal/.config/QuickCart-Dev/product-images/<file-name>.jpg
-    const safeFileUrl = pathToFileURL(absolutePath).toString();
-    return net.fetch(safeFileUrl);
+  protocol.handle(PROTOCOL_NAME, (request) => {
+    const host = new URL(request.url).host;
+    if (host === "product-images") return serveProductImage(request);
+    return new Response("Access denied", { status: 403 });
   });
 }

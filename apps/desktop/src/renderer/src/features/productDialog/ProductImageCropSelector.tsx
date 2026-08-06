@@ -1,244 +1,408 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ProductImage } from "@/components/app-ui/product-image";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ImagePlus, Scissors, Sparkles, Trash2, Upload } from "lucide-react";
-import type { ChangeEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Slider } from "@/components/ui/slider";
+import { getProductImageUrl } from "@/constants";
+import { cn } from "@/lib/utils";
+import { Check, ImagePlus, LoaderCircle, Scissors, Trash2, Upload } from "lucide-react";
+import type { ChangeEvent, DragEvent, KeyboardEvent } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { Area, Point } from "react-easy-crop";
 import Cropper from "react-easy-crop";
 import "react-easy-crop/react-easy-crop.css";
-import toast from "react-hot-toast";
-import { getCroppedImageBlob, getFittedImageBlob, getImageAspectRatio } from "./productImageCrop";
+import {
+  getCroppedImageBlob,
+  getFittedImageBlob,
+  validateProductImageBlob
+} from "./productImageCrop";
 
-const isSvgImage = (file: File) =>
-  file.type === "image/svg+xml" || /\.(svg|svgz)$/i.test(file.name);
+type WorkspacePhase = "ready" | "loading" | "saving";
+
+type ImageChange = {
+  imageUrl?: string | null;
+  pendingImageBlob?: Blob | null;
+  pendingImagePreviewUrl?: string | null;
+};
 
 export const ProductImageCropSelector = ({
   imageUrl,
+  pendingImageBlob,
   pendingImagePreviewUrl,
   onImageChange
 }: {
   imageUrl?: string | null;
+  pendingImageBlob?: Blob | null;
   pendingImagePreviewUrl?: string | null;
-  onImageChange: (imageChange: {
-    imageUrl?: string | null;
-    pendingImageBlob?: Blob | null;
-    pendingImagePreviewUrl?: string | null;
-  }) => void;
+  onImageChange: (imageChange: ImageChange) => void;
 }) => {
+  const fileInputId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
+  const cropUrlRef = useRef<string | null>(null);
+  const [originalBlob, setOriginalBlob] = useState<Blob | null>(null);
+  const [cropImageUrl, setCropImageUrl] = useState<string | null>(null);
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-  const [isSavingImage, setIsSavingImage] = useState(false);
   const [hasAdjustedCrop, setHasAdjustedCrop] = useState(false);
-  const [cropAspect, setCropAspect] = useState(1);
+  const [phase, setPhase] = useState<WorkspacePhase>("ready");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const hasImage = Boolean(imageUrl || pendingImagePreviewUrl);
-  const selectedFileName = pendingImagePreviewUrl
-    ? "Unsaved cropped image"
-    : imageUrl?.split(/[/\\]/).pop() || null;
+  const selectedPreview = pendingImagePreviewUrl
+    ? pendingImagePreviewUrl
+    : imageUrl
+      ? getProductImageUrl(imageUrl)
+      : null;
+  const hasImage = Boolean(selectedPreview);
+  const isBusy = phase !== "ready";
 
-  const revokeSourceImageUrl = useCallback((url: string | null) => {
-    if (url) {
-      URL.revokeObjectURL(url);
-    }
+  const replaceCropUrl = useCallback((blob: Blob | null) => {
+    if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current);
+    const nextUrl = blob ? URL.createObjectURL(blob) : null;
+    cropUrlRef.current = nextUrl;
+    setCropImageUrl(nextUrl);
   }, []);
+
+  const resetCrop = useCallback(() => {
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    setHasAdjustedCrop(false);
+  }, []);
+
+  const closeCropWorkspace = useCallback(() => {
+    replaceCropUrl(null);
+    resetCrop();
+    setPhase("ready");
+  }, [replaceCropUrl, resetCrop]);
 
   useEffect(() => {
     return () => {
-      revokeSourceImageUrl(sourceImageUrl);
+      if (cropUrlRef.current) URL.revokeObjectURL(cropUrlRef.current);
     };
-  }, [sourceImageUrl, revokeSourceImageUrl]);
+  }, []);
 
-  const openFilePicker = () => {
+  const openBlobForCrop = useCallback(
+    (blob: Blob) => {
+      replaceCropUrl(blob);
+      resetCrop();
+      setPhase("ready");
+      setValidationError(null);
+    },
+    [replaceCropUrl, resetCrop]
+  );
+
+  const loadSelectedBlob = useCallback(async () => {
+    if (originalBlob) return originalBlob;
+    if (pendingImageBlob) {
+      setOriginalBlob(pendingImageBlob);
+      return pendingImageBlob;
+    }
+    if (!imageUrl) throw new Error("Choose an image first.");
+
+    setPhase("loading");
+    const response = await fetch(getProductImageUrl(imageUrl));
+    if (!response.ok) throw new Error("The saved product image is unavailable.");
+    const fetched = await response.blob();
+    const blob =
+      fetched.type === "image/webp"
+        ? fetched
+        : new Blob([await fetched.arrayBuffer()], { type: "image/webp" });
+    await validateProductImageBlob(blob);
+    setOriginalBlob(blob);
+    return blob;
+  }, [imageUrl, originalBlob, pendingImageBlob]);
+
+  const selectFile = useCallback(
+    async (file: File) => {
+      setValidationError(null);
+      setPhase("loading");
+      try {
+        await validateProductImageBlob(file);
+        setOriginalBlob(file);
+        openBlobForCrop(file);
+      } catch (error) {
+        setPhase("ready");
+        setValidationError((error as Error).message);
+      }
+    },
+    [openBlobForCrop]
+  );
+
+  const handleFileSelected = async (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files?.length) return;
+    if (files.length !== 1) {
+      event.target.value = "";
+      setValidationError("Choose one image at a time.");
+      return;
+    }
+    const file = files[0]!;
+    event.target.value = "";
+    await selectFile(file);
+  };
+
+  const handleDrop = async (event: DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    setIsDragging(false);
+    const files = [...event.dataTransfer.files];
+    if (files.length !== 1) {
+      setValidationError("Drop one image at a time.");
+      return;
+    }
+    await selectFile(files[0]!);
+  };
+
+  const handleDropZoneKeyDown = (event: KeyboardEvent<HTMLLabelElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
     fileInputRef.current?.click();
   };
 
-  const resetCropper = () => {
-    setSourceImageUrl((currentUrl) => {
-      revokeSourceImageUrl(currentUrl);
-      return null;
-    });
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    setHasAdjustedCrop(false);
-    setCropAspect(1);
-  };
-
-  const handleFileSelected = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith("image/") || isSvgImage(file)) {
-      toast.error("Please select a valid image file.");
-      return;
-    }
-
-    const nextSourceImageUrl = URL.createObjectURL(file);
-
-    setSourceImageUrl((currentUrl) => {
-      revokeSourceImageUrl(currentUrl);
-      return nextSourceImageUrl;
-    });
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    setHasAdjustedCrop(false);
-
+  const openCropForCurrentImage = async () => {
+    setValidationError(null);
     try {
-      // to get dynamic image
-      setCropAspect(await getImageAspectRatio(nextSourceImageUrl));
-    } catch {
-      toast.error("Could not read image dimensions.");
-      revokeSourceImageUrl(nextSourceImageUrl);
-      resetCropper();
+      const blob = await loadSelectedBlob();
+      openBlobForCrop(blob);
+    } catch (error) {
+      setPhase("ready");
+      setValidationError((error as Error).message);
     }
   };
 
-  const handleCropComplete = useCallback((_croppedArea: Area, nextCroppedAreaPixels: Area) => {
-    setCroppedAreaPixels(nextCroppedAreaPixels);
-  }, []);
-
-  const applyCrop = async () => {
-    if (!sourceImageUrl) {
-      return;
-    }
-
-    setIsSavingImage(true);
+  const useImage = async () => {
+    if (!cropImageUrl) return;
+    setPhase("saving");
+    setValidationError(null);
     try {
-      const croppedImageBlob =
+      const finalBlob =
         hasAdjustedCrop && croppedAreaPixels
-          ? await getCroppedImageBlob(sourceImageUrl, croppedAreaPixels)
-          : await getFittedImageBlob(sourceImageUrl);
-
-      const previewUrl = URL.createObjectURL(croppedImageBlob);
-      revokeSourceImageUrl(pendingImagePreviewUrl ?? null);
-
+          ? await getCroppedImageBlob(cropImageUrl, croppedAreaPixels)
+          : await getFittedImageBlob(cropImageUrl);
+      const previewUrl = URL.createObjectURL(finalBlob);
+      if (pendingImagePreviewUrl) URL.revokeObjectURL(pendingImagePreviewUrl);
       onImageChange({
-        pendingImageBlob: croppedImageBlob,
+        pendingImageBlob: finalBlob,
         pendingImagePreviewUrl: previewUrl
       });
-      resetCropper();
+      closeCropWorkspace();
     } catch (error) {
-      toast.error((error as Error).message || "Something went wrong while cropping image.");
-    } finally {
-      setIsSavingImage(false);
+      setPhase("ready");
+      setValidationError((error as Error).message);
     }
+  };
+
+  const removeImage = () => {
+    closeCropWorkspace();
+    if (pendingImagePreviewUrl) URL.revokeObjectURL(pendingImagePreviewUrl);
+    setOriginalBlob(null);
+    setValidationError(null);
+    onImageChange({
+      imageUrl: null,
+      pendingImageBlob: null,
+      pendingImagePreviewUrl: null
+    });
   };
 
   return (
-    <div className="w-full max-w-xl space-y-3">
-      <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-        PRODUCT IMAGE
-      </Label>
+    <div className="w-full max-w-xl space-y-2.5">
+      <Label className="text-muted-foreground text-xs font-semibold">Product image</Label>
       <input
+        id={fileInputId}
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        className="hidden"
+        tabIndex={-1}
+        className="sr-only"
         onChange={handleFileSelected}
       />
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          type="button"
-          onClick={openFilePicker}
-          className="h-9 gap-2 font-medium shadow-sm"
-        >
-          {hasImage ? <Upload className="h-4 w-4" /> : <ImagePlus className="h-4 w-4" />}
-          {hasImage ? "Change Image" : "Select Image"}
-        </Button>
-        <Button variant="outline" size="sm" type="button" disabled className="h-9 gap-2 opacity-55">
-          <Sparkles className="h-4 w-4" />
-          Remove Background
-        </Button>
-        {hasImage && (
-          <Button
-            variant="ghost"
-            size="sm"
-            type="button"
-            onClick={() => {
-              revokeSourceImageUrl(pendingImagePreviewUrl ?? null);
-              onImageChange({
-                imageUrl: null,
-                pendingImageBlob: null,
-                pendingImagePreviewUrl: null
-              });
-              resetCropper();
-            }}
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive h-9 gap-1.5 px-2 text-xs font-bold tracking-wider uppercase"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Remove
-          </Button>
-        )}
-      </div>
 
-      {selectedFileName && !sourceImageUrl && (
-        <div className="text-muted-foreground text-sm font-medium break-all">
-          {pendingImagePreviewUrl ? selectedFileName : `Current image: ${selectedFileName}`}
-        </div>
+      {!hasImage && !cropImageUrl ? (
+        <label
+          htmlFor={fileInputId}
+          role="button"
+          tabIndex={0}
+          onKeyDown={handleDropZoneKeyDown}
+          onDragEnter={(event) => {
+            event.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragOver={(event) => event.preventDefault()}
+          onDragLeave={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node)) setIsDragging(false);
+          }}
+          onDrop={handleDrop}
+          aria-busy={phase === "loading"}
+          className={cn(
+            "focus-visible:ring-ring bg-secondary flex h-24 cursor-pointer items-center gap-3 rounded-(--radius-panel) border border-dashed px-3 text-left transition-[background-color,border-color] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+            isDragging ? "border-brand bg-brand-soft" : "border-frame hover:bg-muted"
+          )}
+        >
+          <span className="border-border bg-background flex size-10 shrink-0 items-center justify-center rounded-(--radius-control) border">
+            {phase === "loading" ? (
+              <LoaderCircle className="text-muted-foreground size-5 animate-spin" />
+            ) : (
+              <ImagePlus className="text-muted-foreground size-5" strokeWidth={1.7} />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold">
+              {phase === "loading"
+                ? "Opening image…"
+                : isDragging
+                  ? "Release to add image"
+                  : "Drop product image here"}
+            </span>
+            <span className="text-muted-foreground mt-0.5 block text-xs">
+              {phase === "loading"
+                ? "This usually takes a moment."
+                : "Or choose one from this computer."}
+            </span>
+          </span>
+          <span
+            aria-hidden="true"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "bg-background pointer-events-none shrink-0"
+            )}
+          >
+            <Upload className="size-3.5" />
+            Choose image
+          </span>
+        </label>
+      ) : (
+        !cropImageUrl && (
+          <div className="border-border bg-secondary flex min-h-24 items-center gap-3 rounded-(--radius-panel) border p-3">
+            <ProductImage
+              src={selectedPreview}
+              alt="Selected product"
+              className="size-18 shrink-0"
+              imageClassName="p-1"
+            />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div>
+                <p className="text-sm font-semibold">Image selected</p>
+                <p className="text-muted-foreground text-xs">
+                  Changes apply when you save the product.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={openCropForCurrentImage}
+                  disabled={isBusy}
+                >
+                  {phase === "loading" ? (
+                    <LoaderCircle className="size-3.5 animate-spin" />
+                  ) : (
+                    <Scissors className="size-3.5" />
+                  )}
+                  {phase === "loading" ? "Opening…" : "Adjust crop"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isBusy}
+                >
+                  <Upload className="size-3.5" />
+                  Replace
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeImage}
+                  disabled={isBusy}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="size-3.5" />
+                  Remove image
+                </Button>
+              </div>
+            </div>
+          </div>
+        )
       )}
 
-      {sourceImageUrl && (
-        <div className="border-border/60 bg-secondary/40 space-y-4 rounded-lg border p-3">
-          <div className="bg-foreground relative h-80 overflow-hidden rounded-md">
-            <Cropper
-              image={sourceImageUrl}
-              crop={crop}
-              zoom={zoom}
-              aspect={cropAspect}
-              cropShape="rect"
-              objectFit="contain"
-              onCropChange={setCrop}
-              onZoomChange={(nextZoom) => {
-                setHasAdjustedCrop(true);
-                setZoom(nextZoom);
-              }}
-              onCropComplete={handleCropComplete}
-              onInteractionStart={() => setHasAdjustedCrop(true)}
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <Label htmlFor="product-image-zoom" className="text-sm font-semibold">
+      {cropImageUrl && (
+        <div className="py-1">
+          <div className="mx-auto w-full max-w-sm">
+            <div className="border-frame bg-secondary relative aspect-square overflow-hidden rounded-(--radius-control) border">
+              <Cropper
+                image={cropImageUrl}
+                crop={crop}
+                zoom={zoom}
+                minZoom={1}
+                maxZoom={4}
+                aspect={1}
+                cropShape="rect"
+                objectFit="contain"
+                showGrid={hasAdjustedCrop}
+                style={{ cropAreaStyle: { opacity: hasAdjustedCrop ? 1 : 0 } }}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={(_area, areaPixels) => setCroppedAreaPixels(areaPixels)}
+                onInteractionStart={() => setHasAdjustedCrop(true)}
+              />
+            </div>
+
+            <div className="mt-3 flex items-center gap-3">
+              <Label htmlFor="product-image-zoom" className="shrink-0 text-xs font-semibold">
                 Zoom
               </Label>
-              <span className="text-muted-foreground text-sm font-medium">{zoom.toFixed(1)}x</span>
+              <Slider
+                id="product-image-zoom"
+                min={1}
+                max={4}
+                step={0.05}
+                value={[zoom]}
+                aria-label="Image zoom"
+                onValueChange={([nextZoom]) => {
+                  const value = nextZoom ?? 1;
+                  setZoom(value);
+                  setHasAdjustedCrop(value > 1 || crop.x !== 0 || crop.y !== 0);
+                }}
+                disabled={isBusy}
+              />
             </div>
-            <Input
-              id="product-image-zoom"
-              type="range"
-              min={1}
-              max={3}
-              step={0.1}
-              value={zoom}
-              onChange={(event) => {
-                setHasAdjustedCrop(true);
-                setZoom(Number(event.target.value));
-              }}
-              className="h-2 p-0"
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={resetCropper} disabled={isSavingImage}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={applyCrop} disabled={isSavingImage}>
-              <Scissors className="h-4 w-4" />
-              {isSavingImage ? "Applying..." : "Apply Crop"}
-            </Button>
+
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <p className="text-muted-foreground min-w-0 text-xs">Drag to position</p>
+              <div className="flex shrink-0 gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={closeCropWorkspace}
+                  disabled={phase === "saving"}
+                >
+                  Cancel
+                </Button>
+                <Button type="button" size="sm" onClick={useImage} disabled={isBusy}>
+                  {phase === "saving" ? (
+                    <LoaderCircle className="size-3.5 animate-spin" />
+                  ) : (
+                    <Check className="size-3.5" />
+                  )}
+                  {phase === "saving" ? "Preparing…" : "Use image"}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       )}
+
+      <div aria-live="polite" className="min-h-5">
+        {validationError && (
+          <div role="alert" className="text-destructive text-xs">
+            {validationError}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

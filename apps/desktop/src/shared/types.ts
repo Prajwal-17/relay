@@ -649,7 +649,8 @@ export type StoreProfile = {
 // ------------
 
 export interface ProductsApi {
-  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
+  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ id: string }>>;
+  deleteProductImage: (imageId: string) => Promise<ApiResponse<null>>;
 }
 
 export interface DialogApi {

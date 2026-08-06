@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/app-ui/product-image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -9,13 +10,12 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { PRODUCT_UNITS, PROTOCOL_NAME } from "@/constants";
+import { getProductImageUrl, PRODUCT_UNITS } from "@/constants";
 import { useProductDialog } from "@/hooks/products/useProductDialog";
 import { useProductsStore } from "@/store/productsStore";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
 import { ACTION_TYPE, DIALOG_MODE } from "@shared/types";
-import { ImageOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { ProductImageCropSelector } from "./ProductImageCropSelector";
@@ -44,6 +44,7 @@ export const ProductEditForm = () => {
           <div className="flex items-start justify-between gap-6">
             <ProductImageCropSelector
               imageUrl={formDataState.imageUrl}
+              pendingImageBlob={formDataState.pendingImageBlob}
               pendingImagePreviewUrl={formDataState.pendingImagePreviewUrl}
               onImageChange={(imageChange) => {
                 for (const [field, value] of Object.entries(imageChange)) {
@@ -200,7 +201,12 @@ export const ProductEditForm = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpenProductDialog()}
+              onClick={() => {
+                if (formDataState.pendingImagePreviewUrl) {
+                  URL.revokeObjectURL(formDataState.pendingImagePreviewUrl);
+                }
+                setOpenProductDialog();
+              }}
               disabled={productMutation.isPending}
               className="h-9 cursor-pointer px-4 text-sm transition-colors disabled:opacity-60"
             >
@@ -238,7 +244,7 @@ export const ProductPreview = () => {
   const imageSrc = formData.pendingImagePreviewUrl
     ? formData.pendingImagePreviewUrl
     : formData.imageUrl
-      ? `${PROTOCOL_NAME}${formData.imageUrl}`
+      ? getProductImageUrl(formData.imageUrl)
       : null;
   const displayPrice = formData.price ? formatRupee(Number(formData.price) * 100) : "—";
   const displayMrp = formData.mrp ? formatRupee(Number(formData.mrp) * 100) : "—";
@@ -275,22 +281,14 @@ export const ProductPreview = () => {
       </div>
 
       <div className="mb-5 flex justify-center">
-        <div className="bg-card border-border/40 flex aspect-square w-[85%] max-w-70 shrink-0 items-center justify-center overflow-hidden rounded-[2.5rem] border shadow-sm">
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt={formData.name || "Product-Image"}
-              className="h-full w-full object-contain"
-            />
-          ) : (
-            <div className="flex flex-col items-center gap-2.5">
-              <ImageOff className="text-muted-foreground/25 h-12 w-12" strokeWidth={1.5} />
-              <span className="text-muted-foreground/40 text-xs font-medium tracking-wide">
-                No image available
-              </span>
-            </div>
-          )}
-        </div>
+        <ProductImage
+          src={imageSrc}
+          alt={formData.name || "Product"}
+          variant="preview"
+          editHint="Choose an image in the editor."
+          className="w-[85%] max-w-56"
+          imageClassName="p-2"
+        />
       </div>
 
       <div className="mb-6 text-center">

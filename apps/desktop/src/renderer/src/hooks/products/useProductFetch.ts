@@ -28,6 +28,7 @@ export const useProductFetch = (productId: string | null, enabled: boolean) => {
       weight: data.weight,
       unit: data.unit,
       imageUrl: data.imageUrl ?? null,
+      persistedImageUrl: data.imageUrl ?? null,
       mrp: data.mrp ? paisaToRupeeString(data.mrp) : null,
       price: paisaToRupeeString(data.price),
       purchasePrice: data.purchasePrice ? paisaToRupeeString(data.purchasePrice) : null,

@@ -28,6 +28,22 @@ type ProductMutationVariables =
       pendingImageBlob?: Blob | null;
     };
 
+type PermanentDeleteVariables = {
+  productId: string;
+  imageId?: string | null;
+};
+
+async function cleanupProductImage(imageId: string, reason: string) {
+  try {
+    const response = await window.productsApi.deleteProductImage(imageId);
+    if (response.status === "error") {
+      console.error(reason, response.error.message);
+    }
+  } catch (error) {
+    console.error(reason, error);
+  }
+}
+
 export const useProductDialog = () => {
   const queryClient = useQueryClient();
 
@@ -116,34 +132,69 @@ export const useProductDialog = () => {
 
   const productMutation = useMutation({
     mutationFn: async ({ action, payload, pendingImageBlob }: ProductMutationVariables) => {
-      const { productId } = useProductsStore.getState();
+      const { productId, formDataState } = useProductsStore.getState();
       const payloadWithSavedImage: CreateProductPayload | UpdateProductPayload = { ...payload };
+      const previousImageId =
+        action === ACTION_TYPE.ADD
+          ? null
+          : (formDataState.persistedImageUrl ?? formDataState.imageUrl ?? null);
+      let newlySavedImageId: string | null = null;
 
-      if (pendingImageBlob) {
-        const dataUrl = await blobToDataUrl(pendingImageBlob);
-        const response = await window.productsApi.saveProductImage(dataUrl);
+      try {
+        if (pendingImageBlob) {
+          const dataUrl = await blobToDataUrl(pendingImageBlob);
+          const response = await window.productsApi.saveProductImage(dataUrl);
 
-        if (response.status === "error") {
-          throw new Error(response.error.message);
+          if (response.status === "error") {
+            throw new Error(response.error.message);
+          }
+
+          newlySavedImageId = response.data.id;
+          payloadWithSavedImage.imageUrl = newlySavedImageId;
         }
 
-        payloadWithSavedImage.imageUrl = response.data.url;
-      }
+        const result =
+          action === ACTION_TYPE.ADD
+            ? await apiClient.post("/api/products", payloadWithSavedImage)
+            : productId
+              ? await apiClient.patch(`/api/products/${productId}`, payloadWithSavedImage)
+              : await Promise.reject(new Error("Product Id does not exist"));
 
-      if (action === ACTION_TYPE.ADD) {
-        return apiClient.post("/api/products", payloadWithSavedImage);
-      } else {
-        if (!productId) {
-          throw new Error("Product Id does not exist");
+        if (
+          previousImageId &&
+          (newlySavedImageId !== null || payloadWithSavedImage.imageUrl === null)
+        ) {
+          await cleanupProductImage(
+            previousImageId,
+            "Product updated, but the previous image could not be removed."
+          );
         }
-        return apiClient.patch(`/api/products/${productId}`, payloadWithSavedImage);
+
+        return result;
+      } catch (error) {
+        if (newlySavedImageId) {
+          await cleanupProductImage(
+            newlySavedImageId,
+            "Product save failed, and the newly written image could not be removed."
+          );
+        }
+        throw error;
       }
     },
     onSuccess: (_response, variables) => {
-      const { setErrors, setProductId, setFormDataState, setDirtyFields, setOpenProductDialog } =
-        useProductsStore.getState();
+      const {
+        formDataState,
+        setErrors,
+        setProductId,
+        setFormDataState,
+        setDirtyFields,
+        setOpenProductDialog
+      } = useProductsStore.getState();
 
       queryClient.invalidateQueries({ queryKey: ["product-search"] });
+      if (formDataState.pendingImagePreviewUrl) {
+        URL.revokeObjectURL(formDataState.pendingImagePreviewUrl);
+      }
       setErrors({});
       setProductId(null);
       setFormDataState({});
@@ -251,8 +302,17 @@ export const useProductDialog = () => {
     }
   });
 
-  const permanentDeleteProductMutation = useMutation<null, Error, string>({
-    mutationFn: (productId: string) => apiClient.delete(`/api/products/${productId}/delete`),
+  const permanentDeleteProductMutation = useMutation<null, Error, PermanentDeleteVariables>({
+    mutationFn: async ({ productId, imageId }) => {
+      const result = await apiClient.delete<null>(`/api/products/${productId}/delete`);
+      if (imageId) {
+        await cleanupProductImage(
+          imageId,
+          "Product was permanently deleted, but its image could not be removed."
+        );
+      }
+      return result;
+    },
     onSuccess: () => {
       const { setErrors, setFormDataState, openProductDialog, setOpenProductDialog } =
         useProductsStore.getState();

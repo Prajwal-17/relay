@@ -10,7 +10,9 @@ import type {
 } from "../shared/types";
 
 const productsApi: ProductsApi = {
-  saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl)
+  saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl),
+  deleteProductImage: (imageId: string) =>
+    ipcRenderer.invoke("products:deleteProductImage", imageId)
 };
 
 const dialogApi: DialogApi = {

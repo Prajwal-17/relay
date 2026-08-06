@@ -1,8 +1,9 @@
+import { ProductImage } from "@/components/app-ui/product-image";
 import { HighlightedText } from "@/components/highlighted-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
+import { getProductImageUrl, ignoredWeight } from "@/constants";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
 import { useAppPreferences } from "@/hooks/useAppPreferences";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
@@ -13,19 +14,11 @@ import { processSyncQueue } from "@/utils/syncWorker";
 import { ACTION_TYPE, DIALOG_MODE, PRODUCT_SORT_BY } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { paisaToRupeeString } from "@shared/utils/utils";
-import {
-  ArrowDown,
-  ArrowUp,
-  Edit,
-  Eye,
-  Image,
-  Info,
-  ListFilter,
-  PackagePlus,
-  Search
-} from "lucide-react";
+import { ArrowDown, ArrowUp, Edit, Eye, Info, ListFilter, PackagePlus, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+const SEARCH_DROPDOWN_MAX_HEIGHT = 440;
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
@@ -62,25 +55,67 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
   // mouse hover state -> shows img preview
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  // triggers on mouse hover, not keyboard highlight
+  const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
+  const previewIndex =
+    hoveredIndex ?? (isKeyboardNavigating && highlightedIndex >= 0 ? highlightedIndex : null);
   const previewProduct =
-    hoveredIndex !== null && hoveredIndex >= 0 ? searchResults[hoveredIndex] : null;
+    previewIndex !== null && previewIndex >= 0 ? searchResults[previewIndex] : null;
 
   const [delayedPreviewProduct, setDelayedPreviewProduct] = useState<typeof previewProduct | null>(
     null
   );
+  const loadedPreviewUrlsRef = useRef(new Set<string>());
 
-  // img preview debouncer
   useEffect(() => {
     if (!previewProduct || !previewProduct.imageUrl) {
       setDelayedPreviewProduct(null);
       return;
     }
-    const timer = setTimeout(() => {
-      setDelayedPreviewProduct(previewProduct);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [previewProduct]);
+
+    setDelayedPreviewProduct(null);
+    const previewUrl = getProductImageUrl(previewProduct.imageUrl);
+    let delayElapsed = false;
+    let imageLoaded = loadedPreviewUrlsRef.current.has(previewUrl);
+    let cancelled = false;
+    let image: HTMLImageElement | null = null;
+
+    const revealPreview = () => {
+      if (!cancelled && delayElapsed && imageLoaded) setDelayedPreviewProduct(previewProduct);
+    };
+
+    const timer = setTimeout(
+      () => {
+        delayElapsed = true;
+        revealPreview();
+      },
+      isKeyboardNavigating ? 0 : 120
+    );
+
+    const handleLoad = () => {
+      imageLoaded = true;
+      loadedPreviewUrlsRef.current.add(previewUrl);
+      revealPreview();
+    };
+
+    const handleError = () => {
+      if (!cancelled) setDelayedPreviewProduct(null);
+    };
+
+    if (!imageLoaded) {
+      image = new window.Image();
+      image.addEventListener("load", handleLoad, { once: true });
+      image.addEventListener("error", handleError, { once: true });
+      image.src = previewUrl;
+      if (image.complete && image.naturalWidth > 0) handleLoad();
+    }
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      image?.removeEventListener("load", handleLoad);
+      image?.removeEventListener("error", handleError);
+    };
+  }, [isKeyboardNavigating, previewProduct]);
 
   type SortField = "name" | "price" | "mrp";
 
@@ -137,8 +172,39 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   };
 
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
+  const hasAdjustedWorkspaceScrollRef = useRef(false);
 
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({ display: "none" });
+  const [dropdownLayout, setDropdownLayout] = useState({
+    width: 704,
+    maxHeight: SEARCH_DROPDOWN_MAX_HEIGHT,
+    left: 0
+  });
+
+  const updateDropdownLayout = useCallback(() => {
+    const element = dropdownContainerRef.current;
+    if (!element) return;
+
+    const anchorRect = dropdownRef.current?.getBoundingClientRect();
+    const billingScrollContainer = element.closest<HTMLElement>("[data-billing-scroll-container]");
+    const viewportInset = 12;
+    const anchorLeft = anchorRect?.left ?? element.getBoundingClientRect().left;
+    const availableViewportWidth = Math.max(160, window.innerWidth - viewportInset * 2);
+    const width = Math.min(704, availableViewportWidth / scale);
+    const visualWidth = width * scale;
+    const clampedVisualLeft = Math.min(
+      Math.max(anchorLeft, viewportInset),
+      window.innerWidth - viewportInset - visualWidth
+    );
+    const scrollViewportHeight = billingScrollContainer?.clientHeight ?? window.innerHeight;
+    const availableHeight = Math.max(180, (scrollViewportHeight - viewportInset * 2) / scale);
+
+    setDropdownLayout({
+      width,
+      maxHeight: Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight),
+      left: (clampedVisualLeft - anchorLeft) / scale
+    });
+  }, [dropdownRef, scale]);
 
   const updatePreviewPosition = useCallback(() => {
     if (!delayedPreviewProduct || !dropdownContainerRef.current) {
@@ -148,7 +214,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
     // get the html element
     const rowEl = dropdownContainerRef.current.querySelector(
-      `[data-search-dropdown-index="${hoveredIndex}"]`
+      `[data-search-dropdown-index="${previewIndex}"]`
     );
 
     if (rowEl && parentRef.current) {
@@ -162,41 +228,89 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
         return;
       }
 
-      // img preview card
-      const PREVIEW_SIZE = 144 * scale;
+      const viewportInset = 12;
+      const previewGap = 8;
+      const availableViewportSize = Math.max(
+        64,
+        Math.min(window.innerWidth - viewportInset * 2, window.innerHeight - viewportInset * 2)
+      );
+      const leftSpace = dropdownRect.left - viewportInset - previewGap;
+      const previewSize = Math.min(144 * scale, availableViewportSize, leftSpace);
+
+      if (previewSize < 80) {
+        setPreviewStyle({ display: "none" });
+        return;
+      }
+
+      const centeredTop = rowRect.top + rowRect.height / 2 - previewSize / 2;
+      const top = Math.min(
+        Math.max(centeredTop, viewportInset),
+        window.innerHeight - viewportInset - previewSize
+      );
+
+      const left = dropdownRect.left - previewGap - previewSize;
+
       setPreviewStyle({
         position: "fixed",
-        top: rowRect.top + rowRect.height / 2 - PREVIEW_SIZE / 2,
-        left: dropdownRect.left - 12 - PREVIEW_SIZE,
+        top,
+        left,
+        width: previewSize,
+        height: previewSize,
         display: "block",
         zIndex: 9999
       });
     } else {
       setPreviewStyle({ display: "none" });
     }
-  }, [delayedPreviewProduct, hoveredIndex, parentRef, scale]);
+  }, [delayedPreviewProduct, parentRef, previewIndex, scale]);
 
   useEffect(() => {
     updatePreviewPosition();
     const parentEl = parentRef.current;
-    if (parentEl) {
-      parentEl.addEventListener("scroll", updatePreviewPosition);
-      window.addEventListener("resize", updatePreviewPosition);
-      return () => {
-        parentEl.removeEventListener("scroll", updatePreviewPosition);
-        window.removeEventListener("resize", updatePreviewPosition);
-      };
-    }
-    return undefined;
+    const billingScrollContainer = dropdownContainerRef.current?.closest<HTMLElement>(
+      "[data-billing-scroll-container]"
+    );
+
+    parentEl?.addEventListener("scroll", updatePreviewPosition);
+    billingScrollContainer?.addEventListener("scroll", updatePreviewPosition);
+    window.addEventListener("resize", updatePreviewPosition);
+
+    return () => {
+      parentEl?.removeEventListener("scroll", updatePreviewPosition);
+      billingScrollContainer?.removeEventListener("scroll", updatePreviewPosition);
+      window.removeEventListener("resize", updatePreviewPosition);
+    };
   }, [updatePreviewPosition, parentRef]);
 
-  // auto-scroll the dropdown into view when it opens near the bottom of the page
   useEffect(() => {
+    updateDropdownLayout();
+    window.addEventListener("resize", updateDropdownLayout);
+    return () => window.removeEventListener("resize", updateDropdownLayout);
+  }, [updateDropdownLayout]);
+
+  // Keep the result viewport stable and move the billing workspace only as much as needed.
+  useEffect(() => {
+    if (hasAdjustedWorkspaceScrollRef.current || searchResults.length === 0) return;
+
     const el = dropdownContainerRef.current;
-    if (!el) return;
-    el.style.scrollMarginBottom = "10rem";
-    el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, []);
+    const billingScrollContainer = el?.closest<HTMLElement>("[data-billing-scroll-container]");
+    if (!el || !billingScrollContainer) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      const dropdownRect = el.getBoundingClientRect();
+      const scrollViewportRect = billingScrollContainer.getBoundingClientRect();
+      const viewportInset = 12;
+      const visibleBottom = Math.min(scrollViewportRect.bottom, window.innerHeight) - viewportInset;
+      const requiredScroll = Math.max(0, dropdownRect.bottom - visibleBottom);
+
+      hasAdjustedWorkspaceScrollRef.current = true;
+      if (requiredScroll > 0) {
+        billingScrollContainer.scrollBy({ top: requiredScroll, behavior: "smooth" });
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [searchResults.length]);
 
   const openNewProductDialog = () => {
     setIsDropdownOpen();
@@ -281,15 +395,19 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
       if (e.key === "ArrowDown") {
         e.preventDefault();
+        setHoveredIndex(null);
+        setIsKeyboardNavigating(true);
         setHighlightedIndex((prev) => {
-          const next = prev < len - 1 ? prev + 1 : 0;
+          const next = Math.min(prev + 1, len - 1);
           rowVirtualizer.scrollToIndex(next, { align: "auto" });
           return next;
         });
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
+        setHoveredIndex(null);
+        setIsKeyboardNavigating(true);
         setHighlightedIndex((prev) => {
-          const next = prev > 0 ? prev - 1 : len - 1;
+          const next = Math.max(prev - 1, 0);
           rowVirtualizer.scrollToIndex(next, { align: "auto" });
           return next;
         });
@@ -312,35 +430,20 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
           {delayedPreviewProduct && delayedPreviewProduct.imageUrl && (
             <motion.div
               key={delayedPreviewProduct.id}
-              initial={{ opacity: 0, scale: 0.96 }}
+              initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ type: "spring", stiffness: 600, damping: 35 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
               style={previewStyle}
+              className="pointer-events-none"
             >
-              <div className="relative h-36 w-36" style={{ zoom: scale }}>
-                <div className="ring-border h-full w-full overflow-hidden rounded-2xl shadow-xl ring-1">
-                  <img
-                    src={`${PROTOCOL_NAME}${delayedPreviewProduct.imageUrl}`}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-
-                {delayedPreviewProduct.weight && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 3 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                    className="bg-foreground text-card absolute -right-1.5 -bottom-3 rounded-lg px-3 py-1 text-base font-bold tracking-tight whitespace-nowrap shadow-md"
-                  >
-                    {delayedPreviewProduct.weight}
-                    {delayedPreviewProduct.unit}
-                  </motion.div>
-                )}
-
-                {/* img preview tail */}
-                <div className="bg-card absolute top-1/2 -right-1.25 -z-10 h-3.5 w-3.5 -translate-y-1/2 rotate-45 shadow-sm"></div>
+              <div className="bg-background h-full w-full overflow-hidden rounded-(--radius-panel) shadow-md">
+                <img
+                  src={getProductImageUrl(delayedPreviewProduct.imageUrl)}
+                  alt=""
+                  aria-hidden="true"
+                  className="h-full w-full object-contain"
+                />
               </div>
             </motion.div>
           )}
@@ -348,31 +451,32 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          style={{ zoom: scale }}
-          className="bg-background border-border/80 absolute top-[calc(100%+0.5rem)] left-0 z-30 flex max-h-96 w-208 max-w-[calc(100dvw-14rem)] flex-col overflow-hidden rounded-2xl border shadow-xl"
+          style={{
+            zoom: scale,
+            width: dropdownLayout.width,
+            maxHeight: dropdownLayout.maxHeight,
+            left: dropdownLayout.left
+          }}
+          className="bg-background border-frame absolute top-[calc(100%+0.5rem)] z-30 flex flex-col overflow-hidden rounded-(--radius-panel) border shadow-md"
         >
           {searchResults.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center px-6 py-10 text-center">
-              <div className="bg-muted/70 mb-4 flex h-12 w-12 items-center justify-center rounded-xl">
-                <Search className="h-6 w-6 opacity-60" />
+            <div className="text-muted-foreground flex flex-col items-center px-5 py-8 text-center">
+              <div className="bg-secondary mb-3 flex size-10 items-center justify-center rounded-(--radius-control)">
+                <Search className="size-5" />
               </div>
-              <h3 className="text-foreground mb-1.5 text-lg font-semibold">No products found</h3>
-              <p className="mb-5 max-w-sm text-sm font-medium">
+              <h3 className="text-foreground mb-1 text-sm font-semibold">No products found</h3>
+              <p className="mb-4 max-w-sm text-xs">
                 Add the product now and continue billing without leaving this screen.
               </p>
-              <Button
-                variant="outline"
-                onClick={openNewProductDialog}
-                className="h-11 cursor-pointer rounded-xl px-5 text-sm font-semibold shadow-none"
-              >
-                <PackagePlus className="mr-2 h-4 w-4" />
+              <Button variant="outline" size="sm" onClick={openNewProductDialog}>
+                <PackagePlus className="size-3.5" />
                 New Product
               </Button>
             </div>
           ) : (
             <>
-              <div className="border-border/70 bg-background flex shrink-0 items-center gap-3 border-b px-3.5 py-2">
-                <div className="text-muted-foreground flex items-center gap-1.5 text-sm font-semibold">
+              <div className="border-border bg-background flex h-8 shrink-0 items-center gap-2 border-b px-3">
+                <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold">
                   <ListFilter className="h-3.5 w-3.5" />
                   Sort by
                 </div>
@@ -391,7 +495,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => toggleSort(field)}
-                            className={`inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-semibold transition ${
+                            className={`inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-semibold transition-colors ${
                               isActive
                                 ? "bg-foreground text-background"
                                 : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -415,7 +519,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 </div>
               </div>
 
-              <div ref={parentRef} className="flex-1 overflow-y-auto scroll-smooth py-1">
+              <div ref={parentRef} className="flex-1 overflow-y-auto scroll-smooth px-1">
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
@@ -438,10 +542,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            className={`group flex items-center gap-3.5 rounded-md border-l-3 py-3 pr-3 pl-3 transition-all duration-150 hover:cursor-pointer ${
+                            className={`group relative flex h-[54px] items-center gap-2.5 rounded-(--radius-control) px-3 transition-colors duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
-                                ? "border-foreground bg-foreground/6 ring-foreground/15 ring-1"
-                                : "hover:bg-accent border-transparent"
+                                ? "bg-accent"
+                                : "hover:bg-accent"
                             }`}
                             onClick={() => {
                               if (!activeTabId) return;
@@ -452,68 +556,67 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               focusNextRow();
                             }}
                             onMouseDown={(e) => e.preventDefault()}
-                            onMouseEnter={() => setHoveredIndex(virtualRow.index)}
+                            onMouseEnter={() => {
+                              setIsKeyboardNavigating(false);
+                              setHoveredIndex(virtualRow.index);
+                            }}
                             onMouseLeave={() => setHoveredIndex(null)}
                           >
-                            <div className="bg-muted/50 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-md">
-                              {product.imageUrl ? (
-                                <img
-                                  src={`${PROTOCOL_NAME}${product.imageUrl}`}
-                                  alt={product.name || "Product"}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <Image
-                                  className="text-muted-foreground/25 h-4 w-4"
-                                  strokeWidth={1.25}
-                                />
-                              )}
-                            </div>
+                            <span
+                              aria-hidden="true"
+                              className={`bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity ${
+                                highlightedIndex === virtualRow.index ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            <ProductImage
+                              src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
+                              alt={product.name || "Product"}
+                              className="size-10"
+                            />
 
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                  <div className="mb-1 flex items-center gap-2">
-                                    <h4 className="text-foreground truncate text-lg font-semibold">
-                                      <HighlightedText text={product.name} query={itemQuery} />
-                                    </h4>
-                                    {product.weight !== null &&
-                                      ignoredWeight.some((w) =>
-                                        `${product.weight}+${product.unit}`.includes(w)
-                                      ) && (
-                                        <Badge
-                                          variant="outline"
-                                          className="border-border bg-muted text-muted-foreground rounded-md px-2 py-0.5 text-sm font-semibold shadow-sm"
-                                        >
-                                          {product.weight}
-                                          {product.unit}
-                                        </Badge>
-                                      )}
-                                    {product.mrp && (
-                                      <Badge
-                                        variant="outline"
-                                        className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
-                                      >
-                                        MRP ₹{paisaToRupeeString(product.mrp)}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="shrink-0 text-right">
-                                  <span className="text-success text-xl font-bold">
-                                    ₹ {paisaToRupeeString(product.price)}
-                                  </span>
-                                </div>
+                              <div className="flex min-w-0 items-center gap-2">
+                                <h4 className="text-foreground min-w-0 truncate text-lg font-semibold">
+                                  <HighlightedText text={product.name} query={itemQuery} />
+                                </h4>
+                                {product.weight !== null &&
+                                  ignoredWeight.some((w) =>
+                                    `${product.weight}+${product.unit}`.includes(w)
+                                  ) && (
+                                    <Badge
+                                      variant="outline"
+                                      className="border-border bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-sm font-semibold shadow-sm"
+                                    >
+                                      {product.weight}
+                                      {product.unit}
+                                    </Badge>
+                                  )}
+                                {product.mrp && (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text shrink-0 rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
+                                  >
+                                    MRP ₹{paisaToRupeeString(product.mrp)}
+                                  </Badge>
+                                )}
                               </div>
                             </div>
 
-                            <div className="flex shrink-0 items-center gap-1.5">
+                            <div className="text-success shrink-0 text-right text-xl font-bold tabular-nums">
+                              ₹ {paisaToRupeeString(product.price)}
+                            </div>
+
+                            <div
+                              className="flex shrink-0 items-center gap-1.5"
+                              onMouseEnter={() => setHoveredIndex(null)}
+                              onMouseLeave={() => setHoveredIndex(virtualRow.index)}
+                            >
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="outline"
-                                    size="icon"
-                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    size="icon-sm"
+                                    className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setProductId(product.id);
@@ -524,11 +627,11 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <Eye className="size-4.5" />
+                                    <Eye className="size-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs">View Details</p>
+                                  <p className="text-xs">View details</p>
                                 </TooltipContent>
                               </Tooltip>
 
@@ -536,8 +639,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="outline"
-                                    size="icon"
-                                    className="text-muted-foreground hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg transition-all duration-150 active:scale-[0.95]"
+                                    size="icon-sm"
+                                    className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setProductId(product.id);
@@ -548,11 +651,11 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <Edit className="size-4.5" />
+                                    <Edit className="size-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p className="text-xs">Edit Product</p>
+                                  <p className="text-xs">Edit product</p>
                                 </TooltipContent>
                               </Tooltip>
 
@@ -560,12 +663,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 <TooltipTrigger asChild>
                                   <Button
                                     variant="ghost"
-                                    size="icon"
-                                    className="text-muted-foreground/70 hover:text-foreground h-9 w-9 shrink-0 cursor-pointer rounded-lg"
+                                    size="icon-sm"
+                                    className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
-                                    <Info className="h-4.5 w-4.5" />
+                                    <Info className="size-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="text-xs leading-relaxed">
@@ -587,11 +690,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   </div>
                 </div>
                 {!hasNextPage && searchResults.length > 0 && (
-                  <div className="text-muted-foreground flex flex-col items-center py-10 text-center">
-                    <div className="text-2xl font-medium">No more products</div>
-                    <p className="mt-2 text-base opacity-75">
-                      You&apos;ve reached the end of the list
-                    </p>
+                  <div className="text-muted-foreground py-3 text-center text-xs">
+                    End of results
                   </div>
                 )}
               </div>

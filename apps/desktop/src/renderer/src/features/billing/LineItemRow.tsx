@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
+import { cn } from "@/lib/utils";
 import type { LineItem } from "@/store/billing/billingSession.types";
 import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
 import { useSearchDropdownStore } from "@/store/searchDropdownStore";
@@ -52,6 +53,7 @@ const LineItemRow = memo(
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
     const qtyVal = parseFloat(item.quantity || "0");
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
+    const partiallyChecked = item.checkedQty > 0 && item.checkedQty < qtyVal;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
 
     const [isFlash, setIsFlash] = useState(false);
@@ -75,9 +77,12 @@ const LineItemRow = memo(
     return (
       <div key={item.rowId} data-billing-row-id={item.rowId} className="relative">
         <div
-          className={`group ${checkedColor} border-border focus-within:border-border-strong grid min-h-(--billing-row-height) w-full items-center gap-1 rounded-(--radius-control) border px-1 transition-[background-color,border-color] duration-150 ${
-            dragHandle?.isDragging ? "ring-primary/30 shadow-lg ring-2" : ""
-          } ${isCountColumnVisible ? "billing-grid-count" : "billing-grid"}`}
+          className={cn(
+            "group focus-within:border-border-strong grid min-h-(--billing-row-height) w-full items-center gap-1 rounded-(--radius-control) border px-1 transition-[background-color,border-color] duration-150",
+            checkedColor,
+            dragHandle?.isDragging && "ring-primary/30 shadow-lg ring-2",
+            isCountColumnVisible ? "billing-grid-count" : "billing-grid"
+          )}
         >
           <div className="h-full min-w-0">
             <div className="flex h-full items-center justify-between gap-1">
@@ -239,14 +244,19 @@ const LineItemRow = memo(
                 processSyncQueue(tabId);
               }}
               type="button"
+              role="checkbox"
+              aria-checked={partiallyChecked ? "mixed" : checked}
               aria-label={checked ? "Mark item unchecked" : "Mark item checked"}
               className={`flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-(--radius-control) border transition-[border-color,box-shadow,background-color,color] ${
                 checked
-                  ? "border-success bg-success text-background"
-                  : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
+                  ? "border-success bg-success text-success-foreground"
+                  : partiallyChecked
+                    ? "border-warning bg-warning text-warning-foreground"
+                    : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
               }`}
             >
-              {checked && <Check className="text-background" strokeWidth={3} size={18} />}
+              {checked && <Check strokeWidth={3} size={18} />}
+              {partiallyChecked && <Minus strokeWidth={3} size={18} />}
             </button>
           </div>
           {isCountColumnVisible && (
