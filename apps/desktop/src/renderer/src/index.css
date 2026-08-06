@@ -418,6 +418,21 @@
   }
 }
 
+@utility scrollbar-thick {
+  scrollbar-width: auto;
+  &::-webkit-scrollbar {
+    width: 14px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-strong);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--brand);
+  }
+}
+
 @utility page-shell {
   padding: var(--page-padding);
 }

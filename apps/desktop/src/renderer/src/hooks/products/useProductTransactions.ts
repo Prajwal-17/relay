@@ -3,7 +3,7 @@ import type { PaginatedApiResponse, ProductTransaction } from "@shared/types";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
-export const PAGE_SIZE = 8;
+export const PAGE_SIZE = 12;
 
 type ProductTransactionsResponse = PaginatedApiResponse<{ data: ProductTransaction[] }>;
 

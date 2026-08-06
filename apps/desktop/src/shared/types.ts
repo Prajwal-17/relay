@@ -85,6 +85,7 @@ export type ProductHistory = {
 };
 
 export type ProductTransaction = {
+  id: string;
   type: TransactionType;
   transactionNo: number;
   customerName: string;

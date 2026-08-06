@@ -2,7 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PAGE_SIZE, useProductTransactions } from "@/hooks/products/useProductTransactions";
 import { useProductsStore } from "@/store/productsStore";
-import { TRANSACTION_TYPE } from "@shared/types";
+import { useViewModalStore } from "@/store/viewModalStore";
+import { DASHBOARD_TYPE, TRANSACTION_TYPE, type ProductTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
@@ -15,8 +16,12 @@ import {
   ReceiptText
 } from "lucide-react";
 import { motion } from "motion/react";
+import { useCallback } from "react";
 
 export function ProductTransactionsTable() {
+  const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
+  const setTransactionId = useViewModalStore((state) => state.setTransactionId);
+  const setTransactionType = useViewModalStore((state) => state.setTransactionType);
   const productId = useProductsStore((state) => state.productId);
   const {
     data,
@@ -31,6 +36,22 @@ export function ProductTransactionsTable() {
     goToNextPage,
     goToPrevPage
   } = useProductTransactions(productId);
+
+  const handleOpenTransaction = useCallback(
+    (transaction: ProductTransaction) => {
+      const dashboardType =
+        transaction.type === TRANSACTION_TYPE.SALE
+          ? DASHBOARD_TYPE.SALES
+          : DASHBOARD_TYPE.ESTIMATES;
+
+      if (!transaction.id) return;
+
+      setTransactionType(dashboardType);
+      setTransactionId(transaction.id);
+      setIsViewModalOpen(true);
+    },
+    [setIsViewModalOpen, setTransactionId, setTransactionType]
+  );
 
   if (!productId) return null;
 
@@ -98,7 +119,7 @@ export function ProductTransactionsTable() {
       className="flex h-full flex-col overflow-hidden"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pt-5">
-        <div className="border-border/60 bg-card flex flex-col overflow-hidden rounded-lg border shadow-md">
+        <div className="border-border/60 bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-md">
           <div className="bg-muted text-muted-foreground grid shrink-0 grid-cols-12 gap-4 rounded-t-lg px-6 py-2.5 text-base font-semibold">
             <div className="col-span-2 flex items-center">Date</div>
             <div className="col-span-1 flex items-center">Type</div>
@@ -110,7 +131,7 @@ export function ProductTransactionsTable() {
             <div className="col-span-1 flex items-center justify-end"></div>
           </div>
 
-          <div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
             {transactions.map((txn, idx) => (
               <motion.div
                 key={`${txn.type}-${txn.transactionNo}-${idx}`}
@@ -121,7 +142,7 @@ export function ProductTransactionsTable() {
                   delay: idx * 0.025,
                   ease: [0.23, 1, 0.32, 1]
                 }}
-                className="hover:bg-muted/40 bg-card border-border/50 grid min-h-11 grid-cols-12 items-center gap-3 border-b px-3 py-1 text-sm"
+                className="hover:bg-muted/40 bg-card border-border/50 grid min-h-12 grid-cols-12 items-center gap-3 border-b px-3 py-1 text-sm"
               >
                 <div className="col-span-2 flex flex-col items-start justify-center">
                   <span className="text-foreground text-base font-semibold">
@@ -178,11 +199,15 @@ export function ProductTransactionsTable() {
 
                 <div className="col-span-1 flex items-center justify-end">
                   <Tooltip>
-                    <TooltipTrigger className="bg-secondary/60 text-muted-foreground/80 border-border/50 hover:bg-secondary hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105">
+                    <TooltipTrigger
+                      onClick={() => handleOpenTransaction(txn)}
+                      aria-label={`Open ${txn.type} transaction ${txn.transactionNo}`}
+                      className="bg-secondary/60 text-muted-foreground/80 border-border/50 hover:bg-secondary hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105"
+                    >
                       <ArrowUpRight className="h-5 w-5" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-base">View in dashboard</p>
+                      <p className="text-base">Open transaction</p>
                     </TooltipContent>
                   </Tooltip>
                 </div>

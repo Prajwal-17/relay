@@ -118,7 +118,7 @@ const LineItemRow = memo(
           <div className="relative min-w-0">
             <input
               value={item.productSnapshot}
-              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-9 w-full rounded-(--radius-control) border px-3 py-2 text-sm font-semibold shadow-none transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2"
+              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-9 w-full rounded-(--radius-control) border px-3 py-2 text-base font-semibold shadow-none transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2"
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);

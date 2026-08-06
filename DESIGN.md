@@ -229,7 +229,7 @@ Virtualized dimensions are part of the layout contract and must change with the 
 - Product page rows: 60px.
 - Billing product search rows: 54px.
 - Customer rows: 44px.
-- Sales and estimate transaction rows: 44px.
+- Sales and estimate transaction rows: 48px.
 
 Use these route compositions:
 

@@ -23,6 +23,7 @@ import {
   type InitialTab
 } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
+import { generateProductSnapshot } from "@shared/utils/productSnapshot";
 import {
   AlertTriangle,
   Clock,
@@ -62,6 +63,12 @@ export function ProductDialog() {
   const setInitialTab = useProductsStore((state) => state.setInitialTab);
   const formDataState = useProductsStore((state) => state.formDataState);
   const productName = formDataState.name;
+  const productSnapshot = generateProductSnapshot({
+    name: formDataState.name,
+    weight: formDataState.weight,
+    unit: formDataState.unit,
+    mrp: formDataState.mrp ? parseFloat(formDataState.mrp) : 0
+  });
   const productId = useProductsStore((state) => state.productId);
 
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -113,8 +120,8 @@ export function ProductDialog() {
         >
           <div className="border-border bg-card grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-2">
             <div className="min-w-0 pr-2">
-              <h2 className="text-foreground truncate text-xl font-bold tracking-tight">
-                {isAddMode ? "New Product" : productName || "Product Details"}
+              <h2 className="text-foreground wrap-break-words max-w-full text-xl leading-tight font-bold tracking-tight">
+                {isAddMode ? "New Product" : productSnapshot || productName || "Product Details"}
               </h2>
               {!isAddMode && (
                 <>

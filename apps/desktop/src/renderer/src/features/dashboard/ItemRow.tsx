@@ -48,32 +48,35 @@ export const ItemRow = ({
     <tr
       className={cn(
         "border-border hover:bg-accent border-b text-sm transition-colors",
-        checked && "bg-success/10 hover:bg-success/10",
-        partial && "bg-warning/10 hover:bg-warning/10",
+        checked && "bg-success/20 hover:bg-success/20",
+        partial && "bg-warning/20 hover:bg-warning/20",
         !checked && !partial && "bg-card"
       )}
     >
-      <td className="text-muted-foreground h-[42px] px-2 text-center font-medium tabular-nums">
+      <td className="text-muted-foreground h-11.5 px-2 text-center font-medium tabular-nums">
         {index}
       </td>
       <td
         className={cn(
-          "text-foreground max-w-0 truncate px-2.5 text-left font-medium",
-          checked && "text-muted-foreground line-through"
+          "text-foreground max-w-0 truncate px-2.5 text-left font-semibold",
+          checked && "text-success line-through",
+          partial && "text-warning"
         )}
         title={item.productSnapshot}
       >
         {item.productSnapshot}
       </td>
-      <td className="text-foreground px-2 text-center tabular-nums">
+      <td className="text-foreground px-2 text-center font-semibold tabular-nums">
         {fromMilliUnits(item.quantity)}
       </td>
-      <td className="text-foreground px-2.5 text-right tabular-nums">{formatRupee(item.price)}</td>
+      <td className="text-foreground px-2.5 text-right font-semibold tabular-nums">
+        {formatRupee(item.price)}
+      </td>
       <td className="text-foreground px-2.5 text-right font-semibold tabular-nums">
         {formatRupee(item.totalPrice)}
       </td>
       <td className="px-2.5">
-        <div className="ml-auto flex w-[194px] items-center justify-end gap-1.5">
+        <div className="ml-auto flex w-48.5 items-center justify-end gap-1.5">
           <button
             type="button"
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.SET)}
@@ -83,13 +86,18 @@ export const ItemRow = ({
               "focus-visible:ring-ring/50 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-(--radius-control) border transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50",
               checked
                 ? "border-success bg-success text-success-foreground"
-                : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
+                : partial
+                  ? "border-warning bg-warning text-warning-foreground"
+                  : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
             )}
           >
             {isUpdating ? (
               <Loader2 className="size-3.5 animate-spin" />
             ) : (
-              checked && <Check className="size-4" strokeWidth={3} />
+              <>
+                {checked && <Check className="size-4" strokeWidth={3} />}
+                {partial && <Minus className="size-4" strokeWidth={3} />}
+              </>
             )}
           </button>
 

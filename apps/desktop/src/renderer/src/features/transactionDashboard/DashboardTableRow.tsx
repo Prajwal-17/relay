@@ -157,7 +157,7 @@ const DashboardTableRow = ({
           ) : null}
         </div>
       ) : (
-        <div className="bg-card hover:bg-muted/50 active:bg-muted border-border grid min-h-11 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors">
+        <div className="bg-card hover:bg-muted/50 active:bg-muted border-border grid min-h-12 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors">
           <div className="col-span-2 flex flex-col justify-center">
             <span className="text-foreground text-sm leading-tight font-semibold tabular-nums">
               {transaction.createdAt
