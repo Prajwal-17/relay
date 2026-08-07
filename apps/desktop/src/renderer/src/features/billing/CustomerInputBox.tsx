@@ -178,21 +178,23 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
           role="combobox"
           className="h-9 w-full min-w-0 justify-between px-3 text-sm font-normal"
         >
-          <span className="min-w-0 flex-1 truncate text-left" title={customerName || undefined}>
-            {customerName ? customerName : "Select Customer..."}
+          <span className="flex min-w-0 flex-1 items-center gap-2">
+            <span className="min-w-0 truncate text-left" title={customerName || undefined}>
+              {customerName ? customerName : "Select Customer..."}
+            </span>
+            {customerName && customerType && (
+              <Badge
+                variant="outline"
+                className={cn(
+                  "shrink-0 px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
+                  typeBadgeClass[customerType] ?? typeBadgeClass.cash
+                )}
+              >
+                {customerType}
+              </Badge>
+            )}
           </span>
-          {customerName && customerType && (
-            <Badge
-              variant="outline"
-              className={cn(
-                "shrink-0 px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
-                typeBadgeClass[customerType] ?? typeBadgeClass.cash
-              )}
-            >
-              {customerType}
-            </Badge>
-          )}
-          <ChevronsUpDown className="size-4 shrink-0 opacity-60" />
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-60" />
         </Button>
       </PopoverTrigger>
       <PopoverContent

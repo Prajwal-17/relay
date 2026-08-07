@@ -1,4 +1,4 @@
-import { BrowserWindow, dialog, shell } from "electron";
+import { app, BrowserWindow, dialog, shell } from "electron";
 import { ipcMain } from "electron/main";
 import fs from "fs";
 import os from "os";
@@ -78,13 +78,15 @@ export function exportAsPdf() {
           } as Electron.WebPreferences
         });
 
+        const exportRoute = `/export/pdf/${type}s?id=${id}`;
+
         if (isDevBuild && process.env["ELECTRON_RENDERER_URL"]) {
-          const url = `${process.env["ELECTRON_RENDERER_URL"]}/#/export/pdf/${type}s?id=${id}`;
+          const url = `${process.env["ELECTRON_RENDERER_URL"]}/#${exportRoute}`;
           await exportWindow.loadURL(url);
         } else {
-          const indexPath = join(__dirname, "../renderer/index.html");
+          const indexPath = join(app.getAppPath(), "out/renderer/index.html");
           await exportWindow.loadFile(indexPath, {
-            hash: `/export/pdf/${type}?id=${id}`
+            hash: exportRoute
           });
         }
 
