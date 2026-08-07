@@ -1,10 +1,6 @@
-import { apiClient } from "@/lib/apiClient";
-import {
-  TRANSACTION_TYPE,
-  type StoreProfile,
-  type TransactionType,
-  type UnifiedTransctionWithItems
-} from "@shared/types";
+import { ErrorState } from "@/components/app-ui/ErrorState";
+import { ApiError, apiClient } from "@/lib/apiClient";
+import { type StoreProfile, type UnifiedTransctionWithItems } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatINR, formatRupee, paisaToRupees } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
@@ -13,22 +9,50 @@ import { FileWarning, LoaderCircle } from "lucide-react";
 import { useParams, useSearchParams } from "react-router-dom";
 
 export default function PdfInvoicePage() {
-  const { type } = useParams<{ type: TransactionType }>();
+  const { type } = useParams<{ type: string }>();
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
+  const hasValidParams = Boolean(id?.trim()) && (type === "sales" || type === "estimates");
 
-  const { data: transaction, isLoading: isLoadingTxn } = useQuery({
+  const {
+    data: transaction,
+    isLoading: isLoadingTxn,
+    isError: isTxnError,
+    error: txnError,
+    refetch: refetchTxn,
+    isFetching: isFetchingTxn
+  } = useQuery({
     queryKey: ["transaction", type, id],
     queryFn: () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}/${id}`),
-    enabled: !!id && !!type
+    enabled: hasValidParams
   });
 
-  const { data: storeProfile, isLoading: isLoadingProfile } = useQuery({
+  const {
+    data: storeProfile,
+    isLoading: isLoadingProfile,
+    isError: isProfileError,
+    refetch: refetchProfile,
+    isFetching: isFetchingProfile
+  } = useQuery({
     queryKey: ["storeProfile"],
-    queryFn: () => apiClient.get<StoreProfile>("/api/store-profile")
+    queryFn: () => apiClient.get<StoreProfile>("/api/store-profile"),
+    enabled: hasValidParams
   });
 
   const isLoading = isLoadingTxn || isLoadingProfile;
+
+  if (!hasValidParams) {
+    return (
+      <div className="bg-background h-screen w-full">
+        <ErrorState
+          layout="page"
+          title="This PDF link is invalid"
+          description="The transaction type or identifier is missing. Close this window and export the bill again."
+          primaryAction={{ label: "Close window", onClick: () => window.close() }}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -37,6 +61,49 @@ export default function PdfInvoicePage() {
           <LoaderCircle className="text-brand size-7 animate-spin" />
           <p className="text-muted-foreground text-sm font-medium">Preparing invoice…</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isTxnError) {
+    const isNotFound = txnError instanceof ApiError && txnError.status === 404;
+    return (
+      <div className="bg-background h-screen w-full">
+        <ErrorState
+          layout="page"
+          title={isNotFound ? "Transaction not found" : "Transaction could not be loaded"}
+          description={
+            isNotFound
+              ? "It may have been deleted. Close this window and export again."
+              : "Try loading the transaction again, or close this window and export again."
+          }
+          primaryAction={
+            isNotFound
+              ? { label: "Close window", onClick: () => window.close() }
+              : { label: "Try again", onClick: () => void refetchTxn(), loading: isFetchingTxn }
+          }
+          secondaryAction={
+            isNotFound ? undefined : { label: "Close window", onClick: () => window.close() }
+          }
+        />
+      </div>
+    );
+  }
+
+  if (isProfileError) {
+    return (
+      <div className="bg-background h-screen w-full">
+        <ErrorState
+          layout="page"
+          title="Store details could not be loaded"
+          description="QuickCart will not create a PDF with missing shop details. Try again or close this window."
+          primaryAction={{
+            label: "Try again",
+            onClick: () => void refetchProfile(),
+            loading: isFetchingProfile
+          }}
+          secondaryAction={{ label: "Close window", onClick: () => window.close() }}
+        />
       </div>
     );
   }
@@ -56,7 +123,7 @@ export default function PdfInvoicePage() {
   }
 
   const billingNo = transaction.transactionNo;
-  const isSale = type?.slice(0, -1) === TRANSACTION_TYPE.SALE;
+  const isSale = type === "sales";
 
   const formattedDate = formatDateStrToISTDateTimeStr(
     transaction.createdAt || new Date().toISOString()

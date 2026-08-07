@@ -3,11 +3,11 @@ import type { CustomerSummary } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCustomerSummary = (customerId: string) => {
-  const { data, status } = useQuery({
+  const { data, status, isError, refetch, isFetching } = useQuery({
     queryKey: ["customer", customerId, "summary"],
     queryFn: () => apiClient.get<CustomerSummary>(`/api/customers/${customerId}/summary`),
     enabled: !!customerId
   });
 
-  return { summary: data, status };
+  return { summary: data, status, isError, refetch, isFetching };
 };

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,10 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
     fetchNextPage,
     totalCount,
     search,
-    setSearch
+    setSearch,
+    isError,
+    refetch,
+    isFetchNextPageError
   } = useCustomersInfinite();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -155,6 +159,16 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
             <div className="flex items-center justify-center py-12">
               <LoaderCircle className="text-muted-foreground size-5 animate-spin" />
             </div>
+          ) : isError && customersData.length === 0 ? (
+            <div
+              role="alert"
+              className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center"
+            >
+              <p className="text-muted-foreground text-sm">Customers could not be loaded.</p>
+              <Button size="sm" variant="outline" onClick={() => void refetch()}>
+                Try again
+              </Button>
+            </div>
           ) : isEmpty ? (
             <div className="flex h-full flex-col items-center justify-center px-6 pb-8 text-center">
               <span className="border-border/70 bg-muted/60 text-muted-foreground mb-3 flex size-11 items-center justify-center rounded-full border">
@@ -180,6 +194,17 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
                   onPointerMove={(event) => handlePointerMove(index, event)}
                 />
               ))}
+              {isFetchNextPageError && (
+                <div
+                  role="alert"
+                  className="border-border flex items-center justify-between border-t px-3 py-2 text-xs"
+                >
+                  <span className="text-muted-foreground">More customers could not be loaded.</span>
+                  <Button size="sm" variant="outline" onClick={() => void fetchNextPage()}>
+                    Try again
+                  </Button>
+                </div>
+              )}
               {isFetchingNextPage && (
                 <div className="flex items-center justify-center py-4">
                   <LoaderCircle className="text-muted-foreground size-5 animate-spin" />

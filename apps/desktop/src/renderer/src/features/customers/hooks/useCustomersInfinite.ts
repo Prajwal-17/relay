@@ -9,8 +9,7 @@ import {
   type PaginatedApiResponse
 } from "@shared/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import toast from "react-hot-toast";
+import { useMemo, useState } from "react";
 import useDebounce from "@/hooks/useDebounce";
 
 type CustomersPageResult = {
@@ -35,6 +34,8 @@ export const useCustomersInfinite = () => {
     isError,
     isFetching,
     isPlaceholderData,
+    isFetchNextPageError,
+    refetch,
     status
   } = useInfiniteQuery({
     queryKey: ["customers-infinite", debouncedQuery, typeFilter, sortBy, includeArchived],
@@ -55,12 +56,6 @@ export const useCustomersInfinite = () => {
     enabled: true
   });
 
-  useEffect(() => {
-    if (isError && !isPlaceholderData) {
-      toast.error(error.message);
-    }
-  }, [isError, error, isPlaceholderData]);
-
   const customersData = useMemo(() => {
     return data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
   }, [data]);
@@ -72,6 +67,9 @@ export const useCustomersInfinite = () => {
     status,
     isLoading,
     isError,
+    error,
+    refetch,
+    isFetchNextPageError,
     hasNextPage,
     isFetchingNextPage,
     isFetching,

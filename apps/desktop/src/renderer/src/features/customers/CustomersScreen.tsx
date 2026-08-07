@@ -1,7 +1,9 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { useCustomer } from "@/features/customers/hooks/useCustomer";
+import { ApiError } from "@/lib/apiClient";
 import { LoaderCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { CustomerActionsProvider } from "./CustomerActionsContext";
 import { type CustomerActions } from "./customerActions";
 import { CustomerDetailView } from "./detail/CustomerDetailView";
@@ -16,10 +18,15 @@ import { CustomerListView } from "./list/CustomerListView";
 //  /customers/:customerId → detail
 export function CustomersScreen() {
   const { customerId } = useParams<{ customerId: string }>();
+  const navigate = useNavigate();
   const isDetail = customerId !== undefined;
 
-  const { customer, isLoading } = useCustomer(isDetail ? customerId : undefined);
+  const { customer, isLoading, isError, error, refetch, isFetching } = useCustomer(
+    isDetail ? customerId : undefined
+  );
   const selected = customer ?? null;
+  const isCustomerNotFound =
+    error instanceof ApiError && (error.status === 400 || error.status === 404);
 
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"add" | "edit">("add");
@@ -63,6 +70,21 @@ export function CustomersScreen() {
             <div className="flex h-full w-full items-center justify-center">
               <LoaderCircle className="text-muted-foreground size-7 animate-spin" />
             </div>
+          ) : isError && !selected ? (
+            <ErrorState
+              layout="page"
+              title={isCustomerNotFound ? "Customer not found" : "Couldn't load customer"}
+              description={isCustomerNotFound ? "This customer does not exist." : "Try again."}
+              primaryAction={
+                isCustomerNotFound
+                  ? undefined
+                  : { label: "Try again", onClick: () => void refetch(), loading: isFetching }
+              }
+              secondaryAction={{
+                label: "Back to customers",
+                onClick: () => navigate("/customers", { replace: true })
+              }}
+            />
           ) : (
             <CustomerDetailView
               key={customerId ?? "none"}

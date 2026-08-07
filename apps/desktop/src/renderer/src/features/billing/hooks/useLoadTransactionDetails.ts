@@ -33,17 +33,12 @@ const useLoadTransactionDetails = (
     String(currentSession?.billingId) !== String(id);
 
   const { setLineItems, hydrateSession } = useBillingSessionStore.getState();
-  const { data, isSuccess, isLoading, status, isFetched, isError, error } = useQuery({
-    queryKey: [type, id, tabId],
-    queryFn: async () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}s/${id}`),
-    enabled: shouldFetch
-  });
-
-  useEffect(() => {
-    if (isError && error) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
+  const { data, isSuccess, isLoading, status, isFetched, isError, error, refetch, isFetching } =
+    useQuery({
+      queryKey: [type, id, tabId],
+      queryFn: async () => apiClient.get<UnifiedTransctionWithItems>(`/api/${type}s/${id}`),
+      enabled: shouldFetch
+    });
 
   useEffect(() => {
     if (!tabId || !isSuccess || !data) return;
@@ -74,7 +69,15 @@ const useLoadTransactionDetails = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSuccess, data, tabId, navigate]);
   const isDetailsLoading = shouldFetch && isLoading;
-  return { status, isLoading: isDetailsLoading, isFetched };
+  return {
+    status,
+    isLoading: isDetailsLoading,
+    isFetched,
+    isError,
+    error,
+    refetch,
+    isFetching
+  };
 };
 
 export default useLoadTransactionDetails;

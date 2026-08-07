@@ -59,7 +59,9 @@ export function CustomerListView() {
     setSortBy,
     includeArchived,
     setIncludeArchived,
-    debouncedQuery
+    debouncedQuery,
+    refetch,
+    isFetchNextPageError
   } = useCustomersInfinite();
 
   useEffect(() => {
@@ -332,6 +334,8 @@ export function CustomerListView() {
           isFetching={isFetching}
           isPlaceholderData={isPlaceholderData}
           fetchNextPage={fetchNextPage}
+          retry={() => void refetch()}
+          isFetchNextPageError={isFetchNextPageError}
           onRowClick={handleRowClick}
           clearFilters={clearFilters}
         />

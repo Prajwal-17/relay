@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCustomerActions } from "@/features/customers/customerActions";
@@ -57,10 +58,14 @@ function InfoRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 export function OverviewTab({ customerId, customer }: { customerId: string; customer: Customer }) {
-  const { summary } = useCustomerSummary(customerId);
-  const { summary: ledgerSummary } = useCustomerLedgerSummary(customerId);
-  const { recentSales } = useRecentSales(customerId, RECENT_SALES_LIMIT);
-  const { activity } = useCustomerActivity(customerId, ACTIVITY_LIMIT);
+  const summaryQuery = useCustomerSummary(customerId);
+  const ledgerQuery = useCustomerLedgerSummary(customerId);
+  const salesQuery = useRecentSales(customerId, RECENT_SALES_LIMIT);
+  const activityQuery = useCustomerActivity(customerId, ACTIVITY_LIMIT);
+  const summary = summaryQuery.summary;
+  const ledgerSummary = ledgerQuery.summary;
+  const recentSales = salesQuery.recentSales;
+  const activity = activityQuery.activity;
   const { openPayment, openAdjust, openQuickSale } = useCustomerActions();
 
   const outstanding = ledgerSummary?.currentBalance ?? customer.outstandingBalance ?? 0;
@@ -69,6 +74,33 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
   const salesCount = summary?.salesCount ?? 0;
   const estimatesCount = summary?.estimatesCount ?? 0;
   const avgInvoice = summary?.average ?? 0;
+
+  const hasQueryError =
+    summaryQuery.isError || ledgerQuery.isError || salesQuery.isError || activityQuery.isError;
+  if (hasQueryError) {
+    return (
+      <ErrorState
+        layout="page"
+        title="Customer overview could not be loaded"
+        description="The customer record is safe. Try loading the overview again."
+        primaryAction={{
+          label: "Try again",
+          onClick: () =>
+            void Promise.all([
+              summaryQuery.refetch(),
+              ledgerQuery.refetch(),
+              salesQuery.refetch(),
+              activityQuery.refetch()
+            ]),
+          loading:
+            summaryQuery.isFetching ||
+            ledgerQuery.isFetching ||
+            salesQuery.isFetching ||
+            activityQuery.isFetching
+        }}
+      />
+    );
+  }
 
   const isSettled = outstanding === 0;
   const isAdvance = outstanding < 0;
@@ -163,13 +195,13 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
 
           <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <SectionCard title="Recent Sales" bodyClassName="p-0">
-              {recentSales.length === 0 ? (
+              {recentSales?.length === 0 ? (
                 <div className="text-muted-foreground px-4 py-8 text-center text-sm">
                   No sales yet.
                 </div>
               ) : (
                 <ul className="divide-border/70 divide-y">
-                  {recentSales.map((sale) => (
+                  {recentSales?.map((sale) => (
                     <li
                       key={sale.id}
                       className="flex items-center justify-between gap-3 px-4 py-2.5"
@@ -197,14 +229,14 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
             </SectionCard>
 
             <SectionCard title="Recent Activity" bodyClassName="p-0">
-              {activity.length === 0 ? (
+              {activity?.length === 0 ? (
                 <div className="text-muted-foreground flex flex-col items-center gap-2 px-4 py-8 text-center text-sm">
                   <CircleSlash className="size-5 opacity-50" />
                   No activity yet.
                 </div>
               ) : (
                 <ol className="px-4 py-2">
-                  {activity.map((event, idx) => {
+                  {activity?.map((event, idx) => {
                     const Icon = kindIcon[event.kind] ?? CircleSlash;
                     return (
                       <li key={event.id} className="flex gap-3 pb-4 last:pb-0">
@@ -215,7 +247,7 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                               kindIconClass[event.kind] ?? "text-muted-foreground"
                             )}
                           />
-                          {idx < activity.length - 1 && (
+                          {idx < activity?.length - 1 && (
                             <span className="bg-border mt-1 w-px flex-1" />
                           )}
                         </div>

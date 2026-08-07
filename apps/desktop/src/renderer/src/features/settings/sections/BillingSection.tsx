@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -66,10 +67,16 @@ const SearchDropdownSizeField = () => {
 };
 
 export const BillingSection = () => {
-  const { config, isLoading, updateConfig, isUpdating } = useAppPreferences();
+  const { config, isLoading, isError, refetch, isFetching, updateConfig, isUpdating } =
+    useAppPreferences();
   const [open, setOpen] = useState(false);
 
-  const { data: customersResponse } = useQuery({
+  const {
+    data: customersResponse,
+    isError: isCustomersError,
+    refetch: refetchCustomers,
+    isFetching: isCustomersFetching
+  } = useQuery({
     queryKey: ["customers", ""],
     queryFn: () =>
       apiClient.get<{ data: Customer[] }>("/api/customers", { query: "", pageSize: 100 })
@@ -88,6 +95,20 @@ export const BillingSection = () => {
     updateConfig({ billing: { defaultCustomerId: customerId } });
   };
 
+  if (isError) {
+    return (
+      <SettingsSection title="Billing" description={DESCRIPTION}>
+        <ErrorState
+          layout="panel"
+          className="rounded-none border-0"
+          title="Billing preferences could not be loaded"
+          description="Try loading this section again."
+          primaryAction={{ label: "Try again", onClick: () => void refetch(), loading: isFetching }}
+        />
+      </SettingsSection>
+    );
+  }
+
   if (isLoading || !config) {
     return (
       <SettingsSection title="Billing" description={DESCRIPTION}>
@@ -101,57 +122,72 @@ export const BillingSection = () => {
   return (
     <SettingsSection title="Billing" description={DESCRIPTION}>
       <SettingsField label="Default customer" hint="Used for every new bill.">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              id="settings-default-customer"
-              variant="outline"
-              className={cn(
-                "w-full justify-between text-sm font-normal",
-                !selectedCustomerName && "text-muted-foreground"
-              )}
-              disabled={isUpdating}
-            >
-              {isUpdating ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin" />
-                  Saving…
-                </span>
-              ) : (
-                (selectedCustomerName ?? "Select a customer")
-              )}
-              <ChevronsUpDown className="text-muted-foreground size-4 shrink-0" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-            <Command>
-              <CommandInput placeholder="Search customers…" className="h-9 text-sm" />
-              <CommandList>
-                <CommandEmpty className="py-4 text-center text-sm">No customer found.</CommandEmpty>
-                <CommandGroup>
-                  {customers?.map((customer) => (
-                    <CommandItem
-                      key={customer.id}
-                      value={customer.name}
-                      onSelect={() => handleCustomerSelect(customer.id)}
-                      className="text-sm"
-                    >
-                      <Check
-                        className={cn(
-                          "size-4 shrink-0",
-                          config.billing.defaultCustomerId === customer.id
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {customer.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        {isCustomersError ? (
+          <ErrorState
+            layout="compact"
+            title="Customers could not be loaded"
+            description="Try loading the customer list again."
+            primaryAction={{
+              label: "Try again",
+              onClick: () => void refetchCustomers(),
+              loading: isCustomersFetching
+            }}
+          />
+        ) : (
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                id="settings-default-customer"
+                variant="outline"
+                className={cn(
+                  "w-full justify-between text-sm font-normal",
+                  !selectedCustomerName && "text-muted-foreground"
+                )}
+                disabled={isUpdating}
+              >
+                {isUpdating ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" />
+                    Saving…
+                  </span>
+                ) : (
+                  (selectedCustomerName ?? "Select a customer")
+                )}
+                <ChevronsUpDown className="text-muted-foreground size-4 shrink-0" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search customers…" className="h-9 text-sm" />
+                <CommandList>
+                  <CommandEmpty className="py-4 text-center text-sm">
+                    No customer found.
+                  </CommandEmpty>
+                  <CommandGroup>
+                    {customers?.map((customer) => (
+                      <CommandItem
+                        key={customer.id}
+                        value={customer.name}
+                        onSelect={() => handleCustomerSelect(customer.id)}
+                        className="text-sm"
+                      >
+                        <Check
+                          className={cn(
+                            "size-4 shrink-0",
+                            config.billing.defaultCustomerId === customer.id
+                              ? "opacity-100"
+                              : "opacity-0"
+                          )}
+                        />
+                        {customer.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        )}
       </SettingsField>
 
       <SearchDropdownSizeField />

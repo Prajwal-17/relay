@@ -50,17 +50,11 @@ export function useCustomerLedger(params: UseCustomerLedgerParams) {
 }
 
 export function useCustomerLedgerSummary(customerId: string) {
-  const { data, isError, error, isFetching } = useQuery({
+  const { data, isError, isFetching, refetch } = useQuery({
     queryKey: ["customer-ledger-summary", customerId],
     queryFn: () => apiClient.get<LedgerSummary>(`/api/customers/${customerId}/ledger-summary`),
     enabled: !!customerId
   });
 
-  useEffect(() => {
-    if (isError && error) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
-
-  return { summary: data, isFetching, isError };
+  return { summary: data, isFetching, isError, refetch };
 }

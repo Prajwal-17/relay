@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,9 +23,39 @@ const DESCRIPTION = "Where your files are saved.";
 const RESETTABLE_FIELDS_COUNT = 3;
 
 export const ExportsSection = () => {
-  const { config, defaults, isLoading, updateConfig, resetSection, isUpdating, isResetting } =
-    useAppPreferences();
+  const {
+    config,
+    defaults,
+    isLoading,
+    isDefaultsError,
+    refetchDefaults,
+    isError,
+    refetch,
+    isFetching,
+    updateConfig,
+    resetSection,
+    isUpdating,
+    isResetting
+  } = useAppPreferences();
   const [isBrowsing, setIsBrowsing] = useState(false);
+
+  if (isError || isDefaultsError) {
+    return (
+      <SettingsSection title="Exports & Storage" description={DESCRIPTION}>
+        <ErrorState
+          layout="panel"
+          className="rounded-none border-0"
+          title="Export preferences could not be loaded"
+          description="Try loading this section again."
+          primaryAction={{
+            label: "Try again",
+            onClick: () => void Promise.all([refetch(), refetchDefaults()]),
+            loading: isFetching
+          }}
+        />
+      </SettingsSection>
+    );
+  }
 
   if (isLoading || !config) {
     return (

@@ -9,17 +9,22 @@ const useAppBootstrap = () => {
     data: onboardingStatus,
     isLoading: isOnboardingLoading,
     isSuccess: isOnboardingSuccess,
-    isError: isOnboardingError
+    isError: isOnboardingError,
+    refetch: refetchOnboarding,
+    isFetching: isOnboardingFetching
   } = useQuery({
     queryKey: ["onboarding"],
-    queryFn: () => apiClient.get<{ isComplete: boolean }>("/api/onboarding/status"),
-    retry: false
+    queryFn: () => apiClient.get<{ isComplete: boolean }>("/api/onboarding/status")
   });
 
-  const { isLoading: isPreferencesLoading, isError: isPreferencesError } = useQuery({
+  const {
+    isLoading: isPreferencesLoading,
+    isError: isPreferencesError,
+    refetch: refetchPreferences,
+    isFetching: isPreferencesFetching
+  } = useQuery({
     queryKey: ["appPreferences"],
     queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
-    retry: 2,
     staleTime: Infinity
   });
 
@@ -36,7 +41,9 @@ const useAppBootstrap = () => {
 
   return {
     isBootstrapping,
-    hasError
+    hasError,
+    isRetrying: isOnboardingFetching || isPreferencesFetching,
+    retry: () => Promise.all([refetchOnboarding(), refetchPreferences()])
   };
 };
 

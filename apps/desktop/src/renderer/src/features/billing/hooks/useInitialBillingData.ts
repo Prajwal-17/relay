@@ -4,7 +4,6 @@ import { useBillingSessionStore } from "@/features/billing/store/billingSession.
 import { TRANSACTION_TYPE, type Customer, type TransactionType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import toast from "react-hot-toast";
 
 export const useInitialBillingData = (
   formattedType: TransactionType,
@@ -23,7 +22,9 @@ export const useInitialBillingData = (
     data: customerData,
     isFetched: isCustomerFetched,
     isError: isCustomerError,
-    error: customerError
+    error: customerError,
+    refetch: refetchCustomer,
+    isFetching: isCustomerFetching
   } = useQuery({
     queryKey: ["defaultCustomer"],
     queryFn: () => apiClient.get<Customer>("/api/customers/default"),
@@ -51,9 +52,10 @@ export const useInitialBillingData = (
     updateField(activeTabId, "customerName", customerData.name);
   }, [customerData, isCustomerFetched, activeTabId, updateField]);
 
-  useEffect(() => {
-    if (isCustomerError) {
-      toast.error(`Failed to load default customer: ${customerError.message}`);
-    }
-  }, [isCustomerError, customerError]);
+  return {
+    isCustomerError,
+    customerError,
+    refetchCustomer,
+    isCustomerFetching
+  };
 };

@@ -6,27 +6,33 @@ import { apiClient } from "@/lib/apiClient";
 import type { MetricsSummary } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { LoaderCircle } from "lucide-react";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
 import { MetricCard } from "./MetricCard";
 import { StatCard } from "./StatCard";
 
 export const DashboardMetrics = () => {
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
     queryKey: ["metrics-summary"],
     queryFn: () => apiClient.get<MetricsSummary>("api/dashboard/summary")
   });
 
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
-
   return (
     <>
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-4">
+        {isError && (
+          <ErrorState
+            layout="compact"
+            className="min-h-24 lg:col-span-4"
+            title="Dashboard totals could not be loaded"
+            description="Your sales data is unchanged. Try loading the totals again."
+            primaryAction={{
+              label: "Try again",
+              onClick: () => void refetch(),
+              loading: isFetching
+            }}
+          />
+        )}
         {isLoading ? (
           <Card className="bg-card flex h-full items-center justify-center border">
             <CardContent className="py-0">

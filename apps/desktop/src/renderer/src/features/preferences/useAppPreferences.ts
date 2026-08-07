@@ -8,13 +8,23 @@ export type PreferencesSection = "exports";
 export const useAppPreferences = () => {
   const queryClient = useQueryClient();
 
-  const { data: preferences, isLoading } = useQuery({
+  const {
+    data: preferences,
+    isLoading,
+    isError,
+    refetch,
+    isFetching
+  } = useQuery({
     queryKey: ["appPreferences"],
     queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
     staleTime: Infinity
   });
 
-  const { data: defaults } = useQuery({
+  const {
+    data: defaults,
+    isError: isDefaultsError,
+    refetch: refetchDefaults
+  } = useQuery({
     queryKey: ["appPreferencesDefaults"],
     queryFn: () => apiClient.get<AppConfig>("/api/app-preferences/defaults"),
     staleTime: Infinity
@@ -39,15 +49,18 @@ export const useAppPreferences = () => {
     onError: (error) => toast.error(error.message || "Failed to reset preferences")
   });
 
-  const resetSection = (section: PreferencesSection) => {
-    return resetMutation.mutateAsync(section);
-  };
+  const resetSection = (section: PreferencesSection) => resetMutation.mutate(section);
 
   return {
     config: preferences?.config,
     defaults,
     isLoading,
-    updateConfig: (payload: Record<string, unknown>) => updateMutation.mutateAsync(payload),
+    isError,
+    isDefaultsError,
+    refetch,
+    refetchDefaults,
+    isFetching,
+    updateConfig: (payload: Record<string, unknown>) => updateMutation.mutate(payload),
     resetSection,
     isUpdating: updateMutation.isPending,
     isResetting: resetMutation.isPending

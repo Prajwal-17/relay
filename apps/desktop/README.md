@@ -134,7 +134,9 @@ changes.
 - Product snapshots are stored on transaction items to preserve historical invoice text.
 - Products are soft-deleted by default.
 - Server data belongs in TanStack Query; cross-component client workflow state belongs in
-  Zustand.
+  Zustand. Expected request failures stay in local query or mutation state; unexpected render
+  failures are contained by route/application boundaries and reported to the console without
+  customer or transaction state.
 - Billing rows auto-sync after an 800 ms debounce and must be flushed before navigation, print,
   or export.
 

@@ -16,9 +16,9 @@ import { timePeriodOptions } from "@/constants/renderer.constants";
 import { apiClient } from "@/lib/apiClient";
 import { TIME_PERIOD, type ChartDataType, type TimePeriodType } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
-import { ChartColumnIncreasing } from "lucide-react";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { ErrorState } from "@/components/app-ui/ErrorState";
+import { ChartColumnIncreasing, LoaderCircle } from "lucide-react";
+import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 const chartConfig = {
@@ -35,19 +35,13 @@ const chartConfig = {
 export function SalesEstimatesChart() {
   const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.LAST_7_DAYS);
 
-  const { data, isError, error, isSuccess } = useQuery({
+  const { data, isError, isSuccess, isLoading, refetch, isFetching } = useQuery({
     queryKey: [timePeriod],
     queryFn: () =>
       apiClient.get<ChartDataType[]>("/api/dashboard/sales-vs-estimates", {
         timePeriod: timePeriod
       })
   });
-
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message);
-    }
-  }, [error, isError]);
 
   return (
     <Card>
@@ -85,7 +79,23 @@ export function SalesEstimatesChart() {
       </CardHeader>
 
       <CardContent>
-        {isSuccess && data && (
+        {isError ? (
+          <ErrorState
+            layout="compact"
+            className="h-68"
+            title="Sales chart could not be loaded"
+            description="Try loading this chart again."
+            primaryAction={{
+              label: "Try again",
+              onClick: () => void refetch(),
+              loading: isFetching
+            }}
+          />
+        ) : isLoading ? (
+          <div className="text-muted-foreground flex h-68 items-center justify-center gap-2 text-sm">
+            <LoaderCircle className="size-4 animate-spin" /> Loading chart…
+          </div>
+        ) : isSuccess && data ? (
           <>
             {data.length <= 0 ? (
               <div className="border-muted bg-secondary flex h-68 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
@@ -125,7 +135,7 @@ export function SalesEstimatesChart() {
               </div>
             )}
           </>
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );

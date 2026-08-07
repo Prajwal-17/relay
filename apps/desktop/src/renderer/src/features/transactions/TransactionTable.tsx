@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { useDashboard } from "@/features/transactions/hooks/useDashboard";
 import { useInfiniteScroll } from "@/features/transactions/hooks/useInfiniteScroll";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
@@ -9,8 +10,19 @@ import TransactionTableRow from "./TransactionTableRow";
 export const TransactionTable = () => {
   const { deleteMutation, convertMutation, duplicateMutation } = useDashboard();
   const { type } = useParams();
-  const { parentRef, rowVirtualizer, status, hasNextPage, transactionData, totalTransactions } =
-    useInfiniteScroll(type as DashboardType);
+  const {
+    parentRef,
+    rowVirtualizer,
+    status,
+    hasNextPage,
+    transactionData,
+    totalTransactions,
+    isError,
+    isFetchNextPageError,
+    refetch,
+    fetchNextPage,
+    isFetchingNextPage
+  } = useInfiniteScroll(type as DashboardType);
   const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
   const setTransactionId = useViewModalStore((state) => state.setTransactionId);
 
@@ -30,6 +42,13 @@ export const TransactionTable = () => {
               <p className="text-muted-foreground text-sm">Loading transactions…</p>
             </div>
           </div>
+        ) : isError && transactionData.length === 0 ? (
+          <ErrorState
+            layout="page"
+            title="Transactions could not be loaded"
+            description="Your saved transactions are unchanged. Try loading the list again."
+            primaryAction={{ label: "Try again", onClick: () => void refetch() }}
+          />
         ) : (
           <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
             <div className="bg-muted text-muted-foreground border-border grid h-9 grid-cols-12 items-center gap-2 border-b px-3 text-xs font-semibold tracking-wide uppercase">
@@ -98,6 +117,21 @@ export const TransactionTable = () => {
                 <p className="text-muted-foreground mt-1.5 max-w-sm text-sm">
                   Try adjusting your filters or date range.
                 </p>
+              </div>
+            )}
+            {isFetchNextPageError && (
+              <div className="border-border flex items-center justify-between border-t px-3 py-2 text-xs">
+                <span className="text-muted-foreground">
+                  More transactions could not be loaded.
+                </span>
+                <button
+                  type="button"
+                  className="text-foreground font-semibold underline-offset-4 hover:underline"
+                  disabled={isFetchingNextPage}
+                  onClick={() => void fetchNextPage()}
+                >
+                  Try again
+                </button>
               </div>
             )}
           </div>

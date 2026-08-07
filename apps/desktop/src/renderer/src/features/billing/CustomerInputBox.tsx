@@ -49,7 +49,10 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
     isFetchingNextPage,
     fetchNextPage,
     search,
-    setSearch
+    setSearch,
+    isError,
+    refetch,
+    isFetchNextPageError
   } = useCustomersInfinite();
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -233,6 +236,16 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
             <div className="flex items-center justify-center py-6">
               <LoaderCircle className="text-muted-foreground size-4 animate-spin" />
             </div>
+          ) : isError && customersData.length === 0 ? (
+            <div
+              role="alert"
+              className="flex flex-col items-center gap-2 px-3 py-5 text-center text-xs"
+            >
+              <span className="text-muted-foreground">Customers could not be loaded.</span>
+              <Button size="sm" variant="outline" onClick={() => void refetch()}>
+                Try again
+              </Button>
+            </div>
           ) : isEmpty ? (
             <div className="text-muted-foreground py-6 text-center text-xs">
               Type to search customers
@@ -251,6 +264,14 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
                   onPointerMove={(event) => handlePointerMove(index, event)}
                 />
               ))}
+              {isFetchNextPageError && (
+                <div className="border-border flex items-center justify-between border-t px-3 py-2 text-xs">
+                  <span className="text-muted-foreground">More customers could not be loaded.</span>
+                  <Button size="sm" variant="outline" onClick={() => void fetchNextPage()}>
+                    Try again
+                  </Button>
+                </div>
+              )}
               {isFetchingNextPage && (
                 <div className="flex items-center justify-center py-2">
                   <LoaderCircle className="text-muted-foreground size-3.5 animate-spin" />

@@ -10,7 +10,6 @@ import {
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
-import toast from "react-hot-toast";
 import useDebounce from "@/hooks/useDebounce";
 
 export const PRODUCTSEARCH_TYPE = {
@@ -92,6 +91,8 @@ export const useProductSearch = (type: ProductSearchType) => {
     isFetchingNextPage,
     hasNextPage,
     isError,
+    isFetchNextPageError,
+    refetch,
     status
   } = useInfiniteQuery({
     queryKey: [
@@ -142,12 +143,6 @@ export const useProductSearch = (type: ProductSearchType) => {
     }
   });
 
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
-
   const searchResults = useMemo(() => {
     return data?.pages.flatMap((page) => (page.data ? page.data : [])) ?? [];
   }, [data]);
@@ -183,6 +178,9 @@ export const useProductSearch = (type: ProductSearchType) => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    totalCount
+    totalCount,
+    isError,
+    isFetchNextPageError,
+    refetch
   };
 };

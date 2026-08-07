@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Card } from "@/components/ui/card";
 import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/features/products/hooks/useProductSearch";
 import type { ProductSearchItemDTO } from "@shared/types";
@@ -14,7 +15,10 @@ export default function ProductResults() {
     status,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    isError,
+    isFetchNextPageError,
+    refetch
   } = useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
 
   const totalVirtualRows = hasNextPage ? searchResults.length + 1 : searchResults.length;
@@ -23,10 +27,23 @@ export default function ProductResults() {
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem && lastItem.index >= totalVirtualRows - 1 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastItem &&
+      lastItem.index >= totalVirtualRows - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchNextPageError
+    ) {
       fetchNextPage();
     }
-  }, [totalVirtualRows, hasNextPage, isFetchingNextPage, fetchNextPage, virtualItems]);
+  }, [
+    totalVirtualRows,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+    virtualItems
+  ]);
 
   return (
     <Card className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border py-0 shadow-none">
@@ -35,6 +52,13 @@ export default function ProductResults() {
           <div className="text-muted-foreground text-sm font-semibold">Loading</div>
           <LoaderCircle className="text-primary animate-spin" size={18} />
         </div>
+      ) : isError && searchResults.length === 0 ? (
+        <ErrorState
+          layout="page"
+          title="Products could not be loaded"
+          description="Your products are unchanged. Try loading the list again."
+          primaryAction={{ label: "Try again", onClick: () => void refetch() }}
+        />
       ) : (
         <>
           {searchResults.length === 0 ? (
@@ -73,6 +97,15 @@ export default function ProductResults() {
                   })}
                 </div>
               </div>
+              {isFetchNextPageError && (
+                <ErrorState
+                  layout="compact"
+                  className="m-2"
+                  title="More products could not be loaded"
+                  description="The products already shown are still available."
+                  primaryAction={{ label: "Try again", onClick: () => void fetchNextPage() }}
+                />
+              )}
               {!hasNextPage && searchResults.length > 0 && (
                 <div className="text-muted-foreground flex flex-col items-center py-2 text-center">
                   <div className="text-xs font-medium">No more products</div>

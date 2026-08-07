@@ -1,15 +1,33 @@
 const defaultPort = import.meta.env.MODE === "development" ? 4723 : 4722;
 const BASE_URL =
-  window.env?.API_URL || import.meta.env.VITE_API_BASE_URL || `http://localhost:${defaultPort}`;
+  (typeof window !== "undefined" ? window.env?.API_URL : undefined) ||
+  import.meta.env.VITE_API_BASE_URL ||
+  `http://localhost:${defaultPort}`;
 
 export class ApiError extends Error {
   status: number;
-  constructor(message: string, status: number) {
+  kind: ApiErrorKind;
+  code?: string;
+
+  constructor(
+    message: string,
+    status: number,
+    options: { kind?: ApiErrorKind; code?: string; cause?: unknown } = {}
+  ) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.kind = options.kind ?? "http";
+    this.code = options.code;
+    this.cause = options.cause;
   }
 }
+
+export type ApiErrorKind = "http" | "network" | "malformed-response";
+
+type ErrorResponse = {
+  error?: { message?: unknown; code?: unknown };
+};
 
 function buildURL(
   path: string,
@@ -32,28 +50,49 @@ async function request<T>(
   params?: Record<string, string | number | boolean | undefined>
 ): Promise<T> {
   const url = buildURL(path, params);
-  const response = await fetch(url, {
-    headers: {
-      "Content-type": "application/json",
-      ...options.headers
-    },
-    ...options
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        "Content-type": "application/json",
+        ...options.headers
+      },
+      ...options
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") throw error;
+    throw new ApiError("Unable to reach QuickCart. Check your connection and try again.", 0, {
+      kind: "network",
+      cause: error
+    });
+  }
 
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    throw new ApiError(
-      errorBody?.error?.message || `Request failed (${response.status})`,
-      response.status
-    );
+    const errorBody = (await response.json().catch(() => null)) as ErrorResponse | null;
+    const message =
+      typeof errorBody?.error?.message === "string"
+        ? errorBody.error.message
+        : `Request failed (${response.status})`;
+    const code = typeof errorBody?.error?.code === "string" ? errorBody.error.code : undefined;
+    throw new ApiError(message, response.status, { kind: "http", code });
   }
 
   if (response.status === 204 || response.headers.get("content-length") === "0") {
     return {} as T;
   }
 
-  const data = await response.json();
-  return data as T;
+  try {
+    return (await response.json()) as T;
+  } catch (error) {
+    throw new ApiError(
+      "QuickCart received an invalid response. Please try again.",
+      response.status,
+      {
+        kind: "malformed-response",
+        cause: error
+      }
+    );
+  }
 }
 
 export const apiClient = {

@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillingPreviewPanel from "@/features/billing/preview/BillingPreviewPanel";
@@ -10,6 +11,7 @@ import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
 import useReset from "@/features/billing/hooks/useBillingReset";
 import { useInitialBillingData } from "@/features/billing/hooks/useInitialBillingData";
 import useLoadTransactionDetails from "@/features/billing/hooks/useLoadTransactionDetails";
+import { ApiError } from "@/lib/apiClient";
 import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
 import type { PrefillCustomer } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -37,7 +39,12 @@ const BillingPage = () => {
   // synchronous state reset
   useReset(formattedType, id);
 
-  useInitialBillingData(formattedType, activeTabId, id, prefillCustomer);
+  const defaultCustomerQuery = useInitialBillingData(
+    formattedType,
+    activeTabId,
+    id,
+    prefillCustomer
+  );
   const transactionNo = session?.transactionNo ?? null;
 
   const activeTabRoutePath = useBillingTabsStore((state) =>
@@ -107,14 +114,38 @@ const BillingPage = () => {
     initSession(activeTabId);
   }, [activeTabId, initSession]);
 
-  const { isLoading } = useLoadTransactionDetails(
+  const transactionQuery = useLoadTransactionDetails(
     formattedType as TransactionType,
     id,
     activeTabId
   );
+  const { isLoading, isError, error, refetch, isFetching } = transactionQuery;
 
   if (isLoading) {
     return <BillingSkeleton />;
+  }
+  if (isError) {
+    const isNotFound = error instanceof ApiError && error.status === 404;
+    return (
+      <ErrorState
+        layout="page"
+        title={isNotFound ? "Transaction not found" : "Transaction could not be loaded"}
+        description={
+          isNotFound
+            ? "It may have been deleted or the link may no longer be valid."
+            : "Your saved transaction is unchanged. Try loading it again."
+        }
+        primaryAction={
+          isNotFound
+            ? undefined
+            : { label: "Try again", onClick: () => void refetch(), loading: isFetching }
+        }
+        secondaryAction={{
+          label: "Return to dashboard",
+          onClick: () => navigate("/", { replace: true })
+        }}
+      />
+    );
   }
   if (!activeTabId) {
     return <BillingSkeleton />;
@@ -129,6 +160,20 @@ const BillingPage = () => {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="bg-background-secondary relative flex min-w-0 flex-1 flex-col">
           <div data-billing-scroll-container className="min-h-0 flex-1 overflow-y-auto">
+            {defaultCustomerQuery.isCustomerError && (
+              <div className="px-3 pt-2">
+                <ErrorState
+                  layout="compact"
+                  title="Default customer could not be loaded"
+                  description="You can continue and select a customer manually."
+                  primaryAction={{
+                    label: "Try again",
+                    onClick: () => void defaultCustomerQuery.refetchCustomer(),
+                    loading: defaultCustomerQuery.isCustomerFetching
+                  }}
+                />
+              </div>
+            )}
             <BillingHeader />
             <LineItemsTable />
             <div className="mx-3 mt-2 mb-3">

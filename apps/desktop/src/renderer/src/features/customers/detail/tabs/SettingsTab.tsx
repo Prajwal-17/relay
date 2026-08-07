@@ -27,10 +27,13 @@ export function SettingsTab({ customer }: { customer: Customer }) {
 
   const isArchived = customer.isArchived;
 
-  const handleDelete = async () => {
-    await deleteMutation.mutateAsync();
-    setDeleteOpen(false);
-    navigate("/customers", { replace: true });
+  const handleDelete = () => {
+    deleteMutation.mutate(undefined, {
+      onSuccess: () => {
+        setDeleteOpen(false);
+        navigate("/customers", { replace: true });
+      }
+    });
   };
 
   return (

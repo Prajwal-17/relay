@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { apiClient } from "@/lib/apiClient";
@@ -14,7 +15,13 @@ const inputClass = "text-sm font-medium";
 const DESCRIPTION = "Details about your shop.";
 
 export const StoreProfileSection = () => {
-  const { data: profile, isLoading } = useQuery({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+    isFetching
+  } = useQuery({
     queryKey: ["storeProfile"],
     queryFn: () => apiClient.get<StoreProfile>("/api/store-profile")
   });
@@ -64,6 +71,20 @@ export const StoreProfileSection = () => {
     if (!isDirty) return;
     mutation.mutate(form);
   };
+
+  if (isError) {
+    return (
+      <SettingsSection title="Store Profile" description={DESCRIPTION}>
+        <ErrorState
+          layout="panel"
+          className="rounded-none border-0"
+          title="Store profile could not be loaded"
+          description="Try loading your shop details again."
+          primaryAction={{ label: "Try again", onClick: () => void refetch(), loading: isFetching }}
+        />
+      </SettingsSection>
+    );
+  }
 
   if (isLoading) {
     return (

@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 const TransactionsScreen = ({ type }: { type: DashboardType }) => {
   const navigate = useNavigate();
-  const { totalRevenue, totalTransactions } = useInfiniteScroll(type);
+  const { totalRevenue, totalTransactions, isError } = useInfiniteScroll(type);
   const isSales = type === DASHBOARD_TYPE.SALES;
 
   const isViewModalOpen = useViewModalStore((state) => state.isViewModalOpen);
@@ -32,7 +32,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
             </span>
             <span className="text-muted-foreground text-xs font-medium">Revenue</span>
             <span className="text-foreground truncate text-base font-semibold tabular-nums">
-              {formatRupee(totalRevenue ?? 0)}
+              {isError ? "—" : formatRupee(totalRevenue ?? 0)}
             </span>
           </div>
           <div className="bg-border h-5 w-px shrink-0" />
@@ -42,7 +42,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
             </span>
             <span className="text-muted-foreground text-xs font-medium">Transactions</span>
             <span className="text-foreground text-base font-semibold tabular-nums">
-              {totalTransactions}
+              {isError ? "—" : (totalTransactions ?? 0)}
             </span>
           </div>
         </div>

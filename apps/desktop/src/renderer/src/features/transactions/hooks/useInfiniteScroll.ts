@@ -3,7 +3,6 @@ import { type PaginatedApiResponse, type TransactionListResponse } from "@shared
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useMemo, useRef } from "react";
-import toast from "react-hot-toast";
 import { useDashboard } from "./useDashboard";
 import { useDateRangePicker } from "./useDateRangePicker";
 
@@ -15,12 +14,13 @@ export const useInfiniteScroll = (type: string) => {
 
   const {
     data,
-    error,
     isLoading,
     fetchNextPage,
     isFetchingNextPage,
     hasNextPage,
     isError,
+    isFetchNextPageError,
+    refetch,
     status
   } = useInfiniteQuery({
     queryKey: [`${type}`, date, sortBy],
@@ -39,12 +39,6 @@ export const useInfiniteScroll = (type: string) => {
     },
     enabled: !!type
   });
-
-  useEffect(() => {
-    if (isError) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
 
   const transactionData = useMemo(() => {
     return data?.pages.flatMap((page) => (page.transactions ? page.transactions : [])) ?? [];
@@ -68,11 +62,19 @@ export const useInfiniteScroll = (type: string) => {
       lastItem &&
       lastItem.index >= transactionData.length - 1 &&
       hasNextPage &&
-      !isFetchingNextPage
+      !isFetchingNextPage &&
+      !isFetchNextPageError
     ) {
       fetchNextPage();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, transactionData.length, virtualItems]);
+  }, [
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+    transactionData.length,
+    virtualItems
+  ]);
 
   const { totalRevenue, totalTransactions } = useMemo(() => {
     const lastPage = data?.pages.at(-1);
@@ -91,6 +93,10 @@ export const useInfiniteScroll = (type: string) => {
     transactionData,
     hasNextPage,
     totalRevenue,
-    totalTransactions
+    totalTransactions,
+    isError,
+    isFetchNextPageError,
+    refetch,
+    fetchNextPage
   };
 };

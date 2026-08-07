@@ -1,3 +1,4 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import { ProductImage } from "@/components/app-ui/product-image";
 import { Badge } from "@/components/ui/badge";
@@ -46,7 +47,10 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-    virtualItems
+    virtualItems,
+    isError,
+    isFetchNextPageError,
+    refetch
   } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
   // keybindings state ↑ ↓
@@ -351,10 +355,23 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     if (virtualItems.length === 0) return;
     const lastItem = virtualItems[virtualItems.length - 1];
     const totalRows = hasNextPage ? searchResults.length + 1 : searchResults.length;
-    if (lastItem && lastItem.index >= totalRows - 1 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastItem &&
+      lastItem.index >= totalRows - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchNextPageError
+    ) {
       fetchNextPage();
     }
-  }, [virtualItems, hasNextPage, isFetchingNextPage, fetchNextPage, searchResults.length]);
+  }, [
+    virtualItems,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+    searchResults.length
+  ]);
 
   const focusNextRow = useCallback(() => {
     setTimeout(() => {
@@ -509,7 +526,15 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
           }}
           className="bg-background border-frame absolute top-[calc(100%+0.5rem)] z-30 flex flex-col overflow-hidden rounded-(--radius-panel) border shadow-md"
         >
-          {searchResults.length === 0 ? (
+          {isError && searchResults.length === 0 ? (
+            <ErrorState
+              layout="compact"
+              className="m-2"
+              title="Products could not be loaded"
+              description="Try loading product matches again."
+              primaryAction={{ label: "Try again", onClick: () => void refetch() }}
+            />
+          ) : searchResults.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center px-5 py-8 text-center">
               <div className="bg-secondary mb-3 flex size-10 items-center justify-center rounded-(--radius-control)">
                 <Search className="size-5" />
@@ -732,6 +757,16 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                     })}
                   </div>
                 </div>
+                {isFetchNextPageError && (
+                  <div className="border-border flex items-center justify-between border-t px-3 py-2 text-xs">
+                    <span className="text-muted-foreground">
+                      More products could not be loaded.
+                    </span>
+                    <Button size="sm" variant="outline" onClick={() => void fetchNextPage()}>
+                      Try again
+                    </Button>
+                  </div>
+                )}
                 {!hasNextPage && searchResults.length > 0 && (
                   <div className="text-muted-foreground py-3 text-center text-xs">
                     End of results

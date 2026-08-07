@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import useAppBootstrap from "@/app/useAppBootstrap";
 import { useAppStore } from "@/app/app.store";
-import { useQueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { LoaderCircle } from "lucide-react";
 import React, { Suspense } from "react";
@@ -23,22 +22,19 @@ const LoadingState = ({ label = "Loading QuickCart…" }: { label?: string }) =>
 );
 
 const RootLayout = () => {
-  const { isBootstrapping, hasError } = useAppBootstrap();
+  const { isBootstrapping, hasError, retry, isRetrying } = useAppBootstrap();
   const isOnboardingComplete = useAppStore((state) => state.isOnboardingComplete);
-  const queryClient = useQueryClient();
 
   if (hasError) {
     return (
-      <div className="bg-background flex h-screen w-full items-center justify-center p-3">
-        <div className="border-border bg-card flex min-w-64 flex-col items-center gap-3 rounded-(--radius-panel) border p-4 text-center">
-          <div>
-            <h1 className="text-foreground text-base font-semibold">QuickCart could not start</h1>
-            <p className="text-muted-foreground mt-1 text-sm">Failed to load application data.</p>
-          </div>
-          <Button size="sm" onClick={() => queryClient.invalidateQueries()}>
-            Retry
-          </Button>
-        </div>
+      <div className="bg-background h-screen w-full">
+        <ErrorState
+          layout="page"
+          title="QuickCart could not start"
+          description="Application data could not be loaded. Check the local service and try again."
+          primaryAction={{ label: "Try again", onClick: () => void retry(), loading: isRetrying }}
+          secondaryAction={{ label: "Reload QuickCart", onClick: () => window.location.reload() }}
+        />
       </div>
     );
   }

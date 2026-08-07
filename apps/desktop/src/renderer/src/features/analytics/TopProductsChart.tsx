@@ -8,9 +8,9 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { apiClient } from "@/lib/apiClient";
 import type { TopProductDataPoint } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { LoaderCircle } from "lucide-react";
-import { useEffect, useMemo } from "react";
-import toast from "react-hot-toast";
+import { useMemo } from "react";
 import { Cell, Legend, Pie, PieChart } from "recharts";
 
 const COLORS = [
@@ -28,14 +28,10 @@ const chartConfig = {
 };
 
 export const TopProductsChart = () => {
-  const { data, error, isError, isLoading } = useQuery({
+  const { data, isError, isLoading, refetch, isFetching } = useQuery({
     queryKey: ["getTopProducts"],
     queryFn: () => apiClient.get<TopProductDataPoint[]>("/api/dashboard/top-products")
   });
-
-  useEffect(() => {
-    if (isError) toast.error(error.message);
-  }, [isError, error]);
 
   const colorizedData = useMemo(() => {
     if (!data) return [];
@@ -51,7 +47,19 @@ export const TopProductsChart = () => {
         <CardTitle className="text-base">Top Products</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isError ? (
+          <ErrorState
+            layout="compact"
+            className="h-68"
+            title="Top products could not be loaded"
+            description="Try loading this chart again."
+            primaryAction={{
+              label: "Try again",
+              onClick: () => void refetch(),
+              loading: isFetching
+            }}
+          />
+        ) : isLoading ? (
           <div className="flex flex-1 justify-center gap-2">
             <span className="text-muted-foreground text-sm font-medium">Loading</span>
             <LoaderCircle className="text-primary animate-spin" size={18} />

@@ -16,6 +16,8 @@ type CustomerListTableProps = {
   isFetching: boolean;
   isPlaceholderData: boolean;
   fetchNextPage: () => void;
+  retry: () => void;
+  isFetchNextPageError: boolean;
   onRowClick: (row: CustomerListRow) => void;
   clearFilters: () => void;
 };
@@ -40,6 +42,8 @@ export function CustomerListTable({
   isFetching,
   isPlaceholderData,
   fetchNextPage,
+  retry,
+  isFetchNextPageError,
   onRowClick,
   clearFilters
 }: CustomerListTableProps) {
@@ -60,7 +64,7 @@ export function CustomerListTable({
     const lastItem = virtualItems[virtualItems.length - 1];
 
     if (!lastItem) return;
-    if (isPlaceholderData) return;
+    if (isPlaceholderData || isFetchNextPageError) return;
 
     if (lastItem.index >= rows.length - 1 && hasNextPage && !isFetchingNextPage && !isFetching) {
       fetchNextPage();
@@ -70,6 +74,7 @@ export function CustomerListTable({
     isFetchingNextPage,
     isFetching,
     isPlaceholderData,
+    isFetchNextPageError,
     fetchNextPage,
     rows.length,
     virtualItems
@@ -131,8 +136,8 @@ export function CustomerListTable({
               <p className="text-muted-foreground text-sm">
                 Failed to load customers. Please try again.
               </p>
-              <Button variant="outline" className="mt-2 h-9 cursor-pointer" onClick={clearFilters}>
-                Retry
+              <Button variant="outline" className="mt-2 h-9 cursor-pointer" onClick={retry}>
+                Try again
               </Button>
             </div>
           </div>
@@ -258,6 +263,14 @@ export function CustomerListTable({
               </div>
             </div>
 
+            {isFetchNextPageError && (
+              <div className="border-border flex items-center justify-between border-t px-3 py-2 text-xs">
+                <span className="text-muted-foreground">More customers could not be loaded.</span>
+                <Button size="sm" variant="outline" onClick={fetchNextPage}>
+                  Try again
+                </Button>
+              </div>
+            )}
             {!hasNextPage && rows.length > 0 && (
               <div className="text-muted-foreground flex flex-col items-center py-2 text-center">
                 <span className="text-sm font-medium">No more customers</span>
