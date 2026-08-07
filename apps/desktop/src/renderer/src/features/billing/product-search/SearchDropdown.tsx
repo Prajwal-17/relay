@@ -306,7 +306,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
       hasAdjustedWorkspaceScrollRef.current = true;
       if (requiredScroll > 0) {
-        billingScrollContainer.scrollBy({ top: requiredScroll, behavior: "smooth" });
+        billingScrollContainer.scrollBy({ top: requiredScroll, behavior: "auto" });
       }
     });
 
@@ -314,7 +314,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   }, [searchResults.length]);
 
   const openNewProductDialog = () => {
-    setIsDropdownOpen();
+    setIsDropdownOpen(false);
     setProductId(null);
     setFormDataState({});
     setDialogMode("edit");
@@ -372,7 +372,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
       setActiveRowId(nextRow.rowId);
       setItemQuery("");
-      setIsDropdownOpen();
+      setIsDropdownOpen(true);
 
       const inputs = document.querySelectorAll<HTMLInputElement>(
         'input[placeholder="Search products"]'
@@ -389,20 +389,11 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       const product = searchResults[index];
       if (!product || !activeTabId) return;
       addLineItem(activeTabId, rowId, product);
-      setIsDropdownOpen();
       addEmptyLineItem(activeTabId);
       processSyncQueue(activeTabId);
       focusNextRow();
     },
-    [
-      searchResults,
-      activeTabId,
-      rowId,
-      addLineItem,
-      setIsDropdownOpen,
-      addEmptyLineItem,
-      focusNextRow
-    ]
+    [searchResults, activeTabId, rowId, addLineItem, addEmptyLineItem, focusNextRow]
   );
 
   const searchResultsLengthRef = useRef(searchResults.length);
@@ -606,14 +597,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 ? "bg-brand/25 text-brand-foreground hover:bg-brand/25"
                                 : "hover:bg-brand/25 hover:text-brand-foreground"
                             }`}
-                            onClick={() => {
-                              if (!activeTabId) return;
-                              addLineItem(activeTabId, rowId, product);
-                              setIsDropdownOpen();
-                              addEmptyLineItem(activeTabId);
-                              processSyncQueue(activeTabId);
-                              focusNextRow();
-                            }}
+                            onClick={() => selectProduct(virtualRow.index)}
                             onMouseDown={(e) => e.preventDefault()}
                             onMouseEnter={() => {
                               setIsKeyboardNavigating(false);

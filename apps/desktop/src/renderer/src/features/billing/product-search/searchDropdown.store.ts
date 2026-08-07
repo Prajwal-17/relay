@@ -10,7 +10,7 @@ type SearchDropdownStoreType = {
   activeRowId: string | null;
   setActiveRowId: (rowId: string | null) => void;
   isDropdownOpen: boolean;
-  setIsDropdownOpen: () => void;
+  setIsDropdownOpen: (isOpen: boolean) => void;
   sortBy: ProductSortByType | null;
   setSortBy: (sortBy: ProductSortByType | null) => void;
   reset: () => void;
@@ -59,10 +59,10 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
         ),
 
       isDropdownOpen: false,
-      setIsDropdownOpen: () =>
+      setIsDropdownOpen: (isOpen) =>
         set(
-          (state) => ({
-            isDropdownOpen: !state.isDropdownOpen
+          () => ({
+            isDropdownOpen: isOpen
           }),
           false,
           "searchDropdown/setIsDropdownOpen"

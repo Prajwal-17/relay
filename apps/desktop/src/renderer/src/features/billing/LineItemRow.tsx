@@ -122,7 +122,7 @@ const LineItemRow = memo(
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
-                setIsDropdownOpen();
+                setIsDropdownOpen(true);
               }}
               onChange={(e) => {
                 const tabId = getActiveTabId();

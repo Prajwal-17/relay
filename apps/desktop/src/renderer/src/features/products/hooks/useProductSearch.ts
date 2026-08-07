@@ -62,7 +62,7 @@ export const useProductSearch = (type: ProductSearchType) => {
       }
 
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen();
+        setIsDropdownOpen(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -71,7 +71,7 @@ export const useProductSearch = (type: ProductSearchType) => {
         const isProductDialogOpen = useProductsStore.getState().openProductDialog;
         if (isProductDialogOpen) return;
 
-        setIsDropdownOpen();
+        setIsDropdownOpen(false);
       }
     };
     if (isDropdownOpen) {
