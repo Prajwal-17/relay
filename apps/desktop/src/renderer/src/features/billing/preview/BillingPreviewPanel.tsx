@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { type PreviewTab, usePreviewTabStore } from "@/store/billing/previewTabStore";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { type PreviewTab, usePreviewTabStore } from "@/features/billing/store/previewTab.store";
 import { PanelRightClose } from "lucide-react";
 import { useEffect } from "react";
 import { BillPreview } from "./BillPreview";

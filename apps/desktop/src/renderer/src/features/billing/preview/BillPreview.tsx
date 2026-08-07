@@ -1,7 +1,7 @@
-import useTransaction from "@/hooks/billing/useTransaction";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useReceiptRefStore } from "@/store/useReceiptRefStore";
+import useTransaction from "@/features/billing/hooks/useTransaction";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { useReceiptRefStore } from "@/features/billing/store/receiptRef.store";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { paisaToRupees } from "@shared/utils/utils";

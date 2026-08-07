@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { processSyncQueue } from "@/utils/syncWorker";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { processSyncQueue } from "@/features/billing/syncWorker";
 import { StickyNote } from "lucide-react";
 
 type BillingNotesProps = { className?: string };

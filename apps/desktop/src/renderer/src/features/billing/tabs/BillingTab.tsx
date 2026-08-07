@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { BillingTabType } from "@/store/billing/billingTabsStore";
+import type { BillingTabType } from "@/features/billing/store/billingTabs.store";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { X } from "lucide-react";
 

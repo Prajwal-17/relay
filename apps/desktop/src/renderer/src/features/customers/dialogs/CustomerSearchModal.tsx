@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useCustomersInfinite } from "@/hooks/customers/useCustomersInfinite";
+import { useCustomersInfinite } from "@/features/customers/hooks/useCustomersInfinite";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";

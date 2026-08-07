@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/features/products/hooks/useProductSearch";
 import type { ProductSearchItemDTO } from "@shared/types";
 import { LoaderCircle, Search } from "lucide-react";
 import { useEffect } from "react";

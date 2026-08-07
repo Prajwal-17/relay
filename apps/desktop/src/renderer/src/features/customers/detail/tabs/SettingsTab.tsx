@@ -10,13 +10,13 @@ import {
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useArchiveCustomer } from "@/hooks/customers/useArchiveCustomer";
-import { useDeleteCustomer } from "@/hooks/customers/useDeleteCustomer";
+import { useArchiveCustomer } from "@/features/customers/hooks/useArchiveCustomer";
+import { useDeleteCustomer } from "@/features/customers/hooks/useDeleteCustomer";
 import type { Customer } from "@shared/types";
 import { Archive, Undo2, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { SectionCard } from "../shared/SectionCard";
+import { SectionCard } from "../SectionCard";
 
 export function SettingsTab({ customer }: { customer: Customer }) {
   const navigate = useNavigate();

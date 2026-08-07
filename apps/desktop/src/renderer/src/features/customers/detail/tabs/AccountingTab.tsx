@@ -1,4 +1,4 @@
-import { useCustomerLedgerSummary } from "@/hooks/customers/useCustomerLedger";
+import { useCustomerLedgerSummary } from "@/features/customers/hooks/useCustomerLedger";
 import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";

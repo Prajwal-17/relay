@@ -16,12 +16,12 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useCreatePayment } from "@/hooks/customers/useLedgerMutations";
+import { useCreatePayment } from "@/features/customers/hooks/useLedgerMutations";
 import type { PaymentMode } from "@shared/types";
 import { PAYMENT_MODE } from "@shared/types";
 import { formatRupee, paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
 import { useState } from "react";
-import { OutstandingBadge } from "../detail/shared/OutstandingBadge";
+import { OutstandingBadge } from "../detail/OutstandingBadge";
 
 const modes: PaymentMode[] = [PAYMENT_MODE.CASH, PAYMENT_MODE.UPI, PAYMENT_MODE.CARD];
 

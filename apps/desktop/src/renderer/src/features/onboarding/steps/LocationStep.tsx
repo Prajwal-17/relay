@@ -10,9 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding";
+import { useCompleteOnboarding } from "@/features/onboarding/hooks/useCompleteOnboarding";
 import { cn } from "@/lib/utils";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { locationSchema } from "@shared/schemas/onboarding.schema";
 import type { ICity, IState } from "country-state-city";
 import { ArrowRight, Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";

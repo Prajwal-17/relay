@@ -28,14 +28,14 @@ import {
   TimePickerSeparator,
   TimePickerTrigger
 } from "@/components/ui/time-picker";
-import { DEFAULT_HOUR } from "@/constants";
-import { useCustomer } from "@/hooks/customers/useCustomer";
+import { DEFAULT_HOUR } from "@/constants/renderer.constants";
+import { useCustomer } from "@/features/customers/hooks/useCustomer";
 import { apiClient } from "@/lib/apiClient";
-import { billingCoordinator } from "@/store/billing/billingCoordinator";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { MAX_BILLING_TABS, useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { usePreviewTabStore } from "@/store/billing/previewTabStore";
-import { processSyncQueue } from "@/utils/syncWorker";
+import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { MAX_BILLING_TABS, useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { usePreviewTabStore } from "@/features/billing/store/previewTab.store";
+import { processSyncQueue } from "@/features/billing/syncWorker";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";

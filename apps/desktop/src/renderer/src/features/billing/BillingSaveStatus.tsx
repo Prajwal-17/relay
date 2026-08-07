@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 export const BillingSaveStatus = () => {

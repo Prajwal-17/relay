@@ -1,10 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useCustomerActions } from "@/features/customers/customerActions";
-import { useCustomerActivity } from "@/hooks/customers/useCustomerActivity";
-import { useCustomerLedgerSummary } from "@/hooks/customers/useCustomerLedger";
-import { useCustomerSummary } from "@/hooks/customers/useCustomerSummary";
-import { useRecentSales } from "@/hooks/customers/useRecentSales";
+import { useCustomerActivity } from "@/features/customers/hooks/useCustomerActivity";
+import { useCustomerLedgerSummary } from "@/features/customers/hooks/useCustomerLedger";
+import { useCustomerSummary } from "@/features/customers/hooks/useCustomerSummary";
+import { useRecentSales } from "@/features/customers/hooks/useRecentSales";
 import { cn } from "@/lib/utils";
 import type { ActivityKind, Customer } from "@shared/types";
 import { formatDateStr, formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
@@ -23,8 +23,8 @@ import {
   Wallet,
   type LucideIcon
 } from "lucide-react";
-import { MetricTile } from "../shared/MetricTile";
-import { SectionCard } from "../shared/SectionCard";
+import { MetricTile } from "../MetricTile";
+import { SectionCard } from "../SectionCard";
 
 const ACTIVITY_LIMIT = 5;
 const RECENT_SALES_LIMIT = 5;

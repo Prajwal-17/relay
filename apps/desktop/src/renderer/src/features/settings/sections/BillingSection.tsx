@@ -17,7 +17,7 @@ import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
-import { useAppPreferences } from "../../../hooks/useAppPreferences";
+import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 
 const DESCRIPTION = "Settings for new bills.";
 

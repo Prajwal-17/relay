@@ -5,13 +5,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { billingCoordinator } from "@/store/billing/billingCoordinator";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
+import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import {
   MAX_BILLING_TABS,
   useBillingTabsStore,
   type BillingTabType
-} from "@/store/billing/billingTabsStore";
+} from "@/features/billing/store/billingTabs.store";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";

@@ -31,6 +31,15 @@ The renderer uses a hash router because production is loaded through Electron's 
 protocol. Normal application data travels over HTTP; IPC is reserved for Electron-only
 capabilities.
 
+### Renderer source map
+
+`src/renderer/src/` is organized by ownership:
+
+`app/` contains routing, layouts, navigation, bootstrap, and app-shell stores; `pages/`
+contains flat route entries; `features/` contains domain UI, hooks, and workflow stores;
+`components/` contains shared app UI and vendored primitives; and `hooks/`, `lib/`,
+`constants/`, `types/`, and `utils/` contain renderer-wide infrastructure.
+
 ## Development
 
 From the repository root:

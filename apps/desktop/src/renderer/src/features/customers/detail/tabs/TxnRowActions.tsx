@@ -16,9 +16,9 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomerTxn } from "@/hooks/customers/useCustomerTransactions";
-import type { MutationVariables } from "@/hooks/customers/useCustomerTxnMutations";
-import { useViewModalStore } from "@/store/viewModalStore";
+import type { CustomerTxn } from "@/features/customers/hooks/useCustomerTransactions";
+import type { MutationVariables } from "@/features/customers/hooks/useCustomerTxnMutations";
+import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {

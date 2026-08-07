@@ -1,7 +1,7 @@
 import quickcartLogo from "@/assets/quickcart.svg";
 import { Button } from "@/components/ui/button";
-import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants/renderer.constants";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 

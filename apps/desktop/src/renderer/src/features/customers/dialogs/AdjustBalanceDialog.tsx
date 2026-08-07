@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCreateAdjustment } from "@/hooks/customers/useLedgerMutations";
+import { useCreateAdjustment } from "@/features/customers/hooks/useLedgerMutations";
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { useState } from "react";
 

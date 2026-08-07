@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { useCompleteOnboarding } from "@/features/onboarding/hooks/useCompleteOnboarding";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { ArrowRight, CheckCircle2, Loader2, MapPin, Store, User } from "lucide-react";
 import { motion } from "motion/react";
 

@@ -5,7 +5,7 @@ import type { Customer } from "@shared/types";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCustomerActions } from "../customerActions";
-import { OutstandingBadge } from "./shared/OutstandingBadge";
+import { OutstandingBadge } from "./OutstandingBadge";
 
 const typeBadgeClass: Record<string, string> = {
   cash: "bg-muted text-muted-foreground border-border",

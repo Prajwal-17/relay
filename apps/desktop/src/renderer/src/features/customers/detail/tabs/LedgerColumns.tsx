@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types";
+import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types/renderer.types";
 import { LEDGER_ENTRY_TYPE, type LedgerEntry, type LedgerEntryType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";

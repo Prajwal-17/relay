@@ -6,12 +6,12 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
-import type { LineItem } from "@/store/billing/billingSession.types";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useProductsStore } from "@/store/productsStore";
-import { useSidebarStore } from "@/store/sidebarStore";
-import { processSyncQueue } from "@/utils/syncWorker";
+import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
+import type { LineItem } from "@/features/billing/store/billingSession.types";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useProductsStore } from "@/features/products/products.store";
+import { useSidebarStore } from "@/app/sidebar.store";
+import { processSyncQueue } from "@/features/billing/syncWorker";
 import {
   DndContext,
   PointerSensor,

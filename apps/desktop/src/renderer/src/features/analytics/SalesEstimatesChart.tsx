@@ -1,0 +1,132 @@
+import {
+  CompactCard as Card,
+  CompactCardContent as CardContent,
+  CompactCardHeader as CardHeader,
+  CardTitle
+} from "@/components/app-ui/compact-card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { timePeriodOptions } from "@/constants/renderer.constants";
+import { apiClient } from "@/lib/apiClient";
+import { TIME_PERIOD, type ChartDataType, type TimePeriodType } from "@shared/types";
+import { useQuery } from "@tanstack/react-query";
+import { ChartColumnIncreasing } from "lucide-react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+
+const chartConfig = {
+  sales: {
+    label: "Sales",
+    color: "var(--chart-1)"
+  },
+  estimates: {
+    label: "Estimates",
+    color: "var(--chart-2)"
+  }
+};
+
+export function SalesEstimatesChart() {
+  const [timePeriod, setTimePeriod] = useState<TimePeriodType>(TIME_PERIOD.LAST_7_DAYS);
+
+  const { data, isError, error, isSuccess } = useQuery({
+    queryKey: [timePeriod],
+    queryFn: () =>
+      apiClient.get<ChartDataType[]>("/api/dashboard/sales-vs-estimates", {
+        timePeriod: timePeriod
+      })
+  });
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(error.message);
+    }
+  }, [error, isError]);
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <CardTitle className="text-base">Sales vs Estimates</CardTitle>
+          <div className="flex items-center gap-3 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="bg-chart-1 h-2.5 w-2.5 rounded-sm" />
+              <span className="text-muted-foreground text-sm font-medium">Sales</span>
+            </div>
+
+            <div className="flex items-center gap-1">
+              <div className="bg-chart-2 h-2.5 w-2.5 rounded-sm" />
+              <span className="text-muted-foreground text-sm font-medium">Estimates</span>
+            </div>
+          </div>
+        </div>
+
+        <Select
+          value={timePeriod}
+          onValueChange={(value) => setTimePeriod(value as TimePeriodType)}
+        >
+          <SelectTrigger className="w-36">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            {timePeriodOptions.map((t, idx) => (
+              <SelectItem key={idx} value={t.value} className="cursor-pointer">
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </CardHeader>
+
+      <CardContent>
+        {isSuccess && data && (
+          <>
+            {data.length <= 0 ? (
+              <div className="border-muted bg-secondary flex h-68 w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-8 text-center">
+                <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-full">
+                  <ChartColumnIncreasing className="text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-foreground text-sm font-medium">No data available</h3>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    There&apos;s no sales data to display for the selected period.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <ChartContainer config={chartConfig} className="h-68 w-full">
+                  <BarChart
+                    data={data}
+                    margin={{ top: 8, right: 8, bottom: 8, left: 0 }}
+                    maxBarSize={40}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tickMargin={8} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+                    />
+                    <ChartTooltip
+                      content={<ChartTooltipContent className="justify-between text-sm" />}
+                    />
+                    <Bar dataKey="sales" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="estimates" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ChartContainer>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

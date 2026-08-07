@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import useReceiptPrint from "@/hooks/billing/useReceiptPrint";
-import useTransaction from "@/hooks/billing/useTransaction";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { flushSync, forceSync } from "@/utils/syncWorker";
+import useReceiptPrint from "@/features/billing/hooks/useReceiptPrint";
+import useTransaction from "@/features/billing/hooks/useTransaction";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { flushSync, forceSync } from "@/features/billing/syncWorker";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
 import { useCallback, useState } from "react";

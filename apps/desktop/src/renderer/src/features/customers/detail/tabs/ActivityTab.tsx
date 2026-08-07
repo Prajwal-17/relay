@@ -1,4 +1,4 @@
-import { useCustomerActivity } from "@/hooks/customers/useCustomerActivity";
+import { useCustomerActivity } from "@/features/customers/hooks/useCustomerActivity";
 import { cn } from "@/lib/utils";
 import type { ActivityKind } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
@@ -13,7 +13,7 @@ import {
   type LucideIcon
 } from "lucide-react";
 import { motion } from "motion/react";
-import { SectionCard } from "../shared/SectionCard";
+import { SectionCard } from "../SectionCard";
 
 const ACTIVITY_LIMIT = 50;
 

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { useActiveTabId } from "@/hooks/billing/useActiveTabId";
+import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
 import { cn } from "@/lib/utils";
-import type { LineItem } from "@/store/billing/billingSession.types";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useSearchDropdownStore } from "@/store/searchDropdownStore";
-import { getCheckStatusColor, updateCheckedQuantity } from "@/utils";
-import { processSyncQueue } from "@/utils/syncWorker";
+import type { LineItem } from "@/features/billing/store/billingSession.types";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useSearchDropdownStore } from "@/features/billing/product-search/searchDropdown.store";
+import { getCheckStatusColor, updateCheckedQuantity } from "@/utils/renderer.utils";
+import { processSyncQueue } from "@/features/billing/syncWorker";
 import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -15,7 +15,7 @@ import { paisaToRupeeString } from "@shared/utils/utils";
 import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { MemoizedSearchDropdown } from "../search/MemoizedSearchDropDown";
+import { MemoizedProductSearchDropdown } from "./product-search/MemoizedProductSearchDropdown";
 import QuantityPresets from "./QuantityPresets";
 
 export type DragHandle = {
@@ -135,7 +135,7 @@ const LineItemRow = memo(
             />
 
             {isDropdownOpen && activeRowId === item.rowId && (
-              <MemoizedSearchDropdown rowId={item.rowId} />
+              <MemoizedProductSearchDropdown rowId={item.rowId} />
             )}
           </div>
           <div className="min-w-0">

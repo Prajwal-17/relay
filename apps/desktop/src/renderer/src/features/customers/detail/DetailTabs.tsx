@@ -1,5 +1,5 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types";
+import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types/renderer.types";
 import type { Customer } from "@shared/types";
 import { AboutTab } from "./tabs/AboutTab";
 import { AccountingTab } from "./tabs/AccountingTab";

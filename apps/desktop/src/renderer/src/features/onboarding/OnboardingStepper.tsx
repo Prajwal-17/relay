@@ -1,4 +1,4 @@
-import { ONBOARDING_STEP_LABELS } from "@/constants";
+import { ONBOARDING_STEP_LABELS } from "@/constants/renderer.constants";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";

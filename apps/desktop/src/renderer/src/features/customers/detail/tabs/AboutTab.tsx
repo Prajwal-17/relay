@@ -9,15 +9,15 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useCustomer } from "@/hooks/customers/useCustomer";
-import { useUpdateCustomer } from "@/hooks/customers/useUpdateCustomer";
+import { useCustomer } from "@/features/customers/hooks/useCustomer";
+import { useUpdateCustomer } from "@/features/customers/hooks/useUpdateCustomer";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import { Check, Copy, LoaderCircle, Pencil, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { SectionCard } from "../shared/SectionCard";
+import { SectionCard } from "../SectionCard";
 
 type BasicInfoForm = {
   name: string;

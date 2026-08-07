@@ -14,7 +14,7 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
-import { useAppPreferences } from "../../../hooks/useAppPreferences";
+import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 
 const inputClass = "text-sm font-medium";
 const selectTriggerClass = "w-full text-sm";

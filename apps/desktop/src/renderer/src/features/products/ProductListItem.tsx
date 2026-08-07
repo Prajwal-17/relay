@@ -1,4 +1,4 @@
-import { HighlightedText } from "@/components/highlighted-text";
+import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import { ProductImage } from "@/components/app-ui/product-image";
 import {
   AlertDialog,
@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { getProductImageUrl, ignoredWeight } from "@/constants";
-import { useProductDialog } from "@/hooks/products/useProductDialog";
-import { useProductsStore } from "@/store/productsStore";
+import { getProductImageUrl, ignoredWeight } from "@/constants/renderer.constants";
+import { useProductDialog } from "@/features/products/hooks/useProductDialog";
+import { useProductsStore } from "@/features/products/products.store";
 import {
   ACTION_TYPE,
   DIALOG_MODE,

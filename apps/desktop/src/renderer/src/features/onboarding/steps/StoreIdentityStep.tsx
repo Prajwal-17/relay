@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { storeIdentitySchema } from "@shared/schemas/onboarding.schema";
 import { ArrowRight, Store } from "lucide-react";
 import { motion } from "motion/react";

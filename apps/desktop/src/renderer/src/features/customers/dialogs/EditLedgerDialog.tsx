@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { useUpdateLedgerEntry } from "@/hooks/customers/useLedgerMutations";
+import { useUpdateLedgerEntry } from "@/features/customers/hooks/useLedgerMutations";
 import type { LedgerEntry, PaymentMode, UpdateLedgerEntryPayload } from "@shared/types";
 import { LEDGER_ENTRY_TYPE, PAYMENT_MODE } from "@shared/types";
 import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";

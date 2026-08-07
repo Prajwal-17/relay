@@ -10,7 +10,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useUpdateCustomer } from "@/hooks/customers/useUpdateCustomer";
+import { useUpdateCustomer } from "@/features/customers/hooks/useUpdateCustomer";
 import { apiClient } from "@/lib/apiClient";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
 import { rupeesToPaisa } from "@shared/utils/utils";
