@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useCustomersInfinite } from "@/features/customers/hooks/useCustomersInfinite";
 import { cn } from "@/lib/utils";
@@ -126,9 +126,13 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
       <DialogContent
         showCloseButton={false}
         onKeyDown={onKeyDown}
-        className="border-border bg-popover flex max-h-[85vh] flex-col overflow-hidden rounded-2xl p-0 shadow-xl sm:max-w-xl"
+        className="border-border bg-popover flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-(--radius-panel) p-0 shadow-lg sm:max-w-xl"
       >
-        <div className="border-border/70 shrink-0 border-b px-4 py-3">
+        <DialogTitle className="sr-only">Switch customer</DialogTitle>
+        <DialogDescription className="sr-only">
+          Search for a customer and select their workspace.
+        </DialogDescription>
+        <div className="border-border shrink-0 border-b px-3 py-2.5">
           <div className="relative">
             <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
@@ -136,20 +140,22 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers by name or contact…"
-              className="border-input bg-muted/50 focus-visible:bg-background dark:bg-muted/50 h-10 rounded-lg pr-10 pl-9 text-sm shadow-none transition-colors"
+              className="bg-background h-9 pr-10 pl-9 text-sm shadow-none"
             />
             {search && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
                 onClick={() => {
                   setSearch("");
                   inputRef.current?.focus();
                 }}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1 -translate-y-1/2"
                 aria-label="Clear customer search"
               >
                 <X className="size-4" />
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -171,7 +177,7 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
             </div>
           ) : isEmpty ? (
             <div className="flex h-full flex-col items-center justify-center px-6 pb-8 text-center">
-              <span className="border-border/70 bg-muted/60 text-muted-foreground mb-3 flex size-11 items-center justify-center rounded-full border">
+              <span className="bg-muted text-muted-foreground mb-3 flex size-10 items-center justify-center rounded-(--radius-panel)">
                 <Users className="size-5" />
               </span>
               <p className="text-foreground text-sm font-semibold">
@@ -214,7 +220,7 @@ export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
           )}
         </div>
 
-        <div className="border-border/70 text-muted-foreground flex shrink-0 items-center justify-between border-t px-3 py-2 text-xs font-medium">
+        <div className="border-border text-muted-foreground flex shrink-0 items-center justify-between border-t px-3 py-2 text-xs font-medium">
           <span className="tabular-nums">
             {totalCount > 0
               ? `${totalCount} ${totalCount === 1 ? "customer" : "customers"}`
@@ -245,9 +251,10 @@ function CustomerRow({
       type="button"
       onPointerMove={onPointerMove}
       onClick={onSelect}
+      aria-selected={isActive}
       style={{ height: rowHeight() }}
       className={cn(
-        "relative flex w-full items-center justify-between gap-3 pr-3 pl-4 text-left transition-colors",
+        "focus-visible:ring-ring relative flex w-full items-center justify-between gap-3 pr-3 pl-4 text-left transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset",
         "hover:bg-hover",
         isActive && "bg-selected"
       )}

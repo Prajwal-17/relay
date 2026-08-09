@@ -37,8 +37,11 @@ export function SettingsTab({ customer }: { customer: Customer }) {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <SectionCard title="Danger Zone" description="Irreversible actions. Proceed with caution.">
+    <div className="flex flex-col gap-3">
+      <SectionCard
+        title="Customer settings"
+        description="Manage visibility or permanently delete this customer."
+      >
         <ul className="divide-border/70 flex flex-col divide-y">
           <li className="flex items-center justify-between gap-3 py-3 first:pt-0">
             <div className="min-w-0">
@@ -55,7 +58,7 @@ export function SettingsTab({ customer }: { customer: Customer }) {
             {isArchived ? (
               <Button
                 variant="outline"
-                className="h-9 shrink-0 cursor-pointer"
+                className="shrink-0 cursor-pointer"
                 disabled={restoreMutation.isPending}
                 onClick={() => restoreMutation.mutate()}
               >
@@ -65,7 +68,7 @@ export function SettingsTab({ customer }: { customer: Customer }) {
             ) : (
               <Button
                 variant="outline"
-                className="h-9 shrink-0 cursor-pointer"
+                className="shrink-0 cursor-pointer"
                 disabled={archiveMutation.isPending}
                 onClick={() => archiveMutation.mutate()}
               >
@@ -87,14 +90,14 @@ export function SettingsTab({ customer }: { customer: Customer }) {
             </div>
             <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="h-9 shrink-0 cursor-pointer">
+                <Button variant="destructive" className="shrink-0 cursor-pointer">
                   <Trash2 className="size-4" />
                   Delete
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>Delete {customer.name}?</AlertDialogTitle>
                   <AlertDialogDescription>
                     This permanently deletes <strong>{customer.name}</strong>. This action cannot be
                     undone. If the customer has any transactions, the deletion will be blocked.
@@ -107,7 +110,7 @@ export function SettingsTab({ customer }: { customer: Customer }) {
                     disabled={deleteMutation.isPending}
                     onClick={handleDelete}
                   >
-                    {deleteMutation.isPending ? "Deleting..." : "Confirm Delete"}
+                    {deleteMutation.isPending ? "Deleting…" : "Delete customer"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

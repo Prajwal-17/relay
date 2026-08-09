@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types/renderer.types";
 import type { Customer } from "@shared/types";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -14,18 +15,24 @@ const typeBadgeClass: Record<string, string> = {
 };
 
 // pinned slim tabs toolbar in customer workspace
-export function DetailHeader({ customer }: { customer: Customer }) {
+export function DetailHeader({
+  customer,
+  activeTab
+}: {
+  customer: Customer;
+  activeTab: CustomerDetailTab;
+}) {
   const navigate = useNavigate();
   const { openEditForm, openPayment, openSearch } = useCustomerActions();
 
   return (
-    <header className="bg-background border-frame flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2.5">
+    <header className="bg-background border-frame flex h-(--app-header-height) shrink-0 items-center justify-between gap-3 border-b px-3">
       <div className="flex min-w-0 items-center gap-2">
         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1 text-sm">
           <button
             type="button"
             onClick={() => navigate("/customers")}
-            className="text-muted-foreground hover:text-foreground hover:bg-hover flex shrink-0 cursor-pointer items-center rounded-md px-1.5 py-1 font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-hover focus-visible:ring-ring flex shrink-0 cursor-pointer items-center rounded-(--radius-control) px-1.5 py-1 font-medium transition-colors outline-none focus-visible:ring-2"
           >
             All customers
           </button>
@@ -37,7 +44,7 @@ export function DetailHeader({ customer }: { customer: Customer }) {
             onClick={openSearch}
             title="Switch customer"
             aria-current="page"
-            className="text-foreground hover:bg-hover flex min-w-0 cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors"
+            className="text-foreground hover:bg-hover focus-visible:ring-ring flex min-w-0 cursor-pointer items-center gap-1 rounded-(--radius-control) px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors outline-none focus-visible:ring-2"
           >
             <span className="truncate">{customer.name}</span>
             <ChevronDown className="text-foreground size-5 shrink-0" />
@@ -54,11 +61,13 @@ export function DetailHeader({ customer }: { customer: Customer }) {
           {customer.customerType}
         </Badge>
 
-        <OutstandingBadge
-          outstanding={customer.outstandingBalance ?? 0}
-          size="md"
-          className="shrink-0"
-        />
+        {activeTab !== CUSTOMER_DETAIL_TAB.ACCOUNTING && (
+          <OutstandingBadge
+            outstanding={customer.outstandingBalance ?? 0}
+            size="md"
+            className="shrink-0"
+          />
+        )}
       </div>
 
       <div className="flex shrink-0 items-center gap-2">
@@ -66,30 +75,9 @@ export function DetailHeader({ customer }: { customer: Customer }) {
           Edit
         </Button>
 
-        {/*<DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="cursor-pointer">
-              Export
-              <ChevronDown className="text-muted-foreground ml-0.5 size-3.5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold uppercase">
-              Export
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">Statement PDF</DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">Statement Excel</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer">Ledger</DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">Invoices</DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">Payments</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>*/}
-
         <Button
           size="sm"
-          className="hover:bg-primary-hover cursor-pointer"
+          className="cursor-pointer"
           onClick={() =>
             navigate("/billing/sales/create", {
               state: { prefillCustomer: { id: customer.id, name: customer.name } }
@@ -99,7 +87,7 @@ export function DetailHeader({ customer }: { customer: Customer }) {
           New Sale
         </Button>
 
-        <Button size="sm" className="hover:bg-primary-hover cursor-pointer" onClick={openPayment}>
+        <Button size="sm" className="cursor-pointer" onClick={openPayment}>
           Record Payment
         </Button>
       </div>

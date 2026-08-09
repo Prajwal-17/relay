@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useCreateQuickSale } from "@/features/customers/hooks/useLedgerMutations";
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { useState } from "react";
@@ -39,7 +40,7 @@ export function QuickSaleDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card shadow-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Quick Sale</DialogTitle>
+          <DialogTitle>Quick sale</DialogTitle>
           <DialogDescription>
             Record a fast counter sale without creating an invoice.
           </DialogDescription>
@@ -55,18 +56,18 @@ export function QuickSaleDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-9 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="h-10 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="qs-note">Note</Label>
-            <textarea
+            <Textarea
               id="qs-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Optional note…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="min-h-16 resize-y"
             />
           </div>
         </div>
@@ -80,12 +81,8 @@ export function QuickSaleDialog({
           >
             Cancel
           </Button>
-          <Button
-            className="hover:bg-primary-hover cursor-pointer"
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {createQuickSale.isPending ? "Saving…" : "Save Quick Sale"}
+          <Button className="cursor-pointer" disabled={!canSave} onClick={handleSave}>
+            {createQuickSale.isPending ? "Saving…" : "Save quick sale"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -23,8 +23,9 @@ const TAB_LABELS: Record<TabValue, string> = {
   [CUSTOMER_DETAIL_TAB.SETTINGS]: "Settings"
 };
 
-const TAB_CONTENT_CLASS = "min-h-0 flex-1 overflow-y-auto";
-const TAB_CONTENT_TABLE_CLASS = "flex min-h-0 flex-1 flex-col";
+const TAB_CONTENT_CLASS = "min-h-0 flex-1 overflow-y-auto px-3 py-3";
+const TAB_CONTENT_TABLE_CLASS = "flex min-h-0 flex-1 flex-col overflow-hidden px-3 py-3";
+const ACCOUNTING_CONTENT_CLASS = TAB_CONTENT_TABLE_CLASS;
 
 export function DetailTabs({
   customerId,
@@ -41,20 +42,22 @@ export function DetailTabs({
     <Tabs
       value={value}
       onValueChange={(v) => onTabChange(v as TabValue)}
-      className="flex min-h-0 flex-1 flex-col gap-3 px-4 py-3"
+      className="flex min-h-0 flex-1 flex-col gap-0"
     >
-      <TabsList className="h-9 w-fit shrink-0">
-        {TAB_VALUES.map((value) => (
-          <TabsTrigger key={value} value={value} className="cursor-pointer">
-            {TAB_LABELS[value]}
-          </TabsTrigger>
-        ))}
-      </TabsList>
+      <div className="border-border bg-background shrink-0 overflow-hidden border-b px-3 py-2">
+        <TabsList className="h-9 overflow-x-auto">
+          {TAB_VALUES.map((tabValue) => (
+            <TabsTrigger key={tabValue} value={tabValue} className="cursor-pointer">
+              {TAB_LABELS[tabValue]}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </div>
 
       <TabsContent value={CUSTOMER_DETAIL_TAB.OVERVIEW} className={TAB_CONTENT_CLASS}>
         <OverviewTab customerId={customerId} customer={customer} />
       </TabsContent>
-      <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={TAB_CONTENT_TABLE_CLASS}>
+      <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={ACCOUNTING_CONTENT_CLASS}>
         <AccountingTab customerId={customerId} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.SALES} className={TAB_CONTENT_TABLE_CLASS}>

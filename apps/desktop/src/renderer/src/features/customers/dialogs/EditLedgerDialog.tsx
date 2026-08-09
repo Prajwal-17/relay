@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -81,17 +82,17 @@ export function EditLedgerDialog({
   };
 
   const titleByType: Record<string, string> = {
-    [LEDGER_ENTRY_TYPE.PAYMENT]: "Edit Payment",
-    [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "Edit Adjustment",
-    [LEDGER_ENTRY_TYPE.QUICK_SALE]: "Edit Quick Sale",
-    [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "Edit Opening Balance"
+    [LEDGER_ENTRY_TYPE.PAYMENT]: "Edit payment",
+    [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "Edit adjustment",
+    [LEDGER_ENTRY_TYPE.QUICK_SALE]: "Edit quick sale",
+    [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "Edit opening balance"
   };
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card shadow-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{titleByType[entry.type] ?? "Edit Entry"}</DialogTitle>
+          <DialogTitle>{titleByType[entry.type] ?? "Edit entry"}</DialogTitle>
           <DialogDescription>
             Modify the ledger entry. Changes are only allowed within 48 hours of creation.
           </DialogDescription>
@@ -102,28 +103,26 @@ export function EditLedgerDialog({
             <div className="flex flex-col gap-1.5">
               <Label>Direction</Label>
               <div className="grid grid-cols-2 gap-2">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setDirection("due")}
                   className={
-                    direction === "due"
-                      ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
-                      : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    direction === "due" ? "border-marker bg-selected hover:bg-selected" : undefined
                   }
                 >
-                  Add Due
-                </button>
-                <button
+                  Add due
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setDirection("paid")}
                   className={
-                    direction === "paid"
-                      ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
-                      : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    direction === "paid" ? "border-marker bg-selected hover:bg-selected" : undefined
                   }
                 >
-                  Record Payment
-                </button>
+                  Record payment
+                </Button>
               </div>
             </div>
           )}
@@ -137,15 +136,15 @@ export function EditLedgerDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-9 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="h-10 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
           {isPayment && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="edit-mode">Payment Mode</Label>
+              <Label htmlFor="edit-mode">Payment mode</Label>
               <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
-                <SelectTrigger id="edit-mode" className="h-9">
+                <SelectTrigger id="edit-mode">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,12 +160,12 @@ export function EditLedgerDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="edit-note">Note</Label>
-            <textarea
+            <Textarea
               id="edit-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Optional note…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="min-h-16 resize-y"
             />
           </div>
         </div>
@@ -180,12 +179,8 @@ export function EditLedgerDialog({
           >
             Cancel
           </Button>
-          <Button
-            className="hover:bg-primary-hover cursor-pointer"
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {updateEntry.isPending ? "Saving…" : "Save Changes"}
+          <Button className="cursor-pointer" disabled={!canSave} onClick={handleSave}>
+            {updateEntry.isPending ? "Saving…" : "Save changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

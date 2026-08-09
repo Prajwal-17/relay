@@ -7,8 +7,8 @@ import type {
   PaginatedApiResponse
 } from "@shared/types";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+
+const EMPTY_LEDGER_ENTRIES: LedgerEntry[] = [];
 
 export type UseCustomerLedgerParams = {
   customerId: string;
@@ -22,7 +22,7 @@ export type UseCustomerLedgerParams = {
 export function useCustomerLedger(params: UseCustomerLedgerParams) {
   const { customerId, pageNo, pageSize, search, type, sort } = params;
 
-  const { data, isError, error, status, isFetching } = useQuery({
+  const { data, isError, error, status, isFetching, isPlaceholderData, refetch } = useQuery({
     queryKey: ["customer-ledger", customerId, pageNo, pageSize, search, type, sort],
     queryFn: () =>
       apiClient.get<PaginatedApiResponse<{ data: LedgerEntry[] | [] }>>(
@@ -33,28 +33,25 @@ export function useCustomerLedger(params: UseCustomerLedgerParams) {
     placeholderData: keepPreviousData
   });
 
-  useEffect(() => {
-    if (isError && error) {
-      toast.error(error.message);
-    }
-  }, [isError, error]);
-
   return {
-    entries: data?.data ?? [],
+    entries: data?.data ?? EMPTY_LEDGER_ENTRIES,
     totalCount: data?.totalCount ?? 0,
     nextPageNo: data?.nextPageNo ?? null,
     status,
     isFetching,
-    isError
+    isPlaceholderData,
+    isError,
+    error,
+    refetch
   };
 }
 
 export function useCustomerLedgerSummary(customerId: string) {
-  const { data, isError, isFetching, refetch } = useQuery({
+  const { data, isError, error, status, isFetching, refetch } = useQuery({
     queryKey: ["customer-ledger-summary", customerId],
     queryFn: () => apiClient.get<LedgerSummary>(`/api/customers/${customerId}/ledger-summary`),
     enabled: !!customerId
   });
 
-  return { summary: data, isFetching, isError, refetch };
+  return { summary: data, status, isFetching, isError, error, refetch };
 }

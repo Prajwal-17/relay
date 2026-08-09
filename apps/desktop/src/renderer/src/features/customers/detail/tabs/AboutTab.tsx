@@ -67,9 +67,9 @@ function addressDirty(c: Customer, f: AddressForm) {
 
 function DisplayField({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="bg-muted/40 border-border/70 flex flex-col gap-1.5 rounded-lg border px-4 py-3">
+    <div className="flex min-w-0 flex-col gap-1 py-1">
       <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="text-foreground text-base font-medium wrap-break-word">{value || "—"}</dd>
+      <dd className="text-foreground text-sm font-medium wrap-break-word">{value || "—"}</dd>
     </div>
   );
 }
@@ -163,19 +163,14 @@ export function AboutTab({ customerId }: { customerId: string }) {
       <Button
         variant="outline"
         size="sm"
-        className="h-9 cursor-pointer"
+        className="cursor-pointer"
         onClick={cancelEdit}
         disabled={saving}
       >
         <X className="size-4" />
         Cancel
       </Button>
-      <Button
-        size="sm"
-        className="hover:bg-primary-hover h-9 cursor-pointer"
-        onClick={onSave}
-        disabled={saving}
-      >
+      <Button size="sm" className="cursor-pointer" onClick={onSave} disabled={saving}>
         {saving ? <LoaderCircle className="size-4 animate-spin" /> : <Check className="size-4" />}
         Save
       </Button>
@@ -186,7 +181,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
     <Button
       variant="ghost"
       size="sm"
-      className="text-muted-foreground hover:text-foreground h-9 cursor-pointer"
+      className="text-muted-foreground hover:text-foreground cursor-pointer"
       onClick={() => startEdit(section)}
       disabled={editing !== null}
     >
@@ -196,13 +191,13 @@ export function AboutTab({ customerId }: { customerId: string }) {
   );
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       <SectionCard
         title="Basic Info"
         action={editing === "basic" ? editAction(saveBasic) : displayAction("basic")}
       >
         {editing === "basic" ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FieldShell
               label="Name"
               htmlFor="about-name"
@@ -212,7 +207,6 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 id="about-name"
                 value={basicForm.name}
                 onChange={(e) => setBasic("name", e.target.value)}
-                className="h-10"
                 placeholder="Customer name"
               />
             </FieldShell>
@@ -228,7 +222,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="10-digit phone"
-                className="h-10 tabular-nums"
+                className="tabular-nums"
               />
             </FieldShell>
             <FieldShell label="Type" htmlFor="about-type">
@@ -236,7 +230,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 value={basicForm.customerType}
                 onValueChange={(v) => setBasic("customerType", v)}
               >
-                <SelectTrigger id="about-type" className="h-10">
+                <SelectTrigger id="about-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -248,7 +242,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
             </FieldShell>
           </div>
         ) : (
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <DisplayField label="Name" value={customer.name} />
             <DisplayField label="Contact" value={customer.contact} />
             <DisplayField label="Type" value={customer.customerType} />
@@ -269,7 +263,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
             value={addressForm.address}
             onChange={(e) => setAddressForm({ address: e.target.value })}
             placeholder="Street, area, city, state, PIN"
-            className="min-h-24 resize-y text-base"
+            className="min-h-24 resize-y"
           />
         ) : (
           <p className="text-foreground text-base font-medium whitespace-pre-line">
@@ -280,7 +274,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
 
       <SectionCard title="Metadata">
         <div className="flex flex-col gap-3">
-          <div className="bg-muted/40 border-border/70 flex items-center justify-between gap-3 rounded-lg border px-4 py-3">
+          <div className="border-border flex items-center justify-between gap-3 border-b pb-3">
             <div className="flex min-w-0 flex-col gap-0.5">
               <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                 Customer ID
@@ -289,19 +283,22 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 {customer.id}
               </dd>
             </div>
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => {
                 navigator.clipboard.writeText(customer.id);
                 toast.success("ID copied to clipboard");
               }}
-              className="text-muted-foreground hover:text-foreground hover:bg-hover flex size-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors"
-              title="Copy ID"
+              className="text-muted-foreground hover:text-foreground"
+              aria-label="Copy customer ID"
+              title="Copy customer ID"
             >
               <Copy className="size-4" />
-            </button>
+            </Button>
           </div>
-          <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <DisplayField
               label="Created"
               value={customer.createdAt ? formatDateStrToISTDateTimeStr(customer.createdAt) : "—"}

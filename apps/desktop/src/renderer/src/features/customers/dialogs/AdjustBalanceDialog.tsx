@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useCreateAdjustment } from "@/features/customers/hooks/useLedgerMutations";
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { useState } from "react";
@@ -40,7 +41,7 @@ export function AdjustBalanceDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card shadow-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Adjust Balance</DialogTitle>
+          <DialogTitle>Adjust balance</DialogTitle>
           <DialogDescription>
             Manually correct the ledger — add to the amount they owe, or record a payment.
           </DialogDescription>
@@ -50,28 +51,26 @@ export function AdjustBalanceDialog({
           <div className="flex flex-col gap-1.5">
             <Label>Direction</Label>
             <div className="grid grid-cols-2 gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setDirection("due")}
                 className={
-                  direction === "due"
-                    ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
-                    : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                  direction === "due" ? "border-marker bg-selected hover:bg-selected" : undefined
                 }
               >
-                Add Due
-              </button>
-              <button
+                Add due
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setDirection("paid")}
                 className={
-                  direction === "paid"
-                    ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
-                    : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                  direction === "paid" ? "border-marker bg-selected hover:bg-selected" : undefined
                 }
               >
-                Record Payment
-              </button>
+                Record payment
+              </Button>
             </div>
           </div>
 
@@ -84,18 +83,18 @@ export function AdjustBalanceDialog({
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder=""
-              className="h-9 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              className="h-10 [appearance:textfield] text-lg! font-semibold tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="adj-note">Note</Label>
-            <textarea
+            <Textarea
               id="adj-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Reason for adjustment…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="min-h-16 resize-y"
             />
           </div>
         </div>
@@ -109,12 +108,8 @@ export function AdjustBalanceDialog({
           >
             Cancel
           </Button>
-          <Button
-            className="hover:bg-primary-hover cursor-pointer"
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {createAdjustment.isPending ? "Saving…" : "Save Adjustment"}
+          <Button className="cursor-pointer" disabled={!canSave} onClick={handleSave}>
+            {createAdjustment.isPending ? "Saving…" : "Save adjustment"}
           </Button>
         </DialogFooter>
       </DialogContent>

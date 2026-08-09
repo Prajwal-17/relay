@@ -1,5 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -70,12 +77,12 @@ function FormField({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-foreground text-sm font-semibold">
+      <Label className="text-foreground text-xs font-semibold">
         {label}
         {required && <span className="text-destructive"> *</span>}
       </Label>
       {children}
-      {error && <p className="text-destructive text-sm font-medium">{error}</p>}
+      {error && <p className="text-destructive text-xs font-medium">{error}</p>}
     </div>
   );
 }
@@ -138,30 +145,32 @@ export function CustomerFormDialog({
       <DialogContent
         showCloseButton={false}
         onInteractOutside={(e) => saving && e.preventDefault()}
-        className="bg-card flex max-h-[85vh] flex-col overflow-hidden p-0 sm:max-w-xl"
+        className="bg-card flex max-h-[calc(100vh-2rem)] flex-col overflow-hidden p-0 sm:max-w-xl"
       >
-        <div className="border-border/70 flex items-center justify-between border-b px-4 py-3">
-          <div>
-            <h2 className="text-foreground text-lg font-bold tracking-tight">
-              {mode === "add" ? "New Customer" : "Edit Customer"}
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              {mode === "add"
-                ? "Add a new customer to your directory"
-                : "Update customer information"}
-            </p>
+        <DialogHeader className="border-border shrink-0 border-b px-3 py-2.5 text-left">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <DialogTitle>{mode === "add" ? "New customer" : "Edit customer"}</DialogTitle>
+              <DialogDescription>
+                {mode === "add"
+                  ? "Add a new customer to your directory."
+                  : "Update customer information."}
+              </DialogDescription>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
+              onClick={onClose}
+              aria-label="Close customer form"
+            >
+              <X className="size-4" />
+            </Button>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
-            onClick={onClose}
-          >
-            <X className="size-5" />
-          </Button>
-        </div>
+        </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="flex-1 overflow-y-auto px-3 py-3">
           <div className="grid grid-cols-2 gap-x-3 gap-y-3">
             <div className="col-span-2">
               <FormField
@@ -173,7 +182,7 @@ export function CustomerFormDialog({
                   value={form.name}
                   onChange={(e) => set("name", e.target.value)}
                   placeholder="Enter customer name"
-                  className="h-9 text-sm! font-semibold"
+                  className="font-semibold"
                 />
               </FormField>
             </div>
@@ -185,25 +194,19 @@ export function CustomerFormDialog({
                 inputMode="numeric"
                 maxLength={10}
                 placeholder="10-digit phone"
-                className="h-9 text-sm! font-medium tabular-nums"
+                className="font-medium tabular-nums"
               />
             </FormField>
 
             <FormField label="Type">
               <Select value={form.customerType} onValueChange={(v) => set("customerType", v)}>
-                <SelectTrigger className="h-9 text-sm font-medium">
+                <SelectTrigger className="font-medium">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem className="text-md!" value="cash">
-                    Cash
-                  </SelectItem>
-                  <SelectItem className="text-md!" value="account">
-                    Account
-                  </SelectItem>
-                  <SelectItem className="text-md!" value="hotel">
-                    Hotel
-                  </SelectItem>
+                  <SelectItem value="cash">Cash</SelectItem>
+                  <SelectItem value="account">Account</SelectItem>
+                  <SelectItem value="hotel">Hotel</SelectItem>
                 </SelectContent>
               </Select>
             </FormField>
@@ -217,7 +220,7 @@ export function CustomerFormDialog({
                   onChange={(e) => set("openingBalance", onlyUnsignedDecimal(e.target.value))}
                   onFocus={selectOnFocus}
                   placeholder="Optional"
-                  className="h-9 text-sm! font-medium tabular-nums"
+                  className="font-medium tabular-nums"
                 />
               </FormField>
             )}
@@ -235,24 +238,24 @@ export function CustomerFormDialog({
           </div>
         </div>
 
-        <div className="border-border/70 flex items-center justify-end gap-3 border-t px-4 py-3">
+        <DialogFooter className="border-border shrink-0 border-t px-3 py-3">
           <Button
             variant="outline"
-            className="h-9 cursor-pointer px-4 text-sm font-semibold"
+            className="cursor-pointer font-semibold"
             onClick={onClose}
             disabled={saving}
           >
             Cancel
           </Button>
           <Button
-            className="hover:bg-primary-hover h-9 cursor-pointer px-4 text-sm font-semibold"
+            className="cursor-pointer font-semibold"
             disabled={!canSave || saving}
             onClick={handleSave}
           >
             {saving && <LoaderCircle className="size-4 animate-spin" />}
-            {mode === "add" ? "Add Customer" : "Save Changes"}
+            {mode === "add" ? "Add customer" : "Save changes"}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

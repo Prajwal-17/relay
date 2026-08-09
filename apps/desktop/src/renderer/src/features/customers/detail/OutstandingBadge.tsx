@@ -2,8 +2,7 @@ import { cn } from "@/lib/utils";
 import { formatRupee } from "@shared/utils/utils";
 
 /**
- * Outstanding badge.
- * Balances are neutral financial information; the label carries due, advance, or settled meaning.
+ * Compact account-balance status used within customer workflows.
  */
 export function OutstandingBadge({
   outstanding,
@@ -14,22 +13,29 @@ export function OutstandingBadge({
   className?: string;
   size?: "sm" | "md";
 }) {
-  const isZero = outstanding === 0;
   const amount = formatRupee(Math.abs(outstanding));
-  const label = isZero ? "Settled" : amount;
+  const label = outstanding > 0 ? "Due" : outstanding < 0 ? "Advance" : "Settled";
+  const toneClass =
+    outstanding > 0
+      ? "border-counter-accent bg-counter-accent-soft text-counter-accent-foreground"
+      : outstanding < 0
+        ? "border-sales bg-sales-soft text-sales-foreground"
+        : "border-border bg-hover text-foreground";
 
   return (
     <span
+      aria-label={label + ": " + amount}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg border font-medium tabular-nums",
-        size === "md" ? "px-3 py-1 text-sm" : "px-2.5 py-0.5 text-xs",
-        isZero
-          ? "bg-hover text-muted-foreground border-border"
-          : "text-foreground border-border bg-transparent",
+        "inline-flex shrink-0 items-center rounded-(--radius-control) border leading-none tabular-nums",
+        size === "md" ? "h-9 gap-2 px-3" : "h-8 gap-1.5 px-2.5",
+        toneClass,
         className
       )}
     >
-      <span className="font-semibold">{label}</span>
+      <span className={cn("font-semibold", size === "md" ? "text-sm" : "text-xs")}>{label}</span>
+      <span className={cn("font-bold whitespace-nowrap", size === "md" ? "text-base" : "text-sm")}>
+        {amount}
+      </span>
     </span>
   );
 }

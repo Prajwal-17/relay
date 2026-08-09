@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -61,13 +62,13 @@ export function PaymentDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="bg-card shadow-lg sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Record Payment</DialogTitle>
+          <DialogTitle>Record payment</DialogTitle>
           <DialogDescription>Log a payment received from {customerName}.</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pay-amount">Amount Received (₹)</Label>
+            <Label htmlFor="pay-amount">Amount received (₹)</Label>
             <div className="relative">
               <Input
                 id="pay-amount"
@@ -76,24 +77,26 @@ export function PaymentDialog({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder=""
-                className="border-ring/20 focus-visible:border-ring h-10 [appearance:textfield] overflow-hidden border-2 pr-20 text-xl! font-semibold tracking-[-0.02em] text-ellipsis tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="h-10 [appearance:textfield] pr-20 text-xl! font-semibold tracking-[-0.02em] text-ellipsis tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
               {outstanding > 0 && (
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setAmount(String(paisaToRupees(outstanding)))}
-                  className="border-ring/20 bg-muted/60 text-primary hover:bg-primary/10 focus-visible:ring-ring/50 absolute top-1/2 right-2 -translate-y-1/2 cursor-pointer rounded-md border px-2.5 py-1 text-xs font-semibold tracking-wide uppercase transition-colors outline-none focus-visible:ring-[3px]"
+                  className="absolute top-1/2 right-1 -translate-y-1/2 cursor-pointer"
                 >
                   Full
-                </button>
+                </Button>
               )}
             </div>
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pay-mode">Payment Mode</Label>
+            <Label htmlFor="pay-mode">Payment mode</Label>
             <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)}>
-              <SelectTrigger id="pay-mode" className="h-9">
+              <SelectTrigger id="pay-mode">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -108,24 +111,17 @@ export function PaymentDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="pay-note">Note</Label>
-            <textarea
+            <Textarea
               id="pay-note"
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Optional note…"
-              className="border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 min-h-12 w-full resize-y rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+              className="min-h-16 resize-y"
             />
           </div>
 
-          <div className="bg-muted/40 border-border/70 flex items-center justify-between gap-2 rounded-lg border px-3 py-2.5">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-                Outstanding
-              </span>
-              <span className="text-foreground text-sm font-semibold tabular-nums">
-                {outstanding === 0 ? "Settled" : formatRupee(Math.abs(outstanding))}
-              </span>
-            </div>
+          <div className="bg-muted border-border flex items-center justify-between gap-3 rounded-(--radius-control) border px-3 py-2.5">
+            <span className="text-muted-foreground text-sm font-medium">Current outstanding</span>
             <OutstandingBadge outstanding={outstanding} />
           </div>
         </div>
@@ -139,12 +135,8 @@ export function PaymentDialog({
           >
             Cancel
           </Button>
-          <Button
-            className="hover:bg-primary-hover cursor-pointer"
-            disabled={!canSave}
-            onClick={handleSave}
-          >
-            {createPayment.isPending ? "Saving…" : "Record Payment"}
+          <Button className="cursor-pointer" disabled={!canSave} onClick={handleSave}>
+            {createPayment.isPending ? "Saving…" : "Record payment"}
           </Button>
         </DialogFooter>
       </DialogContent>

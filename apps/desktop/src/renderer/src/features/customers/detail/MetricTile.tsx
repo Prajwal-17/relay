@@ -1,8 +1,9 @@
+import { CompactCard } from "@/components/app-ui/compact-card";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 /**
- * Reusable stat tile. E2 card surface.
+ * Reusable compact financial summary tile.
  * `value` should already be a formatted string (money, count, date).
  */
 type MetricTileProps = {
@@ -31,23 +32,27 @@ export function MetricTile({
   className
 }: MetricTileProps) {
   return (
-    <div className={cn("bg-card border-border rounded-xl border px-4 py-3 shadow-xs", className)}>
-      <div className="flex items-center gap-1.5">
-        {icon && <span className="text-muted-foreground">{icon}</span>}
-        <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-          {label}
-        </span>
+    <CompactCard
+      className={cn(
+        "min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1 px-3",
+        className
+      )}
+    >
+      <div className="min-w-0">
+        <div className="flex items-center gap-1.5">
+          {icon && <span className="text-muted-foreground">{icon}</span>}
+          <span className="text-muted-foreground text-xs font-semibold">{label}</span>
+        </div>
+        {subValue && <p className="text-muted-foreground mt-0.5 truncate text-xs">{subValue}</p>}
       </div>
       <p
         className={cn(
-          "mt-1.5 font-semibold tracking-[-0.02em] tabular-nums",
-          toneValueClass[tone],
-          "text-2xl"
+          "financial-nums ml-auto shrink-0 text-right font-semibold whitespace-nowrap",
+          toneValueClass[tone]
         )}
       >
         {value}
       </p>
-      {subValue && <p className="text-muted-foreground mt-0.5 text-xs font-medium">{subValue}</p>}
-    </div>
+    </CompactCard>
   );
 }

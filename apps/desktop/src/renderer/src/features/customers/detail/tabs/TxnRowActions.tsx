@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -120,14 +121,16 @@ function TxnRowActionsInner({
     <div className="flex items-center justify-center gap-0.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
+          <Button
             type="button"
             onClick={handleView}
             aria-label={`View ${type} ${txn.transactionNo}`}
-            className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-foreground"
           >
             <Eye className="size-4" />
-          </button>
+          </Button>
         </TooltipTrigger>
         <TooltipContent>View</TooltipContent>
       </Tooltip>
@@ -136,27 +139,31 @@ function TxnRowActionsInner({
         <>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <Button
                 type="button"
                 onClick={handleEdit}
                 aria-label={`Edit ${type} ${txn.transactionNo}`}
-                className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Edit className="size-4" />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>Edit</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
-              <button
+              <Button
                 type="button"
                 onClick={() => setActiveDialog("delete")}
                 aria-label={`Delete ${type} ${txn.transactionNo}`}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive cursor-pointer rounded-md p-1.5 transition-colors"
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-destructive"
               >
                 <Trash2 className="size-4" />
-              </button>
+              </Button>
             </TooltipTrigger>
             <TooltipContent>Delete</TooltipContent>
           </Tooltip>
@@ -165,13 +172,15 @@ function TxnRowActionsInner({
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button
+          <Button
             type="button"
             aria-label={`More actions for ${type} ${txn.transactionNo}`}
-            className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-foreground"
           >
             <MoreVertical className="size-4" />
-          </button>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-52">
           {type === TRANSACTION_TYPE.ESTIMATE && (

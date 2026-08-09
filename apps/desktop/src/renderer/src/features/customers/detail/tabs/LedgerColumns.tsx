@@ -1,250 +1,198 @@
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types/renderer.types";
-import { LEDGER_ENTRY_TYPE, type LedgerEntry, type LedgerEntryType } from "@shared/types";
+import { LEDGER_ENTRY_TYPE, type LedgerEntry } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { ColumnDef } from "@tanstack/react-table";
+import { IndianRupee, Receipt, Scale, Wallet, Zap, type LucideIcon } from "lucide-react";
+import { LedgerRowActions } from "./LedgerRowActions";
 import {
-  CreditCard,
-  MoreHorizontal,
-  Pencil,
-  Receipt,
-  Scale,
-  ShoppingCart,
-  Trash2,
-  Wallet
-} from "lucide-react";
-import { isWithinTwoDays } from "@shared/utils/dateUtils";
+  formatSignedMovement,
+  getBalanceStateLabel,
+  getLedgerMovement,
+  getLedgerParticulars
+} from "./ledgerPresentation";
 
-const typeLabel: Record<LedgerEntryType, string> = {
-  [LEDGER_ENTRY_TYPE.SALE]: "Sale",
-  [LEDGER_ENTRY_TYPE.QUICK_SALE]: "Quick Sale",
-  [LEDGER_ENTRY_TYPE.PAYMENT]: "Payment",
-  [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "Adjustment",
-  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "Opening"
+type EntryMarker = {
+  icon: LucideIcon;
+  className: string;
 };
 
-const typeIcon: Record<LedgerEntryType, typeof Receipt> = {
-  [LEDGER_ENTRY_TYPE.SALE]: Receipt,
-  [LEDGER_ENTRY_TYPE.QUICK_SALE]: ShoppingCart,
-  [LEDGER_ENTRY_TYPE.PAYMENT]: CreditCard,
-  [LEDGER_ENTRY_TYPE.ADJUSTMENT]: Scale,
-  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: Wallet
+const ENTRY_MARKER: Record<LedgerEntry["type"], EntryMarker> = {
+  [LEDGER_ENTRY_TYPE.SALE]: {
+    icon: Receipt,
+    className: "border-sales/30 bg-sales-soft text-sales-foreground"
+  },
+  [LEDGER_ENTRY_TYPE.QUICK_SALE]: {
+    icon: Zap,
+    className: "border-counter-accent/30 bg-counter-accent-soft text-counter-accent-foreground"
+  },
+  [LEDGER_ENTRY_TYPE.PAYMENT]: {
+    icon: IndianRupee,
+    className: "border-success bg-success text-success-foreground"
+  },
+  [LEDGER_ENTRY_TYPE.ADJUSTMENT]: {
+    icon: Scale,
+    className: "border-gold-accent-border bg-gold-accent-soft text-gold-accent-foreground"
+  },
+  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: {
+    icon: Wallet,
+    className: "border-olive-accent/40 bg-olive-accent-soft text-olive-accent-foreground"
+  }
 };
 
-const typeAccentClass: Record<LedgerEntryType, string> = {
-  [LEDGER_ENTRY_TYPE.SALE]: "border-sales bg-sales-soft text-sales-foreground",
-  [LEDGER_ENTRY_TYPE.QUICK_SALE]:
-    "border-counter-accent bg-counter-accent-soft text-counter-accent-foreground",
-  [LEDGER_ENTRY_TYPE.PAYMENT]: "border-estimate bg-estimate-soft text-estimate-foreground",
-  [LEDGER_ENTRY_TYPE.ADJUSTMENT]:
-    "border-gold-accent bg-gold-accent-soft text-gold-accent-foreground",
-  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]:
-    "border-olive-accent bg-olive-accent-soft text-olive-accent-foreground"
+export type LedgerColumnsOptions = {
+  onOpenSale: (saleId: string) => void;
+  onEdit: (entry: LedgerEntry) => void;
+  onDelete: (entry: LedgerEntry) => void;
 };
 
-type LedgerColumnsOptions = {
-  onOpenSale?: (saleId: string) => void;
-  onEdit?: (entry: LedgerEntry) => void;
-  onDelete?: (entry: LedgerEntry) => void;
-};
-
-export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<LedgerEntry>[] {
-  const { onOpenSale, onEdit, onDelete } = opts;
-
+export function buildLedgerColumns({
+  onOpenSale,
+  onEdit,
+  onDelete
+}: LedgerColumnsOptions): ColumnDef<LedgerEntry>[] {
   return [
     {
       accessorKey: "createdAt",
       header: "Date",
       cell: ({ row }) => {
-        const createdAt = row.original.createdAt;
-        const { fullDate, timePart } = createdAt
-          ? formatDateStrToISTDateStr(createdAt)
-          : { fullDate: "—", timePart: "" };
+        const entry = row.original;
+        const { fullDate, timePart } = formatDateStrToISTDateStr(entry.createdAt);
         return (
-          <div className="flex flex-col">
-            <span className="text-foreground text-sm font-semibold whitespace-nowrap tabular-nums">
-              {fullDate}
-            </span>
-            {timePart && (
-              <span className="text-muted-foreground text-xs font-medium whitespace-nowrap tabular-nums">
-                {timePart}
-              </span>
-            )}
-          </div>
+          <time
+            dateTime={entry.createdAt}
+            title={`${fullDate} ${timePart}`}
+            aria-label={`${fullDate}, ${timePart}`}
+            className="flex flex-col gap-0.5 whitespace-nowrap tabular-nums"
+          >
+            <span className="text-foreground text-sm leading-4 font-semibold">{fullDate}</span>
+            <span className="text-muted-foreground text-sm leading-4">{timePart}</span>
+          </time>
         );
       },
-      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[145px]" } as TxnTableColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[128px]" } as TxnTableColMeta
     },
     {
-      accessorKey: "type",
+      id: "particulars",
       header: "Type",
       cell: ({ row }) => {
-        const type = row.original.type;
-        const Icon = typeIcon[type];
+        const entry = row.original;
+        const particulars = getLedgerParticulars(entry);
+        const marker = ENTRY_MARKER[entry.type];
+        const EntryIcon = marker.icon;
+
         return (
-          <span className="inline-flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <span
+              aria-hidden="true"
               className={cn(
-                "flex size-6 shrink-0 items-center justify-center rounded-(--radius-control) border",
-                typeAccentClass[type]
+                "flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) border",
+                marker.className
               )}
             >
-              <Icon className="size-3.5" strokeWidth={2.25} aria-hidden />
+              <EntryIcon className="size-4" />
             </span>
-            <span className="text-foreground text-sm font-semibold whitespace-nowrap">
-              {typeLabel[type]}
-            </span>
-          </span>
-        );
-      },
-      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[120px]" } as TxnTableColMeta
-    },
-    {
-      id: "ref",
-      header: "Ref",
-      cell: ({ row }) => {
-        const entry = row.original;
-        if (entry.saleId) {
-          if (onOpenSale) {
-            return (
-              <button
-                type="button"
-                onClick={() => onOpenSale(entry.saleId!)}
-                className="text-primary hover:text-primary-hover cursor-pointer text-sm font-semibold tabular-nums hover:underline"
-              >
-                INV #{entry.invoiceNo ?? "—"}
-              </button>
-            );
-          }
-          return (
-            <span className="text-primary text-sm font-semibold tabular-nums hover:underline">
-              INV #{entry.invoiceNo ?? "—"}
-            </span>
-          );
-        }
-        return <span className="text-muted-foreground/60 text-sm">—</span>;
-      },
-      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[110px]" } as TxnTableColMeta
-    },
-    {
-      accessorKey: "notes",
-      header: "Description",
-      cell: ({ row }) => {
-        const notes = row.original.notes;
-        return (
-          <span
-            className={cn(
-              "truncate text-sm font-medium",
-              notes ? "text-foreground" : "text-muted-foreground/60"
-            )}
-          >
-            {notes || "—"}
-          </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <span className="shrink-0 text-sm font-semibold" title={particulars.label}>
+                  {particulars.label}
+                </span>
+                {entry.saleId && particulars.detail && (
+                  <button
+                    type="button"
+                    title={particulars.detail}
+                    aria-label={"Open " + particulars.detail}
+                    className="text-primary hover:text-primary-hover focus-visible:ring-ring hover:bg-hover inline-flex h-8 min-w-0 cursor-pointer items-center rounded-(--radius-control) px-1.5 text-left text-sm font-semibold underline underline-offset-2 outline-none focus-visible:ring-2"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onOpenSale(entry.saleId!);
+                    }}
+                  >
+                    <span className="truncate">{particulars.detail}</span>
+                  </button>
+                )}
+              </div>
+              {!entry.saleId && particulars.detail && (
+                <span
+                  className="text-muted-foreground min-w-0 truncate text-xs"
+                  title={particulars.detail}
+                >
+                  {particulars.detail}
+                </span>
+              )}
+            </div>
+          </div>
         );
       },
       meta: { align: TXN_TABLE_ALIGN.LEFT } as TxnTableColMeta
     },
     {
-      accessorKey: "amountDue",
-      header: "Amount Due",
+      id: "movement",
+      header: "Amount",
       cell: ({ row }) => {
-        const amountDue = row.original.amountDue;
-        return amountDue > 0 ? (
-          <span className="text-foreground text-sm font-semibold tabular-nums">
-            {formatRupee(amountDue)}
-          </span>
-        ) : (
-          <span className="text-muted-foreground/60 text-sm">—</span>
-        );
-      },
-      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[110px]" } as TxnTableColMeta
-    },
-    {
-      accessorKey: "amountPaid",
-      header: "Amount Paid",
-      cell: ({ row }) => {
-        const amountPaid = row.original.amountPaid;
-        return amountPaid > 0 ? (
-          <span className="text-foreground text-sm font-semibold tabular-nums">
-            {formatRupee(amountPaid)}
-          </span>
-        ) : (
-          <span className="text-muted-foreground/60 text-sm">—</span>
-        );
-      },
-      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[110px]" } as TxnTableColMeta
-    },
-    {
-      accessorKey: "runningBalance",
-      header: "Balance",
-      cell: ({ row }) => {
-        const balance = row.original.runningBalance;
+        const entry = row.original;
+        const movement = getLedgerMovement(entry);
+        const isPayment = entry.type === LEDGER_ENTRY_TYPE.PAYMENT;
         return (
           <span
             className={cn(
-              "text-sm font-semibold tabular-nums",
-              balance === 0 ? "text-muted-foreground" : "text-foreground"
+              "text-base font-semibold whitespace-nowrap tabular-nums",
+              isPayment
+                ? "text-success"
+                : movement !== 0
+                  ? "text-foreground"
+                  : "text-muted-foreground"
             )}
           >
-            {formatRupee(Math.abs(balance))}
+            {formatSignedMovement(entry)}
           </span>
         );
       },
-      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[120px]" } as TxnTableColMeta
+      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[160px]" } as TxnTableColMeta
+    },
+    {
+      id: "balance",
+      header: "Balance",
+      cell: ({ row }) => {
+        const balance = row.original.runningBalance;
+        const balanceLabel = getBalanceStateLabel(balance);
+        const formattedBalance = formatRupee(Math.abs(balance));
+        const sign = balance > 0 ? "+ " : balance < 0 ? "− " : "";
+        const balanceTone =
+          balance > 0
+            ? "text-counter-accent-foreground"
+            : balance < 0
+              ? "text-sales-foreground"
+              : "text-muted-foreground";
+
+        return (
+          <span
+            aria-label={formattedBalance + ", " + balanceLabel}
+            title={balanceLabel}
+            className={cn("text-base font-semibold whitespace-nowrap tabular-nums", balanceTone)}
+          >
+            {sign}
+            {formattedBalance}
+          </span>
+        );
+      },
+      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[168px]" } as TxnTableColMeta
     },
     {
       id: "actions",
-      header: "",
-      cell: ({ row }) => {
-        const entry = row.original;
-        const canModify = entry.type !== LEDGER_ENTRY_TYPE.SALE && isWithinTwoDays(entry.createdAt);
-        if (!canModify || (!onEdit && !onDelete)) return null;
-
-        return (
-          <div className="flex justify-end">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground h-8 w-8 cursor-pointer p-0"
-                >
-                  <MoreHorizontal className="size-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-32">
-                {onEdit && (
-                  <DropdownMenuItem
-                    onClick={() => onEdit(entry)}
-                    className="cursor-pointer text-sm font-medium"
-                  >
-                    <Pencil className="mr-2 size-3.5" />
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {onDelete && (
-                  <DropdownMenuItem
-                    onClick={() => onDelete(entry)}
-                    className="text-destructive focus:text-destructive cursor-pointer text-sm font-medium"
-                  >
-                    <Trash2 className="mr-2 size-3.5" />
-                    Delete
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
-      },
-      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[52px]" } as TxnTableColMeta
+      header: () => <span className="sr-only">Actions</span>,
+      cell: ({ row }) => (
+        <div className="flex justify-end">
+          <LedgerRowActions
+            entry={row.original}
+            onOpenSale={onOpenSale}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        </div>
+      ),
+      meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[48px]" } as TxnTableColMeta
     }
   ];
 }

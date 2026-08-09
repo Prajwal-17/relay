@@ -1,9 +1,10 @@
+import { CompactCard } from "@/components/app-ui/compact-card";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
 /**
  * Card wrapper with a title + optional action slot.
- * Follows E2 card tokens: bg-card border-border shadow-xs rounded-xl.
+ * Composes the shared compact-card contract for customer detail sections.
  */
 type SectionCardProps = {
   title?: string;
@@ -23,9 +24,9 @@ export function SectionCard({
   children
 }: SectionCardProps) {
   return (
-    <section className={cn("bg-card border-border rounded-xl border shadow-xs", className)}>
+    <CompactCard className={cn("gap-0 overflow-hidden py-0", className)}>
       {(title || action) && (
-        <header className="border-border/70 flex items-center justify-between gap-3 border-b px-4 py-3">
+        <header className="border-border flex items-center justify-between gap-3 border-b px-3 py-2.5">
           <div className="min-w-0">
             {title && <h3 className="text-foreground font-semibold tracking-[-0.02em]">{title}</h3>}
             {description && <p className="text-muted-foreground text-sm">{description}</p>}
@@ -33,7 +34,7 @@ export function SectionCard({
           {action && <div className="shrink-0">{action}</div>}
         </header>
       )}
-      <div className={cn("p-4", bodyClassName)}>{children}</div>
-    </section>
+      <div className={cn("p-3", bodyClassName)}>{children}</div>
+    </CompactCard>
   );
 }

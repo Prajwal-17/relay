@@ -47,7 +47,7 @@ export function CustomerDetailView({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <DetailHeader customer={customer} />
+      <DetailHeader customer={customer} activeTab={activeTab} />
       <DetailTabs
         customerId={customerId}
         customer={customer}

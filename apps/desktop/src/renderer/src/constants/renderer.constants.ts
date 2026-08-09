@@ -69,7 +69,7 @@ export const TXN_TABLE_SORT_OPTIONS = [
 ] as const;
 
 // Customer Ledger Table
-export const LEDGER_TABLE_PAGE_SIZE = 15;
+export const LEDGER_TABLE_PAGE_SIZE = 10;
 export const LEDGER_TABLE_SEARCH_DEBOUNCE_MS = 400;
 export const LEDGER_SORT_OPTIONS = [
   { value: LEDGER_SORT.DATE_DESC, label: "Newest first" },

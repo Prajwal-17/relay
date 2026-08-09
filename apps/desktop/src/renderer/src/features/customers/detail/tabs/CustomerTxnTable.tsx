@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types/renderer.types";
 import { CUSTOMER_TXN_SORT, TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
+import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
@@ -39,7 +40,6 @@ import {
   Tags,
   X
 } from "lucide-react";
-import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TxnRowActions } from "./TxnRowActions";
@@ -55,7 +55,7 @@ type ColumnsOptions = {
 };
 
 const TXN_TABLE_NUMBER_INPUT_CLASS =
-  "h-8 w-14 border-border bg-muted/50 text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
+  "h-8 w-14 border-border bg-background text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
 
 function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
   const { type, numberLabel, pageNo, pageSize, ...mutations } = opts;
@@ -106,7 +106,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
       header: "Items",
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm font-medium tabular-nums">
-          {row.original.totalQuantity ?? "—"}
+          {row.original.totalQuantity != null ? fromMilliUnits(row.original.totalQuantity) : "—"}
         </span>
       ),
       meta: { align: TXN_TABLE_ALIGN.RIGHT } as TxnTableColMeta
@@ -256,32 +256,32 @@ export function CustomerTxnTable({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">
-      <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2">
         <div className="relative w-64 min-w-0">
           <Search className="text-muted-foreground absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder={`Search by ${numberLabel.toLowerCase()}…`}
-            className="bg-muted/60 focus-visible:border-ring focus-visible:bg-background h-9 rounded-md border-transparent pr-9 pl-9 text-sm shadow-none transition-colors"
+            className="bg-background h-9 pr-9 pl-9 text-sm shadow-none"
           />
           {searchInput && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon-sm"
               onClick={() => setSearchInput("")}
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2.5 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-1.5 -translate-y-1/2"
+              aria-label="Clear transaction search"
             >
               <X className="size-4" />
-            </button>
+            </Button>
           )}
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="border-border bg-muted/50 text-foreground hover:bg-hover h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
-            >
+            <Button variant="outline" className="cursor-pointer">
               <ArrowDownAZ className="size-4" />
               {activeSortLabel}
             </Button>
@@ -309,17 +309,13 @@ export function CustomerTxnTable({
         </DropdownMenu>
 
         {hasFilters && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="text-destructive hover:bg-destructive/10 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold transition-colors"
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
             <X className="size-3.5" />
             Clear
-          </button>
+          </Button>
         )}
 
-        <div className="text-muted-foreground ml-auto flex shrink-0 items-center gap-2 text-sm font-medium tabular-nums select-none">
+        <div className="text-muted-foreground ml-auto flex shrink-0 items-center gap-2 text-xs font-medium tabular-nums select-none">
           {isFetching && !isFirstLoad && (
             <LoaderCircle className="text-primary size-3.5 animate-spin" />
           )}
@@ -334,7 +330,7 @@ export function CustomerTxnTable({
               state: { prefillCustomer: { id: customerId, name: customerName } }
             })
           }
-          className="bg-primary hover:bg-primary-hover text-primary-foreground h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
+          className="cursor-pointer"
         >
           <Plus className="size-4" />
           {addLabel}
@@ -343,16 +339,16 @@ export function CustomerTxnTable({
 
       {/* Body — fills remaining space */}
       {isFirstLoad ? (
-        <div className="border-border bg-card flex min-h-0 flex-1 items-center justify-center rounded-xl border shadow-xs">
+        <div className="border-border bg-card flex min-h-0 flex-1 items-center justify-center rounded-(--radius-panel) border">
           <div className="flex flex-col items-center gap-3">
             <LoaderCircle className="text-muted-foreground size-7 animate-spin" />
             <p className="text-muted-foreground text-sm font-medium">Loading…</p>
           </div>
         </div>
       ) : isEmpty ? (
-        <div className="border-border bg-card flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border px-6 py-16 text-center shadow-xs">
-          <span className="bg-muted text-muted-foreground mb-5 flex size-12 items-center justify-center rounded-xl">
-            <EmptyIcon className="size-6" />
+        <div className="border-border bg-card flex min-h-0 flex-1 flex-col items-center justify-center rounded-(--radius-panel) border px-6 py-12 text-center">
+          <span className="bg-muted text-muted-foreground mb-4 flex size-10 items-center justify-center rounded-(--radius-panel)">
+            <EmptyIcon className="size-5" />
           </span>
           <h3 className="text-foreground text-base font-semibold tracking-[-0.02em]">
             {hasFilters ? "No matches" : `No ${noun} yet`}
@@ -363,13 +359,13 @@ export function CustomerTxnTable({
               : `${docNoun} raised for this customer will appear here.`}
           </p>
           {hasFilters && (
-            <Button variant="outline" className="mt-5 h-9 cursor-pointer" onClick={clearFilters}>
+            <Button variant="outline" className="mt-4 cursor-pointer" onClick={clearFilters}>
               Clear filters
             </Button>
           )}
         </div>
       ) : (
-        <div className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
+        <div className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
           {/* Scroll area — only this scrolls; thead is sticky inside */}
           <div className={cn("relative min-h-0 flex-1 overflow-auto", isFetching && "opacity-60")}>
             <table className="w-full table-fixed border-collapse">
@@ -382,7 +378,7 @@ export function CustomerTxnTable({
                         <th
                           key={header.id}
                           className={cn(
-                            "text-foreground border-border/70 h-9 border-b px-4 text-xs font-semibold tracking-wide uppercase",
+                            "text-foreground border-border h-9 border-b px-3 text-xs font-semibold tracking-wide uppercase",
                             meta?.width,
                             meta?.align === "right"
                               ? "text-right"
@@ -399,17 +395,10 @@ export function CustomerTxnTable({
                 ))}
               </thead>
               <tbody>
-                {table.getRowModel().rows.map((row, idx) => (
-                  <motion.tr
+                {table.getRowModel().rows.map((row) => (
+                  <tr
                     key={row.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      duration: 0.12,
-                      ease: "easeOut",
-                      delay: idx < 12 ? idx * 0.015 : 0
-                    }}
-                    className="border-border/70 hover:bg-hover group border-b transition-colors last:border-b-0"
+                    className="border-border hover:bg-hover group border-b transition-colors last:border-b-0"
                   >
                     {row.getVisibleCells().map((cell) => {
                       const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;
@@ -417,7 +406,7 @@ export function CustomerTxnTable({
                         <td
                           key={cell.id}
                           className={cn(
-                            "h-11 px-3 align-middle",
+                            "h-12 px-3 align-middle",
                             meta?.width,
                             meta?.align === "right"
                               ? "text-right"
@@ -430,13 +419,13 @@ export function CustomerTxnTable({
                         </td>
                       );
                     })}
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <div className="border-border/70 bg-card flex shrink-0 items-center justify-between gap-3 border-t px-4 py-2.5">
+          <div className="border-border bg-card flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
             <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
               <span>Rows</span>
               <Input

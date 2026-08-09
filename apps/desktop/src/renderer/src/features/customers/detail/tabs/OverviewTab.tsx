@@ -40,12 +40,12 @@ const kindIcon: Record<ActivityKind, LucideIcon> = {
 };
 
 const kindIconClass: Record<ActivityKind, string> = {
-  sale: "text-marker",
-  estimate: "text-marker",
-  payment: "text-marker",
-  adjustment: "text-muted-foreground",
-  quick_sale: "text-marker",
-  opening_balance: "text-muted-foreground"
+  sale: "text-sales",
+  estimate: "text-estimate",
+  payment: "text-counter-accent",
+  adjustment: "text-gold-accent-foreground",
+  quick_sale: "text-counter-accent",
+  opening_balance: "text-olive-accent"
 };
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
@@ -111,9 +111,9 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
   const heroLabel = isSettled ? "Settled" : isAdvance ? "Advance" : "Due";
 
   return (
-    <div className="flex flex-col gap-4">
-      <section className="bg-card border-border rounded-xl border shadow-xs">
-        <div className="flex flex-col gap-4 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex flex-col gap-3">
+      <section className="bg-card border-border rounded-(--radius-panel) border">
+        <div className="flex flex-col gap-3 px-3 py-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
@@ -126,16 +126,12 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                 {heroLabel}
               </Badge>
             </div>
-            <p className="text-foreground text-2xl font-semibold tracking-[-0.02em] tabular-nums">
+            <p className="financial-nums text-foreground font-semibold">
               {formatRupee(outstanding)}
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Button
-              size="sm"
-              className="hover:bg-primary-hover cursor-pointer"
-              onClick={openPayment}
-            >
+            <Button size="sm" className="cursor-pointer" onClick={openPayment}>
               <CreditCard className="size-4" />
               Payment
             </Button>
@@ -151,9 +147,9 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
         </div>
       </section>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(240px,280px)_minmax(0,1fr)]">
         {/* LEFT RAIL — Customer Info */}
-        <div className="lg:col-span-1">
+        <div className="min-w-0">
           <SectionCard title="Customer Info">
             <dl className="divide-border/70 divide-y">
               <InfoRow label="Type" value={customer.customerType} />
@@ -167,8 +163,8 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
           </SectionCard>
         </div>
 
-        <div className="flex flex-col gap-4 lg:col-span-3">
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="flex min-w-0 flex-col gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <MetricTile
               label="Total Sales"
               value={formatRupee(salesTotal)}
@@ -191,7 +187,7 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             <SectionCard title="Recent Sales" bodyClassName="p-0">
               {recentSales?.length === 0 ? (
                 <div className="text-muted-foreground px-4 py-8 text-center text-sm">
@@ -202,7 +198,7 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                   {recentSales?.map((sale) => (
                     <li
                       key={sale.id}
-                      className="flex items-center justify-between gap-3 px-4 py-2.5"
+                      className="flex items-center justify-between gap-3 px-3 py-2.5"
                     >
                       <div className="flex min-w-0 items-center gap-3">
                         <Receipt className="text-primary size-5 shrink-0" />
@@ -233,7 +229,7 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
                   No activity yet.
                 </div>
               ) : (
-                <ol className="px-4 py-2">
+                <ol className="px-3 py-2">
                   {activity?.map((event, idx) => {
                     const Icon = kindIcon[event.kind] ?? CircleSlash;
                     return (
