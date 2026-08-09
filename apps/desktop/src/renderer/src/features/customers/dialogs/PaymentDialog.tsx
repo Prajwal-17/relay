@@ -20,7 +20,7 @@ import {
 import { useCreatePayment } from "@/features/customers/hooks/useLedgerMutations";
 import type { PaymentMode } from "@shared/types";
 import { PAYMENT_MODE } from "@shared/types";
-import { formatRupee, paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
+import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
 import { useState } from "react";
 import { OutstandingBadge } from "../detail/OutstandingBadge";
 
