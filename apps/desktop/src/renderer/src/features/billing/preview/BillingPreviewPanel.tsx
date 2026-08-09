@@ -42,8 +42,8 @@ const BillingPreviewPanel = () => {
         onValueChange={handleValueChange}
         className="flex h-full min-h-0 flex-1 flex-col gap-0"
       >
-        <div className="flex h-10 shrink-0 items-center gap-1 border-b px-2">
-          <TabsList className="grid h-8 min-w-0 flex-1 grid-cols-2">
+        <div className="flex h-11 shrink-0 items-center gap-2 border-b px-2">
+          <TabsList className="grid h-9 min-w-0 flex-1 grid-cols-2">
             <TabsTrigger value="bill" className="cursor-pointer">
               Preview
             </TabsTrigger>

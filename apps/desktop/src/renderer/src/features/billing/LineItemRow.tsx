@@ -55,6 +55,11 @@ const LineItemRow = memo(
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const partiallyChecked = item.checkedQty > 0 && item.checkedQty < qtyVal;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
+    const checkedFieldColor = checked
+      ? "bg-line-item-complete-field"
+      : partiallyChecked
+        ? "bg-line-item-partial-field"
+        : "bg-background";
 
     const [isFlash, setIsFlash] = useState(false);
     const prevTotalRef = useRef(item.totalPrice);
@@ -77,33 +82,42 @@ const LineItemRow = memo(
     return (
       <div key={item.rowId} data-billing-row-id={item.rowId} className="relative">
         <div
+          data-check-state={checked ? "complete" : partiallyChecked ? "partial" : "unchecked"}
           className={cn(
-            "group focus-within:border-border-strong grid min-h-(--billing-row-height) w-full items-center gap-1 rounded-(--radius-control) border px-1 transition-[background-color,border-color] duration-150",
+            "group focus-within:ring-focus/40 relative grid min-h-(--billing-row-height) w-full items-center gap-0.5 rounded-lg border px-0.5 transition-[background-color,border-color,box-shadow] duration-150 focus-within:ring-1",
             checkedColor,
-            dragHandle?.isDragging && "ring-primary/30 shadow-lg ring-2",
+            dragHandle?.isDragging && "ring-primary/30 z-20 shadow-lg ring-2",
             isCountColumnVisible ? "billing-grid-count" : "billing-grid"
           )}
         >
           <div className="h-full min-w-0">
             <div className="flex h-full items-center justify-between gap-1">
               {dragHandle && item.productSnapshot.trim() !== "" && !disableDrag ? (
-                <GripVertical
+                <button
+                  type="button"
                   {...dragHandle.attributes}
                   {...dragHandle.listeners}
-                  className="text-muted-foreground/60 hover:bg-accent hover:text-foreground active:bg-accent cursor-grab rounded-(--radius-control) focus:outline-none active:cursor-grabbing"
-                  size={20}
-                />
+                  aria-label={"Move row " + String(idx + 1)}
+                  className={cn(
+                    "text-foreground hover:bg-hover focus-visible:ring-focus/60 flex size-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-(--radius-control) focus-visible:ring-2 focus-visible:outline-none active:cursor-grabbing",
+                    dragHandle.isDragging && "bg-selected cursor-grabbing"
+                  )}
+                >
+                  <GripVertical size={18} />
+                </button>
               ) : (
-                <GripVertical
-                  className="text-muted-foreground/60 hover:bg-accent hover:text-foreground rounded-(--radius-control) opacity-0 group-focus-within:opacity-100 group-hover:opacity-100 hover:cursor-grab focus:outline-none"
-                  size={20}
-                />
+                <span
+                  aria-hidden="true"
+                  className="text-foreground flex size-6 shrink-0 items-center justify-center opacity-0"
+                >
+                  <GripVertical size={18} />
+                </span>
               )}
               <span className="text-foreground text-sm font-semibold">{idx + 1}</span>
               <button
                 type="button"
                 aria-label={`Delete row ${idx + 1}`}
-                className="text-destructive/75 hover:bg-destructive/10 hover:text-destructive flex size-7 items-center justify-center rounded-(--radius-control) opacity-0 transition-[opacity,color,background-color] group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100"
+                className="text-destructive hover:bg-destructive/10 flex size-7.5 items-center justify-center rounded-(--radius-control) opacity-0 transition-[opacity,color,background-color] group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -111,14 +125,17 @@ const LineItemRow = memo(
                   processSyncQueue(tabId);
                 }}
               >
-                <Trash2 size={16} />
+                <Trash2 size={18} strokeWidth={2.25} />
               </button>
             </div>
           </div>
           <div className="relative min-w-0">
             <input
               value={item.productSnapshot}
-              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/80 border-border/80 h-9 w-full rounded-(--radius-control) border px-3 py-2 text-base font-semibold shadow-none transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2"
+              className={cn(
+                "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/80 border-input h-9 w-full rounded-lg border px-3 py-2 text-base font-semibold shadow-xs transition-[border-color,box-shadow,background-color,color] outline-none focus-visible:ring-2",
+                checkedFieldColor
+              )}
               onClick={(e) => {
                 setItemQuery((e.target as HTMLInputElement).value);
                 setActiveRowId(item.rowId);
@@ -139,9 +156,17 @@ const LineItemRow = memo(
             )}
           </div>
           <div className="min-w-0">
-            <div className="bg-muted/60 border-border/70 relative mx-auto flex h-9 w-full items-center rounded-(--radius-control) border font-bold">
+            <div
+              className={cn(
+                "border-input focus-within:border-ring focus-within:ring-ring/50 relative mx-auto flex h-9 w-full items-center rounded-lg border font-bold shadow-xs transition-[border-color,box-shadow,background-color] focus-within:ring-2",
+                checkedFieldColor
+              )}
+            >
               <button
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-(--radius-control) border-r transition-colors"
+                className={cn(
+                  "text-foreground hover:bg-hover border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-lg border-r transition-colors",
+                  checkedFieldColor
+                )}
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -162,7 +187,7 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity}
-                className="focus-visible:border-ring focus-visible:ring-ring/50 placeholder:text-muted-foreground/60 min-w-0 flex-1 appearance-none rounded-md bg-transparent px-1 py-2 text-center text-sm font-semibold tabular-nums transition-[border-color,box-shadow,background-color,color] focus-visible:ring-2 focus-visible:ring-offset-0"
+                className="placeholder:text-muted-foreground/60 min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-sm font-semibold tabular-nums outline-none"
                 onChange={(e) => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -176,7 +201,10 @@ const LineItemRow = memo(
               />
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
-                className="bg-background text-foreground hover:bg-accent border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-(--radius-control) border-l transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                className={cn(
+                  "text-foreground hover:bg-hover border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-lg border-l transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                  checkedFieldColor
+                )}
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -217,7 +245,10 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }
                 }}
-                className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background text-foreground placeholder:text-muted-foreground/60 border-border/80 h-full w-full appearance-none rounded-(--radius-control) border py-2 pr-3 pl-8 text-right text-sm font-semibold tabular-nums focus-visible:ring-2 disabled:cursor-not-allowed"
+                className={cn(
+                  "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/60 border-input h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-sm font-semibold tabular-nums shadow-xs outline-none focus-visible:ring-2 disabled:cursor-not-allowed",
+                  checkedFieldColor
+                )}
               />
             </div>
           </div>
@@ -227,7 +258,16 @@ const LineItemRow = memo(
                 <IndianRupee size={14} />
               </span>
               <div
-                className={`bg-muted/40 border-border/70 text-foreground flex h-full w-full items-center justify-end rounded-(--radius-control) border px-3 pl-8 text-right text-sm font-semibold tabular-nums transition-[background-color] duration-150 ${isFlash ? "bg-accent" : ""}`}
+                className={cn(
+                  "border-input text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-sm font-semibold tabular-nums shadow-xs transition-[background-color] duration-150",
+                  checked
+                    ? "bg-line-item-complete-field"
+                    : partiallyChecked
+                      ? "bg-line-item-partial-field"
+                      : isFlash
+                        ? "bg-accent"
+                        : "bg-muted/40"
+                )}
               >
                 {item.totalPrice ? paisaToRupeeString(item.totalPrice) : "0"}
               </div>
@@ -283,7 +323,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={checked}
-                  className="border-border/70 bg-muted/60 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-(--radius-control) p-0 shadow-none"
+                  className="border-border/70 bg-muted/60 hover:bg-hover flex h-8 w-8 cursor-pointer items-center justify-center rounded-(--radius-control) p-0 shadow-none"
                 >
                   <Plus className="size-4" />
                 </Button>
@@ -304,7 +344,7 @@ const LineItemRow = memo(
                     processSyncQueue(tabId);
                   }}
                   disabled={item.checkedQty === 0}
-                  className="border-border/70 bg-muted/60 hover:bg-background flex h-8 w-8 cursor-pointer items-center justify-center rounded-(--radius-control) p-0 shadow-none"
+                  className="border-border/70 bg-muted/60 hover:bg-hover flex h-8 w-8 cursor-pointer items-center justify-center rounded-(--radius-control) p-0 shadow-none"
                 >
                   <Minus className="size-4" />
                 </Button>
@@ -339,7 +379,7 @@ export const SortableLineItemRow = (props: Omit<LineItemRowProps, "dragHandle">)
   };
 
   return (
-    <div ref={setNodeRef} style={style}>
+    <div ref={setNodeRef} style={style} className={cn("relative", isDragging && "z-20")}>
       <LineItemRow {...props} dragHandle={{ attributes, listeners, isDragging }} />
     </div>
   );

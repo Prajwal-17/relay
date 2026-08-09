@@ -36,23 +36,23 @@ export const OnboardingFlow = () => {
       className="bg-background-secondary fixed inset-0 z-50 flex items-stretch"
     >
       {/* left panel */}
-      <div className="from-onboarding-gradient-start via-onboarding-gradient-mid to-onboarding-gradient-end relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden bg-linear-to-br p-8 lg:flex">
-        <div className="bg-primary pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full opacity-20 blur-3xl" />
-
+      <div className="bg-onboarding-panel relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden p-8 lg:flex">
         <div className="relative z-10 flex items-center gap-3.5">
           <img
             src={quickcartLogo}
             alt={`${PRODUCT_NAME} logo`}
             className="h-10 w-auto rounded-(--radius-panel) object-contain"
           />
-          <span className="text-xl font-bold tracking-tight text-white">{PRODUCT_NAME}</span>
+          <span className="text-onboarding-text text-xl font-bold tracking-tight">
+            {PRODUCT_NAME}
+          </span>
         </div>
 
         <div className="relative z-10 flex flex-col gap-6">
           <div className="flex flex-col gap-3">
-            <h2 className="text-4xl leading-tight font-bold text-white">
+            <h2 className="text-onboarding-text text-4xl leading-tight font-bold">
               Billing made{" "}
-              <span className="text-primary inline-block rounded-lg px-1">effortless</span>
+              <span className="text-onboarding-text inline-block rounded-lg px-1">effortless</span>
             </h2>
             <p className="text-onboarding-text-muted text-sm leading-relaxed">
               Set up your store once. Track Customers, Generate invoices, and grow your business all
@@ -70,7 +70,7 @@ export const OnboardingFlow = () => {
                 className="flex items-center gap-3"
               >
                 <div className="bg-onboarding-icon-bg flex size-8 shrink-0 items-center justify-center rounded-(--radius-control)">
-                  <Icon className="text-primary h-5 w-5" />
+                  <Icon className="text-onboarding-feature-text h-5 w-5" />
                 </div>
                 <span className="text-onboarding-feature-text text-sm font-medium">{text}</span>
               </motion.div>

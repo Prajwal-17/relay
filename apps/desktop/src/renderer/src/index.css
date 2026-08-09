@@ -44,51 +44,91 @@
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
   /* Neutral palette */
-  --canvas: #f4f3ef;
+  --canvas: #f5f5f2;
   --surface-1: #ffffff;
-  --surface-2: #eceae3;
-  --surface-3: #e2dfd5;
+  --surface-2: #e8ebe6;
+  --surface-3: #d8ded7;
   --border-standard: #d8d5cc;
   --border-frame: #c3bfb4;
   --border-strong: #999487;
-  --ink: #1d1e1b;
-  --ink-muted: #4b4e46;
-  --ink-subtle: #696c63;
+  --ink: #20231f;
+  --ink-muted: #4d544c;
+  --ink-subtle: #4d544c;
 
-  /* Brand and actions */
-  --primary: #292b26;
-  --primary-hover: #171815;
-  --primary-focus: rgb(41 43 38 / 0.28);
+  /* Operational accents */
+  --counter-accent: #b6532b;
+  --counter-accent-hover: #96411f;
+  --counter-accent-soft: #fbe9e1;
+  --counter-accent-foreground: #76351f;
+  --sales-accent: #1f9d72;
+  --sales-accent-hover: #198660;
+  --sales-accent-soft: #e3f5ef;
+  --sales-accent-foreground: #0b5c43;
+  --estimate-accent: #b44a68;
+  --estimate-accent-hover: #973951;
+  --estimate-accent-soft: #f8e9ee;
+  --estimate-accent-foreground: #6f263e;
+  --olive-accent: #5e7837;
+  --olive-accent-soft: #d4e6ad;
+  --olive-accent-foreground: #3f521b;
+  --gold-accent: #d18a12;
+  --gold-accent-soft: #fff0c7;
+  --gold-accent-border: #e2a93c;
+  --gold-accent-foreground: #754300;
+
+  /* Compact commerce tags */
+  --unit-tag-bg: #e3f5ef;
+  --unit-tag-border: #75bea5;
+  --unit-tag-text: #0b5c43;
+  --mrp-tag-bg: var(--gold-accent-soft);
+  --mrp-tag-border: var(--gold-accent-border);
+  --mrp-tag-text: var(--gold-accent-foreground);
+
+  /* Interaction palette */
+  --hover: #e8ebe6;
+  --selected: #d8ded7;
+  --selection-marker: var(--counter-accent);
+  --focus: var(--counter-accent);
+  --table-header: #e9ebe6;
+  --calendar-range: #e8c9bc;
+  --calendar-range-foreground: var(--counter-accent-foreground);
+  --calendar-range-edge: var(--counter-accent-hover);
+  --calendar-range-edge-hover: var(--counter-accent-foreground);
+  --calendar-range-edge-foreground: #ffffff;
+
+  /* Actions */
+  --primary: #283129;
+  --primary-hover: #1b211c;
   --on-primary: #ffffff;
-  --brand: #4b6cb0;
-  --brand-hover: #3b5690;
-  --brand-soft: #e3e9f4;
-  --brand-foreground: #21375d;
 
   /* Sidebar */
   --sidebar: var(--surface-1);
   --sidebar-foreground: var(--ink);
-  --sidebar-primary: var(--brand);
+  --sidebar-primary: var(--counter-accent);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--brand-soft);
+  --sidebar-accent: var(--hover);
   --sidebar-accent-foreground: var(--ink);
+  --nav-icon-active-bg: var(--primary);
+  --nav-icon-active-foreground: var(--on-primary);
 
   /* Semantic states */
-  --success: #25613c;
+  --success: #1f6a43;
   --success-foreground: #ffffff;
-  --warning: #9a5a0a;
+  --warning: #875b1d;
   --warning-foreground: #ffffff;
-  --destructive: #b33a2e;
+  --line-item-complete: #bfe2cc;
+  --line-item-complete-field: #d9efe1;
+  --line-item-partial: #dfc99f;
+  --line-item-partial-field: #efe2c8;
+  --destructive: #9b342a;
   --destructive-foreground: #ffffff;
-  --info: #3e6478;
-  --info-foreground: #ffffff;
 
   /* Charts */
-  --chart-1: var(--brand);
-  --chart-2: #3f7450;
-  --chart-3: #b86745;
-  --chart-4: #527187;
-  --chart-5: #42443e;
+  --chart-1: var(--sales-accent);
+  --chart-2: var(--estimate-accent);
+  --chart-3: var(--counter-accent);
+  --chart-4: #7a8b43;
+  --chart-5: #d18a12;
 
   /* Semantic token map */
   --background: var(--canvas);
@@ -106,8 +146,8 @@
   --secondary: var(--surface-2);
   --secondary-foreground: var(--ink);
 
-  --accent: var(--brand-soft);
-  --accent-foreground: var(--brand-foreground);
+  --accent: var(--hover);
+  --accent-foreground: var(--ink);
 
   --muted: var(--surface-2);
   --muted-foreground: var(--ink-muted);
@@ -116,46 +156,43 @@
   --borderprimary: var(--border-strong);
   --input: var(--border-standard);
 
-  --ring: var(--brand);
+  --ring: var(--focus);
 
   /* Onboarding */
-  --onboarding-gradient-start: #30312c;
-  --onboarding-gradient-mid: #242520;
-  --onboarding-gradient-end: #171815;
-  --onboarding-text-muted: #c9c5b8;
-  --onboarding-text-footer: #aaa596;
-  --onboarding-icon-bg: rgb(75 108 176 / 0.18);
-  --onboarding-feature-text: #eceae3;
-  --onboarding-icon-dark: var(--brand);
+  --onboarding-panel: #202720;
+  --onboarding-text: #ffffff;
+  --onboarding-text-muted: #d8ded7;
+  --onboarding-text-footer: #d8ded7;
+  --onboarding-icon-bg: rgb(255 255 255 / 0.1);
+  --onboarding-feature-text: #f5f5f2;
+  --onboarding-icon-dark: var(--selection-marker);
+  --onboarding-step-active: var(--selection-marker);
+  --onboarding-step-complete: var(--success);
+  --onboarding-step-inactive: var(--hover);
+  --onboarding-step-border: var(--selected);
 
   /* Product Dialog */
   --product-label: var(--ink-muted);
   --product-value: var(--ink);
   --product-surface: var(--surface-1);
-  --product-surface-hover: var(--surface-2);
+  --product-surface-hover: var(--hover);
   --product-divider: var(--border-standard);
-  --product-badge-bg: var(--brand-soft);
-  --product-badge-text: var(--brand-foreground);
+  --product-badge-bg: var(--selected);
+  --product-badge-text: var(--ink);
 
   /* Search Dropdown */
   --search-highlight: oklch(93% 0.14 95);
   --search-icon-bg-from: var(--surface-1);
-  --search-icon-bg-to: var(--surface-2);
+  --search-icon-bg-to: var(--hover);
   --search-icon-fg: var(--primary);
-
-  /* Product Badges */
-  --badge-mrp-border: #c4924c;
-  --badge-mrp-bg: #f5e7d0;
-  --badge-mrp-text: #72470d;
 
   /* Invoice-only tokens: intentionally isolated from the screen theme. */
   --invoice-bg: #ffffff;
-  --invoice-text: #171815;
-  --invoice-text-muted: #4b4e46;
-  --invoice-accent: #292b26;
-  --invoice-brand: var(--brand);
+  --invoice-text: #20231f;
+  --invoice-text-muted: #4d544c;
+  --invoice-accent: #283129;
   --invoice-border: #aaa596;
-  --invoice-table-header-bg: #eceae3;
+  --invoice-table-header-bg: #e9ebe6;
 
   /* Shadows */
   --shadow-xs: 0 1px 2px rgb(29 30 27 / 0.08);
@@ -189,10 +226,43 @@
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
-  --color-brand: var(--brand);
-  --color-brand-hover: var(--brand-hover);
-  --color-brand-soft: var(--brand-soft);
-  --color-brand-foreground: var(--brand-foreground);
+
+  --color-counter-accent: var(--counter-accent);
+  --color-counter-accent-hover: var(--counter-accent-hover);
+  --color-counter-accent-soft: var(--counter-accent-soft);
+  --color-counter-accent-foreground: var(--counter-accent-foreground);
+  --color-sales: var(--sales-accent);
+  --color-sales-hover: var(--sales-accent-hover);
+  --color-sales-soft: var(--sales-accent-soft);
+  --color-sales-foreground: var(--sales-accent-foreground);
+  --color-estimate: var(--estimate-accent);
+  --color-estimate-hover: var(--estimate-accent-hover);
+  --color-estimate-soft: var(--estimate-accent-soft);
+  --color-estimate-foreground: var(--estimate-accent-foreground);
+  --color-olive-accent: var(--olive-accent);
+  --color-olive-accent-soft: var(--olive-accent-soft);
+  --color-olive-accent-foreground: var(--olive-accent-foreground);
+  --color-gold-accent: var(--gold-accent);
+  --color-gold-accent-soft: var(--gold-accent-soft);
+  --color-gold-accent-border: var(--gold-accent-border);
+  --color-gold-accent-foreground: var(--gold-accent-foreground);
+  --color-unit-tag-bg: var(--unit-tag-bg);
+  --color-unit-tag-border: var(--unit-tag-border);
+  --color-unit-tag-text: var(--unit-tag-text);
+  --color-mrp-tag-bg: var(--mrp-tag-bg);
+  --color-mrp-tag-border: var(--mrp-tag-border);
+  --color-mrp-tag-text: var(--mrp-tag-text);
+
+  --color-hover: var(--hover);
+  --color-selected: var(--selected);
+  --color-marker: var(--selection-marker);
+  --color-focus: var(--focus);
+  --color-table-header: var(--table-header);
+  --color-calendar-range: var(--calendar-range);
+  --color-calendar-range-foreground: var(--calendar-range-foreground);
+  --color-calendar-range-edge: var(--calendar-range-edge);
+  --color-calendar-range-edge-hover: var(--calendar-range-edge-hover);
+  --color-calendar-range-edge-foreground: var(--calendar-range-edge-foreground);
 
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -211,9 +281,10 @@
 
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
+  --color-line-item-complete: var(--line-item-complete);
+  --color-line-item-complete-field: var(--line-item-complete-field);
+  --color-line-item-partial: var(--line-item-partial);
+  --color-line-item-partial-field: var(--line-item-partial-field);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -233,15 +304,20 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-nav-icon-active-bg: var(--nav-icon-active-bg);
+  --color-nav-icon-active-foreground: var(--nav-icon-active-foreground);
 
-  --color-onboarding-gradient-start: var(--onboarding-gradient-start);
-  --color-onboarding-gradient-mid: var(--onboarding-gradient-mid);
-  --color-onboarding-gradient-end: var(--onboarding-gradient-end);
+  --color-onboarding-panel: var(--onboarding-panel);
+  --color-onboarding-text: var(--onboarding-text);
   --color-onboarding-text-muted: var(--onboarding-text-muted);
   --color-onboarding-text-footer: var(--onboarding-text-footer);
   --color-onboarding-icon-bg: var(--onboarding-icon-bg);
   --color-onboarding-feature-text: var(--onboarding-feature-text);
   --color-onboarding-icon-dark: var(--onboarding-icon-dark);
+  --color-onboarding-step-active: var(--onboarding-step-active);
+  --color-onboarding-step-complete: var(--onboarding-step-complete);
+  --color-onboarding-step-inactive: var(--onboarding-step-inactive);
+  --color-onboarding-step-border: var(--onboarding-step-border);
 
   --color-ring: var(--ring);
 
@@ -257,15 +333,11 @@
   --color-search-icon-bg-from: var(--search-icon-bg-from);
   --color-search-icon-bg-to: var(--search-icon-bg-to);
   --color-search-icon-fg: var(--search-icon-fg);
-  --color-badge-mrp-border: var(--badge-mrp-border);
-  --color-badge-mrp-bg: var(--badge-mrp-bg);
-  --color-badge-mrp-text: var(--badge-mrp-text);
 
   --color-invoice-bg: var(--invoice-bg);
   --color-invoice-text: var(--invoice-text);
   --color-invoice-text-muted: var(--invoice-text-muted);
   --color-invoice-accent: var(--invoice-accent);
-  --color-invoice-brand: var(--invoice-brand);
   --color-invoice-border: var(--invoice-border);
   --color-invoice-table-header-bg: var(--invoice-table-header-bg);
 
@@ -353,8 +425,8 @@
   }
 
   ::selection {
-    background-color: var(--brand);
-    color: var(--on-primary);
+    background-color: var(--selected);
+    color: var(--ink);
   }
 
   button,
@@ -429,7 +501,7 @@
     background-clip: content-box;
   }
   &::-webkit-scrollbar-thumb:hover {
-    background-color: var(--brand);
+    background-color: var(--selection-marker);
   }
 }
 

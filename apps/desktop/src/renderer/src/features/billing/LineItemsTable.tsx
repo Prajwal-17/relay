@@ -168,7 +168,7 @@ const LineItemsTable = () => {
             <span>
               Qty <strong className="text-foreground ml-1">{totalQty}</strong>
             </span>
-            <span className={allChecked ? "text-success" : totalChecked > 0 ? "text-warning" : ""}>
+            <span>
               Checked{" "}
               <strong className="ml-1">
                 {allChecked ? "All" : String(totalChecked) + "/" + String(totalQty)}
@@ -229,8 +229,8 @@ const LineItemsTable = () => {
         <div
           className={
             isCountColumnVisible
-              ? "billing-grid-count text-muted-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
-              : "billing-grid text-muted-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
+              ? "billing-grid-count bg-table-header text-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
+              : "billing-grid bg-table-header text-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
           }
         >
           <div className="text-center">Row</div>

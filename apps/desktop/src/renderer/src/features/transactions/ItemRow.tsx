@@ -46,21 +46,28 @@ export const ItemRow = ({
 
   return (
     <tr
+      data-check-state={checked ? "complete" : partial ? "partial" : "unchecked"}
       className={cn(
-        "border-border hover:bg-accent border-b text-sm transition-colors",
-        checked && "bg-success/20 hover:bg-success/20",
-        partial && "bg-warning/20 hover:bg-warning/20",
-        !checked && !partial && "bg-card"
+        "border-b text-sm transition-colors",
+        checked && "border-success bg-line-item-complete hover:bg-line-item-complete",
+        partial && "border-warning bg-line-item-partial hover:bg-line-item-partial",
+        !checked && !partial && "border-border bg-card hover:bg-hover"
       )}
     >
-      <td className="text-muted-foreground h-11.5 px-2 text-center font-medium tabular-nums">
+      <td
+        className={cn(
+          "text-muted-foreground h-11.5 px-2 text-center font-medium tabular-nums",
+          checked && "border-l-success border-l-4",
+          partial && "border-l-warning border-l-4"
+        )}
+      >
         {index}
       </td>
       <td
         className={cn(
           "text-foreground max-w-0 truncate px-2.5 text-left font-semibold",
-          checked && "text-success line-through",
-          partial && "text-warning"
+          checked && "text-foreground line-through",
+          partial && "text-foreground"
         )}
         title={item.productSnapshot}
       >
@@ -104,8 +111,7 @@ export const ItemRow = ({
           <div
             className={cn(
               "min-w-0 flex-1 text-center text-sm font-semibold whitespace-nowrap tabular-nums",
-              checked && "text-success",
-              partial && "text-warning"
+              (checked || partial) && "text-foreground"
             )}
           >
             {fromMilliUnits(item.checkedQty)}
@@ -118,7 +124,7 @@ export const ItemRow = ({
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.INCREMENT)}
             disabled={!canModify || isUpdating || checked}
             aria-label="Increase checked quantity"
-            className="border-border/70 bg-muted/60 hover:bg-background size-8 cursor-pointer rounded-(--radius-control) shadow-none"
+            className="border-border/70 bg-muted/60 hover:bg-hover size-8 cursor-pointer rounded-(--radius-control) shadow-none"
           >
             <Plus className="size-4" />
           </Button>
@@ -128,7 +134,7 @@ export const ItemRow = ({
             onClick={() => handleUpdateQty(UPDATE_QTY_ACTION.DECREMENT)}
             disabled={!canModify || isUpdating || item.checkedQty === 0}
             aria-label="Decrease checked quantity"
-            className="border-border/70 bg-muted/60 hover:bg-background size-8 cursor-pointer rounded-(--radius-control) shadow-none"
+            className="border-border/70 bg-muted/60 hover:bg-hover size-8 cursor-pointer rounded-(--radius-control) shadow-none"
           >
             <Minus className="size-4" />
           </Button>

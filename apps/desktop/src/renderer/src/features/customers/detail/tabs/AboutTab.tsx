@@ -295,7 +295,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 navigator.clipboard.writeText(customer.id);
                 toast.success("ID copied to clipboard");
               }}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/60 flex size-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors"
+              className="text-muted-foreground hover:text-foreground hover:bg-hover flex size-9 shrink-0 items-center justify-center rounded-lg border border-transparent transition-colors"
               title="Copy ID"
             >
               <Copy className="size-4" />

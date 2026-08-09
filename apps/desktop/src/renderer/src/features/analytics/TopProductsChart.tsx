@@ -14,11 +14,11 @@ import { useMemo } from "react";
 import { Cell, Legend, Pie, PieChart } from "recharts";
 
 const COLORS = [
-  "var(--chart-3)", // Deep Teal
-  "var(--chart-4)", // Slate Blue
-  "var(--chart-5)", // Muted Orange
-  "var(--chart-1)", // Lavender
-  "var(--chart-2)" // Green
+  "var(--chart-3)", // Terracotta
+  "var(--chart-4)", // Olive
+  "var(--chart-5)", // Amber
+  "var(--chart-1)", // Sales teal
+  "var(--chart-2)" // Estimate berry
 ];
 
 const chartConfig = {
@@ -62,7 +62,7 @@ export const TopProductsChart = () => {
         ) : isLoading ? (
           <div className="flex flex-1 justify-center gap-2">
             <span className="text-muted-foreground text-sm font-medium">Loading</span>
-            <LoaderCircle className="text-primary animate-spin" size={18} />
+            <LoaderCircle className="text-counter-accent animate-spin" size={18} />
           </div>
         ) : colorizedData.length === 0 ? (
           <div className="text-muted-foreground flex h-68 items-center justify-center">

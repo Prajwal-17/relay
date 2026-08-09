@@ -9,10 +9,10 @@ export default function NotFound() {
   return (
     <main className="bg-background flex h-full min-h-0 items-center justify-center p-3">
       <section className="border-border bg-card w-full max-w-md rounded-(--radius-panel) border p-4 text-center">
-        <span className="bg-brand-soft text-brand-foreground mx-auto flex size-10 items-center justify-center rounded-(--radius-control)">
+        <span className="bg-hover text-foreground mx-auto flex size-10 items-center justify-center rounded-(--radius-control)">
           <MapPinOff className="size-5" />
         </span>
-        <p className="text-brand-foreground mt-3 text-xs font-semibold tracking-wide uppercase">
+        <p className="text-foreground mt-3 text-xs font-semibold tracking-wide uppercase">
           Error 404
         </p>
         <h1 className="text-foreground mt-1 text-lg font-semibold">Page not found</h1>

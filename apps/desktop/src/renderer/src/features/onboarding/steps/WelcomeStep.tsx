@@ -36,7 +36,7 @@ export const WelcomeStep = () => {
         className="flex flex-col gap-3"
       >
         <h1 className="text-foreground text-4xl font-bold tracking-tight">
-          Welcome to <span className="text-brand">{PRODUCT_NAME}</span>
+          Welcome to <span className="text-foreground">{PRODUCT_NAME}</span>
         </h1>
         <p className="text-muted-foreground max-w-md text-sm leading-relaxed">
           Your all in one billing companion. Let&apos;s take 2 minutes to set up your store before
@@ -53,7 +53,7 @@ export const WelcomeStep = () => {
         {FEATURE_PILLS.map((feat) => (
           <span
             key={feat}
-            className="border-brand/50 bg-brand-soft text-brand-foreground rounded-full border px-3 py-1 text-xs font-medium"
+            className="border-border bg-hover text-foreground rounded-full border px-3 py-1 text-xs font-medium"
           >
             {feat}
           </span>

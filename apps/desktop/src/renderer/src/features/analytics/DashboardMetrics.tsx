@@ -36,7 +36,7 @@ export const DashboardMetrics = () => {
         {isLoading ? (
           <Card className="bg-card flex h-full items-center justify-center border">
             <CardContent className="py-0">
-              <LoaderCircle className="text-primary animate-spin" size={20} />
+              <LoaderCircle className="text-counter-accent animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (
@@ -54,7 +54,7 @@ export const DashboardMetrics = () => {
         {isLoading ? (
           <Card className="bg-card flex h-full items-center justify-center border">
             <CardContent className="py-0">
-              <LoaderCircle className="text-primary animate-spin" size={20} />
+              <LoaderCircle className="text-counter-accent animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (
@@ -72,7 +72,7 @@ export const DashboardMetrics = () => {
         {isLoading ? (
           <Card className="bg-card col-span-2 grid grid-cols-2 grid-rows-2 items-center justify-center border">
             <CardContent className="col-span-2 row-span-2 flex h-full w-full items-center justify-center py-0">
-              <LoaderCircle className="text-primary animate-spin" size={20} />
+              <LoaderCircle className="text-counter-accent animate-spin" size={20} />
             </CardContent>
           </Card>
         ) : (

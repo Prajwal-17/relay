@@ -43,17 +43,11 @@ export function RecentTransactionsTable() {
         <CardTitle className="text-xl">Recent Transactions</CardTitle>
         <Tabs value={type} onValueChange={(value) => setType(value as TransactionType)}>
           <TabsList>
-            <TabsTrigger
-              className="data-[state=active]:bg-success/10 data-[state=active]:text-success cursor-pointer"
-              value={TRANSACTION_TYPE.SALE}
-            >
+            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.SALE}>
               {TRANSACTION_TYPE.SALE.charAt(0).toUpperCase()}
               {TRANSACTION_TYPE.SALE.slice(1)}
             </TabsTrigger>
-            <TabsTrigger
-              className="data-[state=active]:bg-info/10 data-[state=active]:text-info cursor-pointer"
-              value={TRANSACTION_TYPE.ESTIMATE}
-            >
+            <TabsTrigger className="cursor-pointer" value={TRANSACTION_TYPE.ESTIMATE}>
               {TRANSACTION_TYPE.ESTIMATE.charAt(0).toUpperCase()}
               {TRANSACTION_TYPE.ESTIMATE.slice(1)}
             </TabsTrigger>
@@ -68,7 +62,7 @@ export function RecentTransactionsTable() {
           </div>
         ) : (
           <div className="border-border/60 rounded-lg border shadow-md">
-            <div className="bg-muted text-muted-foreground grid grid-cols-12 gap-4 px-4 py-2 text-base font-semibold">
+            <div className="bg-table-header text-foreground grid grid-cols-12 gap-4 px-4 py-2 text-base font-semibold">
               <div className="col-span-2 flex items-center">Date</div>
               <div className="col-span-3 flex items-center">Customer Name</div>
               <div className="col-span-2 flex items-center">

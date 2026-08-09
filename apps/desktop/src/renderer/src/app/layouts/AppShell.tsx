@@ -72,7 +72,7 @@ const AppShell = () => {
                 onClick={toggleSidebar}
                 aria-label={isNavigationOpen ? "Close navigation" : "Open navigation"}
                 className={cn(
-                  "text-muted-foreground hover:text-foreground hover:bg-accent inline-flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) transition-colors outline-none",
+                  "text-muted-foreground hover:text-foreground hover:bg-hover inline-flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) transition-colors outline-none",
                   "focus-visible:ring-ring/30 focus-visible:ring-2"
                 )}
               >

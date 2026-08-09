@@ -87,7 +87,7 @@ export const LocationStep = () => {
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-2">
-        <div className="bg-brand-soft flex size-10 items-center justify-center rounded-(--radius-panel)">
+        <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
           <MapPin className="text-onboarding-icon-dark size-5" />
         </div>
         <h2 className="text-foreground text-xl font-semibold tracking-tight">

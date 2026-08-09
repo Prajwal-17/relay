@@ -2,41 +2,74 @@
 name: QuickCart Desktop
 description: "A compact, keyboard-first billing workspace for fast and dependable shop-counter operation."
 colors:
-  canvas: "#f4f3ef"
+  canvas: "#f5f5f2"
   surface-1: "#ffffff"
-  surface-2: "#eceae3"
-  surface-3: "#e2dfd5"
+  surface-2: "#e8ebe6"
+  surface-3: "#d8ded7"
   border-standard: "#d8d5cc"
   border-frame: "#c3bfb4"
   border-strong: "#999487"
-  ink: "#1d1e1b"
-  ink-muted: "#4b4e46"
-  ink-subtle: "#696c63"
-  primary: "#292b26"
-  primary-hover: "#171815"
+  ink: "#20231f"
+  ink-muted: "#4d544c"
+  ink-subtle: "#4d544c"
+  hover: "#e8ebe6"
+  selected: "#d8ded7"
+  counter-accent: "#b6532b"
+  counter-accent-hover: "#96411f"
+  counter-accent-soft: "#fbe9e1"
+  counter-accent-foreground: "#76351f"
+  sales-accent: "#1f9d72"
+  sales-accent-hover: "#198660"
+  sales-accent-soft: "#e3f5ef"
+  sales-accent-foreground: "#0b5c43"
+  estimate-accent: "#b44a68"
+  estimate-accent-hover: "#973951"
+  estimate-accent-soft: "#f8e9ee"
+  estimate-accent-foreground: "#6f263e"
+  olive-accent: "#5e7837"
+  olive-accent-soft: "#d4e6ad"
+  olive-accent-foreground: "#3f521b"
+  gold-accent: "#d18a12"
+  gold-accent-soft: "#fff0c7"
+  gold-accent-border: "#e2a93c"
+  gold-accent-foreground: "#754300"
+  selection-marker: "#b6532b"
+  focus: "#b6532b"
+  table-header: "#e9ebe6"
+  calendar-range: "#e8c9bc"
+  calendar-range-foreground: "#76351f"
+  calendar-range-edge: "#96411f"
+  calendar-range-edge-hover: "#76351f"
+  calendar-range-edge-foreground: "#ffffff"
+  primary: "#283129"
+  primary-hover: "#1b211c"
   on-primary: "#ffffff"
-  brand: "#4b6cb0"
-  brand-hover: "#3b5690"
-  brand-soft: "#e3e9f4"
-  brand-foreground: "#21375d"
-  success: "#25613c"
-  warning: "#9a5a0a"
-  destructive: "#b33a2e"
-  info: "#3e6478"
-  chart-green: "#3f7450"
-  chart-terracotta: "#b86745"
-  chart-steel: "#527187"
-  chart-charcoal: "#42443e"
+  unit-tag-background: "#e3f5ef"
+  unit-tag-border: "#75bea5"
+  unit-tag-text: "#0b5c43"
+  mrp-tag-background: "#fff0c7"
+  mrp-tag-border: "#e2a93c"
+  mrp-tag-text: "#754300"
+  onboarding-panel: "#202720"
+  success: "#1f6a43"
+  warning: "#875b1d"
+  line-item-complete: "#bfe2cc"
+  line-item-complete-field: "#d9efe1"
+  line-item-partial: "#dfc99f"
+  line-item-partial-field: "#efe2c8"
+  destructive: "#9b342a"
+  chart-1: "#1f9d72"
+  chart-2: "#b44a68"
+  chart-3: "#b6532b"
+  chart-4: "#7a8b43"
+  chart-5: "#d18a12"
   search-highlight: "oklch(93% 0.14 95)"
-  mrp-border: "#c4924c"
-  mrp-background: "#f5e7d0"
-  mrp-text: "#72470d"
   invoice-background: "#ffffff"
-  invoice-text: "#171815"
-  invoice-muted: "#4b4e46"
-  invoice-accent: "#292b26"
+  invoice-text: "#20231f"
+  invoice-muted: "#4d544c"
+  invoice-accent: "#283129"
   invoice-border: "#aaa596"
-  invoice-table-header: "#eceae3"
+  invoice-table-header: "#e9ebe6"
 typography:
   body:
     fontFamily: "InterVariable, system-ui, sans-serif"
@@ -132,8 +165,8 @@ components:
     padding: "0 8px"
     height: "40px"
   navigation-row-active:
-    backgroundColor: "{colors.brand-soft}"
-    textColor: "{colors.brand-foreground}"
+    backgroundColor: "{colors.selected}"
+    textColor: "{colors.ink}"
   table-row:
     backgroundColor: "{colors.surface-1}"
     textColor: "{colors.ink}"
@@ -169,13 +202,19 @@ The neutral system carries most of the interface. Use `canvas` for the applicati
 
 Color roles are deliberately separate:
 
-- `primary` is the dependable charcoal action color. It owns generic high-priority actions such as New Sale, Add Product, Add Row, Save Changes, and confirmations.
-- `brand` is the restrained blue accent. It identifies QuickCart, active navigation, selection, and focus. It is not the default fill for every button.
-- `success`, `warning`, `destructive`, and `info` communicate meaning. They must not be repurposed because they happen to look attractive in a composition.
-- Sales retain a permanent `success` identity; estimates retain a permanent `info` identity. Apply that distinction consistently to billing tabs, route markers, transaction labels, and workflow-specific Save & Print actions. Always pair color with text or an icon.
-- `search-highlight` is a narrow semantic exception: it marks the matching characters inside search results. It is not a brand color, active-row fill, or button hover.
-- The MRP palette is reserved for MRP and price-comparison badges.
-- Chart series use brand blue, green, terracotta, steel, and charcoal. Legends and direct labels are required whenever color alone would be ambiguous.
+- `primary` remains the dependable charcoal action color for generic confirmations and configuration actions.
+- `counter-accent` is a warm terracotta utility accent. Use it for focus, selection markers, loading indicators, and small directional affordances; primary billing actions remain charcoal.
+- `sales-accent` is a restrained teal identity for compact Sales cues and chart series. `estimate-accent` is a cooler berry identity for the corresponding Estimate cues. Large workflow buttons do not use these identity colors. Labels and icons remain present so color is never the only distinction.
+- Sales and Estimates are operational identities, not semantic statuses. Customer types remain neutral. Ledger-entry types use color only inside their compact icon plates: Sale teal, Quick Sale terracotta, Payment berry, Adjustment gold, and Opening olive. Row surfaces and labels remain neutral, while the distinct icons and text keep color supplementary.
+- `olive-accent` is reserved for Opening ledger entries. `gold-accent` supports Adjustment ledger entries and compact MRP metadata. Their solid borders and dark hue-matched foregrounds preserve visibility on low-resolution displays; neither color is a semantic status or a general surface.
+- `hover` and `selected` remain neutral interaction surfaces so dense tables, menus, and search results stay calm; `selection-marker` and `focus` use warm terracotta for clarity. Inactive sidebar icons stay transparent with stronger ink. Every active navigation icon uses the same solid charcoal surface with a white icon and no border; route identities do not change sidebar icon color.
+- `calendar-range-*` uses the confirmed terracotta endpoint color with a calmer hue-matched span and no perimeter rule. The endpoint buttons provide the strong boundary; the uninterrupted middle surface keeps multi-week ranges readable without striped outlines. Unselected day hover uses `counter-accent-soft` with `counter-accent-foreground`, never the generic slate `hover` surface.
+- `table-header` separates dense headers from body rows and must use strong foreground text.
+- `unit-tag-*` gives unit/weight metadata a compact teal tint. `mrp-tag-*` uses a compact warm price accent. Both use strong, non-muted text and the same fixed height.
+- `success`, `warning`, and `destructive` are reserved for genuine saved or completed, incomplete, failed, and destructive states. Billing line items are the deliberate row-surface exception: completed rows use `line-item-complete*` with a solid success frame; partially checked rows use `line-item-partial*` with a solid warning frame; unchecked rows stay white. This lets billers recognize pick/count state peripherally without searching for the checkbox. Status styling must not share the draggable row’s elevation shadow. Do not reuse these bounded status surfaces on generic cards, tags, or badges.
+- Financial balances render primarily in `ink`; due and advance meaning comes from the accompanying label or sign, not danger and success color.
+- `search-highlight` uses the established bright yellow match cue so billers can scan query hits quickly. It marks only matching characters and is never an active-row fill or button hover.
+- Charts use Sales teal, Estimate berry, terracotta, olive, and amber series. Legends and direct labels remain required whenever color alone would be ambiguous.
 
 Invoice colors are isolated from the screen theme. Receipt and A4 output may reference only the `invoice-*` tokens for paper, text, rules, headers, and accents. A screen-theme change must never silently alter print legibility.
 
@@ -215,6 +254,7 @@ The shared density contract is:
 | Default / compact / workflow control |                           36px / 32px / 40px |
 | Billing and standard table row       |                                         42px |
 | Product list row                     |                                         60px |
+| Billing product search result        |                                         54px |
 | Page and panel inset                 |                                         12px |
 | Common / section gap                 |                                   8px / 12px |
 
@@ -233,16 +273,16 @@ Virtualized dimensions are part of the layout contract and must change with the 
 
 Use these route compositions:
 
-| Surface                | Required composition                                                                                                                      |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                |
-| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                 |
-| Sales and Estimates    | Quick statistics, sort/filter command bar, then the transaction table. Preserve this order until the planned dashboard redesign.          |
-| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                            |
-| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                   |
-| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                              |
-| Onboarding             | Two-panel presentation on wide screens and a single readable form column when space is constrained; every step fits the supported height. |
-| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                           |
+| Surface                | Required composition                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                              |
+| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                               |
+| Sales and Estimates    | Quick statistics, sort/filter command bar, then the transaction table. Preserve this order until the planned dashboard redesign.                        |
+| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                                          |
+| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                 |
+| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                            |
+| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height. |
+| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                         |
 
 ## Elevation & Depth
 
@@ -275,17 +315,17 @@ Do not copy a primitive into a feature folder to avoid understanding it. Do not 
 
 ### Shared primitives
 
-- **Buttons:** Default actions are charcoal. Outline is the standard secondary action. Destructive is used only for irreversible or materially harmful operations. Compact buttons are 32px; default buttons are 36px; 40px is reserved for the primary workflow action. A button label states the outcome, such as “Save & Print,” not a vague “Continue.”
+- **Buttons:** Generic default actions are charcoal. Primary create and Save & Print actions use charcoal `primary`; the persistent New Estimate shortcut is a berry-accented secondary action. Outline is the standard secondary action. Destructive is used only for irreversible or materially harmful operations. Compact buttons are 32px; default buttons are 36px; 40px is reserved for the primary workflow action. A button label states the outcome, such as “Save & Print,” not a vague “Continue.”
 - **Inputs and selects:** Default to 36px with body text. Labels remain visible outside the field; placeholders show format or example, never the only label. Invalid state includes specific inline text and `aria-invalid`, not color alone.
 - **Cards:** Use `CompactCard` for dense application panels. Card padding does not create page layout; the parent owns inter-panel spacing. Avoid nested cards when a divider or section heading is sufficient.
 - **Dialogs:** Header and footer stay visible; the body owns vertical scrolling. Content must fit within the 650px baseline with viewport-safe maximum height. Focus is trapped, Escape closes when safe, and focus returns to the trigger. Destructive confirmations name the object and consequence.
-- **Tabs:** Use tabs only for peer views of the same object. The shared tab list uses the control radius, a standard border, compact internal padding and spacing, muted inactive labels, and a brand-soft active surface. Sale and estimate tabs may replace only the active color with their semantic success or info treatment. Tab bars remain one compact row; overflow scrolls horizontally without widening the page.
+- **Tabs:** Use tabs only for peer views of the same object. The shared tab list uses the control radius, a standard border, compact internal padding and spacing, muted inactive labels, `hover` for hover, and `selected` for the active surface. Active Sale and Estimate tabs use the neutral `selected` surface with a compact identity dot and underline, plus visible type labels. Segmented tab lists keep a 4px inner inset and evenly fill the available width without triggers touching the outer frame. Tab bars remain one compact row; overflow scrolls horizontally without widening the page.
 - **Tooltips:** Support unfamiliar icon-only controls and billing-rail navigation. They never contain essential instructions and never replace accessible names.
 - **Badges and statuses:** Use short nouns or past-participle states. Preserve the semantic color mapping and include readable text. Avoid using badges as decoration.
 
 ### Data and financial components
 
-Tables have a distinct header, aligned columns, 42–44px rows, and a stable action region. Row hover is subtle; keyboard focus and selected state must be equally clear. Actions appear on hover **and** focus/selection so keyboard users do not lose functionality. Loading, empty, error, and end-of-results states occupy the table frame without shifting surrounding controls.
+Tables use `table-header` with strong foreground text, aligned columns, 42–44px rows, and a stable action region. Every row uses `hover` for pointer hover and `selected` for keyboard focus or selection; the stronger `selection-marker` appears only where a persistent marker is needed. Actions appear on hover **and** focus/selection so keyboard users do not lose functionality. Loading, empty, error, and end-of-results states occupy the table frame without shifting surrounding controls.
 
 Summary cards put the label and amount in one deliberate horizontal composition when width permits. The amount owns the flexible or right-aligned region, uses tabular numerals, and must handle large Indian-formatted values. Do not stack a small label above an amount when doing so leaves unusable horizontal space or causes the number to collide with neighboring cards.
 
@@ -301,13 +341,15 @@ Billing is the highest-priority interaction surface and follows a fixed hierarch
 6. Stable 52px summary footer with total and Save & Print.
 7. Optional preview/customer panel, open by default and remembered.
 
-The quantity control reads `− quantity +`. Product search supports Arrow Up/Down, Enter to select, Escape to dismiss, and a predictable transition to the next empty row. Its sort/filter bar stays slimmer than a data row, the dropdown clamps to the available viewport, and matched text uses `search-highlight`. Search results keep a stable 54px virtualized height.
+The quantity control reads `− quantity +`. Product search supports Arrow Up/Down, Enter to select, Escape to dismiss, and a predictable transition to the next empty row. Its sort/filter bar stays slimmer than a data row, the dropdown expands to an 880px desktop maximum while clamping to the available viewport, and matched text uses `search-highlight`. Search results keep a stable 54px virtualized height with the product name, unit/weight, and MRP on one line; long names truncate only after using the wider available space and retain a native full-name title fallback. Unit/weight uses the teal `unit-tag-*` family; MRP uses the warm `mrp-tag-*` family. Both are 24px high with 14px strong text and the control radius. The dropdown uses `hover` and `selected` distinctly, and its selection marker appears only on the selected row.
 
-Sale and estimate identity is persistent, but generic creation actions remain charcoal. “Save PDF” on an unsaved bill must explain that the bill must first be saved; it must never fail silently. Sync feedback uses explicit saving, saved, and error language without changing the footer’s geometry.
+Sale and estimate labels are persistent compact accent identities. Primary create and Save & Print actions use charcoal; the transaction type remains clear through labels, icons, dots, and underlines. General configuration actions remain charcoal. “Save PDF” on an unsaved bill must explain that the bill must first be saved; it must never fail silently. Sync feedback uses explicit saving, saved, and error language without changing the footer’s geometry.
 
 ### Feature compositions and states
 
 Product dialog modes—view, edit/add, history, and transactions—share one shell. Tabs stay in the fixed header, feature content scrolls inside the body, and the footer belongs only to the active mode. The edit form may use a preview column on wide dialogs, but fields must remain usable when that column is absent.
+
+Onboarding uses a flat `onboarding-panel` with light text and neutral icon surfaces. The active step uses `selection-marker`; only completed steps use solid `success`. Define these roles centrally in CSS and never duplicate their literal colors in components. Gradients, decorative glows, and decorative feature accents are outside the onboarding contract.
 
 Empty states explain what is missing and, only when useful, provide the next action. Loading states preserve the final layout’s footprint. Error states say what failed and provide a bounded recovery action. Success feedback confirms the completed result. Never display a spinner without a label when the wait can be confused with an unresponsive app.
 
@@ -321,7 +363,7 @@ All interactive work must be possible by keyboard. Use native elements and Radix
 - Reuse semantic tokens and shared components; update the design contract when a genuinely new reusable role is introduced.
 - Keep frequent actions visible and stable. Put rare configuration behind progressive disclosure.
 - Design and test populated, empty, loading, error, disabled, long-name, large-amount, and keyboard-focus states together.
-- Preserve sale-green and estimate-steel identity across every transaction surface while keeping generic primary actions charcoal.
+- Use teal and berry selectively for Sales and Estimates; keep customer types neutral, and confine ledger-entry identity accents to their icon plates while always retaining distinct icons and text labels.
 - Keep print styles isolated and verify both 80mm receipt and A4 output after invoice changes.
 - Update a virtualizer estimate whenever the corresponding row height changes.
 - Use `cn()` for conditional classes and shared rupee/date utilities for display formatting.
@@ -329,7 +371,7 @@ All interactive work must be possible by keyboard. Use native elements and Radix
 ### Don't
 
 - Do not use app zoom, CSS `zoom`, a smaller root font, or transform scaling as a layout system.
-- Do not use brand blue for generic primary actions, success green for navigation, or the search-match yellow outside matched text.
+- Do not spread accents across every card or table row, use semantic status colors as decoration, or use one interaction token for both hover and selection.
 - Do not invent new surface colors, shadows, radii, or one-off heights inside a feature.
 - Do not hide a common billing control in a menu merely to make a toolbar look cleaner.
 - Do not truncate money, rely on hover-only actions, or let wrapped text break virtualized row geometry.

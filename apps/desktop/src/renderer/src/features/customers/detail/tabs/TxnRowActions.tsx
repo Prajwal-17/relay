@@ -124,7 +124,7 @@ function TxnRowActionsInner({
             type="button"
             onClick={handleView}
             aria-label={`View ${type} ${txn.transactionNo}`}
-            className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+            className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
           >
             <Eye className="size-4" />
           </button>
@@ -140,7 +140,7 @@ function TxnRowActionsInner({
                 type="button"
                 onClick={handleEdit}
                 aria-label={`Edit ${type} ${txn.transactionNo}`}
-                className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
               >
                 <Edit className="size-4" />
               </button>
@@ -168,7 +168,7 @@ function TxnRowActionsInner({
           <button
             type="button"
             aria-label={`More actions for ${type} ${txn.transactionNo}`}
-            className="text-muted-foreground hover:bg-accent hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
+            className="text-muted-foreground hover:bg-hover hover:text-foreground cursor-pointer rounded-md p-1.5 transition-colors"
           >
             <MoreVertical className="size-4" />
           </button>

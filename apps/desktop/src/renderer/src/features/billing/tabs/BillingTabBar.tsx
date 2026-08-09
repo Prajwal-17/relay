@@ -88,7 +88,7 @@ const BillingTabBar = () => {
                 <button
                   type="button"
                   disabled={isAtLimit}
-                  className="text-muted-foreground hover:text-foreground hover:bg-muted ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center self-center rounded-(--radius-control) transition-colors disabled:cursor-not-allowed disabled:opacity-30"
+                  className="text-muted-foreground hover:text-foreground hover:bg-hover ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center self-center rounded-(--radius-control) transition-colors disabled:cursor-not-allowed disabled:opacity-30"
                 >
                   <Plus size={18} strokeWidth={2.5} />
                 </button>
@@ -104,14 +104,14 @@ const BillingTabBar = () => {
               className="cursor-pointer"
               onClick={() => void handleNewTab(TRANSACTION_TYPE.SALE)}
             >
-              <span className="bg-success h-2.5 w-2.5 rounded-full" />
+              <span className="bg-sales h-2.5 w-2.5 rounded-full" />
               New Sale
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer"
               onClick={() => void handleNewTab(TRANSACTION_TYPE.ESTIMATE)}
             >
-              <span className="bg-info h-2.5 w-2.5 rounded-full" />
+              <span className="bg-estimate h-2.5 w-2.5 rounded-full" />
               New Estimate
             </DropdownMenuItem>
           </DropdownMenuContent>

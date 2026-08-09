@@ -113,7 +113,11 @@ export function UpgradeSplash() {
                 return (
                   <span
                     className={`h-1 flex-1 rounded-sm ${
-                      isComplete ? "bg-primary" : isCurrent ? "bg-brand animate-pulse" : "bg-border"
+                      isComplete
+                        ? "bg-primary"
+                        : isCurrent
+                          ? "bg-marker animate-pulse"
+                          : "bg-border"
                     }`}
                     key={step}
                   />

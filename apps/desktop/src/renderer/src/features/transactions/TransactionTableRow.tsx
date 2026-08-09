@@ -157,7 +157,7 @@ const TransactionTableRow = ({
           ) : null}
         </div>
       ) : (
-        <div className="bg-card hover:bg-muted/50 active:bg-muted border-border grid min-h-12 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors">
+        <div className="bg-card hover:bg-hover active:bg-selected border-border grid min-h-12 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors">
           <div className="col-span-2 flex flex-col justify-center">
             <span className="text-foreground text-sm leading-tight font-semibold tabular-nums">
               {transaction.createdAt
@@ -193,7 +193,7 @@ const TransactionTableRow = ({
             <Tooltip>
               <TooltipTrigger
                 onClick={handleView}
-                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5"
+                className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
                 <Eye className="size-4" />
               </TooltipTrigger>
@@ -206,7 +206,7 @@ const TransactionTableRow = ({
               <TooltipTrigger
                 onClick={handleEdit}
                 hidden={!canModify}
-                className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5"
+                className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
                 <Edit className="size-4" />
               </TooltipTrigger>
@@ -219,7 +219,7 @@ const TransactionTableRow = ({
               <TooltipTrigger
                 onClick={() => setActiveDialog("delete")}
                 hidden={!canModify}
-                className="hover:bg-accent text-destructive cursor-pointer rounded-md p-1.5"
+                className="hover:bg-hover text-destructive cursor-pointer rounded-md p-1.5"
               >
                 <Trash2 className="size-4" />
               </TooltipTrigger>
@@ -252,7 +252,7 @@ const TransactionTableRow = ({
             </AlertDialog>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="hover:bg-accent hover:text-accent-foreground text-foreground cursor-pointer rounded-md p-1.5">
+              <DropdownMenuTrigger className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5">
                 <MoreVertical className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-44" align="end">

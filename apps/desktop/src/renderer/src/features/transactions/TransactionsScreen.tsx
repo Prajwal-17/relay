@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { TransactionDetailsDialog } from "@/features/transactions/TransactionDetailsDialog";
 import { TransactionListPanel } from "@/features/transactions/TransactionListPanel";
 import { useInfiniteScroll } from "@/features/transactions/hooks/useInfiniteScroll";
-import { cn } from "@/lib/utils";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";
@@ -23,10 +22,11 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
         <div className="border-border bg-card flex min-h-11 min-w-0 flex-1 items-center gap-5 rounded-(--radius-panel) border px-3 py-1.5">
           <div className="flex min-w-0 items-center gap-2">
             <span
-              className={cn(
-                "flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)",
-                isSales ? "bg-success/10 text-success" : "bg-info/10 text-info"
-              )}
+              className={
+                isSales
+                  ? "bg-sales-soft text-sales-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)"
+                  : "bg-estimate-soft text-estimate-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)"
+              }
             >
               <IndianRupee className="size-3.5" />
             </span>
@@ -49,10 +49,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
 
         <Button
           onClick={() => navigate(isSales ? "/billing/sales/create" : "/billing/estimates/create")}
-          className={cn(
-            "h-9 cursor-pointer gap-1.5 px-3",
-            isSales ? "hover:bg-primary-hover" : "bg-info text-info-foreground hover:bg-info/90"
-          )}
+          className="bg-primary hover:bg-primary-hover text-primary-foreground h-9 cursor-pointer gap-1.5 px-3"
         >
           <Plus className="size-4" />
           {isSales ? "New Sale" : "New Estimate"}

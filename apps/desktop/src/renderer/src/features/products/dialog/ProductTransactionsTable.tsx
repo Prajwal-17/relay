@@ -123,7 +123,7 @@ export function ProductTransactionsTable() {
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden px-6 pt-5">
         <div className="border-border/60 bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border shadow-md">
-          <div className="bg-muted text-muted-foreground grid shrink-0 grid-cols-12 gap-4 rounded-t-lg px-6 py-2.5 text-base font-semibold">
+          <div className="bg-table-header text-foreground grid shrink-0 grid-cols-12 gap-4 rounded-t-lg px-6 py-2.5 text-base font-semibold">
             <div className="col-span-2 flex items-center">Date</div>
             <div className="col-span-1 flex items-center">Type</div>
             <div className="col-span-1 flex items-center">No.</div>
@@ -145,7 +145,7 @@ export function ProductTransactionsTable() {
                   delay: idx * 0.025,
                   ease: [0.23, 1, 0.32, 1]
                 }}
-                className="hover:bg-muted/40 bg-card border-border/50 grid min-h-12 grid-cols-12 items-center gap-3 border-b px-3 py-1 text-sm"
+                className="hover:bg-hover bg-card border-border/50 grid min-h-12 grid-cols-12 items-center gap-3 border-b px-3 py-1 text-sm"
               >
                 <div className="col-span-2 flex flex-col items-start justify-center">
                   <span className="text-foreground text-base font-semibold">
@@ -157,13 +157,7 @@ export function ProductTransactionsTable() {
                 </div>
 
                 <div className="col-span-1 flex items-center">
-                  <span
-                    className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold tracking-wide ${
-                      txn.type === TRANSACTION_TYPE.SALE
-                        ? "bg-success/10 text-success"
-                        : "bg-info/10 text-info"
-                    }`}
-                  >
+                  <span className="bg-hover text-foreground inline-flex items-center rounded-md px-2.5 py-1 text-xs font-bold tracking-wide">
                     {txn.type === TRANSACTION_TYPE.SALE ? "Sale" : "Estimate"}
                   </span>
                 </div>
@@ -205,7 +199,7 @@ export function ProductTransactionsTable() {
                     <TooltipTrigger
                       onClick={() => handleOpenTransaction(txn)}
                       aria-label={`Open ${txn.type} transaction ${txn.transactionNo}`}
-                      className="bg-secondary/60 text-muted-foreground/80 border-border/50 hover:bg-secondary hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105"
+                      className="bg-secondary/60 text-muted-foreground/80 border-border/50 hover:bg-hover hover:text-foreground hover:border-border inline-flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border transition-all duration-150 hover:scale-105"
                     >
                       <ArrowUpRight className="h-5 w-5" />
                     </TooltipTrigger>

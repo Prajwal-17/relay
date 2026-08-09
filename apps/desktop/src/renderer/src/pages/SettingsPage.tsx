@@ -16,7 +16,7 @@ const SettingsPage = () => {
                     "flex h-9 items-center rounded-(--radius-control) px-3 text-sm leading-tight font-medium transition-colors",
                     isActive
                       ? "bg-foreground text-background"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-hover hover:text-foreground"
                   ].join(" ")
                 }
               >

@@ -8,12 +8,9 @@ const VARIANT_CLASSES = {
   detail: "aspect-square w-full max-w-64 rounded-(--radius-panel)"
 } as const;
 
-const IMAGE_STATES = ["empty", "loading", "image", "unavailable"] as const;
-const IMAGE_LOAD_STATES = ["loading", "ready", "unavailable"] as const;
-
 type ProductImageVariant = keyof typeof VARIANT_CLASSES;
-type ProductImageState = (typeof IMAGE_STATES)[number];
-type ImageLoadState = (typeof IMAGE_LOAD_STATES)[number];
+type ProductImageState = "empty" | "loading" | "image" | "unavailable";
+type ImageLoadState = "loading" | "ready" | "unavailable";
 
 export type ProductImageProps = {
   src?: string | null;

@@ -35,7 +35,7 @@ export const ErrorState = ({
       className
     )}
   >
-    <span className="bg-destructive/10 text-destructive flex size-9 shrink-0 items-center justify-center rounded-(--radius-control)">
+    <span className="bg-destructive text-destructive-foreground flex size-9 shrink-0 items-center justify-center rounded-(--radius-control)">
       {icon ?? <AlertTriangle className="size-4.5" aria-hidden="true" />}
     </span>
     <div className="max-w-md min-w-0">

@@ -5,9 +5,9 @@ import { formatRupee } from "@shared/utils/utils";
 import type { CustomerListRow } from "./types";
 
 const typeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/15 text-info border-info/25",
-  hotel: "bg-primary/10 text-primary border-primary/25"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 export const colSpans = [
@@ -52,13 +52,9 @@ export function renderOutstandingCell(row: CustomerListRow) {
   }
 
   const isDue = row.outstanding > 0;
+
   return (
-    <span
-      className={cn(
-        "text-sm font-semibold tabular-nums",
-        isDue ? "text-destructive" : "text-success"
-      )}
-    >
+    <span className="text-foreground text-sm font-semibold tabular-nums">
       {formatRupee(Math.abs(row.outstanding))}
       <span className="ml-0.5 text-xs font-medium">{isDue ? "Dr" : "Cr"}</span>
     </span>

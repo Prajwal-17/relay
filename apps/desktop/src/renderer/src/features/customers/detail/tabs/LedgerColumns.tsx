@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,16 +11,17 @@ import { LEDGER_ENTRY_TYPE, type LedgerEntry, type LedgerEntryType } from "@shar
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import {
+  CreditCard,
+  MoreHorizontal,
+  Pencil,
+  Receipt,
+  Scale,
+  ShoppingCart,
+  Trash2,
+  Wallet
+} from "lucide-react";
 import { isWithinTwoDays } from "@shared/utils/dateUtils";
-
-const typePillClass: Record<LedgerEntryType, string> = {
-  [LEDGER_ENTRY_TYPE.SALE]: "border-success/25 bg-success/10 text-success",
-  [LEDGER_ENTRY_TYPE.QUICK_SALE]: "border-success/25 bg-success/10 text-success",
-  [LEDGER_ENTRY_TYPE.PAYMENT]: "border-success/25 bg-success/15 text-success",
-  [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "border-warning/30 bg-warning/15 text-warning",
-  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "bg-secondary text-muted-foreground border-border"
-};
 
 const typeLabel: Record<LedgerEntryType, string> = {
   [LEDGER_ENTRY_TYPE.SALE]: "Sale",
@@ -29,6 +29,25 @@ const typeLabel: Record<LedgerEntryType, string> = {
   [LEDGER_ENTRY_TYPE.PAYMENT]: "Payment",
   [LEDGER_ENTRY_TYPE.ADJUSTMENT]: "Adjustment",
   [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: "Opening"
+};
+
+const typeIcon: Record<LedgerEntryType, typeof Receipt> = {
+  [LEDGER_ENTRY_TYPE.SALE]: Receipt,
+  [LEDGER_ENTRY_TYPE.QUICK_SALE]: ShoppingCart,
+  [LEDGER_ENTRY_TYPE.PAYMENT]: CreditCard,
+  [LEDGER_ENTRY_TYPE.ADJUSTMENT]: Scale,
+  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]: Wallet
+};
+
+const typeAccentClass: Record<LedgerEntryType, string> = {
+  [LEDGER_ENTRY_TYPE.SALE]: "border-sales bg-sales-soft text-sales-foreground",
+  [LEDGER_ENTRY_TYPE.QUICK_SALE]:
+    "border-counter-accent bg-counter-accent-soft text-counter-accent-foreground",
+  [LEDGER_ENTRY_TYPE.PAYMENT]: "border-estimate bg-estimate-soft text-estimate-foreground",
+  [LEDGER_ENTRY_TYPE.ADJUSTMENT]:
+    "border-gold-accent bg-gold-accent-soft text-gold-accent-foreground",
+  [LEDGER_ENTRY_TYPE.OPENING_BALANCE]:
+    "border-olive-accent bg-olive-accent-soft text-olive-accent-foreground"
 };
 
 type LedgerColumnsOptions = {
@@ -69,16 +88,24 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       header: "Type",
       cell: ({ row }) => {
         const type = row.original.type;
+        const Icon = typeIcon[type];
         return (
-          <Badge
-            variant="outline"
-            className={cn("px-2 py-0.5 text-xs font-medium capitalize", typePillClass[type])}
-          >
-            {typeLabel[type]}
-          </Badge>
+          <span className="inline-flex min-w-0 items-center gap-2">
+            <span
+              className={cn(
+                "flex size-6 shrink-0 items-center justify-center rounded-(--radius-control) border",
+                typeAccentClass[type]
+              )}
+            >
+              <Icon className="size-3.5" strokeWidth={2.25} aria-hidden />
+            </span>
+            <span className="text-foreground text-sm font-semibold whitespace-nowrap">
+              {typeLabel[type]}
+            </span>
+          </span>
         );
       },
-      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[110px]" } as TxnTableColMeta
+      meta: { align: TXN_TABLE_ALIGN.LEFT, width: "w-[120px]" } as TxnTableColMeta
     },
     {
       id: "ref",
@@ -146,7 +173,7 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       cell: ({ row }) => {
         const amountPaid = row.original.amountPaid;
         return amountPaid > 0 ? (
-          <span className="text-success text-sm font-semibold tabular-nums">
+          <span className="text-foreground text-sm font-semibold tabular-nums">
             {formatRupee(amountPaid)}
           </span>
         ) : (
@@ -160,12 +187,11 @@ export function buildLedgerColumns(opts: LedgerColumnsOptions = {}): ColumnDef<L
       header: "Balance",
       cell: ({ row }) => {
         const balance = row.original.runningBalance;
-        const isDue = balance >= 0;
         return (
           <span
             className={cn(
               "text-sm font-semibold tabular-nums",
-              balance === 0 ? "text-muted-foreground" : isDue ? "text-destructive" : "text-success"
+              balance === 0 ? "text-muted-foreground" : "text-foreground"
             )}
           >
             {formatRupee(Math.abs(balance))}

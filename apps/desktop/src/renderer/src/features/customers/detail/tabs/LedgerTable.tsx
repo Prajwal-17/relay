@@ -171,7 +171,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+              className="border-border bg-muted/50 text-foreground hover:bg-hover h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
             >
               <Tags className="size-4" />
               Type: {activeType.label}
@@ -204,7 +204,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+              className="border-border bg-muted/50 text-foreground hover:bg-hover h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
             >
               <ArrowDownAZ className="size-4" />
               {activeSortLabel}
@@ -264,7 +264,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
         <Button
           variant="outline"
           onClick={openAdjust}
-          className="hover:bg-muted/60 border-border bg-muted/50 text-foreground h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+          className="hover:bg-hover border-border bg-muted/50 text-foreground h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
         >
           <Scale className="size-4" />
           Adjust Balance
@@ -301,7 +301,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
         <div className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border shadow-xs">
           <div className={cn("relative min-h-0 flex-1 overflow-auto", isFetching && "opacity-60")}>
             <table className="w-full table-fixed border-collapse">
-              <thead className="bg-muted sticky top-0 z-10">
+              <thead className="bg-table-header sticky top-0 z-10">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <tr key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
@@ -310,7 +310,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
                         <th
                           key={header.id}
                           className={cn(
-                            "text-muted-foreground border-border/70 h-9 border-b px-4 text-xs font-semibold tracking-wide uppercase",
+                            "text-foreground border-border/70 h-9 border-b px-4 text-xs font-semibold tracking-wide uppercase",
                             meta?.width,
                             meta?.align === TXN_TABLE_ALIGN.RIGHT
                               ? "text-right"
@@ -337,7 +337,7 @@ export function LedgerTable({ customerId }: { customerId: string }) {
                       ease: "easeOut",
                       delay: idx < 12 ? idx * 0.015 : 0
                     }}
-                    className="border-border/70 hover:bg-accent group border-b transition-colors last:border-b-0"
+                    className="border-border/70 hover:bg-hover group border-b transition-colors last:border-b-0"
                   >
                     {row.getVisibleCells().map((cell) => {
                       const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;

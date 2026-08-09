@@ -164,7 +164,6 @@ const BillingHeader = () => {
   const customerType =
     customer?.customerType ?? (!session?.customerId && customerName ? "cash" : null);
   const outstandingBalance = customer?.outstandingBalance ?? 0;
-  const isDue = outstandingBalance > 0;
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -180,8 +179,8 @@ const BillingHeader = () => {
           <span
             className={
               type === DASHBOARD_TYPE.SALES
-                ? "text-success text-base font-bold"
-                : "text-info text-base font-bold"
+                ? "text-sales-foreground text-base font-bold"
+                : "text-estimate-foreground text-base font-bold"
             }
           >
             {type === DASHBOARD_TYPE.SALES ? "Sale" : "Estimate"}
@@ -286,14 +285,12 @@ const BillingHeader = () => {
           <CustomerNameInput customerType={customerType} />
         </div>
         {hasRealCustomer && (
-          <span
-            className={
-              isDue
-                ? "bg-destructive/10 text-destructive mb-0.5 shrink-0 rounded-(--radius-control) px-2.5 py-1.5 text-xs font-semibold tabular-nums"
-                : "bg-muted text-muted-foreground mb-0.5 shrink-0 rounded-(--radius-control) px-2.5 py-1.5 text-xs font-semibold"
-            }
-          >
-            {isDue ? "Due " + formatRupee(outstandingBalance) : "Settled"}
+          <span className="bg-hover text-foreground mb-0.5 shrink-0 rounded-(--radius-control) px-2.5 py-1.5 text-xs font-semibold tabular-nums">
+            {outstandingBalance > 0
+              ? "Due " + formatRupee(outstandingBalance)
+              : outstandingBalance < 0
+                ? "Advance " + formatRupee(Math.abs(outstandingBalance))
+                : "Settled"}
           </span>
         )}
         <SaleAccountControl />

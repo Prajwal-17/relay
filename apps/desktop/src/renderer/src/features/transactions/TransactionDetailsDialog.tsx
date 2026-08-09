@@ -41,9 +41,9 @@ import { useNavigate } from "react-router-dom";
 import { ItemRow } from "./ItemRow";
 
 const customerTypeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/10 text-info border-info",
-  hotel: "bg-primary/10 text-primary border-primary"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 function formatRelativeTime(dateStr?: string): string | null {
@@ -284,9 +284,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                 variant="outline"
                 className={cn(
                   "shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold",
-                  isSales
-                    ? "bg-success/10 text-success border-success"
-                    : "bg-info/10 text-info border-info"
+                  "bg-hover text-foreground border-border"
                 )}
               >
                 {transactionLabel}
@@ -362,7 +360,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                   className={cn(
                     "border-border bg-card flex min-h-[56px] w-full shrink-0 items-center gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
                     data.customerId
-                      ? "hover:bg-accent cursor-pointer"
+                      ? "hover:bg-hover cursor-pointer"
                       : "cursor-default disabled:opacity-100"
                   )}
                 >
@@ -406,12 +404,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                     </div>
                   </div>
                   {customerOutstanding !== 0 && (
-                    <span
-                      className={cn(
-                        "shrink-0 text-right tabular-nums",
-                        customerOutstanding > 0 ? "text-destructive" : "text-success"
-                      )}
-                    >
+                    <span className="text-foreground shrink-0 text-right tabular-nums">
                       <span className="block text-xs font-medium">
                         {customerOutstanding > 0 ? "Due" : "Advance"}
                       </span>
@@ -522,7 +515,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                         <col className="w-28" />
                         <col className="w-[214px]" />
                       </colgroup>
-                      <thead className="bg-muted sticky top-0 z-10">
+                      <thead className="bg-table-header sticky top-0 z-10">
                         <tr className="border-border border-b">
                           <th className="text-muted-foreground px-2 py-2 text-center text-xs font-semibold">
                             #
@@ -604,7 +597,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                       aria-expanded={notesExpanded}
                       aria-controls="transaction-notes-summary"
                       onClick={() => setNotesExpanded((expanded) => !expanded)}
-                      className="hover:bg-muted focus-visible:ring-ring flex h-8 w-full items-center justify-between rounded-(--radius-control) px-2 text-left focus-visible:ring-2 focus-visible:outline-none"
+                      className="hover:bg-hover focus-visible:ring-ring flex h-8 w-full items-center justify-between rounded-(--radius-control) px-2 text-left focus-visible:ring-2 focus-visible:outline-none"
                     >
                       <span className="text-foreground flex items-center gap-2 text-sm font-semibold">
                         <StickyNote className="text-muted-foreground size-4" />

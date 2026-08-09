@@ -65,7 +65,7 @@ const SaleAccountControl = ({ className }: { className?: string }) => {
                 onClick={handleToggle}
                 disabled={disabled}
                 aria-label="Undo adding this sale to the customer account"
-                className="border-border bg-background text-foreground hover:bg-muted focus-visible:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 border-l px-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-70"
+                className="border-border bg-background text-foreground hover:bg-hover focus-visible:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground flex h-full min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 border-l px-2 transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <Undo2 className="size-3.5" />
                 Undo
@@ -77,7 +77,7 @@ const SaleAccountControl = ({ className }: { className?: string }) => {
               onClick={handleToggle}
               disabled={disabled}
               aria-label="Add this sale to the customer account"
-              className="hover:bg-muted focus-visible:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground flex h-full w-full cursor-pointer items-center justify-center gap-1.5 px-2 outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-70"
+              className="hover:bg-hover focus-visible:ring-ring/50 disabled:bg-muted disabled:text-muted-foreground flex h-full w-full cursor-pointer items-center justify-center gap-1.5 px-2 outline-none focus-visible:ring-2 focus-visible:ring-inset disabled:cursor-not-allowed disabled:opacity-70"
             >
               <Plus className="size-3.5" />
               Add to account

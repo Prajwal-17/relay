@@ -235,7 +235,7 @@ export const ProductImageCropSelector = ({
           aria-busy={phase === "loading"}
           className={cn(
             "focus-visible:ring-ring bg-secondary flex h-24 cursor-pointer items-center gap-3 rounded-(--radius-panel) border border-dashed px-3 text-left transition-[background-color,border-color] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-            isDragging ? "border-brand bg-brand-soft" : "border-frame hover:bg-muted"
+            isDragging ? "border-focus bg-selected" : "border-frame hover:bg-hover"
           )}
         >
           <span className="border-border bg-background flex size-10 shrink-0 items-center justify-center rounded-(--radius-control) border">

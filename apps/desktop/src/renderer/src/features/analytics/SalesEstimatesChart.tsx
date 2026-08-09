@@ -51,12 +51,12 @@ export function SalesEstimatesChart() {
           <div className="flex items-center gap-3 text-xs">
             <div className="flex items-center gap-1">
               <div className="bg-chart-1 h-2.5 w-2.5 rounded-sm" />
-              <span className="text-muted-foreground text-sm font-medium">Sales</span>
+              <span className="text-sales-foreground text-sm font-semibold">Sales</span>
             </div>
 
             <div className="flex items-center gap-1">
               <div className="bg-chart-2 h-2.5 w-2.5 rounded-sm" />
-              <span className="text-muted-foreground text-sm font-medium">Estimates</span>
+              <span className="text-estimate-foreground text-sm font-semibold">Estimates</span>
             </div>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function SalesEstimatesChart() {
           />
         ) : isLoading ? (
           <div className="text-muted-foreground flex h-68 items-center justify-center gap-2 text-sm">
-            <LoaderCircle className="size-4 animate-spin" /> Loading chart…
+            <LoaderCircle className="text-counter-accent size-4 animate-spin" /> Loading chart…
           </div>
         ) : isSuccess && data ? (
           <>

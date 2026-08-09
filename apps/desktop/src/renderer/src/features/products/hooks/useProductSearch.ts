@@ -17,6 +17,8 @@ export const PRODUCTSEARCH_TYPE = {
   BILLINGPAGE: "billing-page"
 } as const;
 
+export const BILLING_PRODUCT_SEARCH_ROW_HEIGHT = 54;
+
 type ProductSearchType = (typeof PRODUCTSEARCH_TYPE)[keyof typeof PRODUCTSEARCH_TYPE];
 
 type SearchResultItem = ProductSearchItemDTO | BillingProductDTO;
@@ -154,7 +156,8 @@ export const useProductSearch = (type: ProductSearchType) => {
   const rowVirtualizer = useVirtualizer({
     count: hasNextPage ? searchResults.length + 1 : searchResults.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => (type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? 60 : 54),
+    estimateSize: () =>
+      type === PRODUCTSEARCH_TYPE.PRODUCTPAGE ? 60 : BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
     overscan: 8
   });
 

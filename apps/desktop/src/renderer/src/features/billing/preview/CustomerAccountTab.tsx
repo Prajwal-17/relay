@@ -21,9 +21,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const typeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/15 text-info border-info/25",
-  hotel: "bg-primary/10 text-primary border-primary/25"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 function MiniStat({
@@ -104,16 +104,8 @@ function CustomerAccountBody({
 
   const isSettled = currentBalance === 0;
   const isDue = currentBalance > 0;
-  const balanceTone = isSettled
-    ? "text-muted-foreground"
-    : isDue
-      ? "text-destructive"
-      : "text-success";
-  const balanceIconTone = isSettled
-    ? "bg-muted text-muted-foreground"
-    : isDue
-      ? "bg-destructive/10 text-destructive"
-      : "bg-success/15 text-success";
+  const balanceTone = isSettled ? "text-muted-foreground" : "text-foreground";
+  const balanceIconTone = isSettled ? "bg-hover text-muted-foreground" : "bg-hover text-marker";
 
   const customerType = customer?.customerType ?? "cash";
 

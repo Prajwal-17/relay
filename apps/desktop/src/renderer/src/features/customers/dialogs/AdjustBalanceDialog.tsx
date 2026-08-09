@@ -55,8 +55,8 @@ export function AdjustBalanceDialog({
                 onClick={() => setDirection("due")}
                 className={
                   direction === "due"
-                    ? "border-destructive/25 bg-destructive/10 text-destructive h-9 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
-                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
+                    : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
                 Add Due
@@ -66,8 +66,8 @@ export function AdjustBalanceDialog({
                 onClick={() => setDirection("paid")}
                 className={
                   direction === "paid"
-                    ? "border-success/25 bg-success/15 text-success h-9 cursor-pointer rounded-lg border-2 text-sm font-semibold transition-colors"
-                    : "border-border bg-muted/50 text-muted-foreground hover:bg-muted/60 h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
+                    ? "border-marker bg-selected text-foreground h-9 cursor-pointer rounded-lg border text-sm font-semibold transition-colors"
+                    : "border-border bg-background text-muted-foreground hover:bg-hover h-9 cursor-pointer rounded-lg border text-sm font-medium transition-colors"
                 }
               >
                 Record Payment

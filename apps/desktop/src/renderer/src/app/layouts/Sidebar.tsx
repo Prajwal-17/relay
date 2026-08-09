@@ -205,8 +205,6 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
   const renderNavItem = (item: (typeof navLinks)[number]) => {
     const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-    const isSaleLink = item.href === "/dashboard/sales";
-    const isEstimateLink = item.href === "/dashboard/estimates";
 
     return (
       <Link
@@ -221,24 +219,16 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
           "relative flex h-(--nav-row-height) w-full items-center gap-2 rounded-(--radius-control) px-2 font-medium transition-colors duration-150 outline-none",
           "focus-visible:ring-ring focus-visible:ring-offset-sidebar focus-visible:ring-2 focus-visible:ring-offset-2",
           isActive
-            ? isSaleLink
-              ? "bg-success/10 text-success font-semibold"
-              : isEstimateLink
-                ? "bg-info/10 text-info font-semibold"
-                : "bg-accent text-accent-foreground font-semibold"
-            : "text-sidebar-foreground/70 hover:bg-muted hover:text-sidebar-foreground"
+            ? "bg-selected text-foreground font-semibold"
+            : "text-sidebar-foreground/70 hover:bg-hover hover:text-sidebar-foreground"
         )}
       >
         <span
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) transition-colors duration-150 [&_svg]:size-4.5",
             isActive
-              ? isSaleLink
-                ? "bg-success text-success-foreground"
-                : isEstimateLink
-                  ? "bg-info text-info-foreground"
-                  : "bg-sidebar-primary text-sidebar-primary-foreground"
-              : "bg-sidebar-accent text-sidebar-foreground/55"
+              ? "bg-nav-icon-active-bg text-nav-icon-active-foreground"
+              : "text-sidebar-foreground/70 bg-transparent"
           )}
         >
           {item.icon}
@@ -295,7 +285,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             <Button
               asChild
               size="lg"
-              className="hover:bg-primary-hover h-10 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-semibold"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground h-10 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-semibold"
             >
               <Link to="/billing/sales/create" onClick={handleBillingShortcutClick}>
                 <ShoppingCart className="size-4.5" />
@@ -305,8 +295,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
             <Button
               asChild
-              variant="outline"
-              className="border-info/40 bg-info/10 text-info hover:bg-info/15 h-9 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-medium"
+              className="border-estimate bg-card text-estimate-foreground hover:bg-estimate-soft h-9 w-full cursor-pointer justify-center gap-2 border px-3 text-sm font-semibold"
             >
               <Link to="/billing/estimates/create" onClick={handleBillingShortcutClick}>
                 <FileText className="size-4.5" />
@@ -342,7 +331,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             }}
             className="hover:bg-sidebar-accent flex h-11 items-center gap-2 rounded-(--radius-control) px-2 transition-colors duration-150"
           >
-            <div className="bg-brand-soft text-brand-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
+            <div className="bg-selected text-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
               {storeInitials || "QC"}
             </div>
             <div className="min-w-0">
@@ -373,7 +362,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, current + direction * 8))
             );
           }}
-          className="hover:bg-muted focus-visible:bg-brand group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 outline-none"
+          className="hover:bg-hover focus-visible:bg-focus group absolute top-0 right-0 z-50 flex h-full w-1.5 shrink-0 cursor-col-resize items-center justify-center transition-colors duration-150 outline-none"
         >
           <div className="bg-border h-6 w-1 rounded-full opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
         </div>

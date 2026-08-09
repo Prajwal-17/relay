@@ -14,10 +14,10 @@ export const BillingSaveStatus = () => {
     <div
       className={cn(
         "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-semibold ring-1 transition-colors duration-150",
-        currentStatus === "saving" && "bg-info/15 text-info ring-info/25",
-        currentStatus === "saved" && "bg-success/15 text-success ring-success/25",
-        currentStatus === "unsaved" && "bg-warning/15 text-warning ring-warning/25",
-        currentStatus === "error" && "bg-destructive/15 text-destructive ring-destructive/25"
+        currentStatus === "saving" && "bg-selected text-foreground ring-border",
+        currentStatus === "saved" && "bg-success text-success-foreground ring-success",
+        currentStatus === "unsaved" && "bg-warning text-warning-foreground ring-warning",
+        currentStatus === "error" && "bg-destructive text-destructive-foreground ring-destructive"
       )}
     >
       {currentStatus === "saving" && (

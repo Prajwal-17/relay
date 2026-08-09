@@ -40,11 +40,11 @@ const kindIcon: Record<ActivityKind, LucideIcon> = {
 };
 
 const kindIconClass: Record<ActivityKind, string> = {
-  sale: "text-info",
-  estimate: "text-primary",
-  payment: "text-success",
+  sale: "text-marker",
+  estimate: "text-marker",
+  payment: "text-marker",
   adjustment: "text-muted-foreground",
-  quick_sale: "text-warning",
+  quick_sale: "text-marker",
   opening_balance: "text-muted-foreground"
 };
 
@@ -106,10 +106,8 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
   const isAdvance = outstanding < 0;
 
   const heroTone = isSettled
-    ? "bg-muted text-muted-foreground border-border"
-    : isAdvance
-      ? "bg-success/15 text-success border-success/25"
-      : "bg-warning/15 text-warning border-warning/30";
+    ? "bg-hover text-muted-foreground border-border"
+    : "bg-transparent text-foreground border-border";
   const heroLabel = isSettled ? "Settled" : isAdvance ? "Advance" : "Due";
 
   return (

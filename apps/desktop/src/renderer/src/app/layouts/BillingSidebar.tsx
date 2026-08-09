@@ -38,8 +38,6 @@ export const BillingSidebar = () => {
 
   const renderNavItem = (item: (typeof navLinks)[number]) => {
     const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-    const isSaleLink = item.href === "/dashboard/sales";
-    const isEstimateLink = item.href === "/dashboard/estimates";
 
     return (
       <IconTooltip key={item.href} label={item.title}>
@@ -50,12 +48,8 @@ export const BillingSidebar = () => {
             "flex size-10 items-center justify-center rounded-(--radius-control) transition-colors duration-150 outline-none [&_svg]:size-4.5",
             "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2",
             isActive
-              ? isSaleLink
-                ? "bg-success/10 text-success"
-                : isEstimateLink
-                  ? "bg-info/10 text-info"
-                  : "bg-accent text-accent-foreground"
-              : "text-sidebar-foreground/60 hover:bg-muted hover:text-sidebar-foreground"
+              ? "bg-nav-icon-active-bg text-nav-icon-active-foreground"
+              : "text-sidebar-foreground/70 hover:bg-hover hover:text-sidebar-foreground"
           )}
         >
           {item.icon}
@@ -84,7 +78,11 @@ export const BillingSidebar = () => {
       <div className="flex min-h-0 flex-1 flex-col items-center overflow-x-hidden overflow-y-auto px-2 py-2">
         <div className="flex flex-col gap-1.5">
           <IconTooltip label="New Sale">
-            <Button asChild size="icon-lg" className="hover:bg-primary-hover">
+            <Button
+              asChild
+              size="icon-lg"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground"
+            >
               <Link to="/billing/sales/create" aria-label="New Sale">
                 <ShoppingCart className="size-4.5" />
               </Link>
@@ -95,8 +93,7 @@ export const BillingSidebar = () => {
             <Button
               asChild
               size="icon-lg"
-              variant="outline"
-              className="border-info/40 bg-info/10 text-info hover:bg-info/15"
+              className="border-estimate bg-card text-estimate-foreground hover:bg-estimate-soft border"
             >
               <Link to="/billing/estimates/create" aria-label="New Estimate">
                 <FileText className="size-4.5" />
@@ -122,7 +119,7 @@ export const BillingSidebar = () => {
           <Link
             to="/settings/store-profile"
             aria-label={storeProfile?.storeName || "Store profile"}
-            className="bg-brand-soft text-brand-foreground hover:bg-accent focus-visible:ring-ring flex size-9 items-center justify-center rounded-(--radius-control) text-xs font-semibold transition-colors outline-none focus-visible:ring-2"
+            className="bg-selected text-foreground hover:bg-hover focus-visible:ring-ring flex size-9 items-center justify-center rounded-(--radius-control) text-xs font-semibold transition-colors outline-none focus-visible:ring-2"
           >
             {storeInitials}
           </Link>

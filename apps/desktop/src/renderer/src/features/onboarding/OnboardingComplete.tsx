@@ -37,27 +37,10 @@ export const OnboardingComplete = () => {
         initial={{ scale: 0, rotate: -30 }}
         animate={{ scale: 1, rotate: 0 }}
         transition={{ type: "spring", stiffness: 280, damping: 18, delay: 0.1 }}
-        className="relative"
       >
-        <div className="bg-success/15 flex size-16 items-center justify-center rounded-full">
+        <div className="bg-hover flex size-16 items-center justify-center rounded-full">
           <CheckCircle2 className="text-success size-9" strokeWidth={1.5} />
         </div>
-        {/* rings */}
-        {[0, 1].map((i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0.8, opacity: 0.6 }}
-            animate={{ scale: 1.8, opacity: 0 }}
-            transition={{
-              duration: 1.4,
-              delay: 0.3 + i * 0.4,
-              repeat: Infinity,
-              repeatDelay: 0.5,
-              ease: "easeOut"
-            }}
-            className="border-success/40 absolute inset-0 rounded-full border-2"
-          />
-        ))}
       </motion.div>
 
       <motion.div
@@ -83,7 +66,7 @@ export const OnboardingComplete = () => {
         <div className="flex flex-col divide-y">
           {summaryItems.map(({ icon: Icon, label, value }) => (
             <div key={label} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
-              <div className="bg-primary/10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
+              <div className="bg-hover mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
                 <Icon className="text-onboarding-icon-dark h-3.5 w-3.5" />
               </div>
               <div className="min-w-0">
@@ -94,7 +77,7 @@ export const OnboardingComplete = () => {
           ))}
           {formData.gstin && (
             <div className="flex items-start gap-3 py-3 pb-0">
-              <div className="bg-primary/10 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
+              <div className="bg-hover mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg">
                 <span className="text-onboarding-icon-dark text-xs font-bold">GST</span>
               </div>
               <div className="min-w-0">

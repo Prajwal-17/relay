@@ -39,13 +39,13 @@ const BillingSkeleton = () => {
                 <div className="bg-muted h-full w-24 rounded-md"></div>
               </div>
             ))}
-            <div className="bg-warning/10 mt-4 h-10 w-32 rounded-md opacity-70"></div>
+            <div className="bg-muted mt-4 h-10 w-32 rounded-md opacity-70"></div>
           </div>
 
           <div className="border-border mt-4 border-t pt-4">
             <div className="flex items-center justify-end">
               <div className="flex gap-3">
-                <div className="bg-warning/20 h-9 w-32 rounded-md opacity-50"></div>
+                <div className="bg-muted h-9 w-32 rounded-md opacity-50"></div>
                 <div className="bg-muted h-9 w-24 rounded-md"></div>
                 <div className="bg-muted h-9 w-24 rounded-md"></div>
               </div>
@@ -55,7 +55,7 @@ const BillingSkeleton = () => {
       </div>
 
       <div className="border-border bg-card hidden h-full w-95 rounded-xl border p-4 lg:block">
-        <div className="border-success/20 flex h-full animate-pulse flex-col rounded-lg border-2 p-4">
+        <div className="border-border flex h-full animate-pulse flex-col rounded-lg border-2 p-4">
           <div className="bg-muted mx-auto mb-2 h-6 w-3/4 rounded"></div>
           <div className="bg-muted mx-auto mb-6 h-4 w-1/2 rounded"></div>
           <div className="bg-muted mb-4 h-px w-full"></div>

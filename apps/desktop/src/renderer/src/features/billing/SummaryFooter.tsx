@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import useReceiptPrint from "@/features/billing/hooks/useReceiptPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
@@ -137,12 +136,7 @@ export const SummaryFooter = () => {
         size="lg"
         disabled={loadingAction !== null}
         onClick={handleSaveAndPrint}
-        className={cn(
-          "min-w-36",
-          type === "sales"
-            ? "bg-success text-success-foreground hover:bg-success/90"
-            : "bg-info text-info-foreground hover:bg-info/90"
-        )}
+        className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36"
       >
         {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
         {loadingAction === "print" ? "Saving..." : "Save & Print"}

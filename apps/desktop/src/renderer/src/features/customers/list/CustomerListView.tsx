@@ -161,7 +161,7 @@ export function CustomerListView() {
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="border-border bg-background text-foreground hover:bg-muted relative h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+                className="border-border bg-background text-foreground hover:bg-hover relative h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
               >
                 <SlidersHorizontal className="size-4" />
                 Filter
@@ -193,7 +193,7 @@ export function CustomerListView() {
                           "flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                           active
                             ? "bg-foreground/10 text-foreground"
-                            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                            : "text-muted-foreground hover:bg-hover hover:text-foreground"
                         )}
                       >
                         {option.label}
@@ -238,7 +238,7 @@ export function CustomerListView() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="border-border bg-background text-foreground hover:bg-muted h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
+                className="border-border bg-background text-foreground hover:bg-hover h-9 cursor-pointer gap-2 px-3 text-sm font-medium shadow-none transition-colors"
               >
                 <ArrowDownAZ className="size-4" />
                 {activeSortLabel ?? "Sort"}

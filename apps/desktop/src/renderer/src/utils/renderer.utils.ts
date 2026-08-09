@@ -51,11 +51,11 @@ export const updateCheckedQuantity = (
  * Return the billing row surface for unchecked, completed, and partially checked items.
  */
 export const getCheckStatusColor = (checkedQty: number, quantity: number) => {
-  let bgColor = "border-border bg-card";
+  let bgColor = "border-frame bg-card";
   if (checkedQty === quantity && quantity > 0) {
-    bgColor = "border-success/60 bg-success/20";
+    bgColor = "border-success bg-line-item-complete";
   } else if (checkedQty > 0 && checkedQty < quantity) {
-    bgColor = "border-warning/60 bg-warning/20";
+    bgColor = "border-warning bg-line-item-partial";
   }
   return bgColor;
 };

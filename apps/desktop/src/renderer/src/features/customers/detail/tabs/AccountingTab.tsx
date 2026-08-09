@@ -16,16 +16,8 @@ export function AccountingTab({ customerId }: { customerId: string }) {
   const isSettled = currentBalance === 0;
   const isDue = currentBalance > 0;
 
-  const balanceTone = isSettled
-    ? "text-muted-foreground"
-    : isDue
-      ? "text-destructive"
-      : "text-success";
-  const balanceIconTone = isSettled
-    ? "bg-muted text-muted-foreground"
-    : isDue
-      ? "bg-destructive/10 text-destructive"
-      : "bg-success/15 text-success";
+  const balanceTone = isSettled ? "text-muted-foreground" : "text-foreground";
+  const balanceIconTone = isSettled ? "bg-hover text-muted-foreground" : "bg-hover text-marker";
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-3">

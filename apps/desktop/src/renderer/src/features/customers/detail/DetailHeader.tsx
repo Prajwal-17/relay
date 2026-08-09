@@ -8,9 +8,9 @@ import { useCustomerActions } from "../customerActions";
 import { OutstandingBadge } from "./OutstandingBadge";
 
 const typeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/15 text-info border-info/25",
-  hotel: "bg-primary/10 text-primary border-primary/25"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 // pinned slim tabs toolbar in customer workspace
@@ -25,7 +25,7 @@ export function DetailHeader({ customer }: { customer: Customer }) {
           <button
             type="button"
             onClick={() => navigate("/customers")}
-            className="text-muted-foreground hover:text-foreground hover:bg-accent flex shrink-0 cursor-pointer items-center rounded-md px-1.5 py-1 font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-hover flex shrink-0 cursor-pointer items-center rounded-md px-1.5 py-1 font-medium transition-colors"
           >
             All customers
           </button>
@@ -37,7 +37,7 @@ export function DetailHeader({ customer }: { customer: Customer }) {
             onClick={openSearch}
             title="Switch customer"
             aria-current="page"
-            className="text-foreground hover:bg-accent flex min-w-0 cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors"
+            className="text-foreground hover:bg-hover flex min-w-0 cursor-pointer items-center gap-1 rounded-md px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors"
           >
             <span className="truncate">{customer.name}</span>
             <ChevronDown className="text-foreground size-5 shrink-0" />

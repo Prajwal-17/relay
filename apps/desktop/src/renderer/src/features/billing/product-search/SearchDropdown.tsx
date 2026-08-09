@@ -10,7 +10,11 @@ import { useBillingSessionStore } from "@/features/billing/store/billingSession.
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
 import { useAppPreferences } from "@/features/preferences/useAppPreferences";
-import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/features/products/hooks/useProductSearch";
+import {
+  BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
+  PRODUCTSEARCH_TYPE,
+  useProductSearch
+} from "@/features/products/hooks/useProductSearch";
 import { useProductsStore } from "@/features/products/products.store";
 import { ACTION_TYPE, DIALOG_MODE, PRODUCT_SORT_BY } from "@shared/types";
 import { formatDateStr } from "@shared/utils/dateUtils";
@@ -20,6 +24,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEARCH_DROPDOWN_MAX_HEIGHT = 440;
+const SEARCH_DROPDOWN_MAX_WIDTH = 880;
 const KEYBOARD_SCROLL_AHEAD = 2;
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
@@ -181,7 +186,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({ display: "none" });
   const [dropdownLayout, setDropdownLayout] = useState({
-    width: 704,
+    width: SEARCH_DROPDOWN_MAX_WIDTH,
     maxHeight: SEARCH_DROPDOWN_MAX_HEIGHT,
     left: 0
   });
@@ -195,7 +200,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     const viewportInset = 12;
     const anchorLeft = anchorRect?.left ?? element.getBoundingClientRect().left;
     const availableViewportWidth = Math.max(160, window.innerWidth - viewportInset * 2);
-    const width = Math.min(704, availableViewportWidth / scale);
+    const width = Math.min(SEARCH_DROPDOWN_MAX_WIDTH, availableViewportWidth / scale);
     const visualWidth = width * scale;
     const clampedVisualLeft = Math.min(
       Math.max(anchorLeft, viewportInset),
@@ -573,7 +578,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             className={`inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-semibold transition-colors ${
                               isActive
                                 ? "bg-foreground text-background"
-                                : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                                : "text-muted-foreground hover:bg-hover hover:text-foreground"
                             }`}
                           >
                             {label}
@@ -609,6 +614,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                       const product = searchResults[virtualRow.index];
                       if (!product) return null;
 
+                      const showWeight =
+                        product.weight !== null &&
+                        ignoredWeight.some((weight) =>
+                          (String(product.weight) + "+" + product.unit).includes(weight)
+                        );
+
                       return (
                         <div
                           key={virtualRow.key}
@@ -617,11 +628,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            className={`group relative flex h-13.5 items-center gap-2.5 rounded-(--radius-control) px-3 transition-colors duration-150 hover:cursor-pointer ${
+                            className={`group relative flex items-center gap-2.5 rounded-(--radius-control) px-3 transition-colors duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
-                                ? "bg-brand/25 text-brand-foreground hover:bg-brand/25"
-                                : "hover:bg-brand/25 hover:text-brand-foreground"
+                                ? "bg-selected text-foreground hover:bg-selected"
+                                : "hover:bg-hover hover:text-foreground"
                             }`}
+                            style={{ height: BILLING_PRODUCT_SEARCH_ROW_HEIGHT }}
                             onClick={() => selectProduct(virtualRow.index)}
                             onMouseDown={(e) => e.preventDefault()}
                             onMouseEnter={() => {
@@ -632,7 +644,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           >
                             <span
                               aria-hidden="true"
-                              className={`bg-brand absolute top-0 left-0 h-full w-1 rounded-r-full transition-opacity ${
+                              className={`bg-marker absolute top-0 left-0 h-full w-1 rounded-r-full transition-opacity ${
                                 highlightedIndex === virtualRow.index ? "opacity-100" : "opacity-0"
                               }`}
                             />
@@ -644,25 +656,25 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
                             <div className="min-w-0 flex-1">
                               <div className="flex min-w-0 items-center gap-2">
-                                <h4 className="text-foreground min-w-0 truncate text-lg font-semibold">
+                                <h4
+                                  className="text-foreground min-w-0 truncate text-lg font-semibold"
+                                  title={product.name}
+                                >
                                   <HighlightedText text={product.name} query={itemQuery} />
                                 </h4>
-                                {product.weight !== null &&
-                                  ignoredWeight.some((w) =>
-                                    `${product.weight}+${product.unit}`.includes(w)
-                                  ) && (
-                                    <Badge
-                                      variant="outline"
-                                      className="border-border bg-muted text-muted-foreground shrink-0 rounded-md px-2 py-0.5 text-sm font-semibold shadow-sm"
-                                    >
-                                      {product.weight}
-                                      {product.unit}
-                                    </Badge>
-                                  )}
+                                {showWeight && (
+                                  <Badge
+                                    variant="outline"
+                                    className="border-unit-tag-border bg-unit-tag-bg text-unit-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold shadow-none"
+                                  >
+                                    {product.weight}
+                                    {product.unit}
+                                  </Badge>
+                                )}
                                 {product.mrp && (
                                   <Badge
                                     variant="outline"
-                                    className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text shrink-0 rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
+                                    className="border-mrp-tag-border bg-mrp-tag-bg text-mrp-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold tabular-nums shadow-none"
                                   >
                                     MRP ₹{paisaToRupeeString(product.mrp)}
                                   </Badge>
@@ -670,7 +682,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               </div>
                             </div>
 
-                            <div className="text-success shrink-0 text-right text-xl font-bold tabular-nums">
+                            <div className="text-foreground shrink-0 text-right text-xl font-bold tabular-nums">
                               ₹ {paisaToRupeeString(product.price)}
                             </div>
 

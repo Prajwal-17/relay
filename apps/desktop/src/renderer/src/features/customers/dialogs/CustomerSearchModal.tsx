@@ -16,9 +16,9 @@ function rowHeight() {
 }
 
 const typeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/15 text-info border-info/25",
-  hotel: "bg-primary/10 text-primary border-primary/25"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
@@ -239,7 +239,6 @@ function CustomerRow({
   onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
   const outstanding = customer.outstandingBalance ?? 0;
-  const isDue = outstanding > 0;
 
   return (
     <button
@@ -249,13 +248,13 @@ function CustomerRow({
       style={{ height: rowHeight() }}
       className={cn(
         "relative flex w-full items-center justify-between gap-3 pr-3 pl-4 text-left transition-colors",
-        "hover:bg-accent",
-        isActive && "bg-accent"
+        "hover:bg-hover",
+        isActive && "bg-selected"
       )}
     >
       <span
         className={cn(
-          "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
+          "bg-marker absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
           isActive ? "opacity-100" : "opacity-0"
         )}
       />
@@ -280,7 +279,7 @@ function CustomerRow({
         <span
           className={cn(
             "min-w-16 text-right text-sm font-semibold tabular-nums",
-            isDue ? "text-destructive" : "text-muted-foreground"
+            outstanding === 0 ? "text-muted-foreground" : "text-foreground"
           )}
         >
           {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}

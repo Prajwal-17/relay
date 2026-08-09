@@ -58,7 +58,7 @@ export default function PdfInvoicePage() {
     return (
       <div className="bg-background flex h-screen w-full items-center justify-center p-3">
         <div className="border-border bg-card flex min-w-56 flex-col items-center gap-3 rounded-(--radius-panel) border p-4">
-          <LoaderCircle className="text-brand size-7 animate-spin" />
+          <LoaderCircle className="text-marker size-7 animate-spin" />
           <p className="text-muted-foreground text-sm font-medium">Preparing invoice…</p>
         </div>
       </div>

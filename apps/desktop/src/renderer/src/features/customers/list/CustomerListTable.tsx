@@ -112,7 +112,7 @@ export function CustomerListTable({
 
   return (
     <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
-      <div className="bg-muted text-muted-foreground grid h-9 grid-cols-11 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
+      <div className="bg-table-header text-foreground grid h-9 grid-cols-11 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
         {colInfo.map((c, i) => (
           <div key={i} className={cn("flex", c.span, c.align)}>
             {c.label}
@@ -227,7 +227,7 @@ export function CustomerListTable({
                         aria-selected={virtualRow.index === activeIndex}
                         onClick={() => onRowClick(row)}
                         className={cn(
-                          "border-border/70 hover:bg-accent relative w-full border-b text-left transition-colors",
+                          "border-border/70 hover:bg-hover relative w-full border-b text-left transition-colors",
                           "grid min-h-11 cursor-pointer grid-cols-11 items-center gap-2 px-3 py-1 text-sm",
                           "last:border-b-0",
                           virtualRow.index === activeIndex && "bg-accent"

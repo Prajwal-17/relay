@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-09T00:00:00Z",
+  "title": "Design System: QuickCart Desktop",
+  "extensions": {
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Warm Canvas"
+      },
+      "surface-1": {
+        "role": "neutral",
+        "displayName": "Working White"
+      },
+      "surface-2": {
+        "role": "neutral",
+        "displayName": "Secondary Surface"
+      },
+      "border-frame": {
+        "role": "neutral",
+        "displayName": "Structural Frame"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ledger Ink"
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Charcoal Action"
+      },
+      "counter-accent": {
+        "role": "accent",
+        "displayName": "Counter Terracotta"
+      },
+      "sales-accent": {
+        "role": "accent",
+        "displayName": "Sales Teal"
+      },
+      "estimate-accent": {
+        "role": "accent",
+        "displayName": "Estimate Berry"
+      },
+      "olive-accent": {
+        "role": "accent",
+        "displayName": "Opening Ledger Olive"
+      },
+      "gold-accent": {
+        "role": "accent",
+        "displayName": "Adjustment and MRP Gold"
+      },
+      "calendar-range": {
+        "role": "accent",
+        "displayName": "Refined Terracotta Calendar Range"
+      },
+      "calendar-range-edge": {
+        "role": "accent",
+        "displayName": "Dark Terracotta Calendar Range Endpoint"
+      },
+      "line-item-complete": {
+        "role": "success",
+        "displayName": "Completed Line Item Surface"
+      },
+      "line-item-complete-field": {
+        "role": "success",
+        "displayName": "Completed Line Item Field Surface"
+      },
+      "line-item-partial": {
+        "role": "warning",
+        "displayName": "Subtle Partially Checked Line Item Surface"
+      },
+      "line-item-partial-field": {
+        "role": "warning",
+        "displayName": "Subtle Partially Checked Line Item Field Surface"
+      },
+      "unit-tag-background": {
+        "role": "accent",
+        "displayName": "Unit Tag Teal"
+      },
+      "mrp-tag-background": {
+        "role": "accent",
+        "displayName": "MRP Tag Gold"
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hovered Item"
+      },
+      "selected": {
+        "role": "neutral",
+        "displayName": "Selected Item"
+      },
+      "selection-marker": {
+        "role": "accent",
+        "displayName": "Terracotta Selection Marker"
+      },
+      "focus": {
+        "role": "accent",
+        "displayName": "Terracotta Focus"
+      },
+      "table-header": {
+        "role": "neutral",
+        "displayName": "Table Header"
+      },
+      "onboarding-panel": {
+        "role": "neutral",
+        "displayName": "Onboarding Panel"
+      },
+      "success": {
+        "role": "success",
+        "displayName": "Saved Green"
+      },
+      "warning": {
+        "role": "warning",
+        "displayName": "Incomplete Amber"
+      },
+      "destructive": {
+        "role": "destructive",
+        "displayName": "Brick Red"
+      },
+      "search-highlight": {
+        "role": "highlight",
+        "displayName": "Bright Search Match"
+      },
+      "invoice-accent": {
+        "role": "print",
+        "displayName": "Invoice Charcoal"
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default controls, tables, forms, and application copy."
+      },
+      "secondary": {
+        "displayName": "Secondary",
+        "purpose": "Timestamps, hints, metadata, and low-priority supporting copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, compact headings, table headings, and short kickers."
+      },
+      "page-title": {
+        "displayName": "Page Title",
+        "purpose": "The current workspace or major section name."
+      },
+      "financial-total": {
+        "displayName": "Financial Total",
+        "purpose": "The most important total in the active transaction."
+      }
+    },
+    "shadows": [
+      {
+        "name": "shadow-xs",
+        "value": "0 1px 2px rgb(29 30 27 / 0.08)",
+        "purpose": "A minimally detached compact summary or control."
+      },
+      {
+        "name": "shadow-sm",
+        "value": "0 2px 5px rgb(29 30 27 / 0.1)",
+        "purpose": "A small transient element where a border alone is insufficient."
+      },
+      {
+        "name": "shadow-md",
+        "value": "0 8px 20px -6px rgb(29 30 27 / 0.22)",
+        "purpose": "Dropdowns, popovers, menus, and hover previews."
+      },
+      {
+        "name": "shadow-lg",
+        "value": "0 16px 36px -10px rgb(29 30 27 / 0.28)",
+        "purpose": "Dialogs and overlay drawers."
+      },
+      {
+        "name": "shadow-xl",
+        "value": "0 24px 48px -12px rgb(29 30 27 / 0.32)",
+        "purpose": "Reserved for exceptional modal stacking."
+      },
+      {
+        "name": "shadow-2xl",
+        "value": "0 32px 64px -14px rgb(29 30 27 / 0.36)",
+        "purpose": "Reserved for the highest emergency overlay; not routine UI."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "purpose": "Entry and direct response to user action."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "purpose": "Reversible state transitions."
+      },
+      {
+        "name": "state-transition",
+        "value": "150ms",
+        "purpose": "Routine color, border, and opacity feedback."
+      },
+      {
+        "name": "overlay-transition",
+        "value": "200ms",
+        "purpose": "Dialogs, drawers, and popovers."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "supported-minimum",
+        "value": "1024px × 600px"
+      },
+      {
+        "name": "compact-shell",
+        "value": "1120px"
+      },
+      {
+        "name": "billing-preview-dock",
+        "value": "1280px"
+      },
+      {
+        "name": "compact-height",
+        "value": "680px height"
+      },
+      {
+        "name": "release-baseline",
+        "value": "1280px × 650px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Charcoal default for generic high-priority actions.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Add product</button>",
+      "css": ".ds-btn-primary { height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 1px solid var(--primary); border-radius: var(--radius-control); background: var(--primary); color: var(--on-primary); font: 600 14px/1.2 var(--font-sans); transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out); } .ds-btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); } .ds-btn-primary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; } .ds-btn-primary:disabled { cursor: not-allowed; opacity: 0.5; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Standard secondary action with a solid neutral boundary.",
+      "html": "<button class=\"ds-btn-outline\" type=\"button\">Filter</button>",
+      "css": ".ds-btn-outline { height: 36px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 12px; border: 1px solid var(--border-standard); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink); font: 500 14px/1.2 var(--font-sans); transition: background-color 150ms var(--ease-out), border-color 150ms var(--ease-out); } .ds-btn-outline:hover { background: var(--hover); border-color: var(--border-frame); } .ds-btn-outline:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labeled 36px field for forms and command bars.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Product name</span><input class=\"ds-input\" value=\"Amul Gold Milk\" aria-label=\"Product name\"></label>",
+      "css": ".ds-field { display: grid; gap: 6px; color: var(--ink); font-family: var(--font-sans); } .ds-field-label { font-size: 12px; line-height: 1.25; font-weight: 600; } .ds-input { width: 100%; height: 36px; padding: 0 12px; border: 1px solid var(--border-standard); border-radius: var(--radius-control); background: var(--surface-1); color: var(--ink); font: 400 14px/1.4 var(--font-sans); transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out); } .ds-input:hover { border-color: var(--border-frame); } .ds-input:focus { border-color: var(--focus); box-shadow: 0 0 0 3px var(--focus); outline: none; }"
+    },
+    {
+      "name": "Compact Card",
+      "kind": "card",
+      "refersTo": "compact-card",
+      "description": "Default framed working surface for dense application content.",
+      "html": "<section class=\"ds-card\"><header class=\"ds-card-header\"><h3>Today</h3><span>12 sales</span></header><strong class=\"ds-card-value\">₹18,640.00</strong></section>",
+      "css": ".ds-card { display: grid; gap: 12px; padding: 12px; border: 1px solid var(--border-standard); border-radius: var(--radius-panel); background: var(--surface-1); color: var(--ink); font-family: var(--font-sans); } .ds-card-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; } .ds-card-header h3 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: -0.02em; } .ds-card-header span { color: var(--ink-muted); font-size: 12px; } .ds-card-value { font-size: 22px; line-height: 1.1; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }"
+    },
+    {
+      "name": "Active Navigation Row",
+      "kind": "nav",
+      "refersTo": "navigation-row-active",
+      "description": "Compact active route treatment using the neutral selected surface and one consistent solid charcoal icon plate.",
+      "html": "<a class=\"ds-nav-row\" href=\"#\"><span class=\"ds-nav-icon\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M3 11 12 4l9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"/></svg></span><span>Home</span></a>",
+      "css": ".ds-nav-row { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 8px; border-radius: var(--radius-control); background: var(--selected); color: var(--ink); font: 600 14px/1.2 var(--font-sans); text-decoration: none; transition: background-color 150ms var(--ease-out); } .ds-nav-icon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: var(--radius-control); background: var(--primary); color: var(--on-primary); } .ds-nav-icon svg { width: 18px; height: 18px; } .ds-nav-row:hover { background: var(--selected); } .ds-nav-row:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Workflow Identity Labels",
+      "kind": "custom",
+      "description": "Sales and Estimates use labeled teal and berry accents; customer types stay neutral, while ledger-entry color is confined to compact icon plates beside neutral labels.",
+      "html": "<div class='ds-identity-row'><span class='ds-identity ds-identity-sale'><span class='ds-identity-icon' aria-hidden='true'>●</span>Sale</span><span class='ds-identity ds-identity-estimate'><span class='ds-identity-icon' aria-hidden='true'>●</span>Estimate</span></div>",
+      "css": ".ds-identity-row { display: flex; align-items: center; gap: 12px; font-family: var(--font-sans); } .ds-identity { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); font-size: 12px; line-height: 1.2; font-weight: 600; } .ds-identity-icon { font-size: 8px; } .ds-identity-sale .ds-identity-icon { color: var(--sales-accent); } .ds-identity-estimate .ds-identity-icon { color: var(--estimate-accent); }"
+    },
+    {
+      "name": "Dense Table Row",
+      "kind": "custom",
+      "refersTo": "table-row",
+      "description": "Stable 42px data row with protected numeric alignment.",
+      "html": "<div class=\"ds-table-row\" role=\"row\"><span class=\"ds-table-name\" role=\"cell\">Amul Gold Milk 1L</span><span class=\"ds-table-meta\" role=\"cell\">2 × ₹72.00</span><strong role=\"cell\">₹144.00</strong></div>",
+      "css": ".ds-table-row { min-height: 42px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(110px, auto) minmax(100px, auto); align-items: center; gap: 12px; padding: 0 12px; border-bottom: 1px solid var(--border-standard); background: var(--surface-1); color: var(--ink); font: 400 14px/1.25 var(--font-sans); } .ds-table-row:hover { background: var(--hover); } .ds-table-row:focus-within { background: var(--selected); outline: 2px solid var(--focus); outline-offset: -2px; } .ds-table-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-table-meta { color: var(--ink-muted); text-align: right; font-variant-numeric: tabular-nums; } .ds-table-row strong { text-align: right; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Billing Summary Bar",
+      "kind": "custom",
+      "description": "Stable transaction footer with an anchored total and one dependable charcoal primary action.",
+      "html": "<footer class=\"ds-summary\"><div class=\"ds-total\"><span>Total</span><strong>₹1,24,560.00</strong></div><button class=\"ds-summary-action\" type=\"button\">Save &amp; Print</button></footer>",
+      "css": ".ds-summary { height: 52px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 12px; border-top: 1px solid var(--border-frame); background: var(--surface-1); color: var(--ink); font-family: var(--font-sans); } .ds-total { display: flex; align-items: baseline; gap: 6px; min-width: 0; } .ds-total span { color: var(--ink-muted); font-size: 12px; font-weight: 600; } .ds-total strong { font-size: 22px; line-height: 1.1; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; white-space: nowrap; } .ds-summary-action { height: 40px; padding: 0 16px; border: 1px solid var(--primary); border-radius: var(--radius-control); background: var(--primary); color: var(--on-primary); font: 600 14px/1.2 var(--font-sans); } .ds-summary-action:hover { background: var(--primary-hover); border-color: var(--primary-hover); } .ds-summary-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Counter Ledger",
+    "overview": "QuickCart is a compact, keyboard-and-mouse point-of-sale workspace for repeated shop-counter operation. Crisp white working surfaces, a warm neutral canvas, strong charcoal actions, controlled terracotta, teal, berry, and amber accents, and solid borders make the interface feel stable and trustworthy. Density is intentional: common tasks stay visible, financial values are easy to compare, and geometry remains fixed while data changes.",
+    "keyCharacteristics": [
+      "Compact without shrinking text or interaction targets",
+      "Neutral working surfaces with solid structural borders",
+      "Charcoal billing actions with compact workflow accents",
+      "Teal Sales and berry Estimate identities; neutral customer and ledger labels with bounded ledger icon accents",
+      "Tabular financial data and stable column geometry",
+      "Wide single-line product identification in billing search with stable virtualized rows",
+      "Keyboard parity for every billing-critical action",
+      "Screen and print themes kept intentionally separate"
+    ],
+    "rules": [
+      {
+        "name": "Stable Geometry",
+        "body": "Primary actions, totals, table columns, and navigation remain in predictable locations across content states.",
+        "section": "layout"
+      },
+      {
+        "name": "Semantic Color",
+        "body": "Charcoal identifies primary actions, terracotta identifies focus, teal identifies Sales, berry identifies Estimates, and neutral surfaces keep dense work calm; saved, incomplete, failed, and destructive states retain separate semantic colors.",
+        "section": "colors"
+      },
+      {
+        "name": "Borders Before Shadows",
+        "body": "Working surfaces use solid borders; shadows communicate overlays and stacking rather than importance.",
+        "section": "elevation"
+      },
+      {
+        "name": "Keyboard Parity",
+        "body": "Anything required to create, edit, save, print, or recover a bill is reachable and understandable without a mouse.",
+        "section": "components"
+      },
+      {
+        "name": "Print Isolation",
+        "body": "Receipt and A4 output use invoice-only tokens so screen-theme changes cannot reduce print legibility.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Use semantic tokens and the established density contract.",
+      "Keep frequent controls visible and stable.",
+      "Design long-name, large-amount, loading, empty, error, and focus states.",
+      "Update virtualizer estimates with row-height changes.",
+      "Validate the baseline viewport at 100% zoom."
+    ],
+    "donts": [
+      "Do not use zoom or transform scaling as a layout system.",
+      "Concentrate accents in primary billing actions, compact identity cues, commerce tags, and charts.",
+      "Do not hide billing-critical controls behind overflow menus.",
+      "Do not rely on hover or color alone for essential state.",
+      "Do not let screen colors leak into invoice output."
+    ]
+  }
+}

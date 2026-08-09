@@ -190,7 +190,7 @@ export function ProductDialog() {
                               <Button
                                 variant="outline"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
-                                className="text-success border-success/30 hover:bg-success/10 h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                                className="text-foreground border-border hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                               >
                                 <RotateCcw className="h-4 w-4" />
                                 Restore
@@ -221,7 +221,7 @@ export function ProductDialog() {
                           <Button
                             variant="outline"
                             onClick={() => setDialogMode(DIALOG_MODE.EDIT)}
-                            className="border-border text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                            className="border-border text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                           >
                             <Edit3 className="h-4 w-4" />
                             Edit
@@ -242,7 +242,7 @@ export function ProductDialog() {
                       variant="ghost"
                       onClick={() => setDialogMode(DIALOG_MODE.VIEW)}
                       disabled={productMutation.isPending}
-                      className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                      className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
                     >
                       <Eye className="h-4 w-4" />
                       View
@@ -256,7 +256,7 @@ export function ProductDialog() {
                 onClick={() => {
                   closeProductDialog();
                 }}
-                className="text-muted-foreground hover:text-foreground hover:bg-secondary h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
+                className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
               >
                 <X className="h-6! w-6!" />
               </Button>
@@ -284,7 +284,7 @@ export function ProductDialog() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex h-full flex-col items-center justify-center gap-4"
                 >
-                  <div className="bg-destructive/10 flex h-16 w-16 items-center justify-center rounded-2xl">
+                  <div className="bg-hover flex h-16 w-16 items-center justify-center rounded-2xl">
                     <AlertTriangle className="text-destructive h-8 w-8" />
                   </div>
                   <h3 className="text-foreground text-lg font-semibold">Failed to load product</h3>
@@ -438,7 +438,7 @@ export function ProductDialog() {
             <AlertDialogFooter>
               <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
               <AlertDialogAction
-                className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+                className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
                 onClick={() => productId && restoreProductMutation.mutate(productId)}
                 disabled={restoreProductMutation.isPending}
               >

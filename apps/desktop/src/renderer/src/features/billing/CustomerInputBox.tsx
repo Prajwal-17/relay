@@ -300,9 +300,9 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
 };
 
 const typeBadgeClass: Record<string, string> = {
-  cash: "bg-muted text-muted-foreground border-border",
-  account: "bg-info/15 text-info border-info/25",
-  hotel: "bg-primary/10 text-primary border-primary/25"
+  cash: "bg-hover text-foreground border-border",
+  account: "bg-hover text-foreground border-border",
+  hotel: "bg-hover text-foreground border-border"
 };
 
 function CustomerRow({
@@ -319,7 +319,6 @@ function CustomerRow({
   onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
   const outstanding = customer.outstandingBalance ?? 0;
-  const isDue = outstanding > 0;
 
   return (
     <button
@@ -329,44 +328,46 @@ function CustomerRow({
       style={{ height: rowHeight() }}
       className={cn(
         "relative flex w-full items-center justify-between gap-2 px-3 text-left transition-colors",
-        "hover:bg-accent",
-        isActive && "bg-accent"
+        "hover:bg-hover",
+        isActive && "bg-selected"
       )}
     >
       <span
         className={cn(
-          "bg-primary absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
+          "bg-marker absolute top-0 left-0 h-full w-0.5 rounded-r-full transition-opacity",
           isActive ? "opacity-100" : "opacity-0"
         )}
       />
       <div className="min-w-0 flex-1">
-        <p className="text-foreground truncate text-sm leading-tight font-medium">
-          {customer.name}
-        </p>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <p className="text-foreground min-w-0 truncate text-sm leading-tight font-medium">
+            {customer.name}
+          </p>
+          <Badge
+            variant="outline"
+            className={cn(
+              "shrink-0 px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
+              typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
+            )}
+          >
+            {customer.customerType}
+          </Badge>
+        </div>
         <p className="text-muted-foreground truncate text-xs leading-tight">
           {customer.contact ? customer.contact : "No contact"}
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
-        <Badge
-          variant="outline"
-          className={cn(
-            "px-1.5 py-0 text-xs leading-tight font-semibold capitalize",
-            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
-          )}
-        >
-          {customer.customerType}
-        </Badge>
         <span
           className={cn(
             "text-xs font-semibold tabular-nums",
-            isDue ? "text-destructive" : "text-muted-foreground"
+            outstanding === 0 ? "text-muted-foreground" : "text-foreground"
           )}
         >
           {outstanding === 0 ? "-" : formatRupee(Math.abs(outstanding))}
         </span>
         <Check
-          className={cn("h-3.5 w-3.5", isSelected ? "text-primary opacity-100" : "opacity-0")}
+          className={cn("h-3.5 w-3.5", isSelected ? "text-marker opacity-100" : "opacity-0")}
         />
       </div>
     </button>
