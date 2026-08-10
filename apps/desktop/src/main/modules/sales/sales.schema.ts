@@ -2,6 +2,7 @@ import z from "zod";
 import { SortOption } from "../../../shared/types";
 
 export const filterSalesParamsSchema = z.object({
+  search: z.string().trim().max(100).optional().default(""),
   from: z.iso
     .datetime()
     .optional()

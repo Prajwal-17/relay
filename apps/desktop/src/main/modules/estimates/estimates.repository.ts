@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, lte, sql, sum, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lte, or, sql, sum, type SQL } from "drizzle-orm";
 import {
   BATCH_CHECK_ACTION,
   UPDATE_QTY_ACTION,
@@ -10,7 +10,7 @@ import {
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/milliUnits";
 import { db } from "../../db/db";
-import { estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
+import { customers, estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
 import type { FilterEstimatesParams } from "./estimates.types";
@@ -27,6 +27,29 @@ const getEstimateById = async (id: string) => {
   });
 };
 
+const escapeLikePattern = (value: string) => value.replace(/[\\%_]/g, "\\$&");
+
+const buildEstimateSearchFilter = (search: string): SQL | undefined => {
+  if (!search) return undefined;
+
+  const customerNamePattern = `%${escapeLikePattern(search.toLowerCase())}%`;
+  const customerMatches = inArray(
+    estimates.customerId,
+    db
+      .select({ id: customers.id })
+      .from(customers)
+      .where(sql`lower(${customers.name}) like ${customerNamePattern} escape '\\'`)
+  );
+  const documentSearch = search.startsWith("#") ? search.slice(1) : search;
+
+  if (!/^\d+$/.test(documentSearch)) return customerMatches;
+
+  const documentNumber = Number(documentSearch);
+  return Number.isSafeInteger(documentNumber)
+    ? or(customerMatches, eq(estimates.estimateNo, documentNumber))
+    : customerMatches;
+};
+
 const getLatestEstimateNo = async () => {
   return db.select().from(estimates).orderBy(desc(estimates.estimateNo)).limit(1).get();
 };
@@ -37,6 +60,12 @@ const filterEstimatesByDate = async (
   }
 ) => {
   const offset = (params.pageNo - 1) * params.pageSize;
+  const searchFilter = buildEstimateSearchFilter(params.search);
+  const whereClause = and(
+    gte(estimates.createdAt, params.from),
+    lte(estimates.createdAt, params.to),
+    searchFilter
+  );
 
   const [summaryResult, transactionsResult] = await Promise.all([
     db
@@ -45,11 +74,11 @@ const filterEstimatesByDate = async (
         totalTransactions: count(estimates.id).mapWith(Number)
       })
       .from(estimates)
-      .where(and(gte(estimates.createdAt, params.from), lte(estimates.createdAt, params.to)))
+      .where(whereClause)
       .orderBy(params.orderByClause),
 
     db.query.estimates.findMany({
-      where: and(gte(estimates.createdAt, params.from), lte(estimates.createdAt, params.to)),
+      where: whereClause,
       with: {
         customer: true
       },

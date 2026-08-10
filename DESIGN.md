@@ -270,19 +270,20 @@ Virtualized dimensions are part of the layout contract and must change with the 
 - Billing product search rows: 54px.
 - Customer rows: 44px.
 - Sales and estimate transaction rows: 48px.
+- Sales and estimate grouping dividers: 32px; bill rows remain 48px.
 
 Use these route compositions:
 
-| Surface                | Required composition                                                                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                              |
-| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                               |
-| Sales and Estimates    | Quick statistics, sort/filter command bar, then the transaction table. Preserve this order until the planned dashboard redesign.                        |
-| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                                          |
-| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                 |
-| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                            |
-| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height. |
-| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                         |
+| Surface                | Required composition                                                                                                                                      |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                                |
+| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                                 |
+| Sales and Estimates    | Contextual statistics strip with a value-privacy control, search and quick-date command bar, then explicit sort/group controls and the transaction table. |
+| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                                            |
+| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                   |
+| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                              |
+| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.   |
+| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                           |
 
 ## Elevation & Depth
 
@@ -325,7 +326,7 @@ Do not copy a primitive into a feature folder to avoid understanding it. Do not 
 
 ### Data and financial components
 
-Tables use `table-header` with strong foreground text, aligned columns, 42–44px rows, and a stable action region. Every row uses `hover` for pointer hover and `selected` for keyboard focus or selection; the stronger `selection-marker` appears only where a persistent marker is needed. Actions appear on hover **and** focus/selection so keyboard users do not lose functionality. Loading, empty, error, and end-of-results states occupy the table frame without shifting surrounding controls.
+Tables use `table-header` with strong foreground text, aligned columns, 42–44px rows, and a stable action region. Every row uses `hover` for pointer hover and `selected` for keyboard focus or selection; the stronger `selection-marker` appears only where a persistent marker is needed. Actions appear on hover **and** focus/selection so keyboard users do not lose functionality. Loading, empty, error, and end-of-results states occupy the table frame without shifting surrounding controls. Sales and Estimates expose plain-language Sort and Group selectors above the table; Date and Amount headers remain scan-only labels. Day is the default grouping, the Group selection persists locally, and day dividers use the compact `2 Jul 2026` format. Day and Month group dividers use the 32px grouping contract without changing 48px bill rows.
 
 Summary cards put the label and amount in one deliberate horizontal composition when width permits. The amount owns the flexible or right-aligned region, uses tabular numerals, and must handle large Indian-formatted values. Do not stack a small label above an amount when doing so leaves unusable horizontal space or causes the number to collide with neighboring cards.
 
