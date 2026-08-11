@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +13,9 @@ import {
   useBillingTabsStore,
   type BillingTabType
 } from "@/features/billing/store/billingTabs.store";
+import { useReferenceWindowStore } from "@/features/billing/store/referenceWindow.store";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
-import { Plus, X } from "lucide-react";
+import { ImageIcon, Plus, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BillingSaveStatus } from "../BillingSaveStatus";
 import { BillingTab } from "./BillingTab";
@@ -24,6 +26,8 @@ const BillingTabBar = () => {
   const tabs = useBillingTabsStore((s) => s.tabs);
   const activeTabId = useBillingTabsStore((s) => s.activeTabId);
   const setActiveTab = useBillingTabsStore((s) => s.setActiveTab);
+  const isReferenceOpen = useReferenceWindowStore((state) => state.isOpen);
+  const toggleReferenceWindow = useReferenceWindowStore((state) => state.toggle);
 
   const handleTabClick = (tab: BillingTabType) => {
     if (tab.id === activeTabId) return;
@@ -119,6 +123,26 @@ const BillingTabBar = () => {
       </div>
 
       <div className="flex shrink-0 items-center gap-2 self-center">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant={isReferenceOpen ? "secondary" : "ghost"}
+              size="sm"
+              onClick={toggleReferenceWindow}
+              className="h-7 gap-1.5 px-2 text-xs"
+              aria-label={isReferenceOpen ? "Close item list" : "Open item list"}
+              aria-pressed={isReferenceOpen}
+            >
+              <ImageIcon />
+              <span className="hidden min-[1120px]:inline">Item list</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom">
+            {isReferenceOpen ? "Close item list" : "Open item list"}
+          </TooltipContent>
+        </Tooltip>
+
         <BillingSaveStatus />
 
         <Tooltip>

@@ -2,6 +2,7 @@ import { ErrorState } from "@/components/app-ui/ErrorState";
 import BillingHeader from "@/features/billing/BillingHeader";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillingPreviewPanel from "@/features/billing/preview/BillingPreviewPanel";
+import BillingReferenceWindow from "@/features/billing/reference/BillingReferenceWindow";
 import LineItemsTable from "@/features/billing/LineItemsTable";
 import BillingNotes from "@/features/billing/BillingNotes";
 import { ProductDialogWrapper } from "@/features/billing/ProductDialogWrapper";
@@ -181,6 +182,7 @@ const BillingPage = () => {
             </div>
           </div>
           <SummaryFooter />
+          <BillingReferenceWindow />
         </div>
         <BillingPreviewPanel />
         <ProductDialogWrapper />
