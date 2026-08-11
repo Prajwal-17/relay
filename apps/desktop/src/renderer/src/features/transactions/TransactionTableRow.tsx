@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import type { MutationVariables } from "@/features/transactions/hooks/useDashboard";
 import { getCustomerAvatarStyle } from "@/features/customers/customerAvatar";
 import { cn } from "@/lib/utils";
@@ -43,8 +44,9 @@ import { Link, useNavigate } from "react-router-dom";
 const TransactionTableRow = ({
   pathname,
   transaction,
-  isLoaderRow,
-  hasNextPage,
+  isLoaderRow = false,
+  hasNextPage = false,
+  search,
   deleteMutation,
   convertMutation,
   duplicateMutation,
@@ -53,8 +55,9 @@ const TransactionTableRow = ({
 }: {
   pathname: string;
   transaction: Omit<UnifiedTransaction, "customer"> & { customerName: string };
-  isLoaderRow: boolean;
-  hasNextPage: boolean;
+  isLoaderRow?: boolean;
+  hasNextPage?: boolean;
+  search: string;
   deleteMutation: UseMutationResult<null, Error, MutationVariables>;
   convertMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
   duplicateMutation: UseMutationResult<{ id: string }, Error, MutationVariables>;
@@ -139,14 +142,17 @@ const TransactionTableRow = ({
       >
         {transaction.customerName.charAt(0).toUpperCase()}
       </span>
-      <span className="text-foreground truncate text-sm font-medium">
-        {transaction.customerName}
+      <span
+        className="text-foreground truncate text-sm font-medium"
+        title={transaction.customerName}
+      >
+        <HighlightedText text={transaction.customerName} query={search} />
       </span>
     </>
   );
 
   return (
-    <div>
+    <div role="presentation">
       {isLoaderRow ? (
         <div className="text-muted-foreground flex h-full items-center justify-center text-sm">
           {hasNextPage ? (
@@ -157,8 +163,11 @@ const TransactionTableRow = ({
           ) : null}
         </div>
       ) : (
-        <div className="bg-card hover:bg-hover active:bg-selected border-border grid min-h-12 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors">
-          <div className="col-span-2 flex flex-col justify-center">
+        <div
+          role="row"
+          className="bg-card hover:bg-hover active:bg-selected border-border grid h-12 grid-cols-12 items-center gap-2 border-b px-3 py-1 text-sm transition-colors"
+        >
+          <div role="cell" className="col-span-2 flex flex-col justify-center">
             <span className="text-foreground text-sm leading-tight font-semibold tabular-nums">
               {transaction.createdAt
                 ? formatDateStrToISTDateStr(transaction.createdAt).fullDate
@@ -170,11 +179,12 @@ const TransactionTableRow = ({
                 : "-"}
             </span>
           </div>
-          <div className="col-span-3 flex items-center gap-2">
+          <div role="cell" className="col-span-3 flex min-w-0 items-center gap-2">
             {transaction.customerId ? (
               <Link
                 to={`/customers/${transaction.customerId}`}
                 className="focus-visible:ring-ring flex min-w-0 items-center gap-2 rounded-(--radius-control) outline-none hover:underline focus-visible:ring-2 focus-visible:ring-offset-2"
+                title={transaction.customerName}
               >
                 {customerIdentity}
               </Link>
@@ -183,17 +193,27 @@ const TransactionTableRow = ({
             )}
           </div>
 
-          <div className="text-muted-foreground col-span-2 flex items-center text-sm tabular-nums">
-            #{transaction.transactionNo}
+          <div
+            role="cell"
+            className="text-muted-foreground col-span-2 flex items-center text-sm tabular-nums"
+          >
+            <HighlightedText text={`#${transaction.transactionNo}`} query={search} />
           </div>
-          <div className="text-foreground col-span-3 flex items-center text-sm font-semibold tabular-nums">
-            {transaction.grandTotal ? formatRupee(transaction.grandTotal) : "-"}
+          <div
+            role="cell"
+            className="text-foreground col-span-3 flex items-center justify-end text-sm font-semibold whitespace-nowrap tabular-nums"
+          >
+            {transaction.grandTotal !== null && transaction.grandTotal !== undefined
+              ? formatRupee(transaction.grandTotal)
+              : "-"}
           </div>
-          <div className="col-span-2 flex items-center justify-center gap-0.5">
+          <div role="cell" className="col-span-2 flex items-center justify-center gap-0.5">
             <Tooltip>
               <TooltipTrigger
                 onClick={handleView}
                 className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5"
+                type="button"
+                aria-label="View transaction"
               >
                 <Eye className="size-4" />
               </TooltipTrigger>
@@ -206,6 +226,8 @@ const TransactionTableRow = ({
               <TooltipTrigger
                 onClick={handleEdit}
                 hidden={!canModify}
+                type="button"
+                aria-label="Edit transaction"
                 className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5"
               >
                 <Edit className="size-4" />
@@ -219,6 +241,8 @@ const TransactionTableRow = ({
               <TooltipTrigger
                 onClick={() => setActiveDialog("delete")}
                 hidden={!canModify}
+                type="button"
+                aria-label="Delete transaction"
                 className="hover:bg-hover text-destructive cursor-pointer rounded-md p-1.5"
               >
                 <Trash2 className="size-4" />
@@ -252,7 +276,11 @@ const TransactionTableRow = ({
             </AlertDialog>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5">
+              <DropdownMenuTrigger
+                type="button"
+                aria-label="More transaction actions"
+                className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5"
+              >
                 <MoreVertical className="size-4" />
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-44" align="end">
@@ -345,6 +373,7 @@ function memoComparator(prev: any, next: any) {
   if (p.canModify !== n.canModify) return false;
 
   if (prev.deleteMutation?.isPending !== next.deleteMutation?.isPending) return false;
+  if (prev.search !== next.search) return false;
   if (prev.convertMutation?.isPending !== next.convertMutation?.isPending) return false;
   if (prev.duplicateMutation?.isPending !== next.duplicateMutation?.isPending) return false;
 

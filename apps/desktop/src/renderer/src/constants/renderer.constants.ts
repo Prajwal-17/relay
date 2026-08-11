@@ -5,7 +5,6 @@ import {
   LEDGER_TYPE_FILTER,
   PRODUCT_FILTER,
   PRODUCT_SORT_BY,
-  SortOption,
   TIME_PERIOD
 } from "@shared/types";
 import {
@@ -125,29 +124,6 @@ export const weights = [
   {
     label: "750g",
     weight: "0.750"
-  }
-];
-
-export const sortOptions = [
-  {
-    value: SortOption.DATE_NEWEST_FIRST,
-    label: "Date (Newest first)",
-    icon: CalendarArrowDown
-  },
-  {
-    value: SortOption.DATE_OLDEST_FIRST,
-    label: "Date (Oldest first)",
-    icon: CalendarArrowUp
-  },
-  {
-    value: SortOption.HIGH_TO_LOW,
-    label: "Amount (High to Low)",
-    icon: TrendingDown
-  },
-  {
-    value: SortOption.LOW_TO_HIGH,
-    label: "Amount (Low to High)",
-    icon: TrendingUp
   }
 ];
 

@@ -11,7 +11,7 @@ const TransactionsPage = () => {
     return <Navigate to="/not-found" />;
   }
 
-  return <TransactionsScreen type={type as DashboardType} />;
+  return <TransactionsScreen key={type} type={type as DashboardType} />;
 };
 
 export default TransactionsPage;

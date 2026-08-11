@@ -160,6 +160,202 @@ describe("estimates read integration", () => {
     expect(body.transactions.map((estimate) => estimate.transactionNo)).toEqual(expected);
   });
 
+  it("filters by a trimmed, case-insensitive customer substring within the date range", async () => {
+    const matchingCustomer = await seedCustomer(db, { name: "Northwind Quote Counter" });
+    const otherCustomer = await seedCustomer(db, { name: "Southwind Retail" });
+    await seedEstimate(db, {
+      estimateNo: 301,
+      customerId: matchingCustomer.id,
+      grandTotal: 10000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 302,
+      customerId: matchingCustomer.id,
+      grandTotal: 20000,
+      createdAt: "2026-06-03T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 303,
+      customerId: matchingCustomer.id,
+      grandTotal: 40000,
+      createdAt: "2026-05-31T23:59:59.999Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 304,
+      customerId: otherCustomer.id,
+      grandTotal: 30000,
+      createdAt: "2026-06-02T00:00:00.000Z"
+    });
+
+    const body = await readJson<EstimateList>(
+      await getJson(
+        app,
+        `/api/estimates?search=${encodeURIComponent(" QuOtE ")}&from=2026-06-01T00:00:00.000Z&to=2026-06-03T23:59:59.999Z&sortBy=high_to_low`
+      )
+    );
+
+    expect(body).toMatchObject({ totalRevenue: 30000, totalTransactions: 2, nextPageNo: null });
+    expect(body.transactions.map((estimate) => estimate.transactionNo)).toEqual([302, 301]);
+  });
+
+  it.each([
+    ["305", [305], 10000],
+    ["#306", [306], 20000],
+    ["05", [], 0]
+  ])("matches exact estimate number search %s", async (search, expected, totalRevenue) => {
+    const customer = await seedCustomer(db, { name: "Estimate Document Search" });
+    await seedEstimate(db, {
+      estimateNo: 305,
+      customerId: customer.id,
+      grandTotal: 10000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 306,
+      customerId: customer.id,
+      grandTotal: 20000,
+      createdAt: "2026-06-02T00:00:00.000Z"
+    });
+
+    const body = await readJson<EstimateList>(
+      await getJson(
+        app,
+        `/api/estimates?search=${encodeURIComponent(search)}&from=2026-06-01T00:00:00.000Z&to=2026-06-03T00:00:00.000Z`
+      )
+    );
+
+    expect(body.transactions.map((estimate) => estimate.transactionNo)).toEqual(expected);
+    expect(body).toMatchObject({
+      totalRevenue,
+      totalTransactions: expected.length,
+      nextPageNo: null
+    });
+  });
+
+  it.each([
+    ["date_oldest_first", [311, 312, 313]],
+    ["date_newest_first", [313, 312, 311]],
+    ["low_to_high", [311, 313, 312]],
+    ["high_to_low", [312, 313, 311]]
+  ])("sorts searched estimates with %s", async (sortBy, expected) => {
+    const customer = await seedCustomer(db, { name: "Matched Quotes" });
+    await seedEstimate(db, {
+      estimateNo: 311,
+      customerId: customer.id,
+      grandTotal: 10000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 312,
+      customerId: customer.id,
+      grandTotal: 30000,
+      createdAt: "2026-06-02T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 313,
+      customerId: customer.id,
+      grandTotal: 20000,
+      createdAt: "2026-06-03T00:00:00.000Z"
+    });
+
+    const body = await readJson<EstimateList>(
+      await getJson(
+        app,
+        `/api/estimates?search=matched&from=2026-06-01T00:00:00.000Z&to=2026-06-03T00:00:00.000Z&sortBy=${sortBy}`
+      )
+    );
+    expect(body.transactions.map((estimate) => estimate.transactionNo)).toEqual(expected);
+  });
+
+  it("paginates and summarizes all filtered estimates", async () => {
+    const first = await seedCustomer(db, { name: "Quote Group Alpha" });
+    const second = await seedCustomer(db, { name: "Quote Group Beta" });
+    const third = await seedCustomer(db, { name: "Quote Group Gamma" });
+    const excluded = await seedCustomer(db, { name: "Retail Delta" });
+    await seedEstimate(db, {
+      estimateNo: 321,
+      customerId: first.id,
+      grandTotal: 10000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 322,
+      customerId: second.id,
+      grandTotal: 20000,
+      createdAt: "2026-06-02T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 323,
+      customerId: third.id,
+      grandTotal: 30000,
+      createdAt: "2026-06-03T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 324,
+      customerId: excluded.id,
+      grandTotal: 40000,
+      createdAt: "2026-06-04T00:00:00.000Z"
+    });
+
+    const base =
+      "/api/estimates?search=quote%20group&from=2026-06-01T00:00:00.000Z&to=2026-06-04T00:00:00.000Z&sortBy=date_oldest_first&pageSize=2";
+    const firstPage = await readJson<EstimateList>(await getJson(app, base));
+    expect(firstPage).toMatchObject({ totalRevenue: 60000, totalTransactions: 3, nextPageNo: 2 });
+    expect(firstPage.transactions.map((estimate) => estimate.transactionNo)).toEqual([321, 322]);
+
+    const secondPage = await readJson<EstimateList>(await getJson(app, `${base}&pageNo=2`));
+    expect(secondPage).toMatchObject({
+      totalRevenue: 60000,
+      totalTransactions: 3,
+      nextPageNo: null
+    });
+    expect(secondPage.transactions.map((estimate) => estimate.transactionNo)).toEqual([323]);
+  });
+
+  it("treats percent and underscore search characters literally", async () => {
+    const percent = await seedCustomer(db, { name: "Quote % Market" });
+    const percentWildcard = await seedCustomer(db, { name: "Quote X Market" });
+    const underscore = await seedCustomer(db, { name: "Quote_under Market" });
+    const underscoreWildcard = await seedCustomer(db, { name: "QuoteXunder Market" });
+    await seedEstimate(db, {
+      estimateNo: 331,
+      customerId: percent.id,
+      grandTotal: 10000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 332,
+      customerId: percentWildcard.id,
+      grandTotal: 20000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 333,
+      customerId: underscore.id,
+      grandTotal: 30000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 334,
+      customerId: underscoreWildcard.id,
+      grandTotal: 40000,
+      createdAt: "2026-06-01T00:00:00.000Z"
+    });
+    const range = "&from=2026-06-01T00:00:00.000Z&to=2026-06-01T23:59:59.999Z";
+
+    const percentBody = await readJson<EstimateList>(
+      await getJson(app, `/api/estimates?search=${encodeURIComponent("%")}${range}`)
+    );
+    const underscoreBody = await readJson<EstimateList>(
+      await getJson(app, `/api/estimates?search=${encodeURIComponent("_")}${range}`)
+    );
+
+    expect(percentBody.transactions.map((estimate) => estimate.transactionNo)).toEqual([331]);
+    expect(percentBody).toMatchObject({ totalRevenue: 10000, totalTransactions: 1 });
+    expect(underscoreBody.transactions.map((estimate) => estimate.transactionNo)).toEqual([333]);
+    expect(underscoreBody).toMatchObject({ totalRevenue: 30000, totalTransactions: 1 });
+  });
   it("returns an empty summary when the date range has no estimates", async () => {
     const body = await readJson<EstimateList>(
       await getJson(app, "/api/estimates?from=2025-01-01T00:00:00.000Z&to=2025-01-02T00:00:00.000Z")
@@ -178,7 +374,8 @@ describe("estimates read integration", () => {
     "/api/estimates?pageSize=101",
     "/api/estimates?sortBy=unknown",
     "/api/estimates?from=not-a-date",
-    "/api/estimates?to=not-a-date"
+    "/api/estimates?to=not-a-date",
+    `/api/estimates?search=${"a".repeat(101)}`
   ])("rejects invalid list query %s", async (pathname) => {
     expect((await getJson(app, pathname)).status).toBe(400);
   });

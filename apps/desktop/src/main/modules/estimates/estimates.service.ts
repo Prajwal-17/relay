@@ -78,6 +78,7 @@ const filterEstimateByDate = async (
   }
 
   const options = {
+    search: params.search,
     from: params.from,
     to: params.to,
     orderByClause,
