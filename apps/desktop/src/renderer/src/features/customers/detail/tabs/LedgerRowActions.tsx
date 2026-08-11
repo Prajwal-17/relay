@@ -4,33 +4,29 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { LEDGER_ENTRY_TYPE, type LedgerEntry } from "@shared/types";
 import { isWithinTwoDays } from "@shared/utils/dateUtils";
-import { ExternalLink, LockKeyhole, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { LockKeyhole, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { getLedgerEntryAccessibleName } from "./ledgerPresentation";
 
 export type LedgerRowActionsProps = {
   entry: LedgerEntry;
-  onOpenSale: (saleId: string) => void;
   onEdit: (entry: LedgerEntry) => void;
   onDelete: (entry: LedgerEntry) => void;
 };
 
-export function LedgerRowActions({ entry, onOpenSale, onEdit, onDelete }: LedgerRowActionsProps) {
+export function LedgerRowActions({ entry, onEdit, onDelete }: LedgerRowActionsProps) {
   const canModify = entry.type !== LEDGER_ENTRY_TYPE.SALE && isWithinTwoDays(entry.createdAt);
   const entryName = getLedgerEntryAccessibleName(entry);
-  const hasActions = Boolean(entry.saleId) || canModify;
+  const hasActions = canModify;
 
   if (!hasActions) {
-    const tooltipTitle =
-      entry.type === LEDGER_ENTRY_TYPE.SALE ? "Managed from invoice" : "Entry locked";
-    const tooltipDescription =
+    const tooltipText =
       entry.type === LEDGER_ENTRY_TYPE.SALE
-        ? "Sale entries can only be edited or deleted from their invoice."
-        : "Editing and deletion are unavailable because the 48-hour modification window has passed.";
+        ? "Edit this sale from its invoice."
+        : "This entry is locked after 48 hours.";
 
     return (
       <Tooltip>
@@ -38,17 +34,14 @@ export function LedgerRowActions({ entry, onOpenSale, onEdit, onDelete }: Ledger
           <span
             role="img"
             tabIndex={0}
-            aria-label={tooltipTitle + ". " + tooltipDescription}
+            aria-label={tooltipText}
             className="text-muted-foreground focus-visible:ring-ring inline-flex size-8 items-center justify-center rounded-(--radius-control) outline-none focus-visible:ring-2"
           >
             <LockKeyhole className="size-3.5" aria-hidden="true" />
           </span>
         </TooltipTrigger>
-        <TooltipContent side="left" sideOffset={6} className="max-w-64">
-          <div>
-            <p className="font-semibold">{tooltipTitle}</p>
-            <p className="mt-0.5 leading-relaxed">{tooltipDescription}</p>
-          </div>
+        <TooltipContent side="left" sideOffset={6}>
+          <p>{tooltipText}</p>
         </TooltipContent>
       </Tooltip>
     );
@@ -72,20 +65,8 @@ export function LedgerRowActions({ entry, onOpenSale, onEdit, onDelete }: Ledger
         className="w-40"
         onClick={(event) => event.stopPropagation()}
       >
-        {entry.saleId && (
-          <DropdownMenuItem
-            onSelect={(event) => {
-              event.stopPropagation();
-              onOpenSale(entry.saleId!);
-            }}
-          >
-            <ExternalLink className="size-4" />
-            Open invoice
-          </DropdownMenuItem>
-        )}
         {canModify && (
           <>
-            {entry.saleId && <DropdownMenuSeparator />}
             <DropdownMenuItem
               onSelect={(event) => {
                 event.stopPropagation();

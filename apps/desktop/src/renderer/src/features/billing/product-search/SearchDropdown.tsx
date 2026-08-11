@@ -59,7 +59,9 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   } = useProductSearch(PRODUCTSEARCH_TYPE.BILLINGPAGE);
 
   // keybindings state ↑ ↓
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(() =>
+    itemQuery.trim() ? 0 : -1
+  );
   const highlightedIndexRef = useRef(highlightedIndex);
   highlightedIndexRef.current = highlightedIndex;
 
@@ -344,7 +346,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     const resultsBecameAvailable = previousContext.resultCount === 0 && searchResults.length > 0;
 
     if (searchContextChanged || resultsReplaced || resultsBecameAvailable) {
-      setHighlightedIndex(searchResults.length > 0 ? 0 : -1);
+      setHighlightedIndex(itemQuery.trim() ? 0 : -1);
     } else if (searchResults.length === 0) {
       setHighlightedIndex(-1);
     }

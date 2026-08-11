@@ -145,8 +145,20 @@ const LineItemRow = memo(
                 const tabId = getActiveTabId();
                 if (!tabId) return;
                 setItemQuery(e.target.value);
+                setActiveRowId(item.rowId);
+                setIsDropdownOpen(true);
                 updateLineItem(tabId, item.rowId, "productSnapshot", e.target.value);
                 processSyncQueue(tabId);
+              }}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" || (isDropdownOpen && activeRowId === item.rowId)) {
+                  return;
+                }
+
+                e.preventDefault();
+                setItemQuery(e.currentTarget.value);
+                setActiveRowId(item.rowId);
+                setIsDropdownOpen(true);
               }}
               placeholder="Search products"
             />

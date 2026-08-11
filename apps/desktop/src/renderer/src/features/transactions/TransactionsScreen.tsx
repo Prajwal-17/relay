@@ -50,7 +50,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
   const hasInitialError = transactionQuery.isError && transactionQuery.totalRevenue === undefined;
   const isInitialLoading = transactionQuery.status === "pending";
   const periodContext = formatTransactionDateRange(transactionQuery.date);
-  const valueLabel = isSales ? "Sales value" : "Quoted value";
+  const valueLabel = isSales ? "Sales value" : "Estimates Value";
 
   const handleGroupByChange = (value: TransactionGroupBy) => {
     localStorage.setItem(TRANSACTION_GROUP_BY_KEY, value);

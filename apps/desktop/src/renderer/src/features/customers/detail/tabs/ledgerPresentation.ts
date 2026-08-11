@@ -19,6 +19,26 @@ export function getLedgerMonthGroup(createdAt: string) {
   return { key: year + "-" + month, label: month + " " + year };
 }
 
+const LEDGER_DAY_FORMATTER = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "Asia/Kolkata"
+});
+
+export function getLedgerDayGroup(createdAt: string) {
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) return { key: "unknown", label: "Date unavailable" };
+
+  const parts = LEDGER_DAY_FORMATTER.formatToParts(date);
+  const day = parts.find((part) => part.type === "day")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+  const year = parts.find((part) => part.type === "year")?.value;
+  if (!day || !month || !year) return { key: "unknown", label: "Date unavailable" };
+
+  return { key: year + "-" + month + "-" + day, label: day + " " + month + " " + year };
+}
+
 export type BalanceState = "due" | "advance" | "settled";
 
 export function getBalanceState(balance: number): BalanceState {

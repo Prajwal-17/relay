@@ -9,7 +9,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,13 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
   LEDGER_SORT_OPTIONS,
@@ -55,28 +62,52 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { EditLedgerDialog } from "../../dialogs/EditLedgerDialog";
 import { buildLedgerColumns } from "./LedgerColumns";
-import { getLedgerMonthGroup, getLedgerMovement, getLedgerParticulars } from "./ledgerPresentation";
+import {
+  getLedgerDayGroup,
+  getLedgerMonthGroup,
+  getLedgerMovement,
+  getLedgerParticulars
+} from "./ledgerPresentation";
 
 const LEDGER_NUMBER_INPUT_CLASS =
   "h-7 w-14 border-border bg-background text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
 
-type LedgerMonthRowGroup = {
+type LedgerGroupBy = "none" | "day" | "month";
+
+const CUSTOMER_LEDGER_GROUP_BY_KEY = "customer-ledger-group-by";
+
+const getInitialLedgerGroupBy = (): LedgerGroupBy => {
+  const storedGroup = localStorage.getItem(CUSTOMER_LEDGER_GROUP_BY_KEY);
+  if (storedGroup === "none" || storedGroup === "day" || storedGroup === "month") {
+    return storedGroup;
+  }
+
+  localStorage.setItem(CUSTOMER_LEDGER_GROUP_BY_KEY, "month");
+  return "month";
+};
+
+type LedgerRowGroup = {
   key: string;
   label: string;
   rows: Row<LedgerEntry>[];
 };
 
-function groupLedgerRowsByMonth(rows: Row<LedgerEntry>[]) {
-  return rows.reduce<LedgerMonthRowGroup[]>((groups, row) => {
-    const month = getLedgerMonthGroup(row.original.createdAt);
+function groupLedgerRows(rows: Row<LedgerEntry>[], groupBy: LedgerGroupBy) {
+  if (groupBy === "none") return [{ key: "all", label: "", rows }];
+
+  return rows.reduce<LedgerRowGroup[]>((groups, row) => {
+    const group =
+      groupBy === "month"
+        ? getLedgerMonthGroup(row.original.createdAt)
+        : getLedgerDayGroup(row.original.createdAt);
     const currentGroup = groups.at(-1);
 
-    if (currentGroup?.key === month.key) {
+    if (currentGroup?.key === group.key) {
       currentGroup.rows.push(row);
       return groups;
     }
 
-    groups.push({ ...month, rows: [row] });
+    groups.push({ ...group, rows: [row] });
     return groups;
   }, []);
 }
@@ -115,6 +146,7 @@ export function LedgerTable({ customerId }: LedgerTableProps) {
   const [typeFilter, setTypeFilter] = useState<LedgerTypeFilter>(LEDGER_TYPE_FILTER.ALL);
   const [sortValue, setSortValue] = useState<LedgerSort>(LEDGER_SORT.DATE_DESC);
   const [prototypeSearch, setPrototypeSearch] = useState("");
+  const [groupBy, setGroupBy] = useState<LedgerGroupBy>(getInitialLedgerGroupBy);
 
   const [pageSizeInput, setPageSizeInput] = useState(String(LEDGER_TABLE_PAGE_SIZE));
   const [pageNoInput, setPageNoInput] = useState("1");
@@ -163,7 +195,7 @@ export function LedgerTable({ customerId }: LedgerTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel()
   });
-  const monthGroups = groupLedgerRowsByMonth(table.getRowModel().rows);
+  const ledgerGroups = groupLedgerRows(table.getRowModel().rows, groupBy);
 
   useEffect(() => {
     if (!isFetching && entries.length === 0 && totalCount > 0 && pageNo > 1) {
@@ -173,6 +205,12 @@ export function LedgerTable({ customerId }: LedgerTableProps) {
 
   useEffect(() => setPageSizeInput(String(pageSize)), [pageSize]);
   useEffect(() => setPageNoInput(String(pageNo)), [pageNo]);
+
+  const handleGroupChange = (value: string) => {
+    const nextGroup = value as LedgerGroupBy;
+    localStorage.setItem(CUSTOMER_LEDGER_GROUP_BY_KEY, nextGroup);
+    setGroupBy(nextGroup);
+  };
 
   const applyType = (type: LedgerTypeFilter) => {
     setTypeFilter(type);
@@ -245,6 +283,30 @@ export function LedgerTable({ customerId }: LedgerTableProps) {
               className="h-9 pl-9 shadow-none"
             />
           </div>
+
+          <Select value={groupBy} onValueChange={handleGroupChange}>
+            <SelectTrigger
+              aria-label="Group ledger entries"
+              className={buttonVariants({
+                variant: "outline",
+                className: "bg-background! h-9 min-w-32 justify-between gap-2 px-3 shadow-none"
+              })}
+            >
+              <span>Group</span>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end">
+              <SelectItem value="none" className="cursor-pointer">
+                None
+              </SelectItem>
+              <SelectItem value="day" className="cursor-pointer">
+                Day
+              </SelectItem>
+              <SelectItem value="month" className="cursor-pointer">
+                Month
+              </SelectItem>
+            </SelectContent>
+          </Select>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -389,24 +451,26 @@ export function LedgerTable({ customerId }: LedgerTableProps) {
                     </tr>
                   ))}
                 </thead>
-                {monthGroups.map((monthGroup, groupIndex) => (
-                  <tbody key={monthGroup.key + "-" + groupIndex}>
-                    <tr>
-                      <th
-                        scope="rowgroup"
-                        colSpan={table.getVisibleLeafColumns().length}
-                        className="text-foreground border-frame bg-selected sticky top-8 z-10 h-8 border-y px-3 text-left text-sm font-semibold tabular-nums"
-                      >
-                        <span className="flex items-center justify-between gap-3">
-                          <span>{monthGroup.label}</span>
-                          <span className="text-muted-foreground text-xs font-medium">
-                            {monthGroup.rows.length}{" "}
-                            {monthGroup.rows.length === 1 ? "entry" : "entries"}
+                {ledgerGroups.map((ledgerGroup, groupIndex) => (
+                  <tbody key={ledgerGroup.key + "-" + groupIndex}>
+                    {groupBy !== "none" && (
+                      <tr>
+                        <th
+                          scope="rowgroup"
+                          colSpan={table.getVisibleLeafColumns().length}
+                          className="text-foreground border-frame bg-selected sticky top-8 z-10 h-8 border-y px-3 text-left text-sm font-semibold tabular-nums"
+                        >
+                          <span className="flex items-center justify-between gap-3">
+                            <span>{ledgerGroup.label}</span>
+                            <span className="text-muted-foreground text-xs font-medium">
+                              {ledgerGroup.rows.length}{" "}
+                              {ledgerGroup.rows.length === 1 ? "entry" : "entries"}
+                            </span>
                           </span>
-                        </span>
-                      </th>
-                    </tr>
-                    {monthGroup.rows.map((row) => (
+                        </th>
+                      </tr>
+                    )}
+                    {ledgerGroup.rows.map((row) => (
                       <tr
                         key={row.id}
                         className="group border-border bg-card hover:bg-hover border-b transition-colors last:border-b-0"

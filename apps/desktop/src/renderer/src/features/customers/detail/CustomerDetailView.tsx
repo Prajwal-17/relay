@@ -24,7 +24,7 @@ export function CustomerDetailView({
   const tabParam = searchParams.get("tab");
   const activeTab: CustomerDetailTab = VALID_TABS.includes(tabParam as CustomerDetailTab)
     ? (tabParam as CustomerDetailTab)
-    : CUSTOMER_DETAIL_TAB.OVERVIEW;
+    : CUSTOMER_DETAIL_TAB.ACCOUNTING;
 
   const handleTabChange = (tab: CustomerDetailTab) => {
     setSearchParams({ tab }, { replace: true });

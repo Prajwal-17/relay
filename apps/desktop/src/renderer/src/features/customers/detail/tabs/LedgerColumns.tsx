@@ -184,12 +184,7 @@ export function buildLedgerColumns({
       header: () => <span className="sr-only">Actions</span>,
       cell: ({ row }) => (
         <div className="flex justify-end">
-          <LedgerRowActions
-            entry={row.original}
-            onOpenSale={onOpenSale}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
+          <LedgerRowActions entry={row.original} onEdit={onEdit} onDelete={onDelete} />
         </div>
       ),
       meta: { align: TXN_TABLE_ALIGN.RIGHT, width: "w-[48px]" } as TxnTableColMeta
