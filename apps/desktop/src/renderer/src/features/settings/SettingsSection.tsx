@@ -15,7 +15,7 @@ import type { ReactNode } from "react";
 
 type SettingsSectionProps = {
   title: string;
-  description: string;
+  description?: string;
   resettableFieldsCount?: number;
   onResetSection?: () => void;
   isResetting?: boolean;
@@ -34,9 +34,9 @@ export const SettingsSection = ({
 
   return (
     <section className="border-frame bg-card rounded-(--radius-panel) border">
-      <header className="border-border border-b px-4 py-3">
+      <header className={description ? "border-border border-b px-4 py-3" : "px-4 py-3"}>
         <h2 className="text-foreground text-lg font-semibold tracking-[-0.02em]">{title}</h2>
-        <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+        {description ? <p className="text-muted-foreground mt-1 text-sm">{description}</p> : null}
       </header>
 
       <div className="divide-border divide-y px-4">{children}</div>

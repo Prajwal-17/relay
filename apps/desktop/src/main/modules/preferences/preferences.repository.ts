@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import type { AppConfig } from "../../../shared/types";
 import { db } from "../../db/db";
 import { appPreferences } from "../../db/schema";
-import { getDefaultConfig, getDefaultExportsConfig } from "./preferences.defaults";
+import { getDefaultConfig } from "./preferences.defaults";
 const getPreferences = async (storeId: string) => {
   return db
     .select({
@@ -35,8 +35,7 @@ const updatePreferences = async (storeId: string, config: AppConfig) => {
 const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx: any) => {
   const config: AppConfig = {
     ...getDefaultConfig(),
-    billing: { defaultCustomerId, searchDropdown: { scale: 1 } },
-    exports: getDefaultExportsConfig()
+    billing: { defaultCustomerId, searchDropdown: { scale: 1 } }
   };
 
   return tx

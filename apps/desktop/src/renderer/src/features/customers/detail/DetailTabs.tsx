@@ -58,7 +58,7 @@ export function DetailTabs({
         <OverviewTab customerId={customerId} customer={customer} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.ACCOUNTING} className={ACCOUNTING_CONTENT_CLASS}>
-        <AccountingTab customerId={customerId} />
+        <AccountingTab customer={customer} />
       </TabsContent>
       <TabsContent value={CUSTOMER_DETAIL_TAB.SALES} className={TAB_CONTENT_TABLE_CLASS}>
         <SalesTab customerId={customerId} customerName={customer.name} />

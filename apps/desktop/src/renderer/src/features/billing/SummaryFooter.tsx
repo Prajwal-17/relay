@@ -1,13 +1,37 @@
 import { Button } from "@/components/ui/button";
-import useReceiptPrint from "@/features/billing/hooks/useReceiptPrint";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
+import { useRawLedgerPrint } from "@/features/customers/hooks/useRawLedgerPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { flushSync, forceSync } from "@/features/billing/syncWorker";
 import { TRANSACTION_TYPE } from "@shared/types";
-import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
+import {
+  ArrowUpRight,
+  BookOpenText,
+  ChevronDown,
+  FileText,
+  Loader2,
+  Printer,
+  Save
+} from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
+
+const RASTER_FALLBACK_MESSAGE =
+  "Printed using device text because the high-quality receipt could not be prepared";
+
+function warnIfRasterFellBack(fellBack: boolean) {
+  if (fellBack) toast(RASTER_FALLBACK_MESSAGE, { icon: "⚠️" });
+}
 
 export const SummaryFooter = () => {
   const { type, id } = useParams();
@@ -16,9 +40,10 @@ export const SummaryFooter = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
 
   const { subtotal, grandTotal } = useTransaction();
-  const { printReceipt } = useReceiptPrint();
+  const { prepareReceipt, printReceipt } = useRawReceiptPrint();
+  const { prepareCustomerLedger, printCustomerLedger } = useRawLedgerPrint();
 
-  type LoadingAction = "print" | "exit" | "pdf" | null;
+  type LoadingAction = "print" | "print-with-ledger" | "ledger" | "exit" | "pdf" | null;
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const waitForSync = useCallback(async (): Promise<boolean> => {
@@ -33,26 +58,84 @@ export const SummaryFooter = () => {
       return false;
     }
   }, [activeTabId]);
+  const readSynchronizedCustomer = useCallback(() => {
+    if (!activeTabId) throw new Error("The billing session is no longer available.");
+    const session = useBillingSessionStore.getState().sessions[activeTabId];
+    if (!session?.customerId) {
+      throw new Error("Choose an account customer before printing a ledger.");
+    }
+    return { id: session.customerId, name: session.customerName };
+  }, [activeTabId]);
 
   const handleSaveAndPrint = useCallback(async () => {
     setLoadingAction("print");
     try {
       const synced = await waitForSync();
-      if (!synced) return;
+      if (!synced || !activeTabId) return;
 
-      const printed = await printReceipt();
-      if (!printed) {
-        toast.error("Nothing to print — receipt not ready");
-        return;
-      }
+      const result = await printReceipt(activeTabId);
+      warnIfRasterFellBack(result.fellBack);
       navigate(`/dashboard/${type}`);
     } catch (error) {
       console.error("Print failed", error);
-      toast.error("Print failed");
+      toast.error(error instanceof Error ? error.message : "Print failed.");
     } finally {
       setLoadingAction(null);
     }
-  }, [waitForSync, printReceipt, navigate, type]);
+  }, [activeTabId, waitForSync, printReceipt, navigate, type]);
+  const handleSavePrintWithLedger = useCallback(async () => {
+    setLoadingAction("print-with-ledger");
+    try {
+      const synced = await waitForSync();
+      if (!synced || !activeTabId) return;
+
+      const customer = readSynchronizedCustomer();
+      const [receiptJob, ledgerJob] = await Promise.all([
+        prepareReceipt(activeTabId, { omitFooter: true }),
+        prepareCustomerLedger(customer, undefined, { includeHeader: false })
+      ]);
+      const useRaster = Boolean(receiptJob.raster && ledgerJob.raster);
+      const response = await window.rawPrintApi.printReceiptWithLedger(
+        receiptJob.receipt,
+        ledgerJob.statement,
+        useRaster ? receiptJob.raster : undefined,
+        useRaster ? ledgerJob.raster : undefined
+      );
+      if (response.status === "error") throw new Error(response.error.message);
+      warnIfRasterFellBack(response.data.fellBack);
+      navigate("/dashboard/" + type);
+    } catch (error) {
+      console.error("Bill and ledger print failed", error);
+      toast.error(error instanceof Error ? error.message : "Printing failed.");
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [
+    activeTabId,
+    navigate,
+    prepareCustomerLedger,
+    prepareReceipt,
+    readSynchronizedCustomer,
+    type,
+    waitForSync
+  ]);
+
+  const handlePrintLedgerOnly = useCallback(async () => {
+    setLoadingAction("ledger");
+    try {
+      const synced = await waitForSync();
+      if (!synced) return;
+
+      const result = await printCustomerLedger(readSynchronizedCustomer());
+      warnIfRasterFellBack(result.fellBack);
+      toast.success("Customer ledger sent to printer.");
+    } catch (error) {
+      console.error("Ledger print failed", error);
+      toast.error(error instanceof Error ? error.message : "Customer ledger printing failed.");
+    } finally {
+      setLoadingAction(null);
+    }
+  }, [printCustomerLedger, readSynchronizedCustomer, waitForSync]);
 
   const handleSaveAndExit = useCallback(async () => {
     setLoadingAction("exit");
@@ -132,15 +215,56 @@ export const SummaryFooter = () => {
 
       <div className="bg-border h-6 w-px" />
 
-      <Button
-        size="lg"
-        disabled={loadingAction !== null}
-        onClick={handleSaveAndPrint}
-        className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36"
-      >
-        {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
-        {loadingAction === "print" ? "Saving..." : "Save & Print"}
-      </Button>
+      <div className="flex">
+        <Button
+          size="lg"
+          disabled={loadingAction !== null}
+          onClick={handleSaveAndPrint}
+          className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36 rounded-r-none"
+        >
+          {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
+          {loadingAction === "print" ? "Printing…" : "Save & Print"}
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              size="icon"
+              disabled={loadingAction !== null}
+              aria-label="More print options"
+              title="More print options"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground border-primary-foreground/20 h-10 w-9 rounded-l-none border-l"
+            >
+              {loadingAction === "print-with-ledger" || loadingAction === "ledger" ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <ChevronDown />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-64">
+            <DropdownMenuLabel>Customer print options</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => void handleSavePrintWithLedger()}>
+              <Printer />
+              <span className="flex min-w-0 flex-col">
+                <span>Save & print bill + ledger</span>
+                <span className="text-muted-foreground text-xs font-normal">
+                  One print: bill, then ledger
+                </span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => void handlePrintLedgerOnly()}>
+              <BookOpenText />
+              <span className="flex min-w-0 flex-col">
+                <span>Print customer ledger only</span>
+                <span className="text-muted-foreground text-xs font-normal">
+                  Saves changes and stays on Billing
+                </span>
+              </span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       <Button variant="outline" disabled={loadingAction !== null} onClick={handleSaveAndExit}>
         {loadingAction === "exit" ? <Loader2 className="animate-spin" /> : <Save />}

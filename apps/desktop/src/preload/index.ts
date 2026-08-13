@@ -5,6 +5,7 @@ import type {
   DialogApi,
   ExportApi,
   ProductsApi,
+  RawPrintApi,
   TransactionType,
   ZoomApi
 } from "../shared/types";
@@ -23,6 +24,20 @@ const exportApi: ExportApi = {
   exportAsPdf: (id: string, type: TransactionType) =>
     ipcRenderer.invoke("txn:exportAsPdf", id, type),
   showItemInFolder: (path: string) => ipcRenderer.send("show-item-in-folder", path)
+};
+
+const rawPrintApi: RawPrintApi = {
+  listPrinters: () => ipcRenderer.invoke("printer:list"),
+  printReceipt: (receipt, raster) => ipcRenderer.invoke("printer:raw-receipt", receipt, raster),
+  printLedger: (statement, raster) => ipcRenderer.invoke("printer:raw-ledger", statement, raster),
+  printReceiptWithLedger: (receipt, statement, receiptRaster, ledgerRaster) =>
+    ipcRenderer.invoke(
+      "printer:raw-receipt-with-ledger",
+      receipt,
+      statement,
+      receiptRaster,
+      ledgerRaster
+    )
 };
 
 const zoomApi: ZoomApi = {
@@ -50,13 +65,11 @@ const apiPort = apiArg ? Number(apiArg.split("=")[1]) : 4722;
 
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld("electronAPI", {
-      printReceipt: (html: string) => ipcRenderer.send("print-receipt", html)
-    });
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("dialogApi", dialogApi);
     contextBridge.exposeInMainWorld("exportApi", exportApi);
     contextBridge.exposeInMainWorld("zoomApi", zoomApi);
+    contextBridge.exposeInMainWorld("rawPrintApi", rawPrintApi);
     contextBridge.exposeInMainWorld("databaseUpgradeApi", databaseUpgradeApi);
     contextBridge.exposeInMainWorld("env", {
       API_URL: `http://localhost:${apiPort}`
@@ -65,14 +78,14 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI;
   // @ts-ignore (define in ts)
   window.productsApi = productsApi;
   // @ts-ignore (define in ts)
   window.dialogApi = dialogApi;
   // @ts-ignore (define in ts)
   window.exportApi = exportApi;
+  // @ts-ignore (define in ts)
+  window.rawPrintApi = rawPrintApi;
   // @ts-ignore (define in ts)
   window.zoomApi = zoomApi;
   // @ts-ignore (define in ts)

@@ -13,6 +13,7 @@ import { formatRupee } from "@shared/utils/utils";
 import {
   IndianRupee,
   Ellipsis,
+  LoaderCircle,
   FileDown,
   FileSpreadsheet,
   Printer,
@@ -31,6 +32,9 @@ export type AccountSummaryPanelProps = {
   onQuickSale: () => void;
   onRecordPayment: () => void;
   onAdjustBalance: () => void;
+  onPrint: () => void;
+  canPrint: boolean;
+  isPrinting: boolean;
 };
 
 function SummarySkeleton() {
@@ -56,7 +60,10 @@ export function AccountSummaryPanel({
   onRetry,
   onQuickSale,
   onRecordPayment,
-  onAdjustBalance
+  onAdjustBalance,
+  onPrint,
+  canPrint,
+  isPrinting
 }: AccountSummaryPanelProps) {
   const balanceState = summary ? getBalanceState(summary.currentBalance) : null;
   const balanceTone =
@@ -159,10 +166,16 @@ export function AccountSummaryPanel({
             variant="outline"
             size="sm"
             className="min-w-0 cursor-pointer"
-            aria-label="Print statement"
+            aria-label="Choose account entries to print"
+            onClick={onPrint}
+            disabled={!canPrint || isPrinting}
           >
-            <Printer className="size-3.5" />
-            Print
+            {isPrinting ? (
+              <LoaderCircle className="size-3.5 animate-spin" />
+            ) : (
+              <Printer className="size-3.5" />
+            )}
+            {isPrinting ? "Printing…" : "Print"}
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

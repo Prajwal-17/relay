@@ -3,7 +3,7 @@ import type { AppConfig, AppPreferencesResponse } from "@shared/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
-export type PreferencesSection = "exports";
+export type PreferencesSection = "exports" | "printing";
 
 export const useAppPreferences = () => {
   const queryClient = useQueryClient();

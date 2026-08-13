@@ -11,6 +11,7 @@ function buildCurrentConfig(
   existing: Partial<AppConfig> | undefined,
   defaultCustomerId: string
 ): AppConfig {
+  const existingPrintMode = existing?.printing?.defaultPrintMode;
   return {
     billing: {
       ...defaults.billing,
@@ -24,6 +25,14 @@ function buildCurrentConfig(
     exports: {
       ...defaults.exports,
       ...existing?.exports
+    },
+    printing: {
+      ...defaults.printing,
+      ...existing?.printing,
+      defaultPrintMode:
+        existingPrintMode === "device-text" || existingPrintMode === "raster"
+          ? existingPrintMode
+          : defaults.printing.defaultPrintMode
     }
   };
 }

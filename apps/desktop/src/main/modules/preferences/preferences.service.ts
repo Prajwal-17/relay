@@ -1,10 +1,15 @@
 import type { UpdatePreferencesPayload } from "../../../shared/schemas/preferences.schema";
 import type { AppConfig } from "../../../shared/types";
 import { AppError } from "../../utils/appError";
-import { getDefaultConfig, getDefaultExportsConfig } from "./preferences.defaults";
+import {
+  getDefaultConfig,
+  getDefaultExportsConfig,
+  getDefaultPrintingConfig,
+  normalizeAppConfig
+} from "./preferences.defaults";
 import { preferencesRepository } from "./preferences.repository";
 
-const ALLOWED_RESET_SECTIONS = ["exports"] as const;
+const ALLOWED_RESET_SECTIONS = ["exports", "printing"] as const;
 type ResetSection = (typeof ALLOWED_RESET_SECTIONS)[number];
 
 const getPreferences = async (storeId: string) => {
@@ -13,7 +18,10 @@ const getPreferences = async (storeId: string) => {
   if (!prefs) {
     throw new AppError("Preferences not found", 404);
   }
-  return prefs;
+  return {
+    ...prefs,
+    config: normalizeAppConfig(prefs.config)
+  };
 };
 
 const updatePreferences = async (storeId: string, partial: UpdatePreferencesPayload) => {
@@ -23,14 +31,23 @@ const updatePreferences = async (storeId: string, partial: UpdatePreferencesPayl
     throw new AppError("Preferences not found", 404);
   }
 
-  const mergedConfig = {
+  const normalizedExisting = normalizeAppConfig(existing.config);
+  const mergedConfig: AppConfig = {
     billing: {
-      ...existing.config.billing,
-      ...(partial.billing ?? {})
+      ...normalizedExisting.billing,
+      ...(partial.billing ?? {}),
+      searchDropdown: {
+        ...normalizedExisting.billing.searchDropdown,
+        ...(partial.billing?.searchDropdown ?? {})
+      }
     },
     exports: {
-      ...existing.config.exports,
+      ...normalizedExisting.exports,
       ...(partial.exports ?? {})
+    },
+    printing: {
+      ...normalizedExisting.printing,
+      ...(partial.printing ?? {})
     }
   };
 
@@ -52,10 +69,9 @@ const resetSection = async (storeId: string, section: string) => {
     throw new AppError("Preferences not found", 404);
   }
 
-  const mergedConfig: AppConfig = {
-    ...existing.config,
-    exports: getDefaultExportsConfig()
-  };
+  const mergedConfig = normalizeAppConfig(existing.config);
+  if (section === "exports") mergedConfig.exports = getDefaultExportsConfig();
+  if (section === "printing") mergedConfig.printing = getDefaultPrintingConfig();
 
   return preferencesRepository.resetSectionConfig(storeId, mergedConfig);
 };

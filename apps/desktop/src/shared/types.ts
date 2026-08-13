@@ -609,6 +609,29 @@ export const PRODUCT_OPERATION = {
 
 export type ProductOperation = (typeof PRODUCT_OPERATION)[keyof typeof PRODUCT_OPERATION];
 
+export type ReceiptCutMode = "partial" | "full" | "none";
+export type PrintRenderMode = "raster" | "device-text";
+
+export type PrintingConfig = {
+  printerName: string;
+  defaultPrintMode: PrintRenderMode;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  showAddress: boolean;
+  showPhone: boolean;
+  showGstinOnSales: boolean;
+  showCustomerName: boolean;
+  showSavings: boolean;
+  savingsThresholdPaisa: number;
+  showLedgerPaymentMode: boolean;
+  showLedgerNotes: boolean;
+  footerMessage: string;
+  upiId: string;
+  upiPayeeName: string;
+  printUpiQrOnSales: boolean;
+  printUpiQrOnEstimates: boolean;
+  includeAmountInUpiQr: boolean;
+};
 export interface AppConfig {
   billing: {
     defaultCustomerId: string;
@@ -621,6 +644,7 @@ export interface AppConfig {
     defaultPdfLocation: string;
     defaultExportFormat: string;
   };
+  printing: PrintingConfig;
 }
 
 export type AppPreferencesResponse = {
@@ -661,6 +685,109 @@ export interface DialogApi {
 export interface ExportApi {
   exportAsPdf: (id: string, type: TransactionType) => Promise<ApiResponse<string>>;
   showItemInFolder: (path: string) => void;
+}
+
+export type RawReceiptItem = {
+  name: string;
+  quantity: string;
+  checkedQty?: number;
+  unitPricePaisa: number;
+  totalPaisa: number;
+  mrpPaisa?: number;
+};
+
+export type RawReceiptData = {
+  storeName: string;
+  addressLines: string[];
+  phone?: string;
+  gstin?: string;
+  transactionType: "sale" | "estimate";
+  transactionNo: number;
+  customerName: string;
+  dateTime: string;
+  items: RawReceiptItem[];
+  subtotalPaisa: number;
+  totalPaisa: number;
+  savingsPaisa?: number;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  footerMessage?: string;
+  upi?: {
+    id: string;
+    payeeName: string;
+    includeAmount: boolean;
+  };
+};
+
+export type RawLedgerEntry = {
+  dateTime: string;
+  particulars: string;
+  amountDuePaisa: number;
+  amountPaidPaisa: number;
+  runningBalancePaisa: number;
+  paymentMode?: string;
+  notes?: string;
+};
+
+export type RawLedgerStatementData = {
+  storeName: string;
+  addressLines: string[];
+  phone?: string;
+  customerName: string;
+  generatedAt: string;
+  entries: RawLedgerEntry[];
+  totalDuePaisa: number;
+  totalPaidPaisa: number;
+  closingBalancePaisa: number;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  footerMessage?: string;
+};
+
+export type SystemPrinterInfo = {
+  name: string;
+  displayName: string;
+  description: string;
+};
+
+export type MonochromeRasterData = {
+  dataBase64: string;
+  width: number;
+  height: number;
+  stride: number;
+};
+
+export type RasterReceiptSegments = {
+  body: MonochromeRasterData;
+  afterQr?: MonochromeRasterData;
+};
+
+export type RasterLedgerSegments = {
+  body: MonochromeRasterData;
+};
+
+export type RawPrintResult = {
+  bytesWritten: number;
+  modeUsed: PrintRenderMode;
+  fellBack: boolean;
+};
+
+export interface RawPrintApi {
+  listPrinters(): Promise<ApiResponse<SystemPrinterInfo[]>>;
+  printReceipt(
+    receipt: RawReceiptData,
+    raster?: RasterReceiptSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
+  printLedger(
+    statement: RawLedgerStatementData,
+    raster?: RasterLedgerSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
+  printReceiptWithLedger(
+    receipt: RawReceiptData,
+    statement: RawLedgerStatementData,
+    receiptRaster?: RasterReceiptSegments,
+    ledgerRaster?: RasterLedgerSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
 }
 
 export interface ZoomApi {

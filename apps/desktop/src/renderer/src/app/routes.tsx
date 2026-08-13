@@ -2,6 +2,7 @@ import { AppearanceSection } from "@/features/settings/sections/AppearanceSectio
 import { BillingSection } from "@/features/settings/sections/BillingSection";
 import { ExportsSection } from "@/features/settings/sections/ExportsSection";
 import { StoreProfileSection } from "@/features/settings/sections/StoreProfileSection";
+import { PrintingSection } from "@/features/settings/sections/PrintingSection";
 import BillingPage from "@/pages/BillingPage";
 import CustomersPage from "@/pages/CustomersPage";
 import HomePage from "@/pages/HomePage";
@@ -39,6 +40,7 @@ export const router = createHashRouter([
               { path: "appearance", element: <AppearanceSection /> },
               { path: "store-profile", element: <StoreProfileSection /> },
               { path: "billing", element: <BillingSection /> },
+              { path: "printing", element: <PrintingSection /> },
               { path: "exports", element: <ExportsSection /> }
             ]
           }

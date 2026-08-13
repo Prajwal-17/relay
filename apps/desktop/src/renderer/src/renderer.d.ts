@@ -3,6 +3,7 @@ import type {
   DialogApi,
   ExportApi,
   ProductsApi,
+  RawPrintApi,
   ZoomApi
 } from "src/shared/types";
 
@@ -11,6 +12,7 @@ declare global {
     productsApi: ProductsApi;
     dialogApi: DialogApi;
     exportApi: ExportApi;
+    rawPrintApi: RawPrintApi;
     zoomApi: ZoomApi;
     databaseUpgradeApi: DatabaseUpgradeApi;
     env: {
