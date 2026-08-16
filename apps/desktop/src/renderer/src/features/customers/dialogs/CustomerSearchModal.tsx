@@ -265,33 +265,33 @@ function CustomerRow({
           isActive ? "opacity-100" : "opacity-0"
         )}
       />
-      <div className="min-w-0">
-        <p className="text-foreground truncate text-sm leading-tight font-medium">
-          {customer.name}
-        </p>
+      <div className="min-w-0 flex-1">
+        <div className="flex min-w-0 items-center gap-2">
+          <p className="text-foreground min-w-0 truncate text-sm leading-tight font-medium">
+            {customer.name}
+          </p>
+          <Badge
+            variant="outline"
+            className={cn(
+              "shrink-0 px-1.5 py-0 text-xs leading-tight font-medium capitalize",
+              typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
+            )}
+          >
+            {customer.customerType}
+          </Badge>
+        </div>
         <p className="text-muted-foreground truncate text-xs leading-tight font-medium">
           {customer.contact ? customer.contact : "No contact"}
         </p>
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        <Badge
-          variant="outline"
-          className={cn(
-            "px-1.5 py-0 text-xs leading-tight font-medium capitalize",
-            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
-          )}
-        >
-          {customer.customerType}
-        </Badge>
-        <span
-          className={cn(
-            "min-w-16 text-right text-sm font-semibold tabular-nums",
-            outstanding === 0 ? "text-muted-foreground" : "text-foreground"
-          )}
-        >
-          {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}
-        </span>
-      </div>
+      <span
+        className={cn(
+          "min-w-16 shrink-0 text-right text-sm font-semibold tabular-nums",
+          outstanding === 0 ? "text-muted-foreground" : "text-foreground"
+        )}
+      >
+        {outstanding === 0 ? "—" : formatRupee(Math.abs(outstanding))}
+      </span>
     </button>
   );
 }

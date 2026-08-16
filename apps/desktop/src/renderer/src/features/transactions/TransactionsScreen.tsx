@@ -5,7 +5,11 @@ import { TransactionListPanel } from "@/features/transactions/TransactionListPan
 import { formatTransactionDateRange } from "@/features/transactions/datePresets.constants";
 import { useInfiniteScroll } from "@/features/transactions/hooks/useInfiniteScroll";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
-import type { TransactionGroupBy } from "@/features/transactions/transactionGrouping";
+import {
+  getInitialTransactionGroupBy,
+  persistTransactionGroupBy,
+  type TransactionGroupBy
+} from "@/features/transactions/transactionGrouping";
 import useDebounce from "@/hooks/useDebounce";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
@@ -16,23 +20,11 @@ import { useNavigate } from "react-router-dom";
 
 const TRANSACTION_SEARCH_DEBOUNCE_MS = 250;
 const SUMMARY_VALUE_VISIBILITY_KEY = "transactions-summary-value-visibility";
-const TRANSACTION_GROUP_BY_KEY = "transactions-group-by";
-
-const getInitialGroupBy = (): TransactionGroupBy => {
-  const storedGroup = localStorage.getItem(TRANSACTION_GROUP_BY_KEY);
-  if (storedGroup === "none" || storedGroup === "day" || storedGroup === "month") {
-    return storedGroup;
-  }
-
-  localStorage.setItem(TRANSACTION_GROUP_BY_KEY, "day");
-  return "day";
-};
-
 const TransactionsScreen = ({ type }: { type: DashboardType }) => {
   const navigate = useNavigate();
   const isSales = type === DASHBOARD_TYPE.SALES;
   const [search, setSearch] = useState("");
-  const [groupBy, setGroupBy] = useState<TransactionGroupBy>(getInitialGroupBy);
+  const [groupBy, setGroupBy] = useState<TransactionGroupBy>(getInitialTransactionGroupBy);
   const [isValueVisible, setIsValueVisible] = useState(
     () => localStorage.getItem(SUMMARY_VALUE_VISIBILITY_KEY) !== "hidden"
   );
@@ -53,7 +45,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
   const valueLabel = isSales ? "Sales value" : "Estimates Value";
 
   const handleGroupByChange = (value: TransactionGroupBy) => {
-    localStorage.setItem(TRANSACTION_GROUP_BY_KEY, value);
+    persistTransactionGroupBy(value);
     setGroupBy(value);
   };
 

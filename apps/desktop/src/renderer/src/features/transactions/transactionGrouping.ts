@@ -2,9 +2,32 @@ import type { TransactionListResponse } from "@shared/types";
 
 export type TransactionGroupBy = "none" | "day" | "month";
 
-type TransactionListItem = TransactionListResponse["transactions"][number];
+export const TRANSACTION_GROUP_OPTIONS: { value: TransactionGroupBy; label: string }[] = [
+  { value: "none", label: "None" },
+  { value: "day", label: "Day" },
+  { value: "month", label: "Month" }
+];
 
-export type TransactionDisplayRow =
+const TRANSACTION_GROUP_BY_STORAGE_KEY = "transactions-group-by";
+
+export const getInitialTransactionGroupBy = (): TransactionGroupBy => {
+  const storedGroup = localStorage.getItem(TRANSACTION_GROUP_BY_STORAGE_KEY);
+  if (storedGroup === "none" || storedGroup === "day" || storedGroup === "month") {
+    return storedGroup;
+  }
+
+  localStorage.setItem(TRANSACTION_GROUP_BY_STORAGE_KEY, "day");
+  return "day";
+};
+
+export const persistTransactionGroupBy = (groupBy: TransactionGroupBy) => {
+  localStorage.setItem(TRANSACTION_GROUP_BY_STORAGE_KEY, groupBy);
+};
+
+type TransactionListItem = TransactionListResponse["transactions"][number];
+type GroupableTransaction = { id: string; createdAt?: string };
+
+export type TransactionDisplayRow<T extends GroupableTransaction = TransactionListItem> =
   | {
       kind: "group";
       key: string;
@@ -13,7 +36,7 @@ export type TransactionDisplayRow =
   | {
       kind: "transaction";
       key: string;
-      transaction: TransactionListItem;
+      transaction: T;
     };
 
 const IST_TIME_ZONE = "Asia/Kolkata";
@@ -66,10 +89,10 @@ const getTransactionGroup = (
   };
 };
 
-export const buildTransactionDisplayRows = (
-  transactions: TransactionListItem[],
+export const buildTransactionDisplayRows = <T extends GroupableTransaction>(
+  transactions: T[],
   groupBy: TransactionGroupBy
-): TransactionDisplayRow[] => {
+): TransactionDisplayRow<T>[] => {
   if (groupBy === "none") {
     return transactions.map((transaction) => ({
       kind: "transaction",
@@ -78,7 +101,7 @@ export const buildTransactionDisplayRows = (
     }));
   }
 
-  const rows: TransactionDisplayRow[] = [];
+  const rows: TransactionDisplayRow<T>[] = [];
   let previousGroupKey: string | null = null;
   let groupIndex = 0;
 

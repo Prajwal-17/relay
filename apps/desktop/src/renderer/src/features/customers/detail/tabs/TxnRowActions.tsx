@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import type { CustomerTxn } from "@/features/customers/hooks/useCustomerTransactions";
 import type { MutationVariables } from "@/features/customers/hooks/useCustomerTxnMutations";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
@@ -54,9 +55,11 @@ function TxnRowActionsInner({
   duplicateMutation
 }: TxnRowActionsProps) {
   const navigate = useNavigate();
+  const { printSavedReceipt } = useRawReceiptPrint();
   const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
   const setTransactionId = useViewModalStore((state) => state.setTransactionId);
   const [activeDialog, setActiveDialog] = useState<"delete" | "convert" | "idle">("idle");
+  const [isPrinting, setIsPrinting] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const canModify = type !== TRANSACTION_TYPE.SALE || txn.canModify !== false;
 
@@ -81,6 +84,25 @@ function TxnRowActionsInner({
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type, id: txn.id });
   }, [duplicateMutation, type, txn.id]);
+
+  const handlePrint = useCallback(async () => {
+    setIsPrinting(true);
+    try {
+      const result = await printSavedReceipt({ id: txn.id, type });
+      if (result.fellBack) {
+        toast("Printed using device text because the high-quality receipt could not be prepared", {
+          icon: "⚠️"
+        });
+      } else {
+        toast.success("Print job sent to printer.");
+      }
+    } catch (error) {
+      console.error("Transaction print failed", error);
+      toast.error(error instanceof Error ? error.message : "Print failed.");
+    } finally {
+      setIsPrinting(false);
+    }
+  }, [printSavedReceipt, txn.id, type]);
 
   const handleSavePdf = useCallback(async () => {
     setPdfLoading(true);
@@ -127,7 +149,7 @@ function TxnRowActionsInner({
             aria-label={`View ${type} ${txn.transactionNo}`}
             variant="ghost"
             size="icon-sm"
-            className="text-muted-foreground hover:text-foreground"
+            className="text-foreground hover:bg-hover hover:text-foreground size-7 p-1.5"
           >
             <Eye className="size-4" />
           </Button>
@@ -136,38 +158,60 @@ function TxnRowActionsInner({
       </Tooltip>
 
       {canModify && (
-        <>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                onClick={handleEdit}
-                aria-label={`Edit ${type} ${txn.transactionNo}`}
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Edit className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Edit</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="button"
-                onClick={() => setActiveDialog("delete")}
-                aria-label={`Delete ${type} ${txn.transactionNo}`}
-                variant="ghost"
-                size="icon-sm"
-                className="text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Delete</TooltipContent>
-          </Tooltip>
-        </>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={handleEdit}
+              aria-label={`Edit ${type} ${txn.transactionNo}`}
+              variant="ghost"
+              size="icon-sm"
+              className="text-foreground hover:bg-hover hover:text-foreground size-7 p-1.5"
+            >
+              <Edit className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Edit</TooltipContent>
+        </Tooltip>
+      )}
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            onClick={() => void handlePrint()}
+            aria-label={`Print ${type} ${txn.transactionNo}`}
+            variant="ghost"
+            size="icon-sm"
+            disabled={isPrinting}
+            className="text-foreground hover:bg-hover hover:text-foreground size-7 p-1.5"
+          >
+            {isPrinting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Printer className="size-4" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{isPrinting ? "Printing…" : "Print"}</TooltipContent>
+      </Tooltip>
+
+      {canModify && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              onClick={() => setActiveDialog("delete")}
+              aria-label={`Delete ${type} ${txn.transactionNo}`}
+              variant="ghost"
+              size="icon-sm"
+              className="text-destructive hover:bg-hover hover:text-destructive size-7 p-1.5"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Delete</TooltipContent>
+        </Tooltip>
       )}
 
       <DropdownMenu>
@@ -177,7 +221,7 @@ function TxnRowActionsInner({
             aria-label={`More actions for ${type} ${txn.transactionNo}`}
             variant="ghost"
             size="icon-sm"
-            className="text-muted-foreground hover:text-foreground"
+            className="text-foreground hover:bg-hover hover:text-foreground size-7 p-1.5"
           >
             <MoreVertical className="size-4" />
           </Button>
@@ -212,10 +256,6 @@ function TxnRowActionsInner({
               <FileDown className="mr-1.5 size-4" />
             )}
             <span>{pdfLoading ? "Exporting…" : "Export PDF"}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <Printer className="mr-1.5 size-4" />
-            <span>Print</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

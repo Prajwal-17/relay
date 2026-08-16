@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/apiClient";
 import { prepareRasterReceipt } from "@/features/settings/thermalRaster";
+import { normalizeLineItems } from "@/features/billing/store/billingSession.helpers";
 import { filterValidLineItems } from "@/utils/renderer.utils";
 import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -8,8 +9,11 @@ import type {
   PrintingConfig,
   RasterReceiptSegments,
   RawReceiptData,
-  StoreProfile
+  StoreProfile,
+  TransactionType,
+  UnifiedTransctionWithItems
 } from "@shared/types";
+import { BILLSTATUS } from "@shared/types";
 import { buildReceiptAddressLines, calculateThermalSavings } from "@shared/utils/thermalReceipt";
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { useCallback } from "react";
@@ -99,6 +103,35 @@ export function buildRawReceiptPreviewData(
   return createRawReceiptData(session, profile, printing, "preview");
 }
 
+export function buildRawReceiptDataFromTransaction(
+  transaction: UnifiedTransctionWithItems,
+  profile: StoreProfile,
+  printing: PrintingConfig
+): RawReceiptData {
+  const billingDate = new Date(transaction.createdAt ?? transaction.recordedAt ?? "");
+  if (Number.isNaN(billingDate.getTime())) {
+    throw new Error("The saved transaction date is unavailable.");
+  }
+
+  const session: BillingSessionData = {
+    isMetaDataDirty: false,
+    billingId: transaction.id,
+    billingType: transaction.type,
+    transactionNo: transaction.transactionNo,
+    billingDate,
+    customerId: transaction.customerId,
+    customerName: transaction.customer.name,
+    isNewCustomer: false,
+    status: BILLSTATUS.SAVED,
+    isCountColumnVisible: false,
+    notes: transaction.notes,
+    addToAccounting: Boolean(transaction.isAddedToAccounting),
+    lineItems: normalizeLineItems(transaction.items)
+  };
+
+  return buildRawReceiptData(session, profile, printing);
+}
+
 const useRawReceiptPrint = () => {
   const prepareReceipt = useCallback(
     async (tabId: string, options: { omitFooter?: boolean } = {}) => {
@@ -134,7 +167,43 @@ const useRawReceiptPrint = () => {
     [prepareReceipt]
   );
 
-  return { prepareReceipt, printReceipt };
+  const prepareSavedReceipt = useCallback(
+    async ({ id, type }: { id: string; type: TransactionType }) => {
+      const [transaction, profile, preferences] = await Promise.all([
+        apiClient.get<UnifiedTransctionWithItems>(`/api/${type}s/${id}`),
+        apiClient.get<StoreProfile>("/api/store-profile"),
+        apiClient.get<AppPreferencesResponse>("/api/app-preferences")
+      ]);
+
+      const receipt = buildRawReceiptDataFromTransaction(
+        transaction,
+        profile,
+        preferences.config.printing
+      );
+      let raster: RasterReceiptSegments | undefined;
+      if (preferences.config.printing.defaultPrintMode === "raster") {
+        try {
+          raster = await prepareRasterReceipt(receipt);
+        } catch (error) {
+          console.warn("High-quality receipt preparation failed; device text will be used.", error);
+        }
+      }
+      return { receipt, raster };
+    },
+    []
+  );
+
+  const printSavedReceipt = useCallback(
+    async (transaction: { id: string; type: TransactionType }) => {
+      const { receipt, raster } = await prepareSavedReceipt(transaction);
+      const response = await window.rawPrintApi.printReceipt(receipt, raster);
+      if (response.status === "error") throw new Error(response.error.message);
+      return response.data;
+    },
+    [prepareSavedReceipt]
+  );
+
+  return { prepareReceipt, printReceipt, prepareSavedReceipt, printSavedReceipt };
 };
 
 export default useRawReceiptPrint;

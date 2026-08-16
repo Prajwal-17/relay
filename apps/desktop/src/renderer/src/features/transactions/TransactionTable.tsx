@@ -11,7 +11,10 @@ import { getDateRangeContext } from "@/features/transactions/datePresets.constan
 import { useDashboard } from "@/features/transactions/hooks/useDashboard";
 import type { useInfiniteScroll } from "@/features/transactions/hooks/useInfiniteScroll";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
-import type { TransactionGroupBy } from "@/features/transactions/transactionGrouping";
+import {
+  TRANSACTION_GROUP_OPTIONS,
+  type TransactionGroupBy
+} from "@/features/transactions/transactionGrouping";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_TYPE, SortOption, type DashboardType, type SortType } from "@shared/types";
 import { LoaderCircle, ReceiptIndianRupee, X } from "lucide-react";
@@ -31,12 +34,6 @@ const TRANSACTION_SORT_OPTIONS: { value: SortType; label: string }[] = [
   { value: SortOption.DATE_OLDEST_FIRST, label: "Oldest first" },
   { value: SortOption.HIGH_TO_LOW, label: "Highest amount" },
   { value: SortOption.LOW_TO_HIGH, label: "Lowest amount" }
-];
-
-const TRANSACTION_GROUP_OPTIONS: { value: TransactionGroupBy; label: string }[] = [
-  { value: "none", label: "None" },
-  { value: "day", label: "Day" },
-  { value: "month", label: "Month" }
 ];
 
 const isAmountSort = (value: SortType) =>

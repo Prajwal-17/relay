@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -21,6 +19,13 @@ import {
   type TxnSortBy
 } from "@/features/customers/hooks/useCustomerTransactions";
 import type { MutationVariables } from "@/features/customers/hooks/useCustomerTxnMutations";
+import {
+  buildTransactionDisplayRows,
+  getInitialTransactionGroupBy,
+  persistTransactionGroupBy,
+  TRANSACTION_GROUP_OPTIONS,
+  type TransactionGroupBy
+} from "@/features/transactions/transactionGrouping";
 import { useCustomerTxnMutations } from "@/features/customers/hooks/useCustomerTxnMutations";
 import { cn } from "@/lib/utils";
 import { TXN_TABLE_ALIGN, type TxnTableColMeta } from "@/types/renderer.types";
@@ -30,16 +35,7 @@ import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import {
-  ArrowDownAZ,
-  ChevronLeft,
-  ChevronRight,
-  LoaderCircle,
-  Plus,
-  Search,
-  Tags,
-  X
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, LoaderCircle, Plus, Search, Tags, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TxnRowActions } from "./TxnRowActions";
@@ -56,6 +52,9 @@ type ColumnsOptions = {
 
 const TXN_TABLE_NUMBER_INPUT_CLASS =
   "h-8 w-14 border-border bg-background text-center text-sm font-medium tabular-nums shadow-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none focus-visible:bg-background";
+
+const isAmountSort = (value: TxnSortBy) =>
+  value === CUSTOMER_TXN_SORT.AMOUNT_DESC || value === CUSTOMER_TXN_SORT.AMOUNT_ASC;
 
 function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
   const { type, numberLabel, pageNo, pageSize, ...mutations } = opts;
@@ -153,6 +152,7 @@ export function CustomerTxnTable({
   const [searchInput, setSearchInput] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortValue, setSortValue] = useState<TxnSortBy>(CUSTOMER_TXN_SORT.DATE_DESC);
+  const [groupBy, setGroupBy] = useState<TransactionGroupBy>(getInitialTransactionGroupBy);
 
   const [pageSizeInput, setPageSizeInput] = useState(String(TXN_TABLE_PAGE_SIZE));
   const [pageNoInput, setPageNoInput] = useState("1");
@@ -193,11 +193,19 @@ export function CustomerTxnTable({
     [type, numberLabel, pageNo, pageSize, deleteMutation, convertMutation, duplicateMutation]
   );
 
+  const displayRows = useMemo(
+    () => buildTransactionDisplayRows(transactions, groupBy),
+    [transactions, groupBy]
+  );
+
   const table = useReactTable({
     data: transactions,
     columns,
     getCoreRowModel: getCoreRowModel()
   });
+  const tableRowsByTransactionId = new Map(
+    table.getRowModel().rows.map((row) => [row.original.id, row])
+  );
 
   const totalPages = totalCount === 0 ? 0 : Math.ceil(totalCount / pageSize);
   const canPrev = pageNo > 1;
@@ -215,7 +223,20 @@ export function CustomerTxnTable({
   useEffect(() => setPageNoInput(String(pageNo)), [pageNo]);
 
   const applySort = (s: TxnSortBy) => {
+    if (groupBy !== "none" && isAmountSort(s)) {
+      persistTransactionGroupBy("none");
+      setGroupBy("none");
+    }
     setSortValue(s);
+    setPageNo(1);
+  };
+
+  const applyGroupBy = (nextGroupBy: TransactionGroupBy) => {
+    if (nextGroupBy !== "none" && isAmountSort(sortValue)) {
+      setSortValue(CUSTOMER_TXN_SORT.DATE_DESC);
+    }
+    persistTransactionGroupBy(nextGroupBy);
+    setGroupBy(nextGroupBy);
     setPageNo(1);
   };
 
@@ -246,8 +267,6 @@ export function CustomerTxnTable({
 
   const addRoute =
     type === TRANSACTION_TYPE.SALE ? "/billing/sales/create" : "/billing/estimates/create";
-  const activeSortLabel =
-    TXN_TABLE_SORT_OPTIONS.find((o) => o.value === sortValue)?.label ?? "Sort";
   const hasFilters = searchInput.trim() !== "";
   const isFirstLoad = status === "pending" && transactions.length === 0;
   const isEmpty = !isFirstLoad && transactions.length === 0;
@@ -279,34 +298,44 @@ export function CustomerTxnTable({
           )}
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="cursor-pointer">
-              <ArrowDownAZ className="size-4" />
-              {activeSortLabel}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuLabel className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Sort by
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup
-              value={sortValue}
-              onValueChange={(v) => applySort(v as TxnSortBy)}
-            >
-              {TXN_TABLE_SORT_OPTIONS.map((option) => (
-                <DropdownMenuRadioItem
-                  key={option.value}
-                  value={option.value}
-                  className="cursor-pointer text-sm font-medium"
-                >
-                  {option.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Select
+          value={groupBy}
+          onValueChange={(value) => applyGroupBy(value as TransactionGroupBy)}
+        >
+          <SelectTrigger
+            size="sm"
+            aria-label="Group customer transactions"
+            className="bg-card h-8 min-w-32 shadow-none"
+          >
+            <span className="text-muted-foreground">Group</span>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {TRANSACTION_GROUP_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="cursor-pointer">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={sortValue} onValueChange={(value) => applySort(value as TxnSortBy)}>
+          <SelectTrigger
+            size="sm"
+            aria-label="Sort customer transactions"
+            className="bg-card h-8 min-w-44 shadow-none"
+          >
+            <span className="text-muted-foreground">Sort</span>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {TXN_TABLE_SORT_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value} className="cursor-pointer">
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {hasFilters && (
           <Button type="button" variant="ghost" size="sm" onClick={clearFilters}>
@@ -315,22 +344,13 @@ export function CustomerTxnTable({
           </Button>
         )}
 
-        <div className="text-muted-foreground ml-auto flex shrink-0 items-center gap-2 text-xs font-medium tabular-nums select-none">
-          {isFetching && !isFirstLoad && (
-            <LoaderCircle className="text-primary size-3.5 animate-spin" />
-          )}
-          <span>
-            {totalCount === 0 ? "No results" : `Showing ${rangeStart}–${rangeEnd} of ${totalCount}`}
-          </span>
-        </div>
-
         <Button
           onClick={() =>
             navigate(addRoute, {
               state: { prefillCustomer: { id: customerId, name: customerName } }
             })
           }
-          className="cursor-pointer"
+          className="ml-auto cursor-pointer"
         >
           <Plus className="size-4" />
           {addLabel}
@@ -395,49 +415,81 @@ export function CustomerTxnTable({
                 ))}
               </thead>
               <tbody>
-                {table.getRowModel().rows.map((row) => (
-                  <tr
-                    key={row.id}
-                    className="border-border hover:bg-hover group border-b transition-colors last:border-b-0"
-                  >
-                    {row.getVisibleCells().map((cell) => {
-                      const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;
-                      return (
-                        <td
-                          key={cell.id}
-                          className={cn(
-                            "h-12 px-3 align-middle",
-                            meta?.width,
-                            meta?.align === "right"
-                              ? "text-right"
-                              : meta?.align === "center"
-                                ? "text-center"
-                                : "text-left"
-                          )}
-                        >
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                {displayRows.map((displayRow) => {
+                  if (displayRow.kind === "group") {
+                    return (
+                      <tr
+                        key={displayRow.key}
+                        aria-label={`Group: ${displayRow.label}`}
+                        className="bg-secondary border-frame h-8 border-b"
+                      >
+                        <td colSpan={columns.length} className="px-3 py-0">
+                          <span className="border-marker text-foreground border-l-2 pl-2 text-xs font-semibold">
+                            {displayRow.label}
+                          </span>
                         </td>
-                      );
-                    })}
-                  </tr>
-                ))}
+                      </tr>
+                    );
+                  }
+
+                  const row = tableRowsByTransactionId.get(displayRow.transaction.id);
+                  if (!row) return null;
+
+                  return (
+                    <tr
+                      key={displayRow.key}
+                      className="border-border hover:bg-hover group border-b transition-colors last:border-b-0"
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        const meta = cell.column.columnDef.meta as TxnTableColMeta | undefined;
+                        return (
+                          <td
+                            key={cell.id}
+                            className={cn(
+                              "h-12 px-3 align-middle",
+                              meta?.width,
+                              meta?.align === "right"
+                                ? "text-right"
+                                : meta?.align === "center"
+                                  ? "text-center"
+                                  : "text-left"
+                            )}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
 
-          <div className="border-border bg-card flex shrink-0 items-center justify-between gap-3 border-t px-3 py-2.5">
-            <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
-              <span>Rows</span>
-              <Input
-                type="number"
-                value={pageSizeInput}
-                onChange={(e) => setPageSizeInput(e.target.value)}
-                onBlur={commitPageSize}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") e.currentTarget.blur();
-                }}
-                className={TXN_TABLE_NUMBER_INPUT_CLASS}
-              />
+          <div className="border-border bg-card flex h-10 shrink-0 items-center justify-between gap-3 border-t px-3 py-1">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium tabular-nums">
+                <span>Rows</span>
+                <Input
+                  type="number"
+                  value={pageSizeInput}
+                  onChange={(e) => setPageSizeInput(e.target.value)}
+                  onBlur={commitPageSize}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                  className={TXN_TABLE_NUMBER_INPUT_CLASS}
+                />
+              </div>
+
+              <div className="text-muted-foreground border-border flex shrink-0 items-center gap-2 border-l pl-4 text-xs font-medium tabular-nums select-none">
+                {isFetching && <LoaderCircle className="text-primary size-3.5 animate-spin" />}
+                <span>
+                  {totalCount === 0
+                    ? "No results"
+                    : `Showing ${rangeStart}–${rangeEnd} of ${totalCount}`}
+                </span>
+              </div>
             </div>
 
             <div className="flex items-center gap-1.5">
