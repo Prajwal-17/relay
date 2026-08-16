@@ -21,28 +21,55 @@ const paperStyle = {
   fontVariantNumeric: "tabular-nums"
 } as const;
 
+const receiptPaperStyle = {
+  ...paperStyle,
+  fontSynthesis: "none",
+  letterSpacing: "normal"
+} as const;
+
+const receiptItemGridStyle = {
+  gridTemplateColumns: "32px minmax(0, 1fr) 92px 84px 108px"
+} as const;
+
 function ReceiptAmount({
   paisa,
   prefix = false,
+  fractionDisplay = "fixed",
   className = ""
 }: {
   paisa: number;
   prefix?: boolean;
+  fractionDisplay?: "fixed" | "compact";
   className?: string;
 }) {
-  const formattedAmount = formatRupee(paisa).replace("₹", "");
+  const formattedAmount =
+    fractionDisplay === "compact" ? paisaToRupeeString(paisa) : formatRupee(paisa).replace("₹", "");
   return (
-    <span className={cn("shrink-0 whitespace-nowrap tabular-nums", className)}>
+    <span className={cn("shrink-0 whitespace-nowrap tabular-nums", className)} data-receipt-amount>
       {prefix ? "Rs." : ""}
       {formattedAmount}
     </span>
   );
 }
 
-function ReceiptFooter({ message }: { message?: string }) {
+function ReceiptFooter({ message, className = "" }: { message?: string; className?: string }) {
   if (!message?.trim()) return null;
   return (
-    <div className="pt-5 pb-6 text-center text-[19px] leading-[1.35] font-[700]">{message}</div>
+    <div className={cn("pt-5 pb-6 text-center text-[19px] leading-[1.35] font-[700]", className)}>
+      {message}
+    </div>
+  );
+}
+
+function ReceiptSavings({ paisa }: { paisa?: number }) {
+  if (paisa == null || paisa <= 0) return null;
+  return (
+    <div
+      className="pt-3 pb-4 text-center text-[26px] leading-[1.2] font-[600]"
+      data-testid="raster-receipt-savings"
+    >
+      *** YOU SAVED Rs.{paisaToRupeeString(paisa)} ***
+    </div>
   );
 }
 
@@ -54,110 +81,163 @@ function CheckedQuantity({ item }: { item: RawReceiptData["items"][number] }) {
   const partiallyChecked = Number.isFinite(quantity) && checkedQuantity < quantity;
   return (
     <span
-      className="inline-flex flex-wrap items-center justify-end gap-x-1 tabular-nums"
+      className="inline-flex items-center justify-end gap-x-1 align-middle leading-none whitespace-nowrap tabular-nums"
       aria-label={`${item.checkedQty} of ${item.quantity} checked`}
     >
       <span>{item.quantity}</span>
-      {partiallyChecked ? <span>({item.checkedQty})</span> : null}
-      <Check className="size-[17px] shrink-0" strokeWidth={4} aria-hidden="true" />
+      {partiallyChecked ? (
+        <span>({item.checkedQty})</span>
+      ) : (
+        <Check className="size-[18px] shrink-0 self-center" strokeWidth={3} aria-hidden="true" />
+      )}
     </span>
   );
 }
 
+function formatRasterReceiptDate(dateTime: string): string {
+  const formattedDate = formatThermalReceiptDate(dateTime);
+  const date = new Date(dateTime);
+  if (Number.isNaN(date.getTime())) return formattedDate;
+
+  const weekday = new Intl.DateTimeFormat("en-IN", {
+    weekday: "short",
+    timeZone: "Asia/Kolkata"
+  }).format(date);
+  return weekday + ", " + formattedDate;
+}
+
 function RasterReceiptBody({
   receipt,
-  includeFooter
+  includeFooter,
+  includeSavings
 }: {
   receipt: RawReceiptData;
   includeFooter: boolean;
+  includeSavings: boolean;
 }) {
   const label = receiptDocumentLabel(receipt);
   const documentNumber = receipt.transactionNo > 0 ? String(receipt.transactionNo) : "New";
 
   return (
     <div data-raster-segment="body">
-      <header className="px-8 pt-7 pb-4 text-center">
-        <h2 className="m-0 text-[29px] leading-[1.12] font-[800] tracking-[-0.015em] break-words uppercase">
+      <header className="px-1 pt-7 pb-4 text-center">
+        <h2
+          className="m-0 text-[36px] leading-[1.12] font-[700] break-words uppercase"
+          data-testid="raster-receipt-store-name"
+        >
           {receipt.storeName}
         </h2>
         {receipt.addressLines.length > 0 ? (
-          <div className="mt-2 text-[19px] leading-[1.28] font-medium">
+          <div className="mt-2 text-[24px] leading-[1.25] font-[400]">
             {receipt.addressLines.map((line, index) => (
               <div key={index}>{line}</div>
             ))}
           </div>
         ) : null}
         {receipt.phone ? (
-          <div className="text-[19px] leading-[1.28] font-medium">Phone: {receipt.phone}</div>
+          <div className="text-[24px] leading-[1.25] font-[400]">Phone: {receipt.phone}</div>
         ) : null}
         {receipt.transactionType === "sale" && receipt.gstin ? (
-          <div className="text-[19px] leading-[1.28] font-medium">GSTIN: {receipt.gstin}</div>
+          <div className="text-[24px] leading-[1.25] font-[400]">GSTIN: {receipt.gstin}</div>
         ) : null}
       </header>
 
-      <main className="px-8">
-        <div className="border-y-2 border-dashed border-black py-2.5 text-[19px] leading-[1.32] font-medium">
+      <main className="px-1">
+        <div
+          className="border-y border-dashed border-black py-2.5 text-[24px] leading-[1.3] font-[400]"
+          data-testid="raster-receipt-meta"
+        >
           <div>
-            <span className="font-[700]">{label}: </span>
-            <span className="font-[650] tabular-nums">{documentNumber}</span>
+            <span className="font-[600]">{label}: </span>
+            <span className="font-[600] tabular-nums">{documentNumber}</span>
           </div>
           <div>
-            <span className="font-[700]">Date: </span>
-            <span className="tabular-nums">{formatThermalReceiptDate(receipt.dateTime)}</span>
+            <span className="font-[600]">Date: </span>
+            <span className="tabular-nums">{formatRasterReceiptDate(receipt.dateTime)}</span>
           </div>
           {receipt.customerName ? (
             <div className="break-words">
-              <span className="font-[700]">Customer: </span>
+              <span className="font-[600]">Customer: </span>
               <span>{receipt.customerName}</span>
             </div>
           ) : null}
         </div>
 
         <section>
-          <div className="grid grid-cols-[28px_minmax(0,1fr)_92px_78px_108px] border-b-2 border-dashed border-black py-2 text-[17px] leading-none font-[800] uppercase">
+          <div
+            className="grid border-b border-dashed border-black py-2.5 text-[22px] leading-none font-[700] uppercase"
+            style={receiptItemGridStyle}
+            data-testid="raster-receipt-item-header"
+          >
             <span>#</span>
             <span>Item</span>
-            <span className="text-right">Qty</span>
-            <span className="text-right">Rate</span>
-            <span className="text-right">Amt</span>
+            <span className="w-full text-right">Qty</span>
+            <span className="w-full text-right">Rate</span>
+            <span className="w-full text-right">Amt</span>
           </div>
-          <div className="border-b-2 border-dashed border-black py-1">
+          <div
+            className="border-b border-dashed border-black py-1"
+            data-testid="raster-receipt-items"
+          >
             {receipt.items.map((item, index) => (
               <article
                 key={index}
-                className="grid grid-cols-[28px_minmax(0,1fr)_92px_78px_108px] items-start py-2 text-[19px] leading-[1.25] font-medium"
+                className="grid items-start py-1 text-[24px] leading-[1.2] font-[500]"
+                style={receiptItemGridStyle}
+                data-testid="raster-receipt-item-row"
               >
                 <span className="tabular-nums">{index + 1}.</span>
-                <span className="min-w-0 pr-2 font-[700] break-words">{item.name}</span>
-                <span className="min-w-0 text-right font-[650]">
+                <span className="min-w-0 pr-3 font-[500] break-words">{item.name}</span>
+                <span className="w-full min-w-0 text-right font-[500]">
                   <CheckedQuantity item={item} />
                 </span>
-                <ReceiptAmount paisa={item.unitPricePaisa} className="text-right" />
-                <ReceiptAmount paisa={item.totalPaisa} className="text-right font-[700]" />
+                <ReceiptAmount
+                  paisa={item.unitPricePaisa}
+                  fractionDisplay="compact"
+                  className="block w-full text-right font-[500]"
+                />
+                <ReceiptAmount
+                  paisa={item.totalPaisa}
+                  fractionDisplay="compact"
+                  className="block w-full text-right font-[500]"
+                />
               </article>
             ))}
           </div>
         </section>
 
-        <section className="pt-2 pb-1 text-[20px] leading-[1.3]">
-          <div className="flex items-baseline justify-between gap-6 font-[600]">
-            <span>Subtotal</span>
-            <ReceiptAmount paisa={receipt.subtotalPaisa} />
-          </div>
-          <div className="mt-1 flex items-baseline justify-between gap-6 font-[800]">
-            <span className="text-[24px]">TOTAL</span>
-            <ReceiptAmount paisa={receipt.totalPaisa} prefix className="text-[26px]" />
+        <section className="pt-2 pb-1">
+          <div
+            className="ml-auto grid w-fit max-w-full min-w-[330px] grid-cols-[auto_minmax(140px,auto)] items-baseline gap-x-4"
+            data-testid="raster-receipt-summary"
+          >
+            <span className="justify-self-end text-[25px] leading-[1.25] font-[400]">Subtotal</span>
+            <ReceiptAmount
+              paisa={receipt.subtotalPaisa}
+              className="justify-self-end text-right text-[25px] leading-[1.25] font-[500]"
+            />
+            <span className="mt-1.5 justify-self-end text-[30px] leading-none font-[600]">
+              TOTAL
+            </span>
+            <ReceiptAmount
+              paisa={receipt.totalPaisa}
+              prefix
+              className="mt-1.5 justify-self-end text-right text-[33px] leading-none font-[600]"
+            />
           </div>
         </section>
 
-        {receipt.savingsPaisa != null && receipt.savingsPaisa > 0 ? (
-          <div className="pt-4 text-center text-[20px] leading-[1.25] font-[750]">
-            YOU SAVED Rs.{paisaToRupeeString(receipt.savingsPaisa)}
-          </div>
+        <div
+          className={includeSavings ? "h-5" : "h-8"}
+          data-testid="raster-receipt-before-qr-gap"
+        />
+        {includeFooter ? (
+          <ReceiptFooter
+            message={receipt.footerMessage}
+            className="text-[24px] leading-[1.3] font-[500]"
+          />
         ) : null}
-
-        <div className="h-5" />
-        {includeFooter ? <ReceiptFooter message={receipt.footerMessage} /> : null}
+        <ReceiptSavings paisa={includeSavings ? receipt.savingsPaisa : undefined} />
       </main>
     </div>
   );
@@ -171,12 +251,20 @@ function RasterAfterQr({
   includeFooter: boolean;
 }) {
   return (
-    <div data-raster-segment="after-qr" className="px-8 pt-3 text-center">
-      <div className="text-[19px] leading-[1.3] font-[700]">Scan to pay</div>
+    <div data-raster-segment="after-qr" className="px-1 pt-0 text-center">
+      <div className="text-[24px] leading-[1.3] font-[500]">Scan to pay</div>
       {receipt.upi?.payeeName ? (
-        <div className="text-[19px] leading-[1.3] font-medium">{receipt.upi.payeeName}</div>
+        <div className="text-[24px] leading-[1.3] font-[400]">{receipt.upi.payeeName}</div>
       ) : null}
-      {includeFooter ? <ReceiptFooter message={receipt.footerMessage} /> : <div className="h-5" />}
+      {includeFooter ? (
+        <ReceiptFooter
+          message={receipt.footerMessage}
+          className="text-[24px] leading-[1.3] font-[500]"
+        />
+      ) : (
+        <div className="h-5" />
+      )}
+      <ReceiptSavings paisa={receipt.savingsPaisa} />
     </div>
   );
 }
@@ -195,18 +283,22 @@ export function RasterReceiptPaper({
 
   return (
     <div
-      style={paperStyle}
+      style={receiptPaperStyle}
       className="bg-white text-black"
       data-testid="raster-receipt-paper"
       role="group"
       aria-label={`80 millimetre ${receipt.transactionType} raster receipt`}
     >
       {segment !== "after-qr" ? (
-        <RasterReceiptBody receipt={receipt} includeFooter={includeFooterInBody} />
+        <RasterReceiptBody
+          receipt={receipt}
+          includeFooter={includeFooterInBody}
+          includeSavings={!upiUri}
+        />
       ) : null}
       {segment === "preview" && upiUri ? (
         <>
-          <div className="flex justify-center bg-white py-1" data-preview-only-qr>
+          <div className="flex justify-center bg-white pt-1" data-preview-only-qr>
             <QRCodeSVG
               value={upiUri}
               level="M"
@@ -266,16 +358,16 @@ export function RasterLedgerPaper({
         <div className="h-5" />
       )}
 
-      <main className="mx-8 border-t-2 border-dashed border-black">
+      <main className="mx-8 pb-3">
         <h3 className="m-0 py-2.5 text-center text-[22px] leading-none font-[800] tracking-[0.04em]">
           ACCOUNTS
         </h3>
-        <div className="border-y-2 border-dashed border-black py-2.5 text-[19px] leading-[1.3]">
+        <div className="pb-3 text-[19px] leading-[1.3]">
           <span className="font-[700]">Customer: </span>
           <span className="font-[700]">{statement.customerName}</span>
         </div>
 
-        <div className="border-b-2 border-dashed border-black py-1">
+        <div className="py-1" data-testid="raster-ledger-entries">
           {statement.entries.map((entry, index) => {
             const amount = entry.amountPaidPaisa > 0 ? entry.amountPaidPaisa : entry.amountDuePaisa;
             return (
@@ -290,15 +382,6 @@ export function RasterLedgerPaper({
               </article>
             );
           })}
-        </div>
-
-        <div className="flex items-baseline justify-between gap-6 py-3 text-[22px] leading-none font-[800]">
-          <span>TOTAL AMOUNT</span>
-          <ReceiptAmount
-            paisa={statement.closingBalancePaisa}
-            prefix
-            className="text-[24px] tracking-[-0.01em]"
-          />
         </div>
       </main>
 
