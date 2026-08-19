@@ -14,6 +14,7 @@ import {
   THERMAL_RECEIPT_LINE_WIDTH,
   thermalItemLines,
   thermalLedgerEntryLines,
+  thermalLedgerSummaryLines,
   wrapThermalText
 } from "../../../shared/utils/thermalReceipt";
 import { paisaToRupeeString } from "../../../shared/utils/utils";
@@ -33,6 +34,15 @@ function line(value = ""): Buffer {
 export const wrapText = wrapThermalText;
 export const itemLines = thermalItemLines;
 const fit = fitThermalText;
+
+function receiptMoney(paisa: number) {
+  const amount = paisaToRupeeString(Math.abs(paisa));
+  return (paisa < 0 ? "-Rs." : "Rs.") + amount;
+}
+
+function accountLine(label: string, paisa: number) {
+  return fit(label, 30) + fit(receiptMoney(paisa), 18, "right");
+}
 
 function buildNativeQrCode(payload: string): Buffer {
   const data = ascii(payload.trim());
@@ -116,6 +126,19 @@ export function buildEscPosReceipt(receipt: RawReceiptData): Buffer {
     line(`${fit("TOTAL", 30)}${fit(`Rs.${paisaToRupeeString(receipt.totalPaisa)}`, 18, "right")}`),
     escPosCommands.normalText,
     escPosCommands.boldOff,
+    ...(receipt.accountSettlement
+      ? [
+          line("-".repeat(LINE_WIDTH)),
+          line(accountLine("Previous balance", receipt.accountSettlement.previousBalancePaisa)),
+          line(accountLine("Current bill (+)", receipt.accountSettlement.currentBillPaisa)),
+          ...(receipt.accountSettlement.paymentPaisa > 0
+            ? [line(accountLine("Payment (-)", receipt.accountSettlement.paymentPaisa))]
+            : []),
+          escPosCommands.boldOn,
+          line(accountLine("BALANCE", receipt.accountSettlement.balancePaisa)),
+          escPosCommands.boldOff
+        ]
+      : []),
     ...(receipt.savingsPaisa != null && receipt.savingsPaisa > 0
       ? [
           line(),
@@ -189,15 +212,10 @@ export function buildEscPosLedgerStatement(statement: RawLedgerStatementData): B
     for (const entryLine of thermalLedgerEntryLines(entry)) chunks.push(line(entryLine));
   }
 
-  chunks.push(
-    line("-".repeat(LINE_WIDTH)),
-    escPosCommands.boldOn,
-    line(
-      fit("TOTAL AMOUNT", 32) +
-        fit("Rs." + paisaToRupeeString(statement.closingBalancePaisa), 16, "right")
-    ),
-    escPosCommands.boldOff
-  );
+  const summaryLines = thermalLedgerSummaryLines(statement);
+  chunks.push(line("-".repeat(LINE_WIDTH)));
+  for (const summaryLine of summaryLines.slice(0, -1)) chunks.push(line(summaryLine));
+  chunks.push(escPosCommands.boldOn, line(summaryLines.at(-1)!), escPosCommands.boldOff);
 
   const footerLines = statement.footerMessage?.trim()
     ? wrapText(statement.footerMessage, LINE_WIDTH)

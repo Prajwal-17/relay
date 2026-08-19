@@ -14,17 +14,10 @@ const BillingNotes = ({ className }: BillingNotesProps) => {
   const updateField = useBillingSessionStore((state) => state.updateField);
 
   return (
-    <section
-      className={cn(
-        "bg-card border-border/60 flex h-full flex-col rounded-2xl border p-4 shadow-sm",
-        className
-      )}
-    >
-      <header className="mb-3 flex items-center gap-2">
-        <div className="bg-muted/60 border-border/70 flex size-8 items-center justify-center rounded-lg border">
-          <StickyNote className="text-primary size-4" />
-        </div>
-        <h2 className="text-foreground text-sm font-semibold tracking-tight">Notes</h2>
+    <section className={cn("flex flex-col", className)}>
+      <header className="border-frame mb-2 flex h-8 items-center gap-2 border-b px-2">
+        <StickyNote className="text-muted-foreground size-4" aria-hidden="true" />
+        <h2 className="text-foreground text-sm font-semibold">Notes</h2>
       </header>
       <textarea
         value={notes}
@@ -34,7 +27,7 @@ const BillingNotes = ({ className }: BillingNotesProps) => {
           processSyncQueue(activeTabId);
         }}
         placeholder="Delivery instructions, remarks, internal notes…"
-        className="border-input placeholder:text-muted-foreground/60 focus-visible:border-ring focus-visible:ring-ring/50 min-h-32 w-full flex-1 resize-none rounded-lg border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
+        className="border-input bg-card placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring min-h-24 w-full resize-none rounded-(--radius-control) border px-3 py-2 text-sm transition-[color,box-shadow] outline-none focus-visible:ring-2"
       />
     </section>
   );

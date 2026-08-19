@@ -3,7 +3,7 @@ import { BILLSTATUS, TRANSACTION_TYPE, type UnifiedTransactionItem } from "@shar
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import { paisaToRupees, rupeesToPaisa } from "@shared/utils/utils";
 import { v4 as uuidv4 } from "uuid";
-import type { LineItem } from "./billingSession.types";
+import type { BillingSessionData, LineItem } from "./billingSession.types";
 
 export const POSITION_GAP = 65536;
 export const MIN_GAP = 1;
@@ -34,7 +34,7 @@ export function rebalancePositions(lineItems: LineItem[]): Map<string, number> {
   return result;
 }
 
-export const createInitialSession = () => {
+export const createInitialSession = (): BillingSessionData => {
   return {
     isMetaDataDirty: false,
     billingId: null,
@@ -48,6 +48,13 @@ export const createInitialSession = () => {
     isCountColumnVisible: false,
     notes: null,
     addToAccounting: false,
+    printOptions: {
+      includeUpiQr: null,
+      includeAmountInUpiQr: null,
+      selectedUpiQrProfileId: null,
+      includeAccountSummary: false,
+      accountSummaryStartedAt: Date.now()
+    },
     lineItems: Array.from({ length: 5 }, (_, i) => createInitialLineItem(i * POSITION_GAP))
   };
 };

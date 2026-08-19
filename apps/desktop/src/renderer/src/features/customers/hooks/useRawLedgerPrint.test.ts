@@ -33,8 +33,8 @@ const printing: PrintingConfig = {
   showLedgerPaymentMode: true,
   showLedgerNotes: true,
   footerMessage: "Thank you",
-  upiId: "",
-  upiPayeeName: "",
+  upiQrProfiles: [],
+  defaultUpiQrProfileId: null,
   printUpiQrOnSales: false,
   printUpiQrOnEstimates: false,
   includeAmountInUpiQr: true
@@ -94,6 +94,7 @@ describe("RAW customer ledger data", () => {
       storeName: "QuickCart Market",
       addressLines: ["12 Market Road", "Near Clock Tower", "Bengaluru, Karnataka 560001"],
       phone: "9999999999",
+      previousBalancePaisa: 0,
       customerName: "Anita",
       totalDuePaisa: 51250,
       totalPaidPaisa: 20000,
@@ -140,14 +141,15 @@ describe("RAW customer ledger data", () => {
   it("uses the selected entries for totals and the ending balance", () => {
     const statement = buildRawLedgerStatementData(
       "Anita",
-      entries.slice(0, 1),
+      entries.slice(1),
       summary,
       profile,
       printing
     );
 
-    expect(statement.totalDuePaisa).toBe(51250);
-    expect(statement.totalPaidPaisa).toBe(0);
-    expect(statement.closingBalancePaisa).toBe(51250);
+    expect(statement.previousBalancePaisa).toBe(51250);
+    expect(statement.totalDuePaisa).toBe(0);
+    expect(statement.totalPaidPaisa).toBe(20000);
+    expect(statement.closingBalancePaisa).toBe(31250);
   });
 });

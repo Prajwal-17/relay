@@ -1,5 +1,6 @@
 import { ErrorState } from "@/components/app-ui/ErrorState";
 import BillingHeader from "@/features/billing/BillingHeader";
+import { BillingPrintOptions } from "@/features/billing/BillingPrintOptions";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
 import BillingPreviewPanel from "@/features/billing/preview/BillingPreviewPanel";
 import BillingReferenceWindow from "@/features/billing/reference/BillingReferenceWindow";
@@ -177,8 +178,11 @@ const BillingPage = () => {
             )}
             <BillingHeader />
             <LineItemsTable />
-            <div className="mx-3 mt-2 mb-3">
-              <BillingNotes />
+            <div className="mx-3 mt-2 mb-3 flex justify-end">
+              <div className="border-frame w-full max-w-sm border-l pl-3">
+                <BillingPrintOptions />
+                <BillingNotes className="mt-3" />
+              </div>
             </div>
           </div>
           <SummaryFooter />

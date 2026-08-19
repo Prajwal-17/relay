@@ -65,6 +65,9 @@ export function buildRawLedgerStatementData(
     { due: 0, paid: 0 }
   );
 
+  const firstEntry = entries[0]!;
+  const previousBalance = firstEntry.runningBalance - firstEntry.amountDue + firstEntry.amountPaid;
+
   return {
     storeName: profile.storeName,
     addressLines: printing.showAddress ? buildReceiptAddressLines(profile) : [],
@@ -78,6 +81,7 @@ export function buildRawLedgerStatementData(
       amountPaidPaisa: entry.amountPaid,
       runningBalancePaisa: entry.runningBalance
     })),
+    previousBalancePaisa: previousBalance,
     totalDuePaisa: selectedTotals.due,
     totalPaidPaisa: selectedTotals.paid,
     closingBalancePaisa: entries.at(-1)?.runningBalance ?? summary.currentBalance,
@@ -212,21 +216,15 @@ export function useRawLedgerPrint() {
         throw new Error("Choose an account customer before printing a ledger.");
       }
 
-      const encodedCustomerId = encodeURIComponent(customer.id);
-      const [profile, summary, entries] = await Promise.all([
+      const [profile, source] = await Promise.all([
         apiClient.get<StoreProfile>("/api/store-profile"),
-        apiClient.get<LedgerSummary>("/api/customers/" + encodedCustomerId + "/ledger-summary"),
-        fetchLedgerForPrint(customer.id, selection)
+        fetchLedgerStatementSource(customer.id, selection)
       ]);
-
-      if (entries.length === 0 && selection.scope === "dateRange") {
-        throw new Error("No account entries were found in the selected date range.");
-      }
 
       const statement = buildRawLedgerStatementData(
         customer.name,
-        entries,
-        summary,
+        source.entries,
+        source.summary,
         profile,
         preferences.config.printing
       );
@@ -257,4 +255,27 @@ export function useRawLedgerPrint() {
   );
 
   return { prepareCustomerLedger, printCustomerLedger };
+}
+
+export async function fetchLedgerStatementSource(
+  customerId: string,
+  selection: LedgerPrintSelection
+): Promise<{ entries: LedgerEntry[]; summary: LedgerSummary }> {
+  if (!customerId.trim()) throw new Error("Choose a customer before loading their ledger.");
+
+  const encodedCustomerId = encodeURIComponent(customerId);
+  const [summary, entries] = await Promise.all([
+    apiClient.get<LedgerSummary>("/api/customers/" + encodedCustomerId + "/ledger-summary"),
+    fetchLedgerForPrint(customerId, selection)
+  ]);
+
+  if (entries.length === 0) {
+    throw new Error(
+      selection.scope === "dateRange"
+        ? "No account entries were found in the selected date range."
+        : "This customer has no ledger history to print."
+    );
+  }
+
+  return { entries, summary };
 }

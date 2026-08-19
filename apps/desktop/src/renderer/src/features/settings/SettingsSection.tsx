@@ -17,6 +17,7 @@ type SettingsSectionProps = {
   title: string;
   description?: string;
   resettableFieldsCount?: number;
+  resetDescription?: string;
   onResetSection?: () => void;
   isResetting?: boolean;
   children: ReactNode;
@@ -26,6 +27,7 @@ export const SettingsSection = ({
   title,
   description,
   resettableFieldsCount,
+  resetDescription,
   onResetSection,
   isResetting,
   children
@@ -61,7 +63,8 @@ export const SettingsSection = ({
                   defaults?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  This restores the original values. Your changes will be lost.
+                  {resetDescription ??
+                    "This restores the original values. Your changes will be lost."}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

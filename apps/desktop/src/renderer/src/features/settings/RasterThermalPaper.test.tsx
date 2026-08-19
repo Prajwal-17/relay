@@ -157,6 +157,57 @@ describe("canonical raster thermal papers", () => {
     expect(footer.compareDocumentPosition(savings) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
   });
 
+  it("prints the compact account settlement below the bill total", () => {
+    render(
+      <RasterReceiptPaper
+        receipt={{
+          ...receipt,
+          subtotalPaisa: 200000,
+          totalPaisa: 200000,
+          upi: undefined,
+          accountSettlement: {
+            previousBalancePaisa: 500000,
+            currentBillPaisa: 200000,
+            totalDuePaisa: 700000,
+            paymentPaisa: 300000,
+            balancePaisa: 400000
+          }
+        }}
+      />
+    );
+
+    const settlement = screen.getByTestId("raster-account-settlement");
+    expect(settlement).toHaveTextContent("Previous balance");
+    expect(settlement).toHaveTextContent("Rs.5,000.00");
+    expect(settlement).toHaveTextContent("Current bill");
+    expect(settlement).toHaveTextContent("Rs.2,000.00");
+    expect(settlement).not.toHaveTextContent("Total due");
+    expect(settlement).toHaveTextContent("Payment (-)");
+    expect(settlement).toHaveTextContent("Rs.3,000.00");
+    expect(settlement).toHaveTextContent("BALANCE");
+    expect(settlement).toHaveTextContent("Rs.4,000.00");
+  });
+
+  it("omits the payment row when the customer account has no payment", () => {
+    render(
+      <RasterReceiptPaper
+        receipt={{
+          ...receipt,
+          upi: undefined,
+          accountSettlement: {
+            previousBalancePaisa: 500000,
+            currentBillPaisa: 200000,
+            totalDuePaisa: 700000,
+            paymentPaisa: 0,
+            balancePaisa: 700000
+          }
+        }}
+      />
+    );
+
+    expect(screen.getByTestId("raster-account-settlement")).not.toHaveTextContent("Payment (-)");
+  });
+
   it("shows a native-looking QR preview but excludes it from captured body and after-QR segments", () => {
     const preview = render(<RasterReceiptPaper receipt={receipt} />);
     expect(screen.getByTitle("UPI payment QR preview")).toBeInTheDocument();
@@ -190,7 +241,7 @@ describe("canonical raster thermal papers", () => {
     );
   });
 
-  it("shows only the dated ledger entries without separators or an aggregate total", () => {
+  it("shows dated ledger entries followed by the account balance breakdown", () => {
     render(<RasterLedgerPaper statement={statement} />);
     const paper = screen.getByTestId("raster-ledger-paper");
     const entries = screen.getByTestId("raster-ledger-entries");
@@ -201,10 +252,16 @@ describe("canonical raster thermal papers", () => {
     expect(paper).toHaveTextContent("Sale");
     expect(entries).toHaveTextContent("05 Aug 2026");
     expect(paper).toHaveTextContent("Payment");
+    expect(entries).toHaveTextContent("-Rs.200");
+    expect(entries).toHaveTextContent("Balance");
+    expect(entries).toHaveTextContent("Rs.312.50");
     expect(entries.querySelectorAll("article")).toHaveLength(statement.entries.length);
     expect(paper.querySelector(".border-dashed")).not.toBeInTheDocument();
     expect(paper).not.toHaveTextContent("TOTAL AMOUNT");
-    expect(paper).not.toHaveTextContent("Rs.312.50");
+    expect(paper).toHaveTextContent("Previous balance");
+    expect(paper).toHaveTextContent("Charges");
+    expect(paper).toHaveTextContent("Payments");
+    expect(paper).toHaveTextContent("Rs.312.50");
     expect(paper).not.toHaveTextContent("Invoice no");
     expect(paper).not.toHaveTextContent("Mode:");
     expect(paper).not.toHaveTextContent("Total sales");

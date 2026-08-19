@@ -9,8 +9,12 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ThermalReceiptPreview } from "./ThermalReceiptPreview";
-import { buildThermalPreviewReceipt } from "./thermalReceiptPreviewData";
+import {
+  DeviceTextReceiptPaper,
+  DeviceTextReceiptWithLedgerPaper,
+  ThermalReceiptPreview
+} from "./ThermalReceiptPreview";
+import { buildThermalPreviewLedger, buildThermalPreviewReceipt } from "./thermalReceiptPreviewData";
 
 vi.mock("@/lib/apiClient", () => ({
   apiClient: {
@@ -49,8 +53,21 @@ const printing: PrintingConfig = {
   showLedgerPaymentMode: true,
   showLedgerNotes: true,
   footerMessage: "Thank you. Visit again.",
-  upiId: "shop@bank",
-  upiPayeeName: "QuickCart Test Store",
+  upiQrProfiles: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      label: "Primary UPI",
+      upiId: "shop@bank",
+      payeeName: "QuickCart Test Store"
+    },
+    {
+      id: "22222222-2222-4222-8222-222222222222",
+      label: "Owner UPI",
+      upiId: "owner@bank",
+      payeeName: "Store Owner"
+    }
+  ],
+  defaultUpiQrProfileId: "22222222-2222-4222-8222-222222222222",
   printUpiQrOnSales: true,
   printUpiQrOnEstimates: false,
   includeAmountInUpiQr: true
@@ -93,8 +110,8 @@ describe("thermal receipt settings preview", () => {
     expect(sale.customerName).toBe("Sample customer");
     expect(sale.savingsPaisa).toBe(5850);
     expect(sale.upi).toEqual({
-      id: "shop@bank",
-      payeeName: "QuickCart Test Store",
+      id: "owner@bank",
+      payeeName: "Store Owner",
       includeAmount: true
     });
     expect(estimate.gstin).toBeUndefined();
@@ -103,6 +120,70 @@ describe("thermal receipt settings preview", () => {
       buildThermalPreviewReceipt(profile, { ...printing, savingsThresholdPaisa: 10_000 }, "sale")
         .savingsPaisa
     ).toBeUndefined();
+  });
+
+  it("renders previous balance, current bill, payment, and remaining balance", () => {
+    const receipt = {
+      ...buildThermalPreviewReceipt(profile, { ...printing, printUpiQrOnSales: false }, "sale"),
+      subtotalPaisa: 200000,
+      totalPaisa: 200000,
+      accountSettlement: {
+        previousBalancePaisa: 500000,
+        currentBillPaisa: 200000,
+        totalDuePaisa: 700000,
+        paymentPaisa: 300000,
+        balancePaisa: 400000
+      }
+    };
+
+    render(<DeviceTextReceiptPaper receipt={receipt} />);
+
+    const paper = screen.getByTestId("thermal-receipt-paper");
+    expect(paper).toHaveTextContent("Previous balance");
+    expect(paper).toHaveTextContent("Rs.5000");
+    expect(paper).toHaveTextContent("Current bill");
+    expect(paper).toHaveTextContent("Rs.2000");
+    expect(paper).not.toHaveTextContent("Total due");
+    expect(paper).toHaveTextContent("Payment (-)");
+    expect(paper).toHaveTextContent("Rs.3000");
+    expect(paper).toHaveTextContent("BALANCE");
+    expect(paper).toHaveTextContent("Rs.4000");
+  });
+
+  it("omits the payment row when the customer account has no payment", () => {
+    const receipt = {
+      ...buildThermalPreviewReceipt(profile, { ...printing, printUpiQrOnSales: false }, "sale"),
+      accountSettlement: {
+        previousBalancePaisa: 500000,
+        currentBillPaisa: 200000,
+        totalDuePaisa: 700000,
+        paymentPaisa: 0,
+        balancePaisa: 700000
+      }
+    };
+
+    render(<DeviceTextReceiptPaper receipt={receipt} />);
+
+    expect(screen.getByTestId("thermal-receipt-paper")).not.toHaveTextContent("Payment (-)");
+  });
+
+  it("renders a combined device paper with finishing only after the ledger", () => {
+    const receipt = buildThermalPreviewReceipt(profile, printing, "sale");
+    const statement = buildThermalPreviewLedger(profile, printing);
+    render(<DeviceTextReceiptWithLedgerPaper receipt={receipt} statement={statement} />);
+
+    expect(screen.getByTestId("thermal-receipt-with-ledger-paper")).toBeInTheDocument();
+    expect(screen.getByText("ACCOUNTS")).toBeInTheDocument();
+    expect(screen.getAllByText("Thank you. Visit again.")).toHaveLength(1);
+    expect(screen.getByTestId("thermal-receipt-feed")).toHaveAttribute(
+      "aria-label",
+      "0 extra feed lines"
+    );
+    expect(screen.getByTestId("thermal-ledger-feed")).toHaveAttribute(
+      "aria-label",
+      "4 extra feed lines"
+    );
+    expect(screen.getAllByLabelText("partial cut")).toHaveLength(1);
   });
 
   it("uses sample shop values only for missing Store Profile fields", () => {
@@ -161,7 +242,7 @@ describe("thermal receipt settings preview", () => {
     );
     expect(screen.getByTitle("Sample UPI payment QR")).toBeInTheDocument();
     expect(paper).toHaveTextContent("Scan to pay");
-    expect(paper).toHaveTextContent("QuickCart Test Store");
+    expect(paper).toHaveTextContent("Store Owner");
 
     await user.click(screen.getByRole("button", { name: "Estimate" }));
 
@@ -179,9 +260,10 @@ describe("thermal receipt settings preview", () => {
     expect(ledgerPaper).toHaveTextContent("Payment");
     expect(ledgerPaper).not.toHaveTextContent("Invoice no");
     expect(ledgerPaper).not.toHaveTextContent("Mode:");
-    expect(ledgerPaper).toHaveTextContent("TOTAL AMOUNT");
-    expect(ledgerPaper).not.toHaveTextContent("Total sales");
-    expect(ledgerPaper).not.toHaveTextContent("Total paid");
+    expect(ledgerPaper).toHaveTextContent("PREVIOUS BALANCE");
+    expect(ledgerPaper).toHaveTextContent("CHARGES");
+    expect(ledgerPaper).toHaveTextContent("PAYMENTS");
+    expect(ledgerPaper).toHaveTextContent("BALANCE");
   });
 
   it("shows extra feed spacing and omits the cut guide when cutting is disabled", async () => {

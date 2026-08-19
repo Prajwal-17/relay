@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
-import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import {
   MAX_BILLING_TABS,
   useBillingTabsStore,
@@ -15,7 +14,7 @@ import {
 } from "@/features/billing/store/billingTabs.store";
 import { useReferenceWindowStore } from "@/features/billing/store/referenceWindow.store";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
-import { ImageIcon, Plus, X } from "lucide-react";
+import { ImageIcon, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BillingSaveStatus } from "../BillingSaveStatus";
 import { BillingTab } from "./BillingTab";
@@ -55,12 +54,6 @@ const BillingTabBar = () => {
       setActiveTab(tab.id);
       navigate(routePath);
     }
-  };
-
-  const handleClosePage = () => {
-    useBillingTabsStore.getState().reset();
-    useBillingSessionStore.setState({ sessions: {} });
-    navigate("/");
   };
 
   const salesCount = tabs.filter((t) => t.type === TRANSACTION_TYPE.SALE).length;
@@ -144,19 +137,6 @@ const BillingTabBar = () => {
         </Tooltip>
 
         <BillingSaveStatus />
-
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              onClick={handleClosePage}
-              className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-7 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
-            >
-              <X size={23} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="bottom">Close billing</TooltipContent>
-        </Tooltip>
       </div>
     </div>
   );

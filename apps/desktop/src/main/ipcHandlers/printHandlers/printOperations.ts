@@ -182,6 +182,7 @@ export function validateRawLedgerStatementData(
     }
   }
   if (
+    (value.previousBalancePaisa !== undefined && !isSignedPaisa(value.previousBalancePaisa)) ||
     !isPaisa(value.totalDuePaisa) ||
     !isPaisa(value.totalPaidPaisa) ||
     !isSignedPaisa(value.closingBalancePaisa)

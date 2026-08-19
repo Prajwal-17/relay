@@ -21,6 +21,20 @@ type PreferencesBody = {
   config: AppConfig;
 };
 
+const PRIMARY_UPI_PROFILE = {
+  id: "11111111-1111-4111-8111-111111111111",
+  label: "Primary UPI",
+  upiId: "shop@bank",
+  payeeName: "QuickCart Market"
+};
+
+const SECONDARY_UPI_PROFILE = {
+  id: "22222222-2222-4222-8222-222222222222",
+  label: "Owner UPI",
+  upiId: "owner@bank",
+  payeeName: "Store Owner"
+};
+
 describe("preferences integration", () => {
   let app: ReturnType<typeof createModuleTestApp>;
   let db!: DB;
@@ -73,8 +87,8 @@ describe("preferences integration", () => {
       showLedgerPaymentMode: true,
       showLedgerNotes: true,
       footerMessage: "Thank you. Visit again.",
-      upiId: "",
-      upiPayeeName: "",
+      upiQrProfiles: [],
+      defaultUpiQrProfileId: null,
       printUpiQrOnSales: false,
       printUpiQrOnEstimates: false,
       includeAmountInUpiQr: true
@@ -100,8 +114,13 @@ describe("preferences integration", () => {
     const legacyConfig = {
       billing: current!.config.billing,
       exports: current!.config.exports,
-      printing: { printerName: "Legacy printer" }
-    } as AppConfig;
+      printing: {
+        printerName: "Legacy printer",
+        upiId: "legacy@bank",
+        upiPayeeName: "Legacy Store",
+        printUpiQrOnSales: true
+      }
+    } as unknown as AppConfig;
     db.update(appPreferences).set({ config: legacyConfig }).run();
 
     const readResponse = await getJson(app, "/api/app-preferences");
@@ -117,8 +136,19 @@ describe("preferences integration", () => {
       savingsThresholdPaisa: 0,
       showLedgerPaymentMode: true,
       showLedgerNotes: true,
-      printUpiQrOnSales: false
+      printUpiQrOnSales: true
     });
+    expect(normalized.config.printing.upiQrProfiles).toEqual([
+      {
+        id: "00000000-0000-4000-8000-000000000001",
+        label: "Primary UPI",
+        upiId: "legacy@bank",
+        payeeName: "Legacy Store"
+      }
+    ]);
+    expect(normalized.config.printing.defaultUpiQrProfileId).toBe(
+      "00000000-0000-4000-8000-000000000001"
+    );
 
     const updateResponse = await requestJson(app, "PATCH", "/api/app-preferences", {
       printing: { footerMessage: "See you soon" }
@@ -173,6 +203,8 @@ describe("preferences integration", () => {
         printerName: "Everycom",
         defaultPrintMode: "device-text",
         footerMessage: "Custom footer",
+        upiQrProfiles: [PRIMARY_UPI_PROFILE],
+        defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id,
         printUpiQrOnSales: true
       }
     });
@@ -184,6 +216,7 @@ describe("preferences integration", () => {
     expect(exportsReset.config.exports).toEqual(defaults.exports);
     expect(exportsReset.config.printing.footerMessage).toBe("Custom footer");
     expect(exportsReset.config.printing.defaultPrintMode).toBe("device-text");
+    expect(exportsReset.config.printing.upiQrProfiles).toEqual([PRIMARY_UPI_PROFILE]);
     expect(exportsReset.config.billing).toEqual({
       defaultCustomerId: customerId,
       searchDropdown: { scale: 1.2 }
@@ -230,8 +263,15 @@ describe("preferences integration", () => {
         showLedgerPaymentMode: false,
         showLedgerNotes: false,
         footerMessage: "Paid",
-        upiId: "shop@bank",
-        upiPayeeName: "QuickCart Market",
+        upiQrProfiles: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            label: "Primary UPI",
+            upiId: "shop@bank",
+            payeeName: "QuickCart Market"
+          }
+        ],
+        defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
         printUpiQrOnSales: true,
         printUpiQrOnEstimates: true,
         includeAmountInUpiQr: false
@@ -264,8 +304,15 @@ describe("preferences integration", () => {
         showLedgerPaymentMode: false,
         showLedgerNotes: false,
         footerMessage: "Paid",
-        upiId: "shop@bank",
-        upiPayeeName: "QuickCart Market",
+        upiQrProfiles: [
+          {
+            id: "11111111-1111-4111-8111-111111111111",
+            label: "Primary UPI",
+            upiId: "shop@bank",
+            payeeName: "QuickCart Market"
+          }
+        ],
+        defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
         printUpiQrOnSales: true,
         printUpiQrOnEstimates: true,
         includeAmountInUpiQr: false
@@ -287,6 +334,40 @@ describe("preferences integration", () => {
     }
   });
 
+  it("defaults the first profile, promotes after deletion, and turns QR off after the last deletion", async () => {
+    await onboard();
+
+    const addedResponse = await requestJson(app, "PATCH", "/api/app-preferences", {
+      printing: {
+        upiQrProfiles: [PRIMARY_UPI_PROFILE, SECONDARY_UPI_PROFILE],
+        printUpiQrOnSales: true,
+        printUpiQrOnEstimates: true
+      }
+    });
+    const added = await readJson<PreferencesBody>(addedResponse);
+    expect(addedResponse.status).toBe(200);
+    expect(added.config.printing.defaultUpiQrProfileId).toBe(PRIMARY_UPI_PROFILE.id);
+
+    const promotedResponse = await requestJson(app, "PATCH", "/api/app-preferences", {
+      printing: { upiQrProfiles: [SECONDARY_UPI_PROFILE] }
+    });
+    const promoted = await readJson<PreferencesBody>(promotedResponse);
+    expect(promotedResponse.status).toBe(200);
+    expect(promoted.config.printing.defaultUpiQrProfileId).toBe(SECONDARY_UPI_PROFILE.id);
+
+    const removedResponse = await requestJson(app, "PATCH", "/api/app-preferences", {
+      printing: { upiQrProfiles: [] }
+    });
+    const removed = await readJson<PreferencesBody>(removedResponse);
+    expect(removedResponse.status).toBe(200);
+    expect(removed.config.printing).toMatchObject({
+      upiQrProfiles: [],
+      defaultUpiQrProfileId: null,
+      printUpiQrOnSales: false,
+      printUpiQrOnEstimates: false
+    });
+  });
+
   it.each([
     ["scale below minimum", { billing: { searchDropdown: { scale: 0.79 } } }],
     ["scale above maximum", { billing: { searchDropdown: { scale: 1.51 } } }],
@@ -305,6 +386,72 @@ describe("preferences integration", () => {
     ["fractional printing feed lines", { printing: { extraFeedLines: 1.5 } }],
     ["unknown printing cut mode", { printing: { cutMode: "tear" } }],
     ["unknown default print mode", { printing: { defaultPrintMode: "png" } }],
+    [
+      "invalid UPI profile ID",
+      {
+        printing: {
+          upiQrProfiles: [{ ...PRIMARY_UPI_PROFILE, id: "not-a-uuid" }],
+          defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id
+        }
+      }
+    ],
+    [
+      "invalid UPI ID",
+      {
+        printing: {
+          upiQrProfiles: [{ ...PRIMARY_UPI_PROFILE, upiId: "not-a-vpa" }],
+          defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id
+        }
+      }
+    ],
+    [
+      "duplicate UPI profile IDs",
+      {
+        printing: {
+          upiQrProfiles: [
+            PRIMARY_UPI_PROFILE,
+            { ...SECONDARY_UPI_PROFILE, id: PRIMARY_UPI_PROFILE.id }
+          ],
+          defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id
+        }
+      }
+    ],
+    [
+      "duplicate UPI profile labels",
+      {
+        printing: {
+          upiQrProfiles: [PRIMARY_UPI_PROFILE, { ...SECONDARY_UPI_PROFILE, label: "primary upi" }],
+          defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id
+        }
+      }
+    ],
+    [
+      "duplicate UPI IDs",
+      {
+        printing: {
+          upiQrProfiles: [PRIMARY_UPI_PROFILE, { ...SECONDARY_UPI_PROFILE, upiId: "SHOP@BANK" }],
+          defaultUpiQrProfileId: PRIMARY_UPI_PROFILE.id
+        }
+      }
+    ],
+    [
+      "null default with UPI profiles",
+      {
+        printing: {
+          upiQrProfiles: [PRIMARY_UPI_PROFILE],
+          defaultUpiQrProfileId: null
+        }
+      }
+    ],
+    [
+      "missing default UPI profile",
+      {
+        printing: {
+          upiQrProfiles: [PRIMARY_UPI_PROFILE],
+          defaultUpiQrProfileId: SECONDARY_UPI_PROFILE.id
+        }
+      }
+    ],
     ["non-object printing", { printing: [] }]
   ])("rejects %s without changing preferences", async (_label, payload) => {
     await onboard();

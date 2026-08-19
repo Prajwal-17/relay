@@ -612,6 +612,13 @@ export type ProductOperation = (typeof PRODUCT_OPERATION)[keyof typeof PRODUCT_O
 export type ReceiptCutMode = "partial" | "full" | "none";
 export type PrintRenderMode = "raster" | "device-text";
 
+export type UpiQrProfile = {
+  id: string;
+  label: string;
+  upiId: string;
+  payeeName: string;
+};
+
 export type PrintingConfig = {
   printerName: string;
   defaultPrintMode: PrintRenderMode;
@@ -626,8 +633,8 @@ export type PrintingConfig = {
   showLedgerPaymentMode: boolean;
   showLedgerNotes: boolean;
   footerMessage: string;
-  upiId: string;
-  upiPayeeName: string;
+  upiQrProfiles: UpiQrProfile[];
+  defaultUpiQrProfileId: string | null;
   printUpiQrOnSales: boolean;
   printUpiQrOnEstimates: boolean;
   includeAmountInUpiQr: boolean;
@@ -696,6 +703,14 @@ export type RawReceiptItem = {
   mrpPaisa?: number;
 };
 
+export type RawReceiptAccountSettlement = {
+  previousBalancePaisa: number;
+  currentBillPaisa: number;
+  totalDuePaisa: number;
+  paymentPaisa: number;
+  balancePaisa: number;
+};
+
 export type RawReceiptData = {
   storeName: string;
   addressLines: string[];
@@ -717,6 +732,7 @@ export type RawReceiptData = {
     payeeName: string;
     includeAmount: boolean;
   };
+  accountSettlement?: RawReceiptAccountSettlement;
 };
 
 export type RawLedgerEntry = {
@@ -736,6 +752,7 @@ export type RawLedgerStatementData = {
   customerName: string;
   generatedAt: string;
   entries: RawLedgerEntry[];
+  previousBalancePaisa?: number;
   totalDuePaisa: number;
   totalPaidPaisa: number;
   closingBalancePaisa: number;

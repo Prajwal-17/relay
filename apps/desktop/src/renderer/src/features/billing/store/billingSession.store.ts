@@ -15,7 +15,7 @@ import {
   rebalancePositions,
   reCalculateLineItem
 } from "./billingSession.helpers";
-import type { BillingSessionData, LineItem } from "./billingSession.types";
+import type { BillingPrintOptions, BillingSessionData, LineItem } from "./billingSession.types";
 
 type BillingSessionStore = {
   sessions: Record<string, BillingSessionData>;
@@ -31,6 +31,12 @@ type BillingSessionStore = {
     tabId: string | null,
     field: K,
     value: BillingSessionData[K]
+  ) => void;
+
+  updatePrintOption: <K extends keyof BillingPrintOptions>(
+    tabId: string | null,
+    field: K,
+    value: BillingPrintOptions[K]
   ) => void;
 
   // LineItem actions
@@ -102,6 +108,16 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
           },
           false,
           "billingSession/updateField"
+        ),
+
+      updatePrintOption: (tabId, field, value) =>
+        set(
+          (state) => {
+            if (!tabId || !state.sessions[tabId]) return;
+            state.sessions[tabId].printOptions[field] = value;
+          },
+          false,
+          "billingSession/updatePrintOption"
         ),
 
       setLineItems: (tabId, itemsArray) =>

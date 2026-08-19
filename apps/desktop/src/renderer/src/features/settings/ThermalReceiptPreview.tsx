@@ -22,10 +22,12 @@ import {
   receiptDocumentLabel,
   thermalItemLines,
   thermalLedgerEntryLines,
+  thermalLedgerSummaryLines,
   THERMAL_RECEIPT_ITEM_WIDTHS,
   THERMAL_RECEIPT_LINE_WIDTH,
   wrapThermalText
 } from "@shared/utils/thermalReceipt";
+import { getDefaultUpiQrProfile } from "@shared/utils/upiQrProfiles";
 import { paisaToRupeeString } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -76,7 +78,22 @@ function ReceiptLine({
   );
 }
 
-export function DeviceTextReceiptPaper({ receipt }: { receipt: RawReceiptData }) {
+function formatReceiptMoney(paisa: number) {
+  const amount = paisaToRupeeString(Math.abs(paisa));
+  return (paisa < 0 ? "-Rs." : "Rs.") + amount;
+}
+
+function formatAccountLine(label: string, paisa: number) {
+  return fitThermalText(label, 30) + fitThermalText(formatReceiptMoney(paisa), 18, "right");
+}
+
+export function DeviceTextReceiptPaper({
+  receipt,
+  embedded = false
+}: {
+  receipt: RawReceiptData;
+  embedded?: boolean;
+}) {
   const documentLabel = receiptDocumentLabel(receipt);
   const documentNumber = receipt.transactionNo > 0 ? String(receipt.transactionNo) : "New";
   const separator = "-".repeat(THERMAL_RECEIPT_LINE_WIDTH);
@@ -106,7 +123,10 @@ export function DeviceTextReceiptPaper({ receipt }: { receipt: RawReceiptData })
 
   return (
     <div
-      className="border-invoice-border bg-invoice-bg text-invoice-text [container-type:inline-size] w-full max-w-[420px] border shadow-sm"
+      className={cn(
+        "bg-invoice-bg text-invoice-text [container-type:inline-size] w-full max-w-[420px]",
+        !embedded && "border-invoice-border border shadow-sm"
+      )}
       data-testid="thermal-receipt-paper"
       role="group"
       aria-label={`80 millimetre ${receipt.transactionType} receipt preview`}
@@ -160,6 +180,28 @@ export function DeviceTextReceiptPaper({ receipt }: { receipt: RawReceiptData })
             {totalLine}
           </ReceiptLine>
         </div>
+        {receipt.accountSettlement ? (
+          <>
+            <ReceiptLine>{separator}</ReceiptLine>
+            <ReceiptLine>
+              {formatAccountLine(
+                "Previous balance",
+                receipt.accountSettlement.previousBalancePaisa
+              )}
+            </ReceiptLine>
+            <ReceiptLine>
+              {formatAccountLine("Current bill (+)", receipt.accountSettlement.currentBillPaisa)}
+            </ReceiptLine>
+            {receipt.accountSettlement.paymentPaisa > 0 ? (
+              <ReceiptLine>
+                {formatAccountLine("Payment (-)", receipt.accountSettlement.paymentPaisa)}
+              </ReceiptLine>
+            ) : null}
+            <ReceiptLine bold>
+              {formatAccountLine("BALANCE", receipt.accountSettlement.balancePaisa)}
+            </ReceiptLine>
+          </>
+        ) : null}
         {savingsLine ? (
           <>
             <ReceiptLine />
@@ -225,15 +267,22 @@ export function DeviceTextReceiptPaper({ receipt }: { receipt: RawReceiptData })
   );
 }
 
-export function DeviceTextLedgerPaper({ statement }: { statement: RawLedgerStatementData }) {
+export function DeviceTextLedgerPaper({
+  statement,
+  embedded = false
+}: {
+  statement: RawLedgerStatementData;
+  embedded?: boolean;
+}) {
   const separator = "-".repeat(THERMAL_RECEIPT_LINE_WIDTH);
-  const totalAmountLine =
-    fitThermalText("TOTAL AMOUNT", 32) +
-    fitThermalText("Rs." + paisaToRupeeString(statement.closingBalancePaisa), 16, "right");
+  const summaryLines = thermalLedgerSummaryLines(statement);
 
   return (
     <div
-      className="border-invoice-border bg-invoice-bg text-invoice-text w-full max-w-[420px] border"
+      className={cn(
+        "bg-invoice-bg text-invoice-text w-full max-w-[420px]",
+        !embedded && "border-invoice-border border"
+      )}
       data-testid="thermal-ledger-paper"
       role="group"
       aria-label="80 millimetre customer ledger preview"
@@ -278,7 +327,10 @@ export function DeviceTextLedgerPaper({ statement }: { statement: RawLedgerState
         )}
 
         <ReceiptLine>{separator}</ReceiptLine>
-        <ReceiptLine bold>{totalAmountLine}</ReceiptLine>
+        {summaryLines.slice(0, -1).map((summaryLine) => (
+          <ReceiptLine key={summaryLine}>{summaryLine}</ReceiptLine>
+        ))}
+        <ReceiptLine bold>{summaryLines.at(-1)}</ReceiptLine>
 
         {statement.footerMessage ? (
           <>
@@ -316,6 +368,39 @@ export function DeviceTextLedgerPaper({ statement }: { statement: RawLedgerState
   );
 }
 
+export function DeviceTextReceiptWithLedgerPaper({
+  receipt,
+  statement
+}: {
+  receipt: RawReceiptData;
+  statement: RawLedgerStatementData;
+}) {
+  const receiptPart: RawReceiptData = {
+    ...receipt,
+    footerMessage: undefined,
+    extraFeedLines: 0,
+    cutMode: "none"
+  };
+  const ledgerPart: RawLedgerStatementData = {
+    ...statement,
+    storeName: "",
+    addressLines: [],
+    phone: undefined
+  };
+
+  return (
+    <div
+      className="border-invoice-border bg-invoice-bg text-invoice-text [container-type:inline-size] w-full max-w-[420px] overflow-hidden border shadow-sm"
+      data-testid="thermal-receipt-with-ledger-paper"
+      role="group"
+      aria-label={`80 millimetre ${receipt.transactionType} receipt with customer ledger preview`}
+    >
+      <DeviceTextReceiptPaper receipt={receiptPart} embedded />
+      <DeviceTextLedgerPaper statement={ledgerPart} embedded />
+    </div>
+  );
+}
+
 function ThermalReceiptPreviewContent({ printing }: { printing: PrintingConfig }) {
   const [documentType, setDocumentType] = useState<PreviewDocumentType>("sale");
   const {
@@ -342,7 +427,7 @@ function ThermalReceiptPreviewContent({ printing }: { printing: PrintingConfig }
       : documentType === "estimate"
         ? printing.printUpiQrOnEstimates
         : false;
-  const qrNeedsDetails = qrIsEnabled && (!printing.upiId.trim() || !printing.upiPayeeName.trim());
+  const qrNeedsDetails = qrIsEnabled && !getDefaultUpiQrProfile(printing);
   const isRaster = printing.defaultPrintMode === "raster";
   const outputSummary = isRaster
     ? {
@@ -475,7 +560,7 @@ function ThermalReceiptPreviewContent({ printing }: { printing: PrintingConfig }
             {qrNeedsDetails ? (
               <div className="border-gold-accent-border bg-gold-accent-soft text-gold-accent-foreground flex gap-2 rounded-(--radius-control) border px-3 py-2 text-xs">
                 <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                <p>Add a UPI ID and payee name to show the QR.</p>
+                <p>Add a UPI account and choose a default to show the QR.</p>
               </div>
             ) : null}
           </div>

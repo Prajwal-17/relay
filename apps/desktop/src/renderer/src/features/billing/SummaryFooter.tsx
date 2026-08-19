@@ -1,27 +1,15 @@
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+  buildBillingAccountSettlement,
+  fetchBillingLedgerSummary
+} from "@/features/billing/billingAccountSettlement";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
-import { useRawLedgerPrint } from "@/features/customers/hooks/useRawLedgerPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { flushSync, forceSync } from "@/features/billing/syncWorker";
 import { TRANSACTION_TYPE } from "@shared/types";
-import {
-  ArrowUpRight,
-  BookOpenText,
-  ChevronDown,
-  FileText,
-  Loader2,
-  Printer,
-  Save
-} from "lucide-react";
+import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -40,10 +28,9 @@ export const SummaryFooter = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
 
   const { subtotal, grandTotal } = useTransaction();
-  const { prepareReceipt, printReceipt } = useRawReceiptPrint();
-  const { prepareCustomerLedger, printCustomerLedger } = useRawLedgerPrint();
+  const { printReceipt } = useRawReceiptPrint();
 
-  type LoadingAction = "print" | "print-with-ledger" | "ledger" | "exit" | "pdf" | null;
+  type LoadingAction = "print" | "exit" | "pdf" | null;
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const waitForSync = useCallback(async (): Promise<boolean> => {
@@ -58,13 +45,13 @@ export const SummaryFooter = () => {
       return false;
     }
   }, [activeTabId]);
-  const readSynchronizedCustomer = useCallback(() => {
+  const readSynchronizedSession = useCallback(() => {
     if (!activeTabId) throw new Error("The billing session is no longer available.");
     const session = useBillingSessionStore.getState().sessions[activeTabId];
-    if (!session?.customerId) {
-      throw new Error("Choose an account customer before printing a ledger.");
+    if (!session) {
+      throw new Error("The billing session is no longer available.");
     }
-    return { id: session.customerId, name: session.customerName };
+    return session;
   }, [activeTabId]);
 
   const handleSaveAndPrint = useCallback(async () => {
@@ -73,8 +60,29 @@ export const SummaryFooter = () => {
       const synced = await waitForSync();
       if (!synced || !activeTabId) return;
 
-      const result = await printReceipt(activeTabId);
+      const session = readSynchronizedSession();
+      let accountSettlement;
+
+      if (session.printOptions.includeAccountSummary) {
+        if (
+          session.billingType !== TRANSACTION_TYPE.SALE ||
+          !session.customerId ||
+          !session.addToAccounting
+        ) {
+          throw new Error("Choose an account customer and add this sale to their account first.");
+        }
+        const summary = await fetchBillingLedgerSummary(session.customerId);
+        accountSettlement = buildBillingAccountSettlement(session, summary);
+      }
+
+      const result = await printReceipt(activeTabId, {
+        includeUpiQr: session.printOptions.includeUpiQr,
+        includeAmountInUpiQr: session.printOptions.includeAmountInUpiQr,
+        upiQrProfileId: session.printOptions.selectedUpiQrProfileId,
+        accountSettlement
+      });
       warnIfRasterFellBack(result.fellBack);
+
       navigate(`/dashboard/${type}`);
     } catch (error) {
       console.error("Print failed", error);
@@ -82,61 +90,7 @@ export const SummaryFooter = () => {
     } finally {
       setLoadingAction(null);
     }
-  }, [activeTabId, waitForSync, printReceipt, navigate, type]);
-  const handleSavePrintWithLedger = useCallback(async () => {
-    setLoadingAction("print-with-ledger");
-    try {
-      const synced = await waitForSync();
-      if (!synced || !activeTabId) return;
-
-      const customer = readSynchronizedCustomer();
-      const [receiptJob, ledgerJob] = await Promise.all([
-        prepareReceipt(activeTabId, { omitFooter: true }),
-        prepareCustomerLedger(customer, undefined, { includeHeader: false })
-      ]);
-      const useRaster = Boolean(receiptJob.raster && ledgerJob.raster);
-      const response = await window.rawPrintApi.printReceiptWithLedger(
-        receiptJob.receipt,
-        ledgerJob.statement,
-        useRaster ? receiptJob.raster : undefined,
-        useRaster ? ledgerJob.raster : undefined
-      );
-      if (response.status === "error") throw new Error(response.error.message);
-      warnIfRasterFellBack(response.data.fellBack);
-      navigate("/dashboard/" + type);
-    } catch (error) {
-      console.error("Bill and ledger print failed", error);
-      toast.error(error instanceof Error ? error.message : "Printing failed.");
-    } finally {
-      setLoadingAction(null);
-    }
-  }, [
-    activeTabId,
-    navigate,
-    prepareCustomerLedger,
-    prepareReceipt,
-    readSynchronizedCustomer,
-    type,
-    waitForSync
-  ]);
-
-  const handlePrintLedgerOnly = useCallback(async () => {
-    setLoadingAction("ledger");
-    try {
-      const synced = await waitForSync();
-      if (!synced) return;
-
-      const result = await printCustomerLedger(readSynchronizedCustomer());
-      warnIfRasterFellBack(result.fellBack);
-      toast.success("Customer ledger sent to printer.");
-    } catch (error) {
-      console.error("Ledger print failed", error);
-      toast.error(error instanceof Error ? error.message : "Customer ledger printing failed.");
-    } finally {
-      setLoadingAction(null);
-    }
-  }, [printCustomerLedger, readSynchronizedCustomer, waitForSync]);
-
+  }, [activeTabId, navigate, printReceipt, readSynchronizedSession, type, waitForSync]);
   const handleSaveAndExit = useCallback(async () => {
     setLoadingAction("exit");
     try {
@@ -215,56 +169,15 @@ export const SummaryFooter = () => {
 
       <div className="bg-border h-6 w-px" />
 
-      <div className="flex">
-        <Button
-          size="lg"
-          disabled={loadingAction !== null}
-          onClick={handleSaveAndPrint}
-          className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36 rounded-r-none"
-        >
-          {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
-          {loadingAction === "print" ? "Printing…" : "Save & Print"}
-        </Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              size="icon"
-              disabled={loadingAction !== null}
-              aria-label="More print options"
-              title="More print options"
-              className="bg-primary hover:bg-primary-hover text-primary-foreground border-primary-foreground/20 h-10 w-9 rounded-l-none border-l"
-            >
-              {loadingAction === "print-with-ledger" || loadingAction === "ledger" ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <ChevronDown />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Customer print options</DropdownMenuLabel>
-            <DropdownMenuItem onSelect={() => void handleSavePrintWithLedger()}>
-              <Printer />
-              <span className="flex min-w-0 flex-col">
-                <span>Save & print bill + ledger</span>
-                <span className="text-muted-foreground text-xs font-normal">
-                  One print: bill, then ledger
-                </span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => void handlePrintLedgerOnly()}>
-              <BookOpenText />
-              <span className="flex min-w-0 flex-col">
-                <span>Print customer ledger only</span>
-                <span className="text-muted-foreground text-xs font-normal">
-                  Saves changes and stays on Billing
-                </span>
-              </span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <Button
+        size="lg"
+        disabled={loadingAction !== null}
+        onClick={handleSaveAndPrint}
+        className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36"
+      >
+        {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
+        {loadingAction === "print" ? "Printing…" : "Save & Print"}
+      </Button>
 
       <Button variant="outline" disabled={loadingAction !== null} onClick={handleSaveAndExit}>
         {loadingAction === "exit" ? <Loader2 className="animate-spin" /> : <Save />}

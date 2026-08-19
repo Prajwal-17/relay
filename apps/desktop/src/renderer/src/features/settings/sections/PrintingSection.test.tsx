@@ -36,8 +36,15 @@ const printing: PrintingConfig = {
   showLedgerPaymentMode: true,
   showLedgerNotes: true,
   footerMessage: "Thank you. Visit again.",
-  upiId: "shop@bank",
-  upiPayeeName: "QuickCart Store",
+  upiQrProfiles: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      label: "Primary UPI",
+      upiId: "shop@bank",
+      payeeName: "QuickCart Store"
+    }
+  ],
+  defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
   printUpiQrOnSales: true,
   printUpiQrOnEstimates: false,
   includeAmountInUpiQr: true
@@ -109,6 +116,9 @@ describe("PrintingSection categories", () => {
     expect(screen.queryByRole("heading", { name: "Bill details" })).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Reset to defaults" }));
     expect(screen.getByRole("heading", { name: "Reset 16 fields to defaults?" })).toBeVisible();
+    expect(
+      screen.getByText("This restores every printing option and removes all saved UPI accounts.")
+    ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     await user.click(screen.getByRole("tab", { name: "Bills" }));
@@ -120,7 +130,36 @@ describe("PrintingSection categories", () => {
 
     await user.click(screen.getByRole("tab", { name: "UPI QR" }));
     expect(screen.getByRole("heading", { name: "UPI QR" })).toBeVisible();
-    expect(screen.getByLabelText("UPI ID")).toBeVisible();
+    expect(screen.getByText("UPI accounts")).toBeVisible();
+    expect(screen.getByRole("radio", { name: "Use Primary UPI as default account" })).toBeChecked();
+    expect(screen.getByText("shop@bank · QuickCart Store")).toBeVisible();
+    expect(screen.queryByTestId("upi-open-amount-qr")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add UPI account" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Test Primary UPI QR" }));
+    expect(screen.getByRole("dialog", { name: "Test UPI QR" })).toBeVisible();
+    expect(screen.getByTestId("upi-open-amount-qr")).toBeInTheDocument();
+  });
+
+  it("disables automatic QR switches when no account exists", async () => {
+    const user = userEvent.setup();
+    useAppPreferencesMock.mockReturnValue({
+      ...useAppPreferencesMock(),
+      config: {
+        printing: {
+          ...printing,
+          upiQrProfiles: [],
+          defaultUpiQrProfileId: null
+        }
+      }
+    });
+    render(<PrintingSection />, { wrapper: TestQueryProvider });
+
+    await user.click(screen.getByRole("tab", { name: "UPI QR" }));
+
+    expect(screen.getByText("No UPI accounts saved")).toBeVisible();
+    expect(screen.getByRole("switch", { name: "Print UPI QR on sales" })).toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Print UPI QR on estimates" })).toBeDisabled();
+    expect(screen.getByRole("switch", { name: "Include exact bill amount" })).toBeDisabled();
   });
 
   it("updates the default quality and describes device text mode", async () => {

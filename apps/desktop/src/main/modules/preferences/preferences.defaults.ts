@@ -1,10 +1,17 @@
 import os from "os";
 import path from "path";
-import type { AppConfig, PrintingConfig } from "../../../shared/types";
+import { upiQrProfileSchema } from "../../../shared/schemas/preferences.schema";
+import type { AppConfig, PrintingConfig, UpiQrProfile } from "../../../shared/types";
 
 export const DEFAULT_EXPORT_FORMAT = "pdf" as const;
 export const DEFAULT_ASK_BEFORE_SAVING_PDF = true;
 export const DEFAULT_PDF_LOCATION = path.join(os.homedir(), "Downloads", "Receipts");
+const LEGACY_UPI_PROFILE_ID = "00000000-0000-4000-8000-000000000001";
+
+type LegacyPrintingConfig = Partial<PrintingConfig> & {
+  upiId?: string;
+  upiPayeeName?: string;
+};
 
 export function getDefaultExportsConfig(): AppConfig["exports"] {
   return {
@@ -29,23 +36,79 @@ export function getDefaultPrintingConfig(): PrintingConfig {
     showLedgerPaymentMode: true,
     showLedgerNotes: true,
     footerMessage: "Thank you. Visit again.",
-    upiId: "",
-    upiPayeeName: "",
+    upiQrProfiles: [],
+    defaultUpiQrProfileId: null,
     printUpiQrOnSales: false,
     printUpiQrOnEstimates: false,
     includeAmountInUpiQr: true
   };
 }
 
-export function normalizePrintingConfig(config?: Partial<PrintingConfig>): PrintingConfig {
+function normalizeConfiguredProfiles(profiles: unknown): UpiQrProfile[] {
+  if (!Array.isArray(profiles)) return [];
+
+  const ids = new Set<string>();
+  const labels = new Set<string>();
+  const upiIds = new Set<string>();
+  const normalized: UpiQrProfile[] = [];
+
+  profiles.forEach((profile) => {
+    const result = upiQrProfileSchema.safeParse(profile);
+    if (!result.success) return;
+
+    const label = result.data.label.toLocaleLowerCase();
+    const upiId = result.data.upiId.toLocaleLowerCase();
+    if (ids.has(result.data.id) || labels.has(label) || upiIds.has(upiId)) return;
+
+    ids.add(result.data.id);
+    labels.add(label);
+    upiIds.add(upiId);
+    normalized.push(result.data);
+  });
+
+  return normalized;
+}
+
+export function normalizePrintingConfig(config?: LegacyPrintingConfig): PrintingConfig {
   const defaultPrintMode = config?.defaultPrintMode;
+  const configuredProfiles = normalizeConfiguredProfiles(config?.upiQrProfiles);
+  const legacyUpiId = config?.upiId?.trim() ?? "";
+  const legacyPayeeName = config?.upiPayeeName?.trim() ?? "";
+  const upiQrProfiles =
+    configuredProfiles.length > 0
+      ? configuredProfiles
+      : legacyUpiId && legacyPayeeName
+        ? [
+            {
+              id: LEGACY_UPI_PROFILE_ID,
+              label: "Primary UPI",
+              upiId: legacyUpiId,
+              payeeName: legacyPayeeName
+            }
+          ]
+        : [];
+  const defaultUpiQrProfileId =
+    upiQrProfiles.find((profile) => profile.id === config?.defaultUpiQrProfileId)?.id ??
+    upiQrProfiles[0]?.id ??
+    null;
+  const remainingConfig = { ...config };
+  delete remainingConfig.upiId;
+  delete remainingConfig.upiPayeeName;
+  delete remainingConfig.upiQrProfiles;
+  delete remainingConfig.defaultUpiQrProfileId;
+
   return {
     ...getDefaultPrintingConfig(),
-    ...config,
+    ...remainingConfig,
     defaultPrintMode:
       defaultPrintMode === "device-text" || defaultPrintMode === "raster"
         ? defaultPrintMode
-        : "raster"
+        : "raster",
+    upiQrProfiles,
+    defaultUpiQrProfileId,
+    printUpiQrOnSales: upiQrProfiles.length > 0 && Boolean(remainingConfig.printUpiQrOnSales),
+    printUpiQrOnEstimates:
+      upiQrProfiles.length > 0 && Boolean(remainingConfig.printUpiQrOnEstimates)
   };
 }
 
@@ -67,6 +130,7 @@ export function normalizeAppConfig(config: AppConfig | Partial<AppConfig>): AppC
     printing: normalizePrintingConfig(config.printing)
   };
 }
+
 export function getDefaultConfig(): AppConfig {
   return {
     billing: { defaultCustomerId: "", searchDropdown: { scale: 1 } },

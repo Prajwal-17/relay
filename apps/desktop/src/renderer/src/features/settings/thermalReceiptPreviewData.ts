@@ -6,6 +6,7 @@ import type {
   StoreProfile
 } from "@shared/types";
 import { buildReceiptAddressLines, calculateThermalSavings } from "@shared/utils/thermalReceipt";
+import { getDefaultUpiQrProfile } from "@shared/utils/upiQrProfiles";
 
 const PREVIEW_TRANSACTION_NO = 1048;
 const PREVIEW_ITEMS: RawReceiptItem[] = [
@@ -53,7 +54,7 @@ export function buildThermalPreviewReceipt(
   const sourceProfile = profile ?? DUMMY_STORE_PROFILE;
   const printUpiQr =
     transactionType === "sale" ? printing.printUpiQrOnSales : printing.printUpiQrOnEstimates;
-  const upiIsReady = Boolean(printing.upiId.trim() && printing.upiPayeeName.trim());
+  const upiProfile = getDefaultUpiQrProfile(printing);
   const totalPaisa = PREVIEW_ITEMS.reduce((sum, item) => sum + item.totalPaisa, 0);
   const savingsPaisa = calculateThermalSavings(PREVIEW_ITEMS);
   const profileAddressLines = buildReceiptAddressLines(sourceProfile);
@@ -86,10 +87,10 @@ export function buildThermalPreviewReceipt(
     cutMode: printing.cutMode,
     footerMessage: printing.footerMessage.trim() || undefined,
     upi:
-      printUpiQr && upiIsReady
+      printUpiQr && upiProfile
         ? {
-            id: printing.upiId.trim(),
-            payeeName: printing.upiPayeeName.trim(),
+            id: upiProfile.upiId,
+            payeeName: upiProfile.payeeName,
             includeAmount: printing.includeAmountInUpiQr
           }
         : undefined

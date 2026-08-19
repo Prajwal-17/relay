@@ -33,8 +33,15 @@ const printing: PrintingConfig = {
   showLedgerPaymentMode: true,
   showLedgerNotes: true,
   footerMessage: "Thank you",
-  upiId: "shop@bank",
-  upiPayeeName: "QuickCart Market",
+  upiQrProfiles: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      label: "Primary UPI",
+      upiId: "shop@bank",
+      payeeName: "QuickCart Market"
+    }
+  ],
+  defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
   printUpiQrOnSales: false,
   printUpiQrOnEstimates: false,
   includeAmountInUpiQr: true
@@ -103,6 +110,26 @@ describe("saved transaction receipt data", () => {
         mrpPaisa: 1500
       }
     ]);
+  });
+
+  it("uses the current default UPI profile when a saved bill is reprinted", () => {
+    const currentDefault = {
+      id: "22222222-2222-4222-8222-222222222222",
+      label: "Current default",
+      upiId: "current@bank",
+      payeeName: "Current Payee"
+    };
+    const data = buildRawReceiptDataFromTransaction(savedTransaction(), profile, {
+      ...printing,
+      upiQrProfiles: [...printing.upiQrProfiles, currentDefault],
+      defaultUpiQrProfileId: currentDefault.id,
+      printUpiQrOnSales: true
+    });
+
+    expect(data.upi).toMatchObject({
+      id: "current@bank",
+      payeeName: "Current Payee"
+    });
   });
 
   it("rejects a saved transaction without a valid persisted date", () => {

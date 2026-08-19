@@ -25,6 +25,14 @@ export type PrefillCustomer = {
   name: string;
 };
 
+export type BillingPrintOptions = {
+  includeUpiQr: boolean | null;
+  includeAmountInUpiQr: boolean | null;
+  selectedUpiQrProfileId: string | null;
+  includeAccountSummary: boolean;
+  accountSummaryStartedAt: number;
+};
+
 export type BillingSessionData = {
   isMetaDataDirty: boolean;
   billingId: string | null; // sales.id | estimates.id
@@ -38,5 +46,6 @@ export type BillingSessionData = {
   isCountColumnVisible: boolean;
   notes: string | null;
   addToAccounting: boolean;
+  printOptions: BillingPrintOptions;
   lineItems: LineItem[];
 };

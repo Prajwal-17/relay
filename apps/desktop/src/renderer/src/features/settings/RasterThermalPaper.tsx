@@ -3,6 +3,8 @@ import type { RawLedgerStatementData, RawReceiptData, ReceiptCutMode } from "@sh
 import {
   buildThermalUpiUri,
   formatThermalLedgerDate,
+  formatThermalLedgerAmount,
+  getLedgerPreviousBalance,
   formatThermalReceiptDate,
   receiptDocumentLabel
 } from "@shared/utils/thermalReceipt";
@@ -70,6 +72,42 @@ function ReceiptSavings({ paisa }: { paisa?: number }) {
     >
       *** YOU SAVED Rs.{paisaToRupeeString(paisa)} ***
     </div>
+  );
+}
+
+function RasterAccountSettlement({
+  settlement
+}: {
+  settlement: NonNullable<RawReceiptData["accountSettlement"]>;
+}) {
+  const rows: Array<readonly [string, number]> = [
+    ["Previous balance", settlement.previousBalancePaisa],
+    ["Current bill (+)", settlement.currentBillPaisa]
+  ];
+  if (settlement.paymentPaisa > 0) {
+    rows.push(["Payment (-)", settlement.paymentPaisa]);
+  }
+
+  return (
+    <section
+      className="mx-auto mt-2 w-full max-w-[470px] border-y border-dashed border-black py-2"
+      data-testid="raster-account-settlement"
+    >
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-5 gap-y-0.5 text-2xl leading-[1.25] font-[400]">
+        {rows.map(([label, paisa]) => (
+          <div key={label} className="contents">
+            <span>{label}</span>
+            <span className="text-right font-[500] whitespace-nowrap tabular-nums">
+              {formatRupee(paisa).replace("₹", "Rs.")}
+            </span>
+          </div>
+        ))}
+        <span className="mt-1 border-t border-black pt-1 text-3xl font-[700]">BALANCE</span>
+        <span className="mt-1 border-t border-black pt-1 text-right text-3xl font-[700] whitespace-nowrap tabular-nums">
+          {formatRupee(settlement.balancePaisa).replace("₹", "Rs.")}
+        </span>
+      </div>
+    </section>
   );
 }
 
@@ -227,6 +265,10 @@ function RasterReceiptBody({
           </div>
         </section>
 
+        {receipt.accountSettlement ? (
+          <RasterAccountSettlement settlement={receipt.accountSettlement} />
+        ) : null}
+
         <div
           className={includeSavings ? "h-5" : "h-8"}
           data-testid="raster-receipt-before-qr-gap"
@@ -329,6 +371,13 @@ export function RasterLedgerPaper({
   includeHeader?: boolean;
   includeFooter?: boolean;
 }) {
+  const balanceRows = [
+    { label: "Previous balance", amount: getLedgerPreviousBalance(statement) },
+    { label: "Charges", amount: statement.totalDuePaisa },
+    { label: "Payments", amount: -statement.totalPaidPaisa },
+    { label: "Balance", amount: statement.closingBalancePaisa }
+  ];
+
   return (
     <div
       style={paperStyle}
@@ -369,7 +418,8 @@ export function RasterLedgerPaper({
 
         <div className="py-1" data-testid="raster-ledger-entries">
           {statement.entries.map((entry, index) => {
-            const amount = entry.amountPaidPaisa > 0 ? entry.amountPaidPaisa : entry.amountDuePaisa;
+            const amount =
+              entry.amountPaidPaisa > 0 ? -entry.amountPaidPaisa : entry.amountDuePaisa;
             return (
               <article key={index} className="py-2 text-[19px] leading-[1.28]">
                 <div className="font-medium tabular-nums">
@@ -377,11 +427,33 @@ export function RasterLedgerPaper({
                 </div>
                 <div className="flex items-baseline justify-between gap-5">
                   <span className="min-w-0 font-[700] break-words">{entry.particulars}</span>
-                  <ReceiptAmount paisa={amount} prefix className="font-[750]" />
+                  <span className="shrink-0 font-[750] tabular-nums">
+                    {formatThermalLedgerAmount(amount)}
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between gap-5 tabular-nums">
+                  <span>Balance</span>
+                  <span className="shrink-0">
+                    {formatThermalLedgerAmount(entry.runningBalancePaisa)}
+                  </span>
                 </div>
               </article>
             );
           })}
+        </div>
+        <div className="border-t-2 border-black pt-2 text-[19px] leading-[1.4]">
+          {balanceRows.map((row, index) => (
+            <div
+              key={row.label}
+              className={cn(
+                "flex items-baseline justify-between gap-5 tabular-nums",
+                index === balanceRows.length - 1 && "font-[800]"
+              )}
+            >
+              <span>{row.label}</span>
+              <span className="shrink-0">{formatThermalLedgerAmount(row.amount)}</span>
+            </div>
+          ))}
         </div>
       </main>
 

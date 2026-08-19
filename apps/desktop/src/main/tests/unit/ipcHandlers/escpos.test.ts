@@ -180,6 +180,50 @@ describe("ESC/POS receipt builder", () => {
     expect(estimateText).not.toContain("GSTIN:");
   });
 
+  it("prints the compact account settlement below the bill total", () => {
+    const text = buildEscPosReceipt(
+      receipt({
+        subtotalPaisa: 200000,
+        totalPaisa: 200000,
+        accountSettlement: {
+          previousBalancePaisa: 500000,
+          currentBillPaisa: 200000,
+          totalDuePaisa: 700000,
+          paymentPaisa: 300000,
+          balancePaisa: 400000
+        }
+      })
+    ).toString("ascii");
+
+    expect(text).toContain("Previous balance");
+    expect(text).toContain("Rs.5000");
+    expect(text).toContain("Current bill");
+    expect(text).toContain("Rs.2000");
+    expect(text).not.toContain("Total due");
+    expect(text).toContain("Payment (-)");
+    expect(text).toContain("Rs.3000");
+    expect(text).toContain("BALANCE");
+    expect(text).toContain("Rs.4000");
+  });
+
+  it("omits the payment row when the customer account has no payment", () => {
+    const text = buildEscPosReceipt(
+      receipt({
+        accountSettlement: {
+          previousBalancePaisa: 500000,
+          currentBillPaisa: 200000,
+          totalDuePaisa: 700000,
+          paymentPaisa: 0,
+          balancePaisa: 700000
+        }
+      })
+    ).toString("ascii");
+
+    expect(text).not.toContain("Payment (-)");
+    expect(text).toContain("BALANCE");
+    expect(text).toContain("Rs.7000");
+  });
+
   it("prints a native size-6, error-correction-M QR only when UPI is configured", () => {
     const withoutQr = buildEscPosReceipt(receipt());
     const withQr = buildEscPosReceipt(
@@ -251,7 +295,7 @@ describe("ESC/POS receipt builder", () => {
 });
 
 describe("ESC/POS customer ledger builder", () => {
-  it("prints only a readable date, entry type, and amount", () => {
+  it("prints each dated entry with a signed amount and resulting balance", () => {
     const payload = buildEscPosLedgerStatement(statement());
     const text = payload.toString("ascii");
     const lines = text.split("\n");
@@ -263,8 +307,10 @@ describe("ESC/POS customer ledger builder", () => {
     expect(text).toContain("Customer: Anita");
     expect(lines).toContain("01 Aug 2026");
     expect(lines).toContain("Sale".padEnd(32) + "Rs.512.50".padStart(16));
+    expect(lines).toContain("Balance".padEnd(32) + "Rs.512.50".padStart(16));
     expect(lines).toContain("05 Aug 2026");
-    expect(lines).toContain("Payment".padEnd(32) + "Rs.200".padStart(16));
+    expect(lines).toContain("Payment".padEnd(32) + "-Rs.200".padStart(16));
+    expect(lines).toContain("Balance".padEnd(32) + "Rs.312.50".padStart(16));
     expect(text).not.toContain("Invoice no");
     expect(text).not.toContain("Quick sale");
     expect(text).not.toContain("Mode:");
@@ -277,9 +323,10 @@ describe("ESC/POS customer ledger builder", () => {
     const heading = Buffer.from("ACCOUNTS\n", "ascii");
 
     expect(payload.includes(Buffer.concat([Buffer.from([ESC, 0x45, 0x01]), heading]))).toBe(true);
-    expect(payload.toString("ascii")).toContain("TOTAL AMOUNT");
-    expect(payload.toString("ascii")).not.toContain("Total sales");
-    expect(payload.toString("ascii")).not.toContain("Total paid");
+    expect(payload.toString("ascii")).toContain("PREVIOUS BALANCE");
+    expect(payload.toString("ascii")).toContain("CHARGES");
+    expect(payload.toString("ascii")).toContain("PAYMENTS");
+    expect(payload.toString("ascii")).toContain("BALANCE");
     expect(payload.toString("ascii")).toContain("Thank you. Visit again.");
   });
 

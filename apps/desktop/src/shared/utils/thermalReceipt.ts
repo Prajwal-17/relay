@@ -1,4 +1,11 @@
-import type { RawLedgerEntry, RawReceiptData, RawReceiptItem, StoreProfile } from "../types";
+import type {
+  RawLedgerEntry,
+  RawLedgerStatementData,
+  RawReceiptData,
+  RawReceiptItem,
+  StoreProfile
+} from "../types";
+import { buildUpiPaymentUri } from "./upiQrProfiles";
 import { paisaToRupeeString } from "./utils";
 
 export const THERMAL_RECEIPT_LINE_WIDTH = 48;
@@ -117,15 +124,42 @@ export function formatThermalLedgerDate(dateTime: string): string {
 }
 
 export function thermalLedgerEntryLines(entry: RawLedgerEntry): string[] {
-  const amountPaisa = entry.amountPaidPaisa > 0 ? entry.amountPaidPaisa : entry.amountDuePaisa;
+  const amountPaisa = entry.amountPaidPaisa > 0 ? -entry.amountPaidPaisa : entry.amountDuePaisa;
   const label = entry.particulars.trim() || "Entry";
 
   return [
     formatThermalLedgerDate(entry.dateTime),
-    fitThermalText(label, 32) +
-      fitThermalText("Rs." + paisaToRupeeString(amountPaisa), 16, "right"),
+    fitThermalText(label, 32) + fitThermalText(formatThermalLedgerAmount(amountPaisa), 16, "right"),
+    fitThermalText("Balance", 32) +
+      fitThermalText(formatThermalLedgerAmount(entry.runningBalancePaisa), 16, "right"),
     ""
   ];
+}
+
+export function formatThermalLedgerAmount(paisa: number): string {
+  const sign = paisa < 0 ? "-" : "";
+  return sign + "Rs." + paisaToRupeeString(Math.abs(paisa));
+}
+
+export function getLedgerPreviousBalance(statement: RawLedgerStatementData): number {
+  return (
+    statement.previousBalancePaisa ??
+    statement.closingBalancePaisa - statement.totalDuePaisa + statement.totalPaidPaisa
+  );
+}
+
+export function thermalLedgerSummaryLines(statement: RawLedgerStatementData): string[] {
+  const rows: Array<readonly [string, number]> = [
+    ["PREVIOUS BALANCE", getLedgerPreviousBalance(statement)],
+    ["CHARGES", statement.totalDuePaisa],
+    ["PAYMENTS", -statement.totalPaidPaisa],
+    ["BALANCE", statement.closingBalancePaisa]
+  ];
+
+  return rows.map(
+    ([label, amount]) =>
+      fitThermalText(label, 32) + fitThermalText(formatThermalLedgerAmount(amount), 16, "right")
+  );
 }
 
 export function receiptDocumentLabel(
@@ -148,23 +182,12 @@ export function formatThermalReceiptDate(dateTime: string): string {
 export function buildThermalUpiUri(receipt: RawReceiptData): string | undefined {
   if (!receipt.upi) return undefined;
 
-  const id = receipt.upi.id.trim();
-  const payeeName = receipt.upi.payeeName.trim();
-  if (!id || !payeeName) {
-    throw new Error("UPI ID and payee name are required when the payment QR is enabled.");
-  }
-
   const label = receiptDocumentLabel(receipt);
-  const params = [
-    `pa=${encodeURIComponent(id)}`,
-    `pn=${encodeURIComponent(payeeName)}`,
-    "cu=INR",
-    `tr=${receipt.transactionNo}`,
-    `tn=${encodeURIComponent(`${label} ${receipt.transactionNo}`)}`
-  ];
-  if (receipt.upi.includeAmount) {
-    params.push(`am=${(receipt.totalPaisa / 100).toFixed(2)}`);
-  }
-
-  return `upi://pay?${params.join("&")}`;
+  return buildUpiPaymentUri({
+    upiId: receipt.upi.id,
+    payeeName: receipt.upi.payeeName,
+    transactionRef: receipt.transactionNo,
+    note: `${label} ${receipt.transactionNo}`,
+    amountPaisa: receipt.upi.includeAmount ? receipt.totalPaisa : undefined
+  });
 }

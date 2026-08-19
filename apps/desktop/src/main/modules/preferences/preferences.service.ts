@@ -1,4 +1,7 @@
-import type { UpdatePreferencesPayload } from "../../../shared/schemas/preferences.schema";
+import {
+  printingConfigSchema,
+  type UpdatePreferencesPayload
+} from "../../../shared/schemas/preferences.schema";
 import type { AppConfig } from "../../../shared/types";
 import { AppError } from "../../utils/appError";
 import {
@@ -50,6 +53,32 @@ const updatePreferences = async (storeId: string, partial: UpdatePreferencesPayl
       ...(partial.printing ?? {})
     }
   };
+
+  if (partial.printing?.upiQrProfiles) {
+    const profiles = mergedConfig.printing.upiQrProfiles;
+    const defaultWasProvided = partial.printing.defaultUpiQrProfileId !== undefined;
+    const defaultStillExists = profiles.some(
+      (profile) => profile.id === mergedConfig.printing.defaultUpiQrProfileId
+    );
+
+    if (!defaultWasProvided && !defaultStillExists) {
+      mergedConfig.printing.defaultUpiQrProfileId = profiles[0]?.id ?? null;
+    }
+    if (profiles.length === 0) {
+      mergedConfig.printing.defaultUpiQrProfileId = null;
+      mergedConfig.printing.printUpiQrOnSales = false;
+      mergedConfig.printing.printUpiQrOnEstimates = false;
+    }
+  }
+
+  const printingResult = printingConfigSchema.safeParse(mergedConfig.printing);
+  if (!printingResult.success) {
+    throw new AppError(
+      printingResult.error.issues[0]?.message ?? "Invalid printing preferences",
+      400
+    );
+  }
+  mergedConfig.printing = printingResult.data;
 
   const updated = await preferencesRepository.updatePreferences(storeId, mergedConfig);
   return updated;

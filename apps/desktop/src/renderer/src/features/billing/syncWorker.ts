@@ -1,4 +1,5 @@
 import { apiClient, ApiError } from "@/lib/apiClient";
+import { queryClient } from "@/lib/queryClient";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import {
@@ -107,6 +108,15 @@ const syncLogic = async (tabId: string) => {
     markItemAsSynced(tabId, syncIds);
     purgeDeletedItems(tabId, purgeIds);
     updateField(tabId, "isMetaDataDirty", false);
+    if (customerId) {
+      void queryClient.invalidateQueries({
+        queryKey: ["customer-ledger", customerId],
+        exact: false
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["customer-ledger-summary", customerId]
+      });
+    }
   } catch (error) {
     revertItemToDirty(tabId, dirtyItems);
 

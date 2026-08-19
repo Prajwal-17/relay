@@ -19,16 +19,15 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
 import { ThermalReceiptPreview } from "../ThermalReceiptPreview";
+import { UpiQrProfilesManager } from "./UpiQrProfilesManager";
 
 const RESETTABLE_FIELDS_COUNT = 16;
 const inputClass = "text-sm font-medium";
 
-type TextPrintingField = "footerMessage" | "upiId" | "upiPayeeName";
+type TextPrintingField = "footerMessage";
 
 const TEXT_FIELD_LABELS: Record<TextPrintingField, string> = {
-  footerMessage: "Footer message",
-  upiId: "UPI ID",
-  upiPayeeName: "UPI payee name"
+  footerMessage: "Footer message"
 };
 
 function SavedTextInput({
@@ -203,6 +202,7 @@ export const PrintingSection = () => {
         title="Printing"
         description="Printer, paper, and receipt options."
         resettableFieldsCount={RESETTABLE_FIELDS_COUNT}
+        resetDescription="This restores every printing option and removes all saved UPI accounts."
         onResetSection={() => resetSection("printing")}
         isResetting={isResetting}
       >
@@ -474,34 +474,18 @@ export const PrintingSection = () => {
                 hint="Fixed for reliable scanning."
                 value="Module size 6 · error correction M"
               />
-              <SettingsField label="UPI ID" hint="Example: shop@bank.">
-                <SavedTextInput
-                  id="settings-print-upi-id"
-                  field="upiId"
-                  value={printing.upiId}
-                  disabled={isUpdating}
-                  placeholder="shop@bank"
-                  onCommit={(field, value) => updatePrinting({ [field]: value })}
-                />
-              </SettingsField>
-
-              <SettingsField label="UPI payee name" hint="Shown below the QR and in the UPI app.">
-                <SavedTextInput
-                  id="settings-print-upi-payee"
-                  field="upiPayeeName"
-                  value={printing.upiPayeeName}
-                  disabled={isUpdating}
-                  placeholder="Your store name"
-                  onCommit={(field, value) => updatePrinting({ [field]: value })}
-                />
-              </SettingsField>
+              <UpiQrProfilesManager
+                printing={printing}
+                disabled={isUpdating}
+                onUpdate={updatePrinting}
+              />
 
               <ToggleField
                 id="settings-print-upi-sales"
                 label="Print UPI QR on sales"
                 hint="Shows a QR on sales bills."
                 checked={printing.printUpiQrOnSales}
-                disabled={isUpdating}
+                disabled={isUpdating || printing.upiQrProfiles.length === 0}
                 onCheckedChange={(printUpiQrOnSales) => updatePrinting({ printUpiQrOnSales })}
               />
               <ToggleField
@@ -509,7 +493,7 @@ export const PrintingSection = () => {
                 label="Print UPI QR on estimates"
                 hint="Shows a QR on estimates."
                 checked={printing.printUpiQrOnEstimates}
-                disabled={isUpdating}
+                disabled={isUpdating || printing.upiQrProfiles.length === 0}
                 onCheckedChange={(printUpiQrOnEstimates) =>
                   updatePrinting({ printUpiQrOnEstimates })
                 }
@@ -519,7 +503,7 @@ export const PrintingSection = () => {
                 label="Include exact bill amount"
                 hint="Adds the exact total to the payment request."
                 checked={printing.includeAmountInUpiQr}
-                disabled={isUpdating}
+                disabled={isUpdating || printing.upiQrProfiles.length === 0}
                 onCheckedChange={(includeAmountInUpiQr) => updatePrinting({ includeAmountInUpiQr })}
               />
             </SettingsGroup>

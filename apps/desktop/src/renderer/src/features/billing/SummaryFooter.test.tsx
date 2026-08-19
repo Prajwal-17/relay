@@ -5,34 +5,51 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SummaryFooter } from "./SummaryFooter";
 
+const settlement = {
+  previousBalancePaisa: 500000,
+  currentBillPaisa: 200000,
+  totalDuePaisa: 700000,
+  paymentPaisa: 300000,
+  balancePaisa: 400000
+};
+
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   forceSync: vi.fn(),
   flushSync: vi.fn(),
-  prepareReceipt: vi.fn(),
   printReceipt: vi.fn(),
-  prepareCustomerLedger: vi.fn(),
-  printCustomerLedger: vi.fn(),
-  printReceiptWithLedger: vi.fn(),
+  fetchSummary: vi.fn(),
+  buildSettlement: vi.fn(),
   toastError: vi.fn(),
-  toastWarning: vi.fn()
+  toastWarning: vi.fn(),
+  billingSession: {
+    billingType: "sale",
+    billingId: "sale-1",
+    transactionNo: 42,
+    customerId: "customer-1",
+    customerName: "Anita",
+    addToAccounting: true,
+    printOptions: {
+      includeUpiQr: null as boolean | null,
+      includeAmountInUpiQr: null as boolean | null,
+      selectedUpiQrProfileId: null as string | null,
+      includeAccountSummary: false,
+      accountSummaryStartedAt: new Date("2026-08-19T09:00:00.000Z").getTime()
+    }
+  }
 }));
 
 vi.mock("@/features/billing/hooks/useRawReceiptPrint", () => ({
-  default: () => ({
-    prepareReceipt: mocks.prepareReceipt,
-    printReceipt: mocks.printReceipt
-  })
+  default: () => ({ printReceipt: mocks.printReceipt })
 }));
 
-vi.mock("@/features/customers/hooks/useRawLedgerPrint", () => ({
-  useRawLedgerPrint: () => ({
-    prepareCustomerLedger: mocks.prepareCustomerLedger,
-    printCustomerLedger: mocks.printCustomerLedger
-  })
+vi.mock("@/features/billing/billingAccountSettlement", () => ({
+  fetchBillingLedgerSummary: mocks.fetchSummary,
+  buildBillingAccountSettlement: mocks.buildSettlement
 }));
+
 vi.mock("@/features/billing/hooks/useTransaction", () => ({
-  default: () => ({ subtotal: "Rs.10", grandTotal: "Rs.10" })
+  default: () => ({ subtotal: "Rs.20", grandTotal: "Rs.20" })
 }));
 
 vi.mock("@/features/billing/store/billingTabs.store", () => ({
@@ -43,8 +60,9 @@ vi.mock("@/features/billing/store/billingTabs.store", () => ({
 vi.mock("@/features/billing/store/billingSession.store", () => ({
   useBillingSessionStore: {
     getState: () => ({
-      sessions: {
-        "tab-1": { customerId: "customer-1", customerName: "Anita" }
+      sessions: { "tab-1": mocks.billingSession },
+      updatePrintOption: (_tabId: string, field: string, value: unknown) => {
+        Object.assign(mocks.billingSession.printOptions, { [field]: value });
       }
     })
   }
@@ -82,32 +100,37 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-afterEach(() => {
-  cleanup();
-});
+afterEach(cleanup);
 
 describe("Save & Print RAW workflow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.prepareReceipt.mockResolvedValue({
-      receipt: { transactionNo: 42 },
-      raster: { body: { dataBase64: "receipt" } }
+    Object.assign(mocks.billingSession, {
+      billingType: "sale",
+      billingId: "sale-1",
+      transactionNo: 42,
+      customerId: "customer-1",
+      customerName: "Anita",
+      addToAccounting: true
     });
-    mocks.prepareCustomerLedger.mockResolvedValue({
-      statement: { customerName: "Anita" },
-      raster: { body: { dataBase64: "ledger" } }
+    Object.assign(mocks.billingSession.printOptions, {
+      includeUpiQr: null,
+      includeAmountInUpiQr: null,
+      selectedUpiQrProfileId: null,
+      includeAccountSummary: false,
+      accountSummaryStartedAt: new Date("2026-08-19T09:00:00.000Z").getTime()
     });
-    mocks.printReceiptWithLedger.mockResolvedValue({
-      status: "success",
-      data: { bytesWritten: 1280, modeUsed: "raster", fellBack: false }
+    mocks.flushSync.mockResolvedValue(undefined);
+    mocks.printReceipt.mockResolvedValue({
+      bytesWritten: 512,
+      modeUsed: "raster",
+      fellBack: false
     });
-    Object.defineProperty(window, "rawPrintApi", {
-      configurable: true,
-      value: { printReceiptWithLedger: mocks.printReceiptWithLedger }
-    });
+    mocks.fetchSummary.mockResolvedValue({ currentBalance: 700000 });
+    mocks.buildSettlement.mockReturnValue(settlement);
   });
 
-  it("awaits flushSync and Windows acceptance before navigating", async () => {
+  it("awaits sync and printer acceptance before navigating", async () => {
     const sync = deferred<void>();
     const print = deferred<{ bytesWritten: number; modeUsed: "raster"; fellBack: boolean }>();
     mocks.flushSync.mockReturnValue(sync.promise);
@@ -117,12 +140,18 @@ describe("Save & Print RAW workflow", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
 
     expect(mocks.forceSync).toHaveBeenCalledWith("tab-1");
-    expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
     expect(mocks.printReceipt).not.toHaveBeenCalled();
     expect(mocks.navigate).not.toHaveBeenCalled();
 
     await act(async () => sync.resolve());
-    await waitFor(() => expect(mocks.printReceipt).toHaveBeenCalledWith("tab-1"));
+    await waitFor(() =>
+      expect(mocks.printReceipt).toHaveBeenCalledWith("tab-1", {
+        includeUpiQr: null,
+        includeAmountInUpiQr: null,
+        upiQrProfileId: null,
+        accountSettlement: undefined
+      })
+    );
     expect(mocks.navigate).not.toHaveBeenCalled();
 
     await act(async () =>
@@ -131,78 +160,40 @@ describe("Save & Print RAW workflow", () => {
     await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales"));
   });
 
-  it("submits the bill and customer ledger as one RAW job before navigating", async () => {
-    const combinedPrint = deferred<{
-      status: "success";
-      data: { bytesWritten: number; modeUsed: "raster"; fellBack: boolean };
-    }>();
-    mocks.flushSync.mockResolvedValue(undefined);
-    mocks.printReceiptWithLedger.mockReturnValue(combinedPrint.promise);
+  it("prints the settlement derived from the customer account", async () => {
+    mocks.billingSession.printOptions.includeAccountSummary = true;
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "More print options" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: /Save & print bill \+ ledger/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
 
-    await waitFor(() =>
-      expect(mocks.prepareReceipt).toHaveBeenCalledWith("tab-1", { omitFooter: true })
-    );
-    expect(mocks.prepareCustomerLedger).toHaveBeenCalledWith(
-      { id: "customer-1", name: "Anita" },
-      undefined,
-      { includeHeader: false }
-    );
-    expect(mocks.printReceipt).not.toHaveBeenCalled();
-    expect(mocks.printCustomerLedger).not.toHaveBeenCalled();
-    expect(mocks.printReceiptWithLedger).toHaveBeenCalledWith(
-      { transactionNo: 42 },
-      { customerName: "Anita" },
-      { body: { dataBase64: "receipt" } },
-      { body: { dataBase64: "ledger" } }
-    );
-    expect(mocks.navigate).not.toHaveBeenCalled();
-
-    await act(async () =>
-      combinedPrint.resolve({
-        status: "success",
-        data: { bytesWritten: 1280, modeUsed: "raster", fellBack: false }
-      })
-    );
-    await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales"));
+    await waitFor(() => expect(mocks.fetchSummary).toHaveBeenCalledWith("customer-1"));
+    expect(mocks.buildSettlement).toHaveBeenCalledWith(mocks.billingSession, {
+      currentBalance: 700000
+    });
+    expect(mocks.printReceipt).toHaveBeenCalledWith("tab-1", {
+      includeUpiQr: null,
+      includeAmountInUpiQr: null,
+      upiQrProfileId: null,
+      accountSettlement: settlement
+    });
+    expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
   });
 
-  it("omits both raster documents when either combined raster preparation fails", async () => {
-    mocks.flushSync.mockResolvedValue(undefined);
-    mocks.prepareCustomerLedger.mockResolvedValue({
-      statement: { customerName: "Anita" },
-      raster: undefined
-    });
-    mocks.printReceiptWithLedger.mockResolvedValue({
-      status: "success",
-      data: { bytesWritten: 1280, modeUsed: "device-text", fellBack: true }
-    });
+  it("stays on billing when the customer balance cannot be loaded", async () => {
+    mocks.billingSession.printOptions.includeAccountSummary = true;
+    mocks.fetchSummary.mockRejectedValue(new Error("Customer balance could not be loaded."));
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "More print options" }));
-    fireEvent.click(await screen.findByRole("menuitem", { name: /Save & print bill [+] ledger/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
 
     await waitFor(() =>
-      expect(mocks.printReceiptWithLedger).toHaveBeenCalledWith(
-        { transactionNo: 42 },
-        { customerName: "Anita" },
-        undefined,
-        undefined
-      )
+      expect(mocks.toastError).toHaveBeenCalledWith("Customer balance could not be loaded.")
     );
-    await waitFor(() =>
-      expect(mocks.toastWarning).toHaveBeenCalledWith(
-        "Printed using device text because the high-quality receipt could not be prepared",
-        { icon: "⚠️" }
-      )
-    );
+    expect(mocks.printReceipt).not.toHaveBeenCalled();
+    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 
   it("stays on billing and shows the printer error when submission fails", async () => {
-    mocks.flushSync.mockResolvedValue(undefined);
     mocks.printReceipt.mockRejectedValue(new Error("The printer is disconnected."));
 
     render(<SummaryFooter />);
@@ -215,7 +206,6 @@ describe("Save & Print RAW workflow", () => {
   });
 
   it("warns after a successful automatic device-text fallback", async () => {
-    mocks.flushSync.mockResolvedValue(undefined);
     mocks.printReceipt.mockResolvedValue({
       bytesWritten: 512,
       modeUsed: "device-text",
