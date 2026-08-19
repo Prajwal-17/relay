@@ -161,7 +161,10 @@ const BillingPage = () => {
       <BillingTabBar />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <div className="bg-background-secondary relative flex min-w-0 flex-1 flex-col">
-          <div data-billing-scroll-container className="min-h-0 flex-1 overflow-y-auto">
+          <div
+            data-billing-scroll-container
+            className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
+          >
             {defaultCustomerQuery.isCustomerError && (
               <div className="px-3 pt-2">
                 <ErrorState

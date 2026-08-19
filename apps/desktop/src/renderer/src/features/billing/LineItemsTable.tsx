@@ -6,6 +6,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
 import type { LineItem } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -25,7 +26,7 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
 import { CheckCheck, ChevronDown, Columns3, PackagePlus, Plus, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { SortableLineItemRow } from "./LineItemRow";
+import { BILLING_GRID_CLASS, BILLING_GRID_COUNT_CLASS, SortableLineItemRow } from "./LineItemRow";
 
 export type ItemType = {
   id: string;
@@ -227,11 +228,10 @@ const LineItemsTable = () => {
         </div>
 
         <div
-          className={
-            isCountColumnVisible
-              ? "billing-grid-count bg-table-header text-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
-              : "billing-grid bg-table-header text-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold"
-          }
+          className={cn(
+            "bg-table-header text-foreground grid h-8 items-center gap-1 border-b px-1 text-xs font-semibold",
+            isCountColumnVisible ? BILLING_GRID_COUNT_CLASS : BILLING_GRID_CLASS
+          )}
         >
           <div className="text-center">Row</div>
           <div>Product</div>

@@ -32,6 +32,12 @@ type LineItemRowProps = {
   disableDrag?: boolean;
 };
 
+export const BILLING_GRID_CLASS =
+  "grid-cols-[minmax(5.25rem,0.65fr)_minmax(16rem,3.4fr)_minmax(8.5rem,1.3fr)_minmax(7rem,1fr)_minmax(7.5rem,1.15fr)_minmax(3.5rem,0.55fr)] max-[1100px]:grid-cols-[minmax(5.25rem,0.65fr)_minmax(10rem,3.4fr)_minmax(7rem,1.3fr)_minmax(5.5rem,1fr)_minmax(6rem,1.15fr)_minmax(3.5rem,0.55fr)]";
+
+export const BILLING_GRID_COUNT_CLASS =
+  "grid-cols-[minmax(5.25rem,0.65fr)_minmax(14rem,3fr)_minmax(8.5rem,1.3fr)_minmax(6.5rem,1fr)_minmax(7rem,1.1fr)_minmax(3.5rem,0.55fr)_minmax(4.5rem,0.7fr)_minmax(5rem,0.8fr)] max-[1100px]:grid-cols-[minmax(5.25rem,0.65fr)_minmax(8rem,3fr)_minmax(7rem,1.3fr)_minmax(5rem,1fr)_minmax(5.5rem,1.1fr)_minmax(3.25rem,0.55fr)_minmax(3.5rem,0.7fr)_minmax(4.5rem,0.8fr)]";
+
 const LineItemRow = memo(
   ({ idx, item, isCountColumnVisible, dragHandle, disableDrag }: LineItemRowProps) => {
     const { activeTabId, getActiveTabId } = useActiveTabId();
@@ -87,7 +93,7 @@ const LineItemRow = memo(
             "group focus-within:ring-focus/40 relative grid min-h-(--billing-row-height) w-full items-center gap-0.5 rounded-lg border px-0.5 transition-[background-color,border-color,box-shadow] duration-150 focus-within:ring-1",
             checkedColor,
             dragHandle?.isDragging && "ring-primary/30 z-20 shadow-lg ring-2",
-            isCountColumnVisible ? "billing-grid-count" : "billing-grid"
+            isCountColumnVisible ? BILLING_GRID_COUNT_CLASS : BILLING_GRID_CLASS
           )}
         >
           <div className="h-full min-w-0">
@@ -117,7 +123,7 @@ const LineItemRow = memo(
               <button
                 type="button"
                 aria-label={`Delete row ${idx + 1}`}
-                className="text-destructive hover:bg-destructive/10 flex size-7.5 items-center justify-center rounded-(--radius-control) opacity-0 transition-[opacity,color,background-color] group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100"
+                className="text-destructive hover:bg-destructive/10 flex size-7.5 shrink-0 items-center justify-center rounded-(--radius-control) opacity-0 transition-[opacity,color,background-color] group-focus-within:opacity-100 group-hover:opacity-100 focus:opacity-100"
                 onClick={() => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;

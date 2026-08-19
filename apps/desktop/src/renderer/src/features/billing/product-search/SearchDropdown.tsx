@@ -25,6 +25,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEARCH_DROPDOWN_MAX_HEIGHT = 440;
 const SEARCH_DROPDOWN_MAX_WIDTH = 880;
+const SEARCH_DROPDOWN_COMPACT_MAX_WIDTH = 720;
 const KEYBOARD_SCROLL_AHEAD = 2;
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
@@ -201,20 +202,21 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     const billingScrollContainer = element.closest<HTMLElement>("[data-billing-scroll-container]");
     const viewportInset = 12;
     const anchorLeft = anchorRect?.left ?? element.getBoundingClientRect().left;
-    const availableViewportWidth = Math.max(160, window.innerWidth - viewportInset * 2);
-    const width = Math.min(SEARCH_DROPDOWN_MAX_WIDTH, availableViewportWidth / scale);
-    const visualWidth = width * scale;
-    const clampedVisualLeft = Math.min(
-      Math.max(anchorLeft, viewportInset),
-      window.innerWidth - viewportInset - visualWidth
+    const anchoredVisualLeft = Math.max(anchorLeft, viewportInset);
+    const availableVisualWidth = Math.max(
+      160,
+      window.innerWidth - viewportInset - anchoredVisualLeft
     );
+    const maxWidth =
+      window.innerWidth <= 1100 ? SEARCH_DROPDOWN_COMPACT_MAX_WIDTH : SEARCH_DROPDOWN_MAX_WIDTH;
+    const width = Math.min(maxWidth, availableVisualWidth / scale);
     const scrollViewportHeight = billingScrollContainer?.clientHeight ?? window.innerHeight;
     const availableHeight = Math.max(180, (scrollViewportHeight - viewportInset * 2) / scale);
 
     setDropdownLayout({
       width,
       maxHeight: Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight),
-      left: (clampedVisualLeft - anchorLeft) / scale
+      left: (anchoredVisualLeft - anchorLeft) / scale
     });
   }, [dropdownRef, scale]);
 
@@ -653,7 +655,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             <ProductImage
                               src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
                               alt={product.name || "Product"}
-                              className="size-10"
+                              className="size-10 shrink-0"
                             />
 
                             <div className="min-w-0 flex-1">
