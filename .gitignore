@@ -9,5 +9,9 @@ node_modules/
 .commandcode/*
 .agents/*
 skills-lock.json
+apps/desktop/test-results/
+apps/desktop/playwright-report/
+apps/desktop/blob-report/
+apps/desktop/playwright/.cache/
 .impeccable
 dist/

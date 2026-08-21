@@ -41,6 +41,7 @@ export const BillingTab = ({
       <span
         role="button"
         tabIndex={-1}
+        aria-label={`Close ${getTabLabel(tab)}`}
         onClick={onClose}
         className="hover:bg-hover flex size-5 shrink-0 items-center justify-center rounded-sm"
       >

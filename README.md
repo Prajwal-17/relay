@@ -55,16 +55,16 @@ Electron before launch.
 
 Run these from the repository root:
 
-| Command                               | Purpose                                      |
-| ------------------------------------- | -------------------------------------------- |
-| `pnpm dev`                            | Start workspace development tasks            |
-| `pnpm build`                          | Build all workspace packages                 |
-| `pnpm lint`                           | Lint all workspace packages                  |
-| `pnpm format`                         | Format the workspace                         |
-| `pnpm --dir apps/desktop typecheck`   | Typecheck the Electron and renderer projects |
-| `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once              |
-| `pnpm --dir apps/desktop build:win`   | Build the Windows installer                  |
-| `pnpm --dir apps/desktop build:linux` | Build Linux AppImage and Debian packages     |
+| Command                               | Purpose                                            |
+| ------------------------------------- | -------------------------------------------------- |
+| `pnpm dev`                            | Start workspace development tasks                  |
+| `pnpm build`                          | Build all workspace packages                       |
+| `pnpm lint`                           | Lint all workspace packages                        |
+| `pnpm format`                         | Format the workspace                               |
+| `pnpm --dir apps/desktop typecheck`   | Typecheck application and all test code            |
+| `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once                     |
+| `pnpm --dir apps/desktop build:win`   | Build the Windows installer                        |
+| `pnpm --dir apps/desktop build:linux` | Build Linux AppImage and Debian packages           |
 
 Packaged artifacts are written to `apps/desktop/dist/`.
 

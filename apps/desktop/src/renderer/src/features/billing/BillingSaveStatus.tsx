@@ -12,6 +12,9 @@ export const BillingSaveStatus = () => {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-label="Billing save status"
       className={cn(
         "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-semibold ring-1 transition-colors duration-150",
         currentStatus === "saving" && "bg-selected text-foreground ring-border",

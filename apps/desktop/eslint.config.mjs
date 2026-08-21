@@ -4,7 +4,15 @@ import eslintPluginReactRefresh from "eslint-plugin-react-refresh";
 export default [
   ...reactInternalConfig,
   {
-    ignores: ["**/node_modules", "**/dist", "**/out", "src/renderer/src/components/ui/**"]
+    ignores: [
+      "**/node_modules",
+      "**/dist",
+      "**/out",
+      "playwright-report/**",
+      "test-results/**",
+      "blob-report/**",
+      "src/renderer/src/components/ui/**"
+    ]
   },
   {
     files: ["**/*.{ts,tsx}"],

@@ -201,6 +201,9 @@ importers:
       '@faker-js/faker':
         specifier: ^9.9.0
         version: 9.9.0
+      '@playwright/test':
+        specifier: 1.61.1
+        version: 1.61.1
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
@@ -299,7 +302,7 @@ importers:
         version: 19.2.0(react@19.2.0)
       react-scan:
         specifier: ^0.4.3
-        version: 0.4.3(@types/react@19.2.2)(next@16.2.0(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-router-dom@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-router@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(rollup@4.62.2)
+        version: 0.4.3(@types/react@19.2.2)(next@16.2.0(@babel/core@7.29.7)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-router-dom@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-router@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(rollup@4.62.2)
       tsx:
         specifier: ^4.21.0
         version: 4.22.4
@@ -1424,6 +1427,11 @@ packages:
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
     engines: {node: ^14.18.0 || >=16.0.0}
+
+  '@playwright/test@1.61.1':
+    resolution: {integrity: sha512-8nKv6+0RJSL9FE4jYOEGXnPeM/Hg12qZpmqzZjRh3qM0Y7c3z1mrOTfFLids72RDQYVh9WpLEfR5WdpNX4fkig==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@polka/url@1.0.0-next.29':
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -6919,6 +6927,10 @@ snapshots:
 
   '@pkgr/core@0.3.6': {}
 
+  '@playwright/test@1.61.1':
+    dependencies:
+      playwright: 1.61.1
+
   '@polka/url@1.0.0-next.29': {}
 
   '@preact/signals-core@1.14.3': {}
@@ -10453,7 +10465,7 @@ snapshots:
 
   natural-compare@1.4.0: {}
 
-  next@16.2.0(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+  next@16.2.0(@babel/core@7.29.7)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
     dependencies:
       '@next/env': 16.2.0
       '@swc/helpers': 0.5.15
@@ -10472,6 +10484,7 @@ snapshots:
       '@next/swc-linux-x64-musl': 16.2.0
       '@next/swc-win32-arm64-msvc': 16.2.0
       '@next/swc-win32-x64-msvc': 16.2.0
+      '@playwright/test': 1.61.1
       babel-plugin-react-compiler: 1.0.0
       sharp: 0.34.5
     transitivePeerDependencies:
@@ -10935,7 +10948,7 @@ snapshots:
     optionalDependencies:
       react-dom: 19.2.0(react@19.2.0)
 
-  react-scan@0.4.3(@types/react@19.2.2)(next@16.2.0(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-router-dom@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-router@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(rollup@4.62.2):
+  react-scan@0.4.3(@types/react@19.2.2)(next@16.2.0(@babel/core@7.29.7)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-dom@19.2.0(react@19.2.0))(react-router-dom@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react-router@7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)(rollup@4.62.2):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/generator': 7.29.7
@@ -10957,7 +10970,7 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
       tsx: 4.22.4
     optionalDependencies:
-      next: 16.2.0(@babel/core@7.29.7)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      next: 16.2.0(@babel/core@7.29.7)(@playwright/test@1.61.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-router: 7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-router-dom: 7.18.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       unplugin: 2.1.0

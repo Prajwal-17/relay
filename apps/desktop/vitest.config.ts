@@ -9,7 +9,7 @@ export default defineConfig({
     }
   },
   test: {
-    exclude: ["**/node_modules/**"],
+    exclude: ["**/node_modules/**", "e2e/**"],
     setupFiles: ["src/main/tests/setup/database.mock.ts"] // runs before every test file
   }
 });
