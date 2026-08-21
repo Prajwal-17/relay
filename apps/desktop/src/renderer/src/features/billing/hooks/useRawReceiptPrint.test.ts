@@ -38,8 +38,15 @@ const printing: PrintingConfig = {
   showLedgerPaymentMode: true,
   showLedgerNotes: true,
   footerMessage: "Thank you",
-  upiId: "shop@bank",
-  upiPayeeName: "QuickCart Market",
+  upiQrProfiles: [
+    {
+      id: "11111111-1111-4111-8111-111111111111",
+      label: "Primary UPI",
+      upiId: "shop@bank",
+      payeeName: "QuickCart Market"
+    }
+  ],
+  defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
   printUpiQrOnSales: true,
   printUpiQrOnEstimates: false,
   includeAmountInUpiQr: true
@@ -147,7 +154,8 @@ describe("RAW receipt data", () => {
 
     const preview = buildRawReceiptPreviewData(draft, profile, {
       ...printing,
-      upiId: ""
+      upiQrProfiles: [],
+      defaultUpiQrProfileId: null
     });
 
     expect(preview.transactionNo).toBe(0);
@@ -163,8 +171,9 @@ describe("RAW receipt data", () => {
     expect(() =>
       buildRawReceiptData(session("sale"), profile, {
         ...printing,
-        upiId: ""
+        upiQrProfiles: [],
+        defaultUpiQrProfileId: null
       })
-    ).toThrow("Enter a UPI ID and payee name in Printing settings.");
+    ).toThrow("Add a UPI account in Printing settings.");
   });
 });
