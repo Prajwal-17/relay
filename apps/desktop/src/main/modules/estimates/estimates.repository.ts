@@ -197,8 +197,9 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
         const existingItem = tx
           .select()
           .from(estimateItems)
-          .where(eq(estimateItems.id, item.id))
+          .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
           .get();
+        if (!existingItem) continue;
 
         if (existingItem?.productId) {
           tx.update(products)
@@ -210,7 +211,9 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
         }
 
         // delete item
-        tx.delete(estimateItems).where(eq(estimateItems.id, item.id)).run();
+        tx.delete(estimateItems)
+          .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
+          .run();
         deletedRowIds.push(item.rowId);
       } else {
         if (item.id) {
@@ -218,7 +221,7 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
           const oldItem = tx
             .select()
             .from(estimateItems)
-            .where(eq(estimateItems.id, item.id))
+            .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
             .get();
 
           if (!oldItem) {
@@ -255,7 +258,7 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
               ...values,
               updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
             })
-            .where(eq(estimateItems.id, item.id))
+            .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
             .returning()
             .get();
 

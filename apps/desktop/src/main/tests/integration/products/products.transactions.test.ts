@@ -15,6 +15,7 @@ import {
 } from "../../../tests/helpers";
 
 type Transaction = {
+  id: string;
   type: "sale" | "estimate";
   transactionNo: number;
   customerName: string;
@@ -68,6 +69,7 @@ describe("product transactions integration", () => {
       price: params.price,
       totalPrice: Math.round((params.quantity / 1000) * params.price)
     });
+    return sale;
   }
 
   async function addEstimateTransaction(params: {
@@ -90,13 +92,14 @@ describe("product transactions integration", () => {
       price: params.price,
       totalPrice: Math.round((params.quantity / 1000) * params.price)
     });
+    return estimate;
   }
 
   it("merges sale and estimate rows newest first with customer and integer value metadata", async () => {
     const customer = await seedCustomer(db, { name: "Anita Stores" });
     const product = await seedProduct(db);
 
-    await addSaleTransaction({
+    const sale501 = await addSaleTransaction({
       productId: product.id,
       customerId: customer.id,
       transactionNo: 501,
@@ -104,7 +107,7 @@ describe("product transactions integration", () => {
       quantity: 1250,
       price: 12000
     });
-    await addEstimateTransaction({
+    const estimate601 = await addEstimateTransaction({
       productId: product.id,
       customerId: customer.id,
       transactionNo: 601,
@@ -112,7 +115,7 @@ describe("product transactions integration", () => {
       quantity: 2750,
       price: 11000
     });
-    await addSaleTransaction({
+    const sale502 = await addSaleTransaction({
       productId: product.id,
       customerId: customer.id,
       transactionNo: 502,
@@ -129,6 +132,7 @@ describe("product transactions integration", () => {
     expect(body.totalCount).toBe(3);
     expect(body.data).toEqual([
       {
+        id: estimate601.id,
         type: "estimate",
         transactionNo: 601,
         customerName: "Anita Stores",
@@ -138,6 +142,7 @@ describe("product transactions integration", () => {
         createdAt: "2026-04-03T09:00:00.000Z"
       },
       {
+        id: sale502.id,
         type: "sale",
         transactionNo: 502,
         customerName: "Anita Stores",
@@ -147,6 +152,7 @@ describe("product transactions integration", () => {
         createdAt: "2026-04-02T09:00:00.000Z"
       },
       {
+        id: sale501.id,
         type: "sale",
         transactionNo: 501,
         customerName: "Anita Stores",

@@ -203,7 +203,12 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
       };
 
       if (item.isDeleted && item.id) {
-        const existingItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
+        const existingItem = tx
+          .select()
+          .from(saleItems)
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
+          .get();
+        if (!existingItem) continue;
         if (existingItem?.productId) {
           tx.update(products)
             .set({
@@ -212,10 +217,16 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
             .where(eq(products.id, existingItem.productId))
             .run();
         }
-        tx.delete(saleItems).where(eq(saleItems.id, item.id)).run();
+        tx.delete(saleItems)
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
+          .run();
         deletedRowIds.push(item.rowId);
       } else if (item.id) {
-        const oldItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
+        const oldItem = tx
+          .select()
+          .from(saleItems)
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
+          .get();
         if (!oldItem) continue;
         const quantityDelta = item.quantity - oldItem.quantity;
         if (oldItem.productId && oldItem.productId !== item.productId) {
@@ -238,7 +249,7 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
         const updatedItem = tx
           .update(saleItems)
           .set({ ...values, updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))` })
-          .where(eq(saleItems.id, item.id))
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
           .returning()
           .get();
         syncedItems.push({ rowId: item.rowId, id: item.id, updatedAt: updatedItem.updatedAt });
