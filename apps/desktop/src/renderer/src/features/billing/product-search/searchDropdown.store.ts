@@ -1,6 +1,14 @@
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { type Product, type ProductSortByType } from "@shared/types";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
+
+export type SearchDropdownDraft = {
+  itemQuery: string;
+  activeRowId: string | null;
+  isDropdownOpen: boolean;
+  sortBy: ProductSortByType | null;
+};
 
 type SearchDropdownStoreType = {
   itemQuery: string;
@@ -13,17 +21,38 @@ type SearchDropdownStoreType = {
   setIsDropdownOpen: (isOpen: boolean) => void;
   sortBy: ProductSortByType | null;
   setSortBy: (sortBy: ProductSortByType | null) => void;
+  draftsByTab: Record<string, SearchDropdownDraft>;
+  getDraft: (tabId: string) => SearchDropdownDraft | null;
   reset: () => void;
 };
 
+function updateActiveTabDraft(
+  state: SearchDropdownStoreType,
+  updates: Partial<SearchDropdownDraft>
+): Record<string, SearchDropdownDraft> {
+  const tabId = useBillingTabsStore.getState().activeTabId;
+  if (!tabId) return state.draftsByTab;
+  return {
+    ...state.draftsByTab,
+    [tabId]: {
+      itemQuery: state.itemQuery,
+      activeRowId: state.activeRowId,
+      isDropdownOpen: state.isDropdownOpen,
+      sortBy: state.sortBy,
+      ...updates
+    }
+  };
+}
+
 export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
   devtools(
-    (set) => ({
+    (set, get) => ({
       itemQuery: "",
       setItemQuery: (query) =>
         set(
-          () => ({
-            itemQuery: query
+          (state) => ({
+            itemQuery: query,
+            draftsByTab: updateActiveTabDraft(state, { itemQuery: query })
           }),
           false,
           "searchDropdown/setItemQuery"
@@ -48,11 +77,15 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
         ),
 
       activeRowId: null,
-      setActiveRowId: (rowIndex) =>
+      setActiveRowId: (rowId) =>
         set(
           (state) => ({
-            activeRowId: rowIndex,
-            sortBy: state.activeRowId !== rowIndex ? null : state.sortBy
+            activeRowId: rowId,
+            sortBy: state.activeRowId !== rowId ? null : state.sortBy,
+            draftsByTab: updateActiveTabDraft(state, {
+              activeRowId: rowId,
+              sortBy: state.activeRowId !== rowId ? null : state.sortBy
+            })
           }),
           false,
           "searchDropdown/setActiveRowId"
@@ -61,8 +94,9 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
       isDropdownOpen: false,
       setIsDropdownOpen: (isOpen) =>
         set(
-          () => ({
-            isDropdownOpen: isOpen
+          (state) => ({
+            isDropdownOpen: isOpen,
+            draftsByTab: updateActiveTabDraft(state, { isDropdownOpen: isOpen })
           }),
           false,
           "searchDropdown/setIsDropdownOpen"
@@ -71,12 +105,16 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
       sortBy: null,
       setSortBy: (sortBy) =>
         set(
-          () => ({
-            sortBy
+          (state) => ({
+            sortBy,
+            draftsByTab: updateActiveTabDraft(state, { sortBy })
           }),
           false,
           "searchDropdown/setSortBy"
         ),
+
+      draftsByTab: {},
+      getDraft: (tabId) => get().draftsByTab[tabId] ?? null,
 
       reset: () =>
         set(
@@ -85,7 +123,8 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
             availableProducts: [],
             activeRowId: null,
             isDropdownOpen: false,
-            sortBy: null
+            sortBy: null,
+            draftsByTab: {}
           }),
           false,
           "searchDropdown/reset"
@@ -94,3 +133,17 @@ export const useSearchDropdownStore = create<SearchDropdownStoreType>()(
     { name: "search-dropdown-store" }
   )
 );
+
+useBillingTabsStore.subscribe((state, previousState) => {
+  if (state.activeTabId === previousState.activeTabId) return;
+  const draft = state.activeTabId
+    ? useSearchDropdownStore.getState().draftsByTab[state.activeTabId]
+    : undefined;
+  useSearchDropdownStore.setState({
+    itemQuery: draft?.itemQuery ?? "",
+    availableProducts: [],
+    activeRowId: draft?.activeRowId ?? null,
+    isDropdownOpen: draft?.isDropdownOpen ?? false,
+    sortBy: draft?.sortBy ?? null
+  });
+});

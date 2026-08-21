@@ -38,6 +38,8 @@ export const createInitialSession = (): BillingSessionData => {
   return {
     metadataRevision: 0,
     persistedMetadataRevision: 0,
+    creationBillingId: uuidv4(),
+    creationToken: uuidv4(),
     billingId: null,
     billingType: TRANSACTION_TYPE.SALE,
     transactionNo: null,

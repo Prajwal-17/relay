@@ -85,8 +85,8 @@ export function buildReceiptAddressLines(profile: StoreProfile): string[] {
 export function thermalItemLines(index: number, item: RawReceiptItem): string[] {
   const widths = THERMAL_RECEIPT_ITEM_WIDTHS;
   const nameLines = wrapThermalText(item.name, widths.name);
-  const rate = paisaToRupeeString(item.unitPricePaisa);
-  const amount = paisaToRupeeString(item.totalPaisa);
+  const rate = (item.unitPricePaisa / 100).toFixed(2);
+  const amount = (item.totalPaisa / 100).toFixed(2);
 
   return nameLines.map((name, lineIndex) =>
     [

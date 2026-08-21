@@ -71,7 +71,7 @@ Run these from `apps/desktop` unless shown otherwise.
 | `pnpm start`          | Preview the production build                       |
 | `pnpm lint`           | Run ESLint                                         |
 | `pnpm typecheck`      | Typecheck application and all test code            |
-| `pnpm typecheck:test` | Typecheck Vitest and Playwright code                |
+| `pnpm typecheck:test` | Typecheck Vitest and Playwright code               |
 | `pnpm test:e2e`       | Rebuild for Electron and run Playwright            |
 | `pnpm run test --run` | Rebuild for Node and run Vitest once               |
 | `pnpm format`         | Format the desktop package                         |

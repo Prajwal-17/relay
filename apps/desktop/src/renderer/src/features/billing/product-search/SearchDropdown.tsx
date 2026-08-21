@@ -415,11 +415,22 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       const product = searchResults[index];
       if (!product || !activeTabId) return;
       addLineItem(activeTabId, rowId, product);
+      setItemQuery(product.productSnapshot);
+      setIsDropdownOpen(false);
       addEmptyLineItem(activeTabId);
       processSyncQueue(activeTabId);
       focusNextRow();
     },
-    [searchResults, activeTabId, rowId, addLineItem, addEmptyLineItem, focusNextRow]
+    [
+      searchResults,
+      activeTabId,
+      rowId,
+      addLineItem,
+      setItemQuery,
+      setIsDropdownOpen,
+      addEmptyLineItem,
+      focusNextRow
+    ]
   );
 
   const searchResultsLengthRef = useRef(searchResults.length);

@@ -17,6 +17,7 @@ declare global {
     databaseUpgradeApi: DatabaseUpgradeApi;
     env: {
       API_URL: string;
+      API_TOKEN: string;
     };
   }
 }

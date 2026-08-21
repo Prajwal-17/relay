@@ -7,6 +7,7 @@ type MainWindowOptions = {
   isDevBuild: boolean;
   store?: ZoomStore;
   apiPort: number;
+  apiToken: string;
   maximizeOnReady?: boolean;
 };
 
@@ -19,6 +20,7 @@ export type MainWindowHandle = {
 export function createMainWindow({
   isDevBuild,
   apiPort,
+  apiToken,
   maximizeOnReady = true,
   store
 }: MainWindowOptions): MainWindowHandle {
@@ -41,7 +43,7 @@ export function createMainWindow({
       contextIsolation: true,
       nodeIntegration: false,
       zoomFactor: initialZoom,
-      additionalArguments: [`--api-port=${apiPort}`]
+      additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
     } as Electron.WebPreferences
   });
 

@@ -113,8 +113,9 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
           (state) => {
             if (!tabId || !state.sessions[tabId]) return;
             const session = state.sessions[tabId];
+            const hadPendingMetadata = session.metadataRevision > session.persistedMetadataRevision;
             Object.assign(session, fields);
-            session.persistedMetadataRevision = session.metadataRevision;
+            if (!hadPendingMetadata) session.persistedMetadataRevision = session.metadataRevision;
           },
           false,
           "billingSession/hydrateSession"

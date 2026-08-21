@@ -37,6 +37,8 @@ export type BillingPrintOptions = {
 export type BillingSessionData = {
   metadataRevision: number; // version currently in the UI
   persistedMetadataRevision: number; // latest version after data is persisted
+  creationBillingId: string; // stable identity for retrying the initial create request
+  creationToken: string; // stable idempotency token for the initial create request
   billingId: string | null; // sales.id | estimates.id
   billingType: TransactionType;
   transactionNo: number | null;
@@ -67,6 +69,8 @@ type ExpectedUiBillingField = Exclude<
   | "lineItems"
   | "metadataRevision"
   | "persistedMetadataRevision"
+  | "creationBillingId"
+  | "creationToken"
   | "printOptions"
 >;
 

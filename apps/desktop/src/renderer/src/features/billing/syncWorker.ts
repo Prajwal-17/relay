@@ -1,16 +1,18 @@
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
-import type { BillingSessionData, LineItem } from "@/features/billing/store/billingSession.types";
+import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { apiClient } from "@/lib/apiClient";
 import { queryClient } from "@/lib/queryClient";
-import { SYNCSTATUS } from "@/types/renderer.types";
+import { BILLSTATUS } from "@shared/types";
 import {
-  buildTransactionPayload,
-  filterDirtyLineItems,
-  filterValidLineItems,
-  normalizeLineItems
-} from "@/utils/renderer.utils";
-import { BILLSTATUS, type SyncResponse } from "@shared/types";
+  createRequestSnapshot,
+  hasPendingBillingWork,
+  hasUnconfirmedProductDraft,
+  type RequestSnapshot
+} from "./syncWorker.helpers";
+import { validateSyncResponse } from "./syncWorker.protocol";
+
+export { BillingSyncProtocolError } from "./syncWorker.protocol";
 
 const DEFAULT_DEBOUNCE_MS = 800;
 const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
@@ -33,19 +35,11 @@ export type CreateBillingSyncCoordinatorOptions = {
   requestTimeoutMs?: number;
 };
 
-type RequestSnapshot = {
-  billingId: string | null;
-  billingType: BillingSessionData["billingType"];
-  customerId: string;
-  metadataRevision: number;
-  itemRevisions: Map<string, number>;
-  payload: ReturnType<typeof buildTransactionPayload>;
-};
-
 type TabQueueState = {
   timer: TimerHandle | null;
   inFlight: Promise<void> | null;
   abortController: AbortController | null;
+  inFlightIsCreate: boolean;
   rerunAfterFlight: boolean;
 };
 
@@ -54,56 +48,6 @@ export class BillingPersistenceError extends Error {
     super(message);
     this.name = "BillingPersistenceError";
   }
-}
-
-function hasMetadataPending(session: BillingSessionData): boolean {
-  return session.metadataRevision > session.persistedMetadataRevision;
-}
-
-function hasItemPending(item: LineItem): boolean {
-  return item.syncStatus === SYNCSTATUS.IS_DIRTY || item.syncStatus === SYNCSTATUS.SAVING;
-}
-
-export function hasPendingBillingWork(tabId: string): boolean {
-  const session = useBillingSessionStore.getState().sessions[tabId];
-  return Boolean(
-    session && (hasMetadataPending(session) || session.lineItems.some(hasItemPending))
-  );
-}
-
-function isSendableItem(item: LineItem): boolean {
-  if (item.isDeleted) return Boolean(item.id);
-  return filterValidLineItems([item]).length === 1;
-}
-
-function createRequestSnapshot(session: BillingSessionData): RequestSnapshot | null {
-  const dirtyItems = filterDirtyLineItems(session.lineItems);
-  const sendableItems = dirtyItems.filter(isSendableItem);
-  const metadataPending = hasMetadataPending(session);
-
-  if (!session.billingId && sendableItems.filter((item) => !item.isDeleted).length === 0) {
-    return null;
-  }
-  if (session.billingId && sendableItems.length === 0 && !metadataPending) return null;
-  if (!session.customerId) return null;
-
-  const itemRevisions = new Map(sendableItems.map((item) => [item.rowId, item.revision]));
-  return {
-    billingId: session.billingId,
-    billingType: session.billingType,
-    customerId: session.customerId,
-    metadataRevision: session.metadataRevision,
-    itemRevisions,
-    payload: buildTransactionPayload({
-      billingType: session.billingType,
-      transactionNo: session.transactionNo,
-      customerId: session.customerId,
-      items: normalizeLineItems(sendableItems),
-      notes: session.notes,
-      addToAccounting: session.addToAccounting,
-      createdAt: session.billingDate.toISOString()
-    })
-  };
 }
 
 export function createBillingSyncCoordinator({
@@ -116,6 +60,7 @@ export function createBillingSyncCoordinator({
   requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS
 }: CreateBillingSyncCoordinatorOptions) {
   const queues = new Map<string, TabQueueState>();
+  let flushAllInFlight: Promise<void> | null = null;
 
   const getQueue = (tabId: string): TabQueueState => {
     let queue = queues.get(tabId);
@@ -124,6 +69,7 @@ export function createBillingSyncCoordinator({
         timer: null,
         inFlight: null,
         abortController: null,
+        inFlightIsCreate: false,
         rerunAfterFlight: false
       };
       queues.set(tabId, queue);
@@ -163,6 +109,7 @@ export function createBillingSyncCoordinator({
 
     const controller = new AbortController();
     queue.abortController = controller;
+    queue.inFlightIsCreate = !snapshot.billingId;
     const timeout = timers.setTimeout(() => controller.abort(), requestTimeoutMs);
     let succeeded = false;
 
@@ -171,9 +118,10 @@ export function createBillingSyncCoordinator({
         const endpoint = snapshot.billingId
           ? `/api/${snapshot.billingType}s/${snapshot.billingId}/sync`
           : `/api/${snapshot.billingType}s/create`;
-        const response = (await transport.post(endpoint, snapshot.payload, {
+        const response = await transport.post(endpoint, snapshot.payload, {
           signal: controller.signal
-        })) as SyncResponse;
+        });
+        validateSyncResponse(response, snapshot);
 
         const currentStore = useBillingSessionStore.getState();
         if (!snapshot.billingId && response.billingId) {
@@ -212,6 +160,7 @@ export function createBillingSyncCoordinator({
       } finally {
         timers.clearTimeout(timeout);
         queue.abortController = null;
+        queue.inFlightIsCreate = false;
       }
     })();
 
@@ -256,6 +205,11 @@ export function createBillingSyncCoordinator({
   };
 
   const flush = async (tabId: string): Promise<void> => {
+    if (hasUnconfirmedProductDraft(tabId)) {
+      setStatus(tabId, BILLSTATUS.UNSAVED);
+      throw new BillingPersistenceError("Select a product or clear the unfinished product search.");
+    }
+
     const queue = getQueue(tabId);
     clearDebounce(queue);
     if (queue.inFlight) await queue.inFlight;
@@ -271,16 +225,44 @@ export function createBillingSyncCoordinator({
       await startRequest(tabId, snapshot);
       clearDebounce(queue);
     }
+
+    if (hasUnconfirmedProductDraft(tabId)) {
+      setStatus(tabId, BILLSTATUS.UNSAVED);
+      throw new BillingPersistenceError("Select a product or clear the unfinished product search.");
+    }
   };
 
-  const flushAll = async (): Promise<void> => {
+  const flushAll = (): Promise<void> => {
+    if (flushAllInFlight) return flushAllInFlight;
     const tabIds = Object.keys(useBillingSessionStore.getState().sessions);
-    await Promise.all(tabIds.map((tabId) => flush(tabId)));
+    const run = Promise.all(
+      tabIds.map(async (tabId) => {
+        try {
+          await flush(tabId);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown persistence error";
+          throw new BillingPersistenceError(`Billing tab ${tabId}: ${message}`);
+        }
+      })
+    ).then(() => undefined);
+    const shared = run.finally(() => {
+      if (flushAllInFlight === shared) flushAllInFlight = null;
+    });
+    flushAllInFlight = shared;
+    return shared;
   };
 
   const cancel = (tabId: string, options: { discard?: boolean } = {}) => {
     const queue = queues.get(tabId);
-    if (!options.discard && (queue?.inFlight || hasPendingBillingWork(tabId))) {
+    if (options.discard && queue?.inFlight && queue.inFlightIsCreate) {
+      throw new BillingPersistenceError(
+        "Wait for the initial billing request to finish before discarding it."
+      );
+    }
+    if (
+      !options.discard &&
+      (queue?.inFlight || hasPendingBillingWork(tabId) || hasUnconfirmedProductDraft(tabId))
+    ) {
       throw new BillingPersistenceError(
         "Billing work must be saved or explicitly discarded first."
       );

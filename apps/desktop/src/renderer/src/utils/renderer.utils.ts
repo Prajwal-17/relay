@@ -118,7 +118,9 @@ export function buildTransactionPayload({
   items,
   notes,
   addToAccounting,
-  createdAt
+  createdAt,
+  billingId,
+  creationToken
 }: {
   billingType: TransactionType;
   transactionNo: number | null;
@@ -127,8 +129,11 @@ export function buildTransactionPayload({
   notes: string | null;
   addToAccounting: boolean;
   createdAt: string;
+  billingId?: string;
+  creationToken?: string;
 }) {
   const data = {
+    ...(billingId && creationToken ? { billingId, creationToken } : {}),
     transactionNo,
     transactionType: billingType,
     customerId,

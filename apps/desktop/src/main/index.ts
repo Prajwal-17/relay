@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import fs from "node:fs";
+import { randomUUID } from "node:crypto";
 import { isAbsolute, join, resolve } from "node:path";
 import { resolveApiPort } from "../shared/runtimeConfig";
 import type { DatabaseUpgradeStatus } from "../shared/types";
@@ -14,6 +15,7 @@ import type { ZoomStore } from "./zoom";
 const isDevBuild = initMainEnv() === "development";
 let mainWindow: BrowserWindow | undefined;
 const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, process.env.MODE);
+const apiToken = process.env.M_VITE_API_TOKEN?.trim() || randomUUID();
 let appStore: ZoomStore | undefined;
 let upgradeWindow: UpgradeWindowController | undefined;
 let bootPromise: Promise<void> | undefined;
@@ -43,6 +45,7 @@ if (configuredUserDataDirectory) {
 }
 
 process.env.M_VITE_API_PORT = String(apiPort);
+process.env.M_VITE_API_TOKEN = apiToken;
 registerProtocol();
 
 // Path-dependent database modules are loaded only after userData is final.
@@ -225,6 +228,7 @@ async function openMainWindow(): Promise<BrowserWindow> {
   const handle = createMainWindow({
     isDevBuild,
     apiPort,
+    apiToken,
     maximizeOnReady: !configuredUserDataDirectory,
     store: appStore
   });

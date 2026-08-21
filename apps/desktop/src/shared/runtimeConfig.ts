@@ -1,5 +1,6 @@
 export const DEVELOPMENT_API_PORT = 4723;
 export const PRODUCTION_API_PORT = 4722;
+export const STANDALONE_DEVELOPMENT_API_TOKEN = "quickcart-standalone-development";
 
 export function defaultApiPort(mode: string | undefined): number {
   return mode === "development" ? DEVELOPMENT_API_PORT : PRODUCTION_API_PORT;

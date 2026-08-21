@@ -24,6 +24,7 @@ export function exportAsPdf() {
         const mode = initMainEnv();
         const isDevBuild = mode === "development";
         const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, mode);
+        const apiToken = process.env.M_VITE_API_TOKEN ?? "";
 
         const preferences = await preferencesService.getPreferences("default");
         const askBeforeSavingPdf = preferences?.config?.exports?.askBeforeSavingPdf;
@@ -75,7 +76,7 @@ export function exportAsPdf() {
             sandbox: false,
             contextIsolation: true,
             nodeIntegration: false,
-            additionalArguments: [`--api-port=${apiPort}`]
+            additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
           } as Electron.WebPreferences
         });
 

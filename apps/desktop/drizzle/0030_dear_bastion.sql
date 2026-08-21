@@ -43,6 +43,7 @@ DROP INDEX `estimates_customer_id_idx`;
 CREATE TABLE `sales` (
 	`id` text PRIMARY KEY NOT NULL,
 	`store_id` text,
+	`creation_token` text,
 	`invoice_no` integer NOT NULL,
 	`customer_id` text NOT NULL,
 	`grand_total` integer,
@@ -56,23 +57,26 @@ CREATE TABLE `sales` (
 );
 --> statement-breakpoint
 INSERT INTO `sales` (
-	`id`, `store_id`, `invoice_no`, `customer_id`, `grand_total`, `total_quantity`,
-	`notes`, `recorded_at`, `created_at`, `updated_at`
+	`id`, `store_id`, `creation_token`, `invoice_no`, `customer_id`, `grand_total`,
+	`total_quantity`, `notes`, `recorded_at`, `created_at`, `updated_at`
 )
 SELECT
-	`id`, `store_id`, `invoice_no`, `customer_id`, `grand_total`, `total_quantity`,
-	NULL, `created_at`, `created_at`, `updated_at`
+	`id`, `store_id`, NULL, `invoice_no`, `customer_id`, `grand_total`,
+	`total_quantity`, NULL, `created_at`, `created_at`, `updated_at`
 FROM `__0030_sales`;
 --> statement-breakpoint
 CREATE UNIQUE INDEX `sales_invoice_no_unique` ON `sales` (`invoice_no`);
 --> statement-breakpoint
 CREATE INDEX `sales_id_idx` ON `sales` (`id`);
 --> statement-breakpoint
+CREATE UNIQUE INDEX `sales_creation_token_unique` ON `sales` (`creation_token`);
+--> statement-breakpoint
 CREATE INDEX `sales_customer_id_idx` ON `sales` (`customer_id`);
 --> statement-breakpoint
 CREATE TABLE `estimates` (
 	`id` text PRIMARY KEY NOT NULL,
 	`store_id` text,
+	`creation_token` text,
 	`estimate_no` integer NOT NULL,
 	`customer_id` text NOT NULL,
 	`grand_total` integer,
@@ -85,17 +89,19 @@ CREATE TABLE `estimates` (
 );
 --> statement-breakpoint
 INSERT INTO `estimates` (
-	`id`, `store_id`, `estimate_no`, `customer_id`, `grand_total`, `total_quantity`,
-	`notes`, `created_at`, `updated_at`
+	`id`, `store_id`, `creation_token`, `estimate_no`, `customer_id`, `grand_total`,
+	`total_quantity`, `notes`, `created_at`, `updated_at`
 )
 SELECT
-	`id`, `store_id`, `estimate_no`, `customer_id`, `grand_total`, `total_quantity`,
-	NULL, `created_at`, `updated_at`
+	`id`, `store_id`, NULL, `estimate_no`, `customer_id`, `grand_total`,
+	`total_quantity`, NULL, `created_at`, `updated_at`
 FROM `__0030_estimates`;
 --> statement-breakpoint
 CREATE UNIQUE INDEX `estimates_estimate_no_unique` ON `estimates` (`estimate_no`);
 --> statement-breakpoint
 CREATE INDEX `estimates_id_idx` ON `estimates` (`id`);
+--> statement-breakpoint
+CREATE UNIQUE INDEX `estimates_creation_token_unique` ON `estimates` (`creation_token`);
 --> statement-breakpoint
 CREATE INDEX `estimates_customer_id_idx` ON `estimates` (`customer_id`);
 --> statement-breakpoint
