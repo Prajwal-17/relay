@@ -1,10 +1,9 @@
 import { app, BrowserWindow } from "electron";
 import fs from "node:fs";
-import { join, resolve } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
+import { resolveApiPort } from "../shared/runtimeConfig";
 import type { DatabaseUpgradeStatus } from "../shared/types";
-import { getBackupPaths } from "./db/backup";
-import { getDatabasePath, getMigrationsFolder, initDb } from "./db/db";
-import { inspectDatabaseUpgrade, type UpgradeInspection } from "./db/upgradeCoordinator";
+import type { UpgradeInspection } from "./db/upgradeCoordinator";
 import { initMainEnv } from "./loadEnv";
 import { createMainWindow } from "./mainWindow";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
@@ -14,22 +13,44 @@ import type { ZoomStore } from "./zoom";
 
 const isDevBuild = initMainEnv() === "development";
 let mainWindow: BrowserWindow | undefined;
+const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, process.env.MODE);
 let appStore: ZoomStore | undefined;
 let upgradeWindow: UpgradeWindowController | undefined;
 let bootPromise: Promise<void> | undefined;
 let applicationStarted = false;
 
-registerProtocol();
 app.setName(isDevBuild ? "QuickCart-Dev" : "QuickCart");
 
 if (process.platform === "win32") {
   app.setAppUserModelId(isDevBuild ? "com.quickcart-dev.app" : "com.quickcart.app");
 }
 
-// Keep development data separate from the installed app.
-if (isDevBuild) {
+const configuredUserDataDirectory = process.env.M_VITE_USER_DATA_DIR;
+if (configuredUserDataDirectory) {
+  if (!isAbsolute(configuredUserDataDirectory)) {
+    throw new Error("M_VITE_USER_DATA_DIR must be an absolute path.");
+  }
+  if (!fs.existsSync(configuredUserDataDirectory)) {
+    throw new Error("M_VITE_USER_DATA_DIR must exist before QuickCart starts.");
+  }
+  if (!fs.statSync(configuredUserDataDirectory).isDirectory()) {
+    throw new Error("M_VITE_USER_DATA_DIR must point to a directory.");
+  }
+  app.setPath("userData", configuredUserDataDirectory);
+} else if (isDevBuild) {
+  // Keep normal development data separate from the installed app.
   app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
 }
+
+process.env.M_VITE_API_PORT = String(apiPort);
+registerProtocol();
+
+// Path-dependent database modules are loaded only after userData is final.
+const databaseModules = Promise.all([
+  import("./db/backup"),
+  import("./db/db"),
+  import("./db/upgradeCoordinator")
+]).then(([backup, database, upgrade]) => ({ ...backup, ...database, ...upgrade }));
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -101,6 +122,7 @@ async function ensureUpgradeWindow(
 ): Promise<UpgradeWindowController> {
   if (upgradeWindow) return upgradeWindow;
 
+  const { getBackupPaths, getDatabasePath } = await databaseModules;
   const backupAvailable = fs.existsSync(getBackupPaths(getDatabasePath()).latest);
   upgradeWindow = new UpgradeWindowController({
     isFreshDatabase: inspection.isFreshDatabase,
@@ -129,6 +151,8 @@ async function boot(): Promise<void> {
 }
 
 async function runBoot(): Promise<void> {
+  const { getBackupPaths, getDatabasePath, getMigrationsFolder, initDb, inspectDatabaseUpgrade } =
+    await databaseModules;
   const databasePath = getDatabasePath();
   const migrationsFolder = getMigrationsFolder();
   let inspection: UpgradeInspection | undefined;
@@ -198,7 +222,12 @@ async function startApplication(inspection?: UpgradeInspection): Promise<void> {
 }
 
 async function openMainWindow(): Promise<BrowserWindow> {
-  const handle = createMainWindow({ isDevBuild, store: appStore });
+  const handle = createMainWindow({
+    isDevBuild,
+    apiPort,
+    maximizeOnReady: !configuredUserDataDirectory,
+    store: appStore
+  });
   mainWindow = handle.window;
   handle.window.on("closed", () => {
     if (mainWindow === handle.window) mainWindow = undefined;

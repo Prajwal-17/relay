@@ -14,6 +14,7 @@ import { productsController } from "./modules/products/products.controller";
 import { salesController } from "./modules/sales/sales.controller";
 import { storeProfileController } from "./modules/storeProfile/storeProfile.controller";
 import { AppError } from "./utils/appError";
+import { resolveApiPort } from "../shared/runtimeConfig";
 
 export type Env = {
   Variables: {
@@ -92,7 +93,7 @@ app.route("/api/store-profile", storeProfileController);
 export async function startServer() {
   await initDb();
 
-  const port = mode === "production" ? 4722 : 4723;
+  const port = resolveApiPort(process.env.M_VITE_API_PORT, mode);
   console.log("Hono server running on port", port);
 
   const server = serve({

@@ -4,6 +4,7 @@ import fs from "fs";
 import os from "os";
 import path, { join } from "path";
 import { type ApiResponse, TRANSACTION_TYPE, type TransactionType } from "../../../shared/types";
+import { resolveApiPort } from "../../../shared/runtimeConfig";
 import { formatDateStr } from "../../../shared/utils/dateUtils";
 import { initMainEnv } from "../../loadEnv";
 import { estimatesService } from "../../modules/estimates/estimates.service";
@@ -22,7 +23,7 @@ export function exportAsPdf() {
       try {
         const mode = initMainEnv();
         const isDevBuild = mode === "development";
-        const apiPort = isDevBuild ? 4723 : 4722;
+        const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, mode);
 
         const preferences = await preferencesService.getPreferences("default");
         const askBeforeSavingPdf = preferences?.config?.exports?.askBeforeSavingPdf;

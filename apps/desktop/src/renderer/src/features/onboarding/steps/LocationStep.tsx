@@ -61,7 +61,10 @@ export const LocationStep = () => {
   }, [formData.stateCode]);
 
   const validate = () => {
-    const result = locationSchema.safeParse(formData);
+    const result = locationSchema.safeParse({
+      ...formData,
+      gstin: formData.gstin || null
+    });
     if (!result.success) {
       const newErrors: Record<string, string> = {};
       result.error.issues.forEach((err) => {
