@@ -18,6 +18,7 @@ export type LineItem = {
   isInventoryItem: boolean;
   syncStatus: SyncStatus; // FE-only
   isDeleted: boolean; // delete item flag
+  revision: number; // FE-only, incremented for every persistent row edit
 };
 
 export type PrefillCustomer = {
@@ -34,7 +35,8 @@ export type BillingPrintOptions = {
 };
 
 export type BillingSessionData = {
-  isMetaDataDirty: boolean;
+  metadataRevision: number; // version currently in the UI
+  persistedMetadataRevision: number; // latest version after data is persisted
   billingId: string | null; // sales.id | estimates.id
   billingType: TransactionType;
   transactionNo: number | null;
@@ -49,3 +51,33 @@ export type BillingSessionData = {
   printOptions: BillingPrintOptions;
   lineItems: LineItem[];
 };
+
+export const PERSISTENT_BILLING_FIELDS = [
+  "billingDate",
+  "customerId",
+  "notes",
+  "addToAccounting"
+] as const satisfies readonly (keyof BillingSessionData)[];
+
+export type PersistentBillingField = (typeof PERSISTENT_BILLING_FIELDS)[number];
+
+type ExpectedUiBillingField = Exclude<
+  keyof BillingSessionData,
+  | PersistentBillingField
+  | "lineItems"
+  | "metadataRevision"
+  | "persistedMetadataRevision"
+  | "printOptions"
+>;
+
+export const UI_BILLING_FIELDS = [
+  "billingId",
+  "billingType",
+  "transactionNo",
+  "customerName",
+  "isNewCustomer",
+  "status",
+  "isCountColumnVisible"
+] as const satisfies readonly ExpectedUiBillingField[];
+
+export type UiBillingField = (typeof UI_BILLING_FIELDS)[number];

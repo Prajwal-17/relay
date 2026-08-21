@@ -11,7 +11,7 @@ const BillingNotes = ({ className }: BillingNotesProps) => {
   const notes = useBillingSessionStore((state) =>
     activeTabId ? (state.sessions[activeTabId]?.notes ?? "") : ""
   );
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updatePersistentField = useBillingSessionStore((state) => state.updatePersistentField);
 
   return (
     <section className={cn("flex flex-col", className)}>
@@ -20,10 +20,11 @@ const BillingNotes = ({ className }: BillingNotesProps) => {
         <h2 className="text-foreground text-sm font-semibold">Notes</h2>
       </header>
       <textarea
+        aria-label="Billing notes"
         value={notes}
         onChange={(e) => {
           if (!activeTabId) return;
-          updateField(activeTabId, "notes", e.target.value);
+          updatePersistentField(activeTabId, "notes", e.target.value);
           processSyncQueue(activeTabId);
         }}
         placeholder="Delivery instructions, remarks, internal notes…"

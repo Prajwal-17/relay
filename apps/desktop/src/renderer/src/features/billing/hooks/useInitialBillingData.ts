@@ -11,7 +11,7 @@ export const useInitialBillingData = (
   id?: string,
   prefillCustomer?: PrefillCustomer | null
 ) => {
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const hydrateSession = useBillingSessionStore((state) => state.hydrateSession);
 
   const shouldFetch =
     !id &&
@@ -36,9 +36,11 @@ export const useInitialBillingData = (
     if (!activeTabId || !prefillCustomer || id) return;
     const session = useBillingSessionStore.getState().sessions[activeTabId];
     if (!session || session.customerId) return;
-    updateField(activeTabId, "customerId", prefillCustomer.id);
-    updateField(activeTabId, "customerName", prefillCustomer.name);
-  }, [activeTabId, prefillCustomer, id, updateField]);
+    hydrateSession(activeTabId, {
+      customerId: prefillCustomer.id,
+      customerName: prefillCustomer.name
+    });
+  }, [activeTabId, prefillCustomer, id, hydrateSession]);
 
   useEffect(() => {
     if (!activeTabId) return;
@@ -48,9 +50,11 @@ export const useInitialBillingData = (
     // don't overwrite an already assigned customer (prefill or manual selection)
     const session = useBillingSessionStore.getState().sessions[activeTabId];
     if (!session || session.customerId) return;
-    updateField(activeTabId, "customerId", customerData.id);
-    updateField(activeTabId, "customerName", customerData.name);
-  }, [customerData, isCustomerFetched, activeTabId, updateField]);
+    hydrateSession(activeTabId, {
+      customerId: customerData.id,
+      customerName: customerData.name
+    });
+  }, [customerData, isCustomerFetched, activeTabId, hydrateSession]);
 
   return {
     isCustomerError,

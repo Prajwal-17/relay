@@ -52,7 +52,7 @@ const BillingHeader = () => {
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updatePersistentField = useBillingSessionStore((state) => state.updatePersistentField);
 
   const [open, setOpen] = useState(false);
   const isPreviewOpen = usePreviewTabStore((state) => state.isPanelOpen);
@@ -81,7 +81,7 @@ const BillingHeader = () => {
       queryClient.removeQueries({ queryKey: [type.slice(0, -1), id, activeTabId] });
 
       // remove tab from store
-      const newActiveId = billingCoordinator.removeTab(activeTabId);
+      const newActiveId = billingCoordinator.removeTab(activeTabId, { discard: true });
       if (newActiveId) {
         const next = useBillingTabsStore.getState().tabs.find((t) => t.id === newActiveId);
         if (next) navigate(next.routePath);
@@ -135,7 +135,7 @@ const BillingHeader = () => {
     const udpatedDate = new Date(billingDate);
     udpatedDate.setHours(hours, minutes, 0, 0);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
-    updateField(activeTabId, "billingDate", udpatedDate);
+    updatePersistentField(activeTabId, "billingDate", udpatedDate);
     if (activeTabId) processSyncQueue(activeTabId);
   };
 
@@ -143,7 +143,6 @@ const BillingHeader = () => {
     const now = new Date();
     const selectedDate = new Date(date);
 
-    updateField(activeTabId, "billingDate", date);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     const isToday =
       selectedDate.getDate() === now.getDate() && selectedDate.getMonth() === now.getMonth();
@@ -154,7 +153,7 @@ const BillingHeader = () => {
       selectedDate.setHours(DEFAULT_HOUR, 0, 0, 0);
     }
 
-    updateField(activeTabId, "billingDate", selectedDate);
+    updatePersistentField(activeTabId, "billingDate", selectedDate);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     if (activeTabId) processSyncQueue(activeTabId);
     setOpen(false);

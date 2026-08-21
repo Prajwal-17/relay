@@ -7,7 +7,7 @@ import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
-import { flushSync, forceSync } from "@/features/billing/syncWorker";
+import { flushSync } from "@/features/billing/syncWorker";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
 import { useCallback, useState } from "react";
@@ -36,7 +36,6 @@ export const SummaryFooter = () => {
   const waitForSync = useCallback(async (): Promise<boolean> => {
     if (!activeTabId) return false;
     try {
-      forceSync(activeTabId);
       await flushSync(activeTabId);
       return true;
     } catch (error) {

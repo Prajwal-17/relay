@@ -12,7 +12,7 @@ const SaleAccountControl = ({ className }: { className?: string }) => {
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updatePersistentField = useBillingSessionStore((state) => state.updatePersistentField);
   const { config } = useAppPreferences();
 
   if (!session || session.billingType !== TRANSACTION_TYPE.SALE) return null;
@@ -27,7 +27,7 @@ const SaleAccountControl = ({ className }: { className?: string }) => {
 
   const handleToggle = () => {
     if (!activeTabId || disabled) return;
-    updateField(activeTabId, "addToAccounting", !session.addToAccounting);
+    updatePersistentField(activeTabId, "addToAccounting", !session.addToAccounting);
     processSyncQueue(activeTabId);
   };
 

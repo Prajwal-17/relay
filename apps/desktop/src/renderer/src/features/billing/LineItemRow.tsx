@@ -137,6 +137,7 @@ const LineItemRow = memo(
           </div>
           <div className="relative min-w-0">
             <input
+              aria-label={`Product row ${idx + 1}`}
               value={item.productSnapshot}
               className={cn(
                 "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/80 border-input h-9 w-full rounded-lg border px-3 py-2 text-base font-semibold shadow-xs transition-[border-color,box-shadow,background-color,color] outline-none focus-visible:ring-2",
@@ -198,6 +199,7 @@ const LineItemRow = memo(
                 <Plus size={16} strokeWidth={2.5} />
               </button>
               <input
+                aria-label={`Quantity row ${idx + 1}`}
                 type="text"
                 inputMode="decimal"
                 onContextMenu={(e) => {
@@ -251,6 +253,7 @@ const LineItemRow = memo(
                 <IndianRupee size={14} />
               </span>
               <input
+                aria-label={`Price row ${idx + 1}`}
                 type="text"
                 value={item.price}
                 placeholder="0"

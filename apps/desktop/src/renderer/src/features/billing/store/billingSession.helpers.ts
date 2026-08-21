@@ -36,7 +36,8 @@ export function rebalancePositions(lineItems: LineItem[]): Map<string, number> {
 
 export const createInitialSession = (): BillingSessionData => {
   return {
-    isMetaDataDirty: false,
+    metadataRevision: 0,
+    persistedMetadataRevision: 0,
     billingId: null,
     billingType: TRANSACTION_TYPE.SALE,
     transactionNo: null,
@@ -76,7 +77,8 @@ export function createInitialLineItem(position = 0) {
     position,
     isInventoryItem: false,
     syncStatus: SYNCSTATUS.SYNCED,
-    isDeleted: false
+    isDeleted: false,
+    revision: 0
   };
 
   return lineItem;
@@ -103,7 +105,8 @@ export function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     position: item.position,
     isInventoryItem: item.productId ? true : false,
     syncStatus: SYNCSTATUS.SYNCED,
-    isDeleted: false
+    isDeleted: false,
+    revision: 0
   }));
 
   lineItemsArray.sort((a, b) => a.position - b.position);

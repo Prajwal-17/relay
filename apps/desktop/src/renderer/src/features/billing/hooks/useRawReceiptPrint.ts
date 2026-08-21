@@ -137,7 +137,8 @@ export function buildRawReceiptDataFromTransaction(
   }
 
   const session: BillingSessionData = {
-    isMetaDataDirty: false,
+    metadataRevision: 0,
+    persistedMetadataRevision: 0,
     billingId: transaction.id,
     billingType: transaction.type,
     transactionNo: transaction.transactionNo,

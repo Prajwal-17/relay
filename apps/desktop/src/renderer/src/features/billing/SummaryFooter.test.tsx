@@ -15,7 +15,6 @@ const settlement = {
 
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
-  forceSync: vi.fn(),
   flushSync: vi.fn(),
   printReceipt: vi.fn(),
   fetchSummary: vi.fn(),
@@ -69,7 +68,6 @@ vi.mock("@/features/billing/store/billingSession.store", () => ({
 }));
 
 vi.mock("@/features/billing/syncWorker", () => ({
-  forceSync: mocks.forceSync,
   flushSync: mocks.flushSync
 }));
 
@@ -139,7 +137,7 @@ describe("Save & Print RAW workflow", () => {
     render(<SummaryFooter />);
     fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
 
-    expect(mocks.forceSync).toHaveBeenCalledWith("tab-1");
+    expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
     expect(mocks.printReceipt).not.toHaveBeenCalled();
     expect(mocks.navigate).not.toHaveBeenCalled();
 
