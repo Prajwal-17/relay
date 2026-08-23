@@ -38,7 +38,7 @@ export type ItemType = {
 };
 
 const LineItemsTable = () => {
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updateUiField = useBillingSessionStore((state) => state.updateUiField);
   const addEmptyLineItem = useBillingSessionStore((state) => state.addEmptyLineItem);
   const setAllChecked = useBillingSessionStore((state) => state.setAllChecked);
   const reorderLineItems = useBillingSessionStore((state) => state.reorderLineItems);
@@ -184,7 +184,7 @@ const LineItemsTable = () => {
             onClick={() => {
               const tabId = getActiveTabId();
               if (!tabId) return;
-              updateField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
+              updateUiField(tabId, "isCountColumnVisible", !session.isCountColumnVisible);
             }}
             aria-pressed={isCountColumnVisible}
             className="gap-1.5"

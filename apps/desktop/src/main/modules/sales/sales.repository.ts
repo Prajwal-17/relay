@@ -103,8 +103,62 @@ const filterSalesByDate = async (
   };
 };
 
+// a create may finish even if its reply times out.
+// example: the same id and token return the saved sale instead of making a duplicate.
+const findSaleCreateReplay = (tx: Tx, payload: SalePayloadData) => {
+  if (!payload.billingId && !payload.creationToken) return null;
+  if (!payload.billingId || !payload.creationToken) {
+    throw new AppError("Sale creation identity is incomplete", 409);
+  }
+
+  const saleById = tx.select().from(sales).where(eq(sales.id, payload.billingId)).get();
+  const saleByToken = tx
+    .select()
+    .from(sales)
+    .where(eq(sales.creationToken, payload.creationToken))
+    .get();
+
+  if (!saleById && !saleByToken) return null;
+  if (!saleById || !saleByToken || saleById.id !== saleByToken.id) {
+    throw new AppError("Sale creation identity conflicts with an existing sale", 409);
+  }
+
+  const persistedItems = tx
+    .select()
+    .from(saleItems)
+    .where(eq(saleItems.saleId, saleById.id))
+    .orderBy(asc(saleItems.position), asc(saleItems.createdAt))
+    .all();
+  const requestedItems = payload.items.filter((item) => !item.isDeleted);
+  if (persistedItems.length !== requestedItems.length) {
+    throw new AppError("Sale replay does not match the original request", 409);
+  }
+
+  const claimedItemIds = new Set<string>();
+  const syncedItems = requestedItems.map((item, index) => {
+    const persistedItem = item.id
+      ? persistedItems.find((candidate) => candidate.id === item.id)
+      : persistedItems[index];
+    if (!persistedItem || claimedItemIds.has(persistedItem.id)) {
+      throw new AppError("Sale replay does not match the original request", 409);
+    }
+    claimedItemIds.add(persistedItem.id);
+    return { rowId: item.rowId, id: persistedItem.id, updatedAt: persistedItem.updatedAt };
+  });
+
+  return {
+    billingId: saleById.id,
+    transactionNo: saleById.invoiceNo,
+    syncedItems,
+    deletedRowIds: []
+  };
+};
+
 const createSale = async (payload: SalePayloadData) => {
   return db.transaction((tx) => {
+    const replay = findSaleCreateReplay(tx, payload);
+    if (replay) return replay;
+
     const syncedItems: SyncedItems[] = [];
     if (payload.addToAccounting) assertAccountingCustomer(tx, payload.customerId);
 
@@ -115,6 +169,8 @@ const createSale = async (payload: SalePayloadData) => {
     const newSale = tx
       .insert(sales)
       .values({
+        id: payload.billingId,
+        creationToken: payload.creationToken,
         invoiceNo: finalInvoiceNo,
         customerId: payload.customerId,
         notes: payload.notes,
@@ -129,6 +185,7 @@ const createSale = async (payload: SalePayloadData) => {
       const newItem = tx
         .insert(saleItems)
         .values({
+          id: item.id ?? undefined,
           saleId: newSale.id,
           productId: item.productId,
           name: item.name,
@@ -204,7 +261,14 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
 
       if (item.isDeleted && item.id) {
         const existingItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
-        if (existingItem?.productId) {
+        if (existingItem && existingItem.saleId !== saleId) {
+          throw new AppError("Sale item does not belong to this sale", 409);
+        }
+        if (!existingItem) {
+          deletedRowIds.push(item.rowId);
+          continue;
+        }
+        if (existingItem.productId) {
           tx.update(products)
             .set({
               totalQuantitySold: sql`${products.totalQuantitySold} - ${existingItem.quantity}`
@@ -212,11 +276,15 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
             .where(eq(products.id, existingItem.productId))
             .run();
         }
-        tx.delete(saleItems).where(eq(saleItems.id, item.id)).run();
+        tx.delete(saleItems)
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
+          .run();
         deletedRowIds.push(item.rowId);
       } else if (item.id) {
         const oldItem = tx.select().from(saleItems).where(eq(saleItems.id, item.id)).get();
-        if (!oldItem) continue;
+        if (!oldItem || oldItem.saleId !== saleId) {
+          throw new AppError("Sale item does not belong to this sale", 409);
+        }
         const quantityDelta = item.quantity - oldItem.quantity;
         if (oldItem.productId && oldItem.productId !== item.productId) {
           tx.update(products)
@@ -238,7 +306,7 @@ const syncSaleWithItems = async (saleId: string, payload: SalePayloadData) => {
         const updatedItem = tx
           .update(saleItems)
           .set({ ...values, updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))` })
-          .where(eq(saleItems.id, item.id))
+          .where(and(eq(saleItems.id, item.id), eq(saleItems.saleId, saleId)))
           .returning()
           .get();
         syncedItems.push({ rowId: item.rowId, id: item.id, updatedAt: updatedItem.updatedAt });

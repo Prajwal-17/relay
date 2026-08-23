@@ -1,8 +1,14 @@
+import { STANDALONE_DEVELOPMENT_API_TOKEN } from "@shared/runtimeConfig";
+
 const defaultPort = import.meta.env.MODE === "development" ? 4723 : 4722;
 const BASE_URL =
   (typeof window !== "undefined" ? window.env?.API_URL : undefined) ||
   import.meta.env.VITE_API_BASE_URL ||
-  `http://localhost:${defaultPort}`;
+  `http://127.0.0.1:${defaultPort}`;
+const API_TOKEN =
+  (typeof window !== "undefined" ? window.env?.API_TOKEN : undefined) ||
+  import.meta.env.VITE_API_TOKEN ||
+  (import.meta.env.MODE === "development" ? STANDALONE_DEVELOPMENT_API_TOKEN : undefined);
 
 export class ApiError extends Error {
   status: number;
@@ -55,6 +61,7 @@ async function request<T>(
     response = await fetch(url, {
       headers: {
         "Content-type": "application/json",
+        ...(API_TOKEN ? { "x-quickcart-api-token": API_TOKEN } : {}),
         ...options.headers
       },
       ...options

@@ -603,6 +603,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "creation_token": {
+          "name": "creation_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "estimate_no": {
           "name": "estimate_no",
           "type": "integer",
@@ -669,6 +676,13 @@
             "id"
           ],
           "isUnique": false
+        },
+        "estimates_creation_token_unique": {
+          "name": "estimates_creation_token_unique",
+          "columns": [
+            "creation_token"
+          ],
+          "isUnique": true
         },
         "estimates_customer_id_idx": {
           "name": "estimates_customer_id_idx",
@@ -1197,6 +1211,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "creation_token": {
+          "name": "creation_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "invoice_no": {
           "name": "invoice_no",
           "type": "integer",
@@ -1271,6 +1292,13 @@
             "id"
           ],
           "isUnique": false
+        },
+        "sales_creation_token_unique": {
+          "name": "sales_creation_token_unique",
+          "columns": [
+            "creation_token"
+          ],
+          "isUnique": true
         },
         "sales_customer_id_idx": {
           "name": "sales_customer_id_idx",

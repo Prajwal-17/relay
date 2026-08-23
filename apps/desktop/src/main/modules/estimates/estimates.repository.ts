@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, gte, inArray, lte, or, sql, sum, type SQL } from "drizzle-orm";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import {
   BATCH_CHECK_ACTION,
   UPDATE_QTY_ACTION,
@@ -10,10 +11,14 @@ import {
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/milliUnits";
 import { db } from "../../db/db";
+import type * as schema from "../../db/schema";
 import { customers, estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
 import { AppError } from "../../utils/appError";
 import { updateCheckedQuantityUtil } from "../../utils/product.utils";
 import type { FilterEstimatesParams } from "./estimates.types";
+
+type Tx = BetterSQLite3Database<typeof schema>;
+type EstimatePayloadData = Extract<TxnPayloadData, { transactionType: "estimate" }>;
 
 const getEstimateById = async (id: string) => {
   return await db.query.estimates.findFirst({
@@ -94,8 +99,62 @@ const filterEstimatesByDate = async (
   };
 };
 
-const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> => {
+// a create may finish even if its reply times out.
+// example: the same id and token return the saved estimate instead of making a duplicate.
+const findEstimateCreateReplay = (tx: Tx, payload: EstimatePayloadData) => {
+  if (!payload.billingId && !payload.creationToken) return null;
+  if (!payload.billingId || !payload.creationToken) {
+    throw new AppError("Estimate creation identity is incomplete", 409);
+  }
+
+  const estimateById = tx.select().from(estimates).where(eq(estimates.id, payload.billingId)).get();
+  const estimateByToken = tx
+    .select()
+    .from(estimates)
+    .where(eq(estimates.creationToken, payload.creationToken))
+    .get();
+
+  if (!estimateById && !estimateByToken) return null;
+  if (!estimateById || !estimateByToken || estimateById.id !== estimateByToken.id) {
+    throw new AppError("Estimate creation identity conflicts with an existing estimate", 409);
+  }
+
+  const persistedItems = tx
+    .select()
+    .from(estimateItems)
+    .where(eq(estimateItems.estimateId, estimateById.id))
+    .orderBy(asc(estimateItems.position), asc(estimateItems.createdAt))
+    .all();
+  const requestedItems = payload.items.filter((item) => !item.isDeleted);
+  if (persistedItems.length !== requestedItems.length) {
+    throw new AppError("Estimate replay does not match the original request", 409);
+  }
+
+  const claimedItemIds = new Set<string>();
+  const syncedItems = requestedItems.map((item, index) => {
+    const persistedItem = item.id
+      ? persistedItems.find((candidate) => candidate.id === item.id)
+      : persistedItems[index];
+    if (!persistedItem || claimedItemIds.has(persistedItem.id)) {
+      throw new AppError("Estimate replay does not match the original request", 409);
+    }
+    claimedItemIds.add(persistedItem.id);
+    return { rowId: item.rowId, id: persistedItem.id, updatedAt: persistedItem.updatedAt };
+  });
+
+  return {
+    billingId: estimateById.id,
+    transactionNo: estimateById.estimateNo,
+    syncedItems,
+    deletedRowIds: []
+  };
+};
+
+const createEstimate = async (payload: EstimatePayloadData): Promise<SyncResponse> => {
   return db.transaction((tx) => {
+    const replay = findEstimateCreateReplay(tx, payload);
+    if (replay) return replay;
+
     const syncedItems: SyncedItems[] = [];
 
     const lastEstimate = tx
@@ -110,6 +169,8 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
     const newEstimate = tx
       .insert(estimates)
       .values({
+        id: payload.billingId,
+        creationToken: payload.creationToken,
         estimateNo: finalEstimateNo,
         customerId: payload.customerId,
         notes: payload.notes,
@@ -142,7 +203,11 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
       };
 
       // insert new
-      const newItem = tx.insert(estimateItems).values(values).returning().get();
+      const newItem = tx
+        .insert(estimateItems)
+        .values({ ...values, id: item.id ?? undefined })
+        .returning()
+        .get();
 
       if (newItem.productId) {
         tx.update(products)
@@ -171,7 +236,7 @@ const createEstimate = async (payload: TxnPayloadData): Promise<SyncResponse> =>
   });
 };
 
-const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData) => {
+const syncEstimateWithItems = async (estimateId: string, payload: EstimatePayloadData) => {
   return db.transaction((tx) => {
     const syncedItems: SyncedItems[] = [];
     const deletedRowIds: string[] = [];
@@ -199,8 +264,15 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
           .from(estimateItems)
           .where(eq(estimateItems.id, item.id))
           .get();
+        if (existingItem && existingItem.estimateId !== estimateId) {
+          throw new AppError("Estimate item does not belong to this estimate", 409);
+        }
+        if (!existingItem) {
+          deletedRowIds.push(item.rowId);
+          continue;
+        }
 
-        if (existingItem?.productId) {
+        if (existingItem.productId) {
           tx.update(products)
             .set({
               totalQuantitySold: sql`${products.totalQuantitySold} - ${existingItem.quantity}`
@@ -210,7 +282,9 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
         }
 
         // delete item
-        tx.delete(estimateItems).where(eq(estimateItems.id, item.id)).run();
+        tx.delete(estimateItems)
+          .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
+          .run();
         deletedRowIds.push(item.rowId);
       } else {
         if (item.id) {
@@ -221,8 +295,8 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
             .where(eq(estimateItems.id, item.id))
             .get();
 
-          if (!oldItem) {
-            continue;
+          if (!oldItem || oldItem.estimateId !== estimateId) {
+            throw new AppError("Estimate item does not belong to this estimate", 409);
           }
 
           const oldQty = oldItem.quantity;
@@ -255,7 +329,7 @@ const syncEstimateWithItems = async (estimateId: string, payload: TxnPayloadData
               ...values,
               updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
             })
-            .where(eq(estimateItems.id, item.id))
+            .where(and(eq(estimateItems.id, item.id), eq(estimateItems.estimateId, estimateId)))
             .returning()
             .get();
 

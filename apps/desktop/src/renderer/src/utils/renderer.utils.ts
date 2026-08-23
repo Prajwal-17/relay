@@ -9,7 +9,7 @@ import {
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { toMilliUnits } from "@shared/utils/milliUnits";
 
-type NormalizedLineItem = Omit<LineItem, "price" | "quantity" | "syncStatus"> & {
+type NormalizedLineItem = Omit<LineItem, "price" | "quantity" | "syncStatus" | "revision"> & {
   price: number;
   quantity: number;
 };
@@ -100,7 +100,7 @@ export const filterDirtyLineItems = (items: LineItem[]) => {
 export function normalizeLineItems(lineItems: LineItem[]): NormalizedLineItem[] {
   return lineItems.map((item) => {
     // eslint-disable-next-line
-    const { syncStatus, ...rest } = item;
+    const { syncStatus, revision: _revision, ...rest } = item;
 
     return {
       ...rest,
@@ -118,7 +118,9 @@ export function buildTransactionPayload({
   items,
   notes,
   addToAccounting,
-  createdAt
+  createdAt,
+  billingId,
+  creationToken
 }: {
   billingType: TransactionType;
   transactionNo: number | null;
@@ -127,8 +129,11 @@ export function buildTransactionPayload({
   notes: string | null;
   addToAccounting: boolean;
   createdAt: string;
+  billingId?: string;
+  creationToken?: string;
 }) {
   const data = {
+    ...(billingId && creationToken ? { billingId, creationToken } : {}),
     transactionNo,
     transactionType: billingType,
     customerId,

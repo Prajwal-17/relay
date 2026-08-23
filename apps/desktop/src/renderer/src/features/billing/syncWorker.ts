@@ -1,228 +1,301 @@
-import { apiClient, ApiError } from "@/lib/apiClient";
-import { queryClient } from "@/lib/queryClient";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { apiClient } from "@/lib/apiClient";
+import { queryClient } from "@/lib/queryClient";
+import { BILLSTATUS } from "@shared/types";
 import {
-  buildTransactionPayload,
-  filterDirtyLineItems,
-  filterValidLineItems,
-  normalizeLineItems
-} from "@/utils/renderer.utils";
-import { BILLSTATUS, type SyncResponse } from "@shared/types";
-import debounce from "lodash.debounce";
+  createRequestSnapshot,
+  hasPendingBillingWork,
+  hasUnconfirmedProductDraft,
+  type RequestSnapshot
+} from "./syncWorker.helpers";
+import { validateSyncResponse } from "./syncWorker.protocol";
 
-const syncStates = new Map<string, boolean>();
-const syncQueues = new Map<string, ReturnType<typeof debounce>>();
+export { BillingSyncProtocolError } from "./syncWorker.protocol";
 
-const syncLogic = async (tabId: string) => {
-  if (syncStates.get(tabId)) return;
+const DEFAULT_DEBOUNCE_MS = 800;
+const DEFAULT_REQUEST_TIMEOUT_MS = 15_000;
 
-  // lock first - to prevent items dropped in between
-  syncStates.set(tabId, true);
+type TimerHandle = ReturnType<typeof globalThis.setTimeout>;
 
-  const { updateTab } = useBillingTabsStore.getState();
-  const sessionStore = useBillingSessionStore.getState();
-  const session = sessionStore.sessions[tabId];
+export type BillingSyncTransport = {
+  post(endpoint: string, payload: unknown, options?: { signal?: AbortSignal }): Promise<unknown>;
+};
 
-  if (!session) {
-    syncStates.set(tabId, false);
-    return;
+export type BillingSyncTimerDependencies = {
+  setTimeout(callback: () => void, delay: number): TimerHandle;
+  clearTimeout(handle: TimerHandle): void;
+};
+
+export type CreateBillingSyncCoordinatorOptions = {
+  transport: BillingSyncTransport;
+  timers?: BillingSyncTimerDependencies;
+  debounceMs?: number;
+  requestTimeoutMs?: number;
+};
+
+type TabQueueState = {
+  timer: TimerHandle | null;
+  inFlight: Promise<void> | null;
+  abortController: AbortController | null;
+  inFlightIsCreate: boolean;
+  rerunAfterFlight: boolean;
+};
+
+export class BillingPersistenceError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "BillingPersistenceError";
   }
+}
 
-  const { lineItems } = session;
-  const {
-    markItemAsSaving,
-    markItemAsSynced,
-    updateLineItemId,
-    purgeDeletedItems,
-    updateField,
-    revertItemToDirty
-  } = sessionStore;
+export function createBillingSyncCoordinator({
+  transport,
+  timers = {
+    setTimeout: (callback, delay) => globalThis.setTimeout(callback, delay),
+    clearTimeout: (handle) => globalThis.clearTimeout(handle)
+  },
+  debounceMs = DEFAULT_DEBOUNCE_MS,
+  requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS
+}: CreateBillingSyncCoordinatorOptions) {
+  const queues = new Map<string, TabQueueState>();
+  let flushAllInFlight: Promise<void> | null = null;
 
-  const {
-    billingType,
-    transactionNo,
-    customerId,
-    billingDate,
-    notes,
-    addToAccounting,
-    isMetaDataDirty
-  } = session;
+  const getQueue = (tabId: string): TabQueueState => {
+    let queue = queues.get(tabId);
+    if (!queue) {
+      queue = {
+        timer: null,
+        inFlight: null,
+        abortController: null,
+        inFlightIsCreate: false,
+        rerunAfterFlight: false
+      };
+      queues.set(tabId, queue);
+    }
+    return queue;
+  };
 
-  const validLineItems = filterValidLineItems(lineItems);
-  const dirtyItems = filterDirtyLineItems(validLineItems);
+  const clearDebounce = (queue: TabQueueState) => {
+    if (!queue.timer) return;
+    timers.clearTimeout(queue.timer);
+    queue.timer = null;
+  };
 
-  const isNewBill = !session.billingId;
+  const setStatus = (tabId: string, status: BillingSessionData["status"]) => {
+    useBillingSessionStore.getState().updateUiField(tabId, "status", status);
+  };
 
-  if (dirtyItems.length === 0 && (!isMetaDataDirty || isNewBill)) {
-    syncStates.set(tabId, false);
-    return;
-  }
+  const queueRun = (tabId: string, delay: number) => {
+    const queue = getQueue(tabId);
+    clearDebounce(queue);
+    queue.timer = timers.setTimeout(() => {
+      queue.timer = null;
+      void runScheduled(tabId).catch(() => undefined);
+    }, delay);
+  };
 
-  markItemAsSaving(tabId, dirtyItems);
-  updateField(tabId, "status", BILLSTATUS.SAVING);
-
-  const normalizedItems = normalizeLineItems(dirtyItems); // here strip of the sync status
-  const payload = buildTransactionPayload({
-    billingType,
-    transactionNo,
-    customerId,
-    items: normalizedItems,
-    notes,
-    addToAccounting,
-    createdAt: billingDate ? billingDate.toISOString() : new Date().toISOString()
-  });
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
-
-  try {
-    const currentBillingId = useBillingSessionStore.getState().sessions[tabId]?.billingId;
-    const isNewBillRetry = !currentBillingId;
-    const endpoint = isNewBillRetry
-      ? `/api/${billingType}s/create`
-      : `/api/${billingType}s/${currentBillingId}/sync`;
-
-    const response = (await apiClient.post(endpoint, payload, {
-      signal: controller.signal
-    })) as SyncResponse;
-
-    if (isNewBillRetry && response.billingId) {
-      updateField(tabId, "billingId", response.billingId);
-      if (response.transactionNo !== null && response.transactionNo !== undefined) {
-        updateField(tabId, "transactionNo", response.transactionNo);
-      }
-      updateTab(tabId, {
-        routePath: `/billing/${billingType}s/${response.billingId}/edit`,
-        transactionNo: response.transactionNo
-      });
+  const startRequest = (tabId: string, snapshot: RequestSnapshot): Promise<void> => {
+    const queue = getQueue(tabId);
+    if (queue.inFlight) {
+      queue.rerunAfterFlight = true;
+      return queue.inFlight;
     }
 
-    const updateIdsMap: Map<string, string> = new Map(
-      response.syncedItems.map((i) => [i.rowId, i.id])
-    );
-    const syncIds: Set<string> = new Set(response.syncedItems.map((i) => i.rowId));
-    const purgeIds: Set<string> = new Set(response.deletedRowIds);
+    const store = useBillingSessionStore.getState();
+    store.markItemsAsSaving(tabId, snapshot.itemRevisions);
+    store.updateUiField(tabId, "status", BILLSTATUS.SAVING);
 
-    updateLineItemId(tabId, updateIdsMap);
-    markItemAsSynced(tabId, syncIds);
-    purgeDeletedItems(tabId, purgeIds);
-    updateField(tabId, "isMetaDataDirty", false);
-    if (customerId) {
-      void queryClient.invalidateQueries({
-        queryKey: ["customer-ledger", customerId],
-        exact: false
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["customer-ledger-summary", customerId]
-      });
-    }
-  } catch (error) {
-    revertItemToDirty(tabId, dirtyItems);
+    const controller = new AbortController();
+    queue.abortController = controller;
+    queue.inFlightIsCreate = !snapshot.billingId;
+    const timeout = timers.setTimeout(() => controller.abort(), requestTimeoutMs);
+    let succeeded = false;
 
-    const isNonRetryable = error instanceof ApiError && error.status >= 400 && error.status < 500;
+    const request = (async () => {
+      try {
+        const endpoint = snapshot.billingId
+          ? `/api/${snapshot.billingType}s/${snapshot.billingId}/sync`
+          : `/api/${snapshot.billingType}s/create`;
+        const response = await transport.post(endpoint, snapshot.payload, {
+          signal: controller.signal
+        });
+        validateSyncResponse(response, snapshot);
 
-    if (isNonRetryable) {
-      console.error("Sync validation error:", error.message);
-      updateField(tabId, "status", BILLSTATUS.ERROR);
-    } else {
-      console.error("Sync error:", error);
-      updateField(tabId, "status", BILLSTATUS.ERROR);
-    }
-  } finally {
-    clearTimeout(timeout);
-    syncStates.set(tabId, false);
+        const currentStore = useBillingSessionStore.getState();
+        if (!snapshot.billingId && response.billingId) {
+          currentStore.updateUiField(tabId, "billingId", response.billingId);
+          if (response.transactionNo !== undefined) {
+            currentStore.updateUiField(tabId, "transactionNo", response.transactionNo);
+          }
+          useBillingTabsStore.getState().updateTab(tabId, {
+            routePath: `/billing/${snapshot.billingType}s/${response.billingId}/edit`,
+            transactionNo: response.transactionNo ?? null
+          });
+        }
 
-    const freshSession = useBillingSessionStore.getState().sessions[tabId];
-    if (freshSession) {
-      updateField(tabId, "status", BILLSTATUS.SAVED);
+        currentStore.acknowledgeSync(tabId, {
+          itemRevisions: snapshot.itemRevisions,
+          metadataRevision: snapshot.metadataRevision,
+          itemIds: new Map(response.syncedItems.map((item) => [item.rowId, item.id])),
+          deletedRowIds: new Set(response.deletedRowIds)
+        });
+        void queryClient.invalidateQueries({
+          queryKey: ["customer-ledger", snapshot.customerId],
+          exact: false
+        });
+        void queryClient.invalidateQueries({
+          queryKey: ["customer-ledger-summary", snapshot.customerId]
+        });
+        succeeded = true;
 
-      const freshValid = filterValidLineItems(freshSession.lineItems);
-      const pendingItems = filterDirtyLineItems(freshValid);
-
-      if (pendingItems.length > 0) {
-        processSyncQueue(tabId);
+        if (hasPendingBillingWork(tabId)) setStatus(tabId, BILLSTATUS.UNSAVED);
+        else setStatus(tabId, BILLSTATUS.SAVED);
+      } catch (error) {
+        useBillingSessionStore.getState().failSync(tabId, snapshot.itemRevisions);
+        setStatus(tabId, BILLSTATUS.ERROR);
+        console.error("Billing sync failed", error);
+        throw error;
+      } finally {
+        timers.clearTimeout(timeout);
+        queue.abortController = null;
+        queue.inFlightIsCreate = false;
       }
+    })();
+
+    queue.inFlight = request.finally(() => {
+      queue.inFlight = null;
+      const shouldRerun = queue.rerunAfterFlight;
+      queue.rerunAfterFlight = false;
+      if (succeeded && hasPendingBillingWork(tabId) && (shouldRerun || !queue.timer)) {
+        queueRun(tabId, 0);
+      }
+    });
+    return queue.inFlight;
+  };
+
+  async function runScheduled(tabId: string): Promise<void> {
+    const queue = getQueue(tabId);
+    if (queue.inFlight) {
+      queue.rerunAfterFlight = true;
+      await queue.inFlight;
+      return;
     }
+
+    const session = useBillingSessionStore.getState().sessions[tabId];
+    if (!session) return;
+    if (!hasPendingBillingWork(tabId)) {
+      if (session.status !== BILLSTATUS.IDLE) setStatus(tabId, BILLSTATUS.SAVED);
+      return;
+    }
+
+    const snapshot = createRequestSnapshot(session);
+    if (!snapshot) {
+      setStatus(tabId, BILLSTATUS.UNSAVED);
+      return;
+    }
+    await startRequest(tabId, snapshot);
   }
-};
 
-export const processSyncQueue = (tabId: string) => {
-  if (!syncQueues.has(tabId)) {
-    syncQueues.set(
-      tabId,
-      debounce((id: string) => syncLogic(id), 800)
-    );
-  }
-  const fn = syncQueues.get(tabId)!;
-  fn(tabId);
-};
+  const schedule = (tabId: string) => {
+    if (!useBillingSessionStore.getState().sessions[tabId]) return;
+    setStatus(tabId, BILLSTATUS.UNSAVED);
+    queueRun(tabId, debounceMs);
+  };
 
-export const cancelSyncQueue = (tabId: string) => {
-  const fn = syncQueues.get(tabId);
-  if (fn) {
-    fn.cancel();
-  }
-  syncQueues.delete(tabId);
-  syncStates.delete(tabId);
-};
+  const flush = async (tabId: string): Promise<void> => {
+    if (hasUnconfirmedProductDraft(tabId)) {
+      setStatus(tabId, BILLSTATUS.UNSAVED);
+      throw new BillingPersistenceError("Select a product or clear the unfinished product search.");
+    }
 
-export const forceSync = (tabId: string) => {
-  const fn = syncQueues.get(tabId);
-  if (fn) {
-    fn.flush(); // .flush is func from loadash.debounce - cancel the timer & executes
-  }
-};
+    const queue = getQueue(tabId);
+    clearDebounce(queue);
+    if (queue.inFlight) await queue.inFlight;
 
-// get isSyncing state - in-flight
-export const isSyncing = (tabId: string): boolean => {
-  return syncStates.get(tabId) === true;
-};
-
-/**
- * Polls every 100ms until cond. are met
- * Basically used when close billing page
- * returns a promise resolves only when
- * - no sync is in flight
- * - no dirty items
- */
-export const flushSync = (tabId: string): Promise<void> => {
-  forceSync(tabId);
-
-  return new Promise<void>((resolve, reject) => {
-    const TIMEOUT_MS = 10_000;
-    const POLL_INTERVAL_MS = 100;
-    const start = Date.now();
-
-    const poll = () => {
-      if (Date.now() - start > TIMEOUT_MS) {
-        reject(new Error("Timed out"));
-        return;
-      }
-
-      if (syncStates.get(tabId)) {
-        setTimeout(poll, POLL_INTERVAL_MS);
-        return;
-      }
-
+    while (hasPendingBillingWork(tabId)) {
       const session = useBillingSessionStore.getState().sessions[tabId];
-      if (!session) {
-        resolve();
-        return;
+      if (!session) return;
+      const snapshot = createRequestSnapshot(session);
+      if (!snapshot) {
+        setStatus(tabId, BILLSTATUS.UNSAVED);
+        throw new BillingPersistenceError("Add a valid item and customer before saving this bill.");
       }
-      const validItems = filterValidLineItems(session.lineItems);
-      const dirtyItems = filterDirtyLineItems(validItems);
-      const hasPending = dirtyItems.length > 0;
+      await startRequest(tabId, snapshot);
+      clearDebounce(queue);
+    }
 
-      if (!hasPending) {
-        resolve();
-        return;
-      }
+    if (hasUnconfirmedProductDraft(tabId)) {
+      setStatus(tabId, BILLSTATUS.UNSAVED);
+      throw new BillingPersistenceError("Select a product or clear the unfinished product search.");
+    }
+  };
 
-      processSyncQueue(tabId);
-      setTimeout(poll, POLL_INTERVAL_MS);
-    };
+  const flushAll = (): Promise<void> => {
+    if (flushAllInFlight) return flushAllInFlight;
+    const tabIds = Object.keys(useBillingSessionStore.getState().sessions);
+    const run = Promise.all(
+      tabIds.map(async (tabId) => {
+        try {
+          await flush(tabId);
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Unknown persistence error";
+          throw new BillingPersistenceError(`Billing tab ${tabId}: ${message}`);
+        }
+      })
+    ).then(() => undefined);
+    const shared = run.finally(() => {
+      if (flushAllInFlight === shared) flushAllInFlight = null;
+    });
+    flushAllInFlight = shared;
+    return shared;
+  };
 
-    poll();
-  });
-};
+  const cancel = (tabId: string, options: { discard?: boolean } = {}) => {
+    const queue = queues.get(tabId);
+    if (options.discard && queue?.inFlight && queue.inFlightIsCreate) {
+      throw new BillingPersistenceError(
+        "Wait for the initial billing request to finish before discarding it."
+      );
+    }
+    if (
+      !options.discard &&
+      (queue?.inFlight || hasPendingBillingWork(tabId) || hasUnconfirmedProductDraft(tabId))
+    ) {
+      throw new BillingPersistenceError(
+        "Billing work must be saved or explicitly discarded first."
+      );
+    }
+    if (!queue) return;
+    clearDebounce(queue);
+    if (options.discard) queue.abortController?.abort();
+    queues.delete(tabId);
+  };
+
+  const cancelAll = (options: { discard?: boolean } = {}) => {
+    const tabIds = new Set([
+      ...queues.keys(),
+      ...Object.keys(useBillingSessionStore.getState().sessions)
+    ]);
+    for (const tabId of tabIds) cancel(tabId, options);
+  };
+
+  return {
+    schedule,
+    flush,
+    flushAll,
+    cancel,
+    cancelAll,
+    isSyncing: (tabId: string) => Boolean(queues.get(tabId)?.inFlight)
+  };
+}
+
+export const billingSyncCoordinator = createBillingSyncCoordinator({ transport: apiClient });
+
+export const processSyncQueue = (tabId: string) => billingSyncCoordinator.schedule(tabId);
+export const flushSync = (tabId: string) => billingSyncCoordinator.flush(tabId);
+export const flushAllSync = () => billingSyncCoordinator.flushAll();
+export const isSyncing = (tabId: string) => billingSyncCoordinator.isSyncing(tabId);
+export const cancelSyncQueue = (tabId: string, discard = false) =>
+  billingSyncCoordinator.cancel(tabId, { discard });

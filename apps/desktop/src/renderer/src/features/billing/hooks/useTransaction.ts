@@ -1,6 +1,7 @@
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
-import { formatRupee, paisaToRupees } from "@shared/utils/utils";
+import { filterValidLineItems } from "@/utils/renderer.utils";
+import { formatRupee } from "@shared/utils/utils";
 
 const useTransaction = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -8,19 +9,15 @@ const useTransaction = () => {
     activeTabId ? (state.sessions[activeTabId]?.lineItems ?? []) : []
   );
 
-  const total = lineItems.reduce((sum, currentItem) => {
+  const billableItems = filterValidLineItems(lineItems).filter((item) => !item.isDeleted);
+  const total = billableItems.reduce((sum, currentItem) => {
     return sum + Number(currentItem.totalPrice || 0);
   }, 0);
 
   const subtotal = formatRupee(total);
-  const temp = Math.round(paisaToRupees(total));
-  const grandTotal = Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 2
-  }).format(temp);
+  const grandTotal = formatRupee(total);
 
-  const calcTotalQuantity = lineItems.reduce((sum, currentItem) => {
+  const calcTotalQuantity = billableItems.reduce((sum, currentItem) => {
     return sum + (Number(currentItem.quantity) || 0);
   }, 0);
 

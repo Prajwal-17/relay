@@ -70,9 +70,10 @@ Run these from `apps/desktop` unless shown otherwise.
 | `pnpm build`          | Typecheck and create the production Electron build |
 | `pnpm start`          | Preview the production build                       |
 | `pnpm lint`           | Run ESLint                                         |
-| `pnpm typecheck`      | Typecheck application and test code                |
-| `pnpm typecheck:test` | Typecheck Vitest suites and helpers                |
-| `pnpm test --run`     | Run Vitest once                                    |
+| `pnpm typecheck`      | Typecheck application and all test code            |
+| `pnpm typecheck:test` | Typecheck Vitest and Playwright code               |
+| `pnpm test:e2e`       | Rebuild for Electron and run Playwright            |
+| `pnpm run test --run` | Rebuild for Node and run Vitest once               |
 | `pnpm format`         | Format the desktop package                         |
 | `pnpm db:migrate:dev` | Apply development migrations                       |
 | `pnpm db:studio:dev`  | Open Drizzle Studio for development data           |
@@ -200,12 +201,50 @@ Rebuild the native dependency for Node before database tests. Run the complete s
 products integration suite with:
 
 ```bash
-pnpm rebuild:node
-pnpm run typecheck:test
+pnpm typecheck:test
 pnpm run test --run
 pnpm run test --run src/main/tests/integration/products
-pnpm rebuild:electron
 ```
+
+### Billing persistence tests
+
+Vitest is the primary regression layer. It covers exact paisa/milli-unit calculations, revisioned
+autosave coordination, stores, Hono services and repositories, and fresh file-backed migration.
+Playwright keeps three serial business-critical journeys across the development Electron renderer,
+React/Zustand state, the forked Hono server, and an isolated on-disk SQLite database.
+
+Run the complete validation sequence from this directory:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm run test --run
+xvfb-run -a pnpm test:e2e
+```
+
+The test scripts rebuild `better-sqlite3` for their own runtime before starting: Vitest uses the
+Node ABI, while Electron E2E uses the Electron ABI. Switching between them does not require a
+manual rebuild.
+
+The Playwright fixture starts `electron-vite dev` directly; it never runs
+`pnpm build`, `electron-vite build`, Electron Builder, or a packaged artifact, and it does not use
+pre-existing `out/` files. Electron Vite still performs the main/preload compilation required to
+start its development runtime.
+
+Every journey creates an existing, absolute temporary `M_VITE_USER_DATA_DIR`, allocates unique API
+and remote-debugging ports, and connects to the development renderer over CDP. The configured API
+port is resolved by the main process and shared with preload, renderer, and the forked server. This
+keeps tests independent of real QuickCart development and production data and allows other
+development instances to remain open.
+
+The fixture owns and terminates the exact development process group, reconnects after full Electron
+restart when required, removes only its own temporary directory, and fails on renderer exceptions,
+unexpected process exits, or unhandled API failures. It also asserts the real content area is
+exactly `1280×650`. Linux headed Electron requires Xvfb; macOS and Windows can run
+`pnpm test:e2e` directly.
+
+Playwright runs one worker with trace on first retry and screenshots/videos retained on failure.
+Reports and test results are ignored under `playwright-report/` and `test-results/`.
 
 ## Packaging and releases
 
@@ -221,11 +260,11 @@ pnpm rebuild:electron
 `better-sqlite3` must match the runtime ABI:
 
 ```bash
-pnpm rebuild:electron  # before Electron development
-pnpm rebuild:node      # before Node-only scripts or tests
+pnpm rebuild:electron  # before invoking Electron tooling directly
+pnpm rebuild:node      # before invoking Node database tooling directly
 ```
 
-The development and database commands already perform the appropriate rebuild.
+The development, database, and test commands already perform the appropriate rebuild.
 
 ### Linux Chromium sandbox
 
@@ -234,5 +273,6 @@ script, use the same environment setting or configure the installed Chromium san
 
 ### Port already in use
 
-Close other QuickCart development instances before restarting. The API uses fixed ports `4723`
-in development and `4722` in production.
+The API defaults to port `4723` in development and `4722` in production. Set a free validated
+`M_VITE_API_PORT` when isolation is needed; the E2E fixture allocates one automatically for every
+development Electron launch.

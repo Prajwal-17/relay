@@ -6,6 +6,9 @@ import { registerZoomController, restoreZoom, type ZoomStore } from "./zoom";
 type MainWindowOptions = {
   isDevBuild: boolean;
   store?: ZoomStore;
+  apiPort: number;
+  apiToken: string;
+  maximizeOnReady?: boolean;
 };
 
 export type MainWindowHandle = {
@@ -14,12 +17,17 @@ export type MainWindowHandle = {
 };
 
 // creates the hidden app window and tells when it is ready to show
-export function createMainWindow({ isDevBuild, store }: MainWindowOptions): MainWindowHandle {
-  const apiPort = isDevBuild ? 4723 : 4722;
+export function createMainWindow({
+  isDevBuild,
+  apiPort,
+  apiToken,
+  maximizeOnReady = true,
+  store
+}: MainWindowOptions): MainWindowHandle {
   const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
   const { width: workAreaWidth, height: workAreaHeight } = screen.getPrimaryDisplay().workAreaSize;
-  const contentWidth = Math.min(1280, Math.max(1024, workAreaWidth - 24));
-  const contentHeight = Math.min(650, Math.max(600, workAreaHeight - 72));
+  const contentWidth = maximizeOnReady ? Math.min(1280, Math.max(1024, workAreaWidth - 24)) : 1280;
+  const contentHeight = maximizeOnReady ? Math.min(650, Math.max(600, workAreaHeight - 72)) : 650;
 
   const window = new BrowserWindow({
     show: false,
@@ -35,7 +43,7 @@ export function createMainWindow({ isDevBuild, store }: MainWindowOptions): Main
       contextIsolation: true,
       nodeIntegration: false,
       zoomFactor: initialZoom,
-      additionalArguments: [`--api-port=${apiPort}`]
+      additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
     } as Electron.WebPreferences
   });
 
@@ -64,7 +72,7 @@ export function createMainWindow({ isDevBuild, store }: MainWindowOptions): Main
   const ready = new Promise<BrowserWindow>((resolveReady, rejectReady) => {
     window.once("ready-to-show", () => {
       if (store) restoreZoom(web, store);
-      window.maximize();
+      if (maximizeOnReady) window.maximize();
       resolveReady(window);
     });
     web.once("did-fail-load", (_event, errorCode, errorDescription) => {

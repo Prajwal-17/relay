@@ -30,7 +30,8 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updatePersistentField = useBillingSessionStore((state) => state.updatePersistentField);
+  const updateUiField = useBillingSessionStore((state) => state.updateUiField);
   const customerId = session?.customerId ?? null;
   const customerName = session?.customerName ?? "";
 
@@ -82,8 +83,8 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
         customerType: "cash"
       }),
     onSuccess: (data) => {
-      updateField(activeTabId, "customerId", data.id);
-      updateField(activeTabId, "customerName", data.name);
+      updatePersistentField(activeTabId, "customerId", data.id);
+      updateUiField(activeTabId, "customerName", data.name);
       setOpen(false);
       if (activeTabId) processSyncQueue(activeTabId);
       toast.success(`Created and selected customer: ${data.name}`);
@@ -95,10 +96,10 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   });
 
   const handleSelectCustomer = (customer: Customer) => {
-    updateField(activeTabId, "customerId", customer.id);
-    updateField(activeTabId, "customerName", customer.name);
+    updatePersistentField(activeTabId, "customerId", customer.id);
+    updateUiField(activeTabId, "customerName", customer.name);
     if (customer.id === config?.billing.defaultCustomerId || customer.name === "DEFAULT") {
-      updateField(activeTabId, "addToAccounting", false);
+      updatePersistentField(activeTabId, "addToAccounting", false);
     }
     setOpen(false);
     if (activeTabId) processSyncQueue(activeTabId);
@@ -179,6 +180,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
         <Button
           variant="outline"
           role="combobox"
+          aria-label="Select customer"
           className="h-9 w-full min-w-0 justify-between px-3 text-sm font-normal"
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">

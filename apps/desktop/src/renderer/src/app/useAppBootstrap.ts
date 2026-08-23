@@ -25,11 +25,13 @@ const useAppBootstrap = () => {
   } = useQuery({
     queryKey: ["appPreferences"],
     queryFn: () => apiClient.get<AppPreferencesResponse>("/api/app-preferences"),
+    enabled: onboardingStatus?.isComplete === true,
     staleTime: Infinity
   });
 
-  const isBootstrapping = isOnboardingLoading || isPreferencesLoading;
-  const hasError = isOnboardingError || isPreferencesError;
+  const shouldLoadPreferences = onboardingStatus?.isComplete === true;
+  const isBootstrapping = isOnboardingLoading || (shouldLoadPreferences && isPreferencesLoading);
+  const hasError = isOnboardingError || (shouldLoadPreferences && isPreferencesError);
 
   useEffect(() => {
     if (isOnboardingSuccess) {
@@ -43,7 +45,12 @@ const useAppBootstrap = () => {
     isBootstrapping,
     hasError,
     isRetrying: isOnboardingFetching || isPreferencesFetching,
-    retry: () => Promise.all([refetchOnboarding(), refetchPreferences()])
+    retry: async () => {
+      const onboarding = await refetchOnboarding();
+      if (onboarding.data?.isComplete) {
+        await refetchPreferences();
+      }
+    }
   };
 };
 

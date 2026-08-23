@@ -163,6 +163,7 @@ export const sales = sqliteTable(
     storeId: text("store_id").references(() => storeProfile.id, {
       onDelete: "cascade"
     }),
+    creationToken: text("creation_token"),
     invoiceNo: integer("invoice_no").notNull().unique(),
     customerId: text("customer_id")
       .references(() => customers.id)
@@ -182,6 +183,7 @@ export const sales = sqliteTable(
   },
   (table) => [
     index("sales_id_idx").on(table.id),
+    uniqueIndex("sales_creation_token_unique").on(table.creationToken),
     index("sales_customer_id_idx").on(table.customerId)
   ]
 );
@@ -231,6 +233,7 @@ export const estimates = sqliteTable(
     storeId: text("store_id").references(() => storeProfile.id, {
       onDelete: "cascade"
     }),
+    creationToken: text("creation_token"),
     estimateNo: integer("estimate_no").notNull().unique(),
     customerId: text("customer_id")
       .references(() => customers.id)
@@ -247,6 +250,7 @@ export const estimates = sqliteTable(
   },
   (table) => [
     index("estimates_id_idx").on(table.id),
+    uniqueIndex("estimates_creation_token_unique").on(table.creationToken),
     index("estimates_customer_id_idx").on(table.customerId)
   ]
 );

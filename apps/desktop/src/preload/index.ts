@@ -62,6 +62,8 @@ const databaseUpgradeApi: DatabaseUpgradeApi = {
 
 const apiArg = process.argv.find((a) => a.startsWith("--api-port="));
 const apiPort = apiArg ? Number(apiArg.split("=")[1]) : 4722;
+const apiTokenArg = process.argv.find((argument) => argument.startsWith("--api-token="));
+const apiToken = apiTokenArg?.slice("--api-token=".length) ?? "";
 
 if (process.contextIsolated) {
   try {
@@ -72,7 +74,8 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld("rawPrintApi", rawPrintApi);
     contextBridge.exposeInMainWorld("databaseUpgradeApi", databaseUpgradeApi);
     contextBridge.exposeInMainWorld("env", {
-      API_URL: `http://localhost:${apiPort}`
+      API_URL: `http://127.0.0.1:${apiPort}`,
+      API_TOKEN: apiToken
     });
   } catch (error) {
     console.error(error);
@@ -91,5 +94,5 @@ if (process.contextIsolated) {
   // @ts-ignore (define in ts)
   window.databaseUpgradeApi = databaseUpgradeApi;
   // @ts-ignore (define in ts)
-  window.env = { API_URL: `http://localhost:${apiPort}` };
+  window.env = { API_URL: `http://127.0.0.1:${apiPort}`, API_TOKEN: apiToken };
 }

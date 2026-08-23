@@ -1,4 +1,5 @@
 import { ErrorState } from "@/components/app-ui/ErrorState";
+import { BillingPersistenceGuard } from "@/features/billing/BillingPersistenceGuard";
 import BillingHeader from "@/features/billing/BillingHeader";
 import { BillingPrintOptions } from "@/features/billing/BillingPrintOptions";
 import BillingSkeleton from "@/features/billing/BillingSkeleton";
@@ -22,7 +23,7 @@ import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
-const BillingPage = () => {
+const BillingPageContent = () => {
   const navigate = useNavigate();
   const { type, id } = useParams();
   const { pathname, state } = useLocation();
@@ -101,7 +102,7 @@ const BillingPage = () => {
   useEffect(() => {
     if (!activeTabId) return;
     if (formattedType && Object.values(TRANSACTION_TYPE).includes(formattedType)) {
-      useBillingSessionStore.getState().updateField(activeTabId, "billingType", formattedType);
+      useBillingSessionStore.getState().updateUiField(activeTabId, "billingType", formattedType);
     }
   }, [formattedType, activeTabId]);
 
@@ -197,5 +198,11 @@ const BillingPage = () => {
     </div>
   );
 };
+
+const BillingPage = () => (
+  <BillingPersistenceGuard>
+    <BillingPageContent />
+  </BillingPersistenceGuard>
+);
 
 export default BillingPage;

@@ -1,6 +1,9 @@
 import { apiClient } from "@/lib/apiClient";
 import { prepareRasterReceipt } from "@/features/settings/thermalRaster";
-import { normalizeLineItems } from "@/features/billing/store/billingSession.helpers";
+import {
+  createInitialSession,
+  normalizeLineItems
+} from "@/features/billing/store/billingSession.helpers";
 import { filterValidLineItems } from "@/utils/renderer.utils";
 import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -137,7 +140,9 @@ export function buildRawReceiptDataFromTransaction(
   }
 
   const session: BillingSessionData = {
-    isMetaDataDirty: false,
+    ...createInitialSession(),
+    metadataRevision: 0,
+    persistedMetadataRevision: 0,
     billingId: transaction.id,
     billingType: transaction.type,
     transactionNo: transaction.transactionNo,

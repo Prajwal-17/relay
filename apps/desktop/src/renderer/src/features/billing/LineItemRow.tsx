@@ -45,16 +45,23 @@ const LineItemRow = memo(
     const updateLineItem = useBillingSessionStore((state) => state.updateLineItem);
     const deleteLineItem = useBillingSessionStore((state) => state.deleteLineItem);
 
-    const { activeRowId, setActiveRowId, isDropdownOpen, setItemQuery, setIsDropdownOpen } =
-      useSearchDropdownStore(
-        useShallow((state) => ({
-          activeRowId: state.activeRowId,
-          setActiveRowId: state.setActiveRowId,
-          isDropdownOpen: state.isDropdownOpen,
-          setItemQuery: state.setItemQuery,
-          setIsDropdownOpen: state.setIsDropdownOpen
-        }))
-      );
+    const {
+      itemQuery,
+      activeRowId,
+      setActiveRowId,
+      isDropdownOpen,
+      setItemQuery,
+      setIsDropdownOpen
+    } = useSearchDropdownStore(
+      useShallow((state) => ({
+        itemQuery: state.itemQuery,
+        activeRowId: state.activeRowId,
+        setActiveRowId: state.setActiveRowId,
+        isDropdownOpen: state.isDropdownOpen,
+        setItemQuery: state.setItemQuery,
+        setIsDropdownOpen: state.setIsDropdownOpen
+      }))
+    );
 
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
     const qtyVal = parseFloat(item.quantity || "0");
@@ -137,7 +144,10 @@ const LineItemRow = memo(
           </div>
           <div className="relative min-w-0">
             <input
-              value={item.productSnapshot}
+              aria-label={`Product row ${idx + 1}`}
+              value={
+                activeRowId === item.rowId && isDropdownOpen ? itemQuery : item.productSnapshot
+              }
               className={cn(
                 "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/80 border-input h-9 w-full rounded-lg border px-3 py-2 text-base font-semibold shadow-xs transition-[border-color,box-shadow,background-color,color] outline-none focus-visible:ring-2",
                 checkedFieldColor
@@ -148,13 +158,10 @@ const LineItemRow = memo(
                 setIsDropdownOpen(true);
               }}
               onChange={(e) => {
-                const tabId = getActiveTabId();
-                if (!tabId) return;
+                if (!getActiveTabId()) return;
                 setItemQuery(e.target.value);
                 setActiveRowId(item.rowId);
                 setIsDropdownOpen(true);
-                updateLineItem(tabId, item.rowId, "productSnapshot", e.target.value);
-                processSyncQueue(tabId);
               }}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || (isDropdownOpen && activeRowId === item.rowId)) {
@@ -198,6 +205,7 @@ const LineItemRow = memo(
                 <Plus size={16} strokeWidth={2.5} />
               </button>
               <input
+                aria-label={`Quantity row ${idx + 1}`}
                 type="text"
                 inputMode="decimal"
                 onContextMenu={(e) => {
@@ -251,6 +259,7 @@ const LineItemRow = memo(
                 <IndianRupee size={14} />
               </span>
               <input
+                aria-label={`Price row ${idx + 1}`}
                 type="text"
                 value={item.price}
                 placeholder="0"
