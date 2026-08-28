@@ -12,7 +12,7 @@ import { getPendingDataMigrations, runDataMigrations } from "./dataMigrations/ru
 import type { DataMigrationContext } from "./dataMigrations/types";
 import * as schema from "./schema";
 import {
-  adoptPrereleaseSchema,
+  adoptPendingSchemaMigration,
   captureUpgradeBaseline,
   createUpgradeStatus,
   inspectDatabaseUpgrade,
@@ -98,11 +98,10 @@ export async function coordinateDatabaseUpgrade(
           backupAvailable
         )
       );
-      if (inspection.adoptPrereleaseSchema) {
-        adoptPrereleaseSchema(sqlite, migrationsFolder);
-      } else {
-        migrate(database, { migrationsFolder });
+      if (inspection.adoptPendingSchemaMigration) {
+        adoptPendingSchemaMigration(sqlite, migrationsFolder);
       }
+      migrate(database, { migrationsFolder });
     }
 
     const defaultConfig: AppConfig = getDefaultConfig();
@@ -131,7 +130,10 @@ export async function coordinateDatabaseUpgrade(
           backupAvailable
         )
       );
-      verifyDatabaseUpgrade(sqlite, baseline!);
+      const verifyLegacyBackfills = inspection.pendingDataMigrationIds.some((id) =>
+        id.startsWith("v4.3.0:")
+      );
+      verifyDatabaseUpgrade(sqlite, baseline!, { verifyLegacyBackfills });
     }
 
     return { db: database, sqlite, inspection, backupAvailable };

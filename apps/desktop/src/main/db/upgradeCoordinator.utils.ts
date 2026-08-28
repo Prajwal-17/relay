@@ -16,7 +16,7 @@ export type UpgradeInspection = {
   isFreshDatabase: boolean;
   needsBackup: boolean;
   schemaPending: boolean;
-  adoptPrereleaseSchema: boolean;
+  adoptPendingSchemaMigration: boolean;
   pendingDataMigrationIds: string[];
   totalSteps: number;
   backupDirectory: string;
@@ -48,6 +48,13 @@ function columnExists(sqlite: Database.Database, table: string, column: string):
   if (!tableExists(sqlite, table)) return false;
   const columns = sqlite.pragma(`table_info(${table})`) as { name: string }[];
   return columns.some((entry) => entry.name === column);
+}
+
+/** Checks if this index is already in the database. */
+function indexExists(sqlite: Database.Database, index: string): boolean {
+  return Boolean(
+    sqlite.prepare("SELECT 1 FROM sqlite_master WHERE type = 'index' AND name = ?").get(index)
+  );
 }
 
 /** Spots databases that already got the old unreleased 0030 changes. */
@@ -111,25 +118,24 @@ function inspectOpenDatabase(
 
   // folderMillis - is the timestamp
   const latestSchemaMigration = migrations.at(-1)?.folderMillis ?? 0;
-  const previousSchemaMigration = migrations.at(-2)?.folderMillis ?? 0;
-
   const databaseSchemaMigration = getLastSchemaMigration(sqlite);
-
-  /**
-   * Eg :-
-   * previousSchemaMigration = 200  // previous official migration
-   * latestSchemaMigration = 300    // newest official migration
-   * databaseSchemaMigration = 250  // database has an intermediate prerelease migration
-   * The database is between the previous and latest migrations,
-   * and its actual tables already look like the latest schema.
-   * Therefore, adopt the existing schema instead of running the migration again.
-   */
-  const adoptPrereleaseSchema =
-    databaseSchemaMigration > previousSchemaMigration &&
-    databaseSchemaMigration < latestSchemaMigration &&
-    looksLikePrereleaseSchema(sqlite);
+  const nextSchemaMigration = migrations.find(
+    (migration) => migration.folderMillis > databaseSchemaMigration
+  );
 
   const schemaPending = databaseSchemaMigration < latestSchemaMigration;
+  const nextMigrationAddsCreationTokens = nextSchemaMigration?.sql.some((statement) =>
+    statement.includes("ADD `creation_token` text")
+  );
+  const alreadyHasCreationTokenSchema =
+    columnExists(sqlite, "sales", "creation_token") &&
+    columnExists(sqlite, "estimates", "creation_token") &&
+    indexExists(sqlite, "sales_creation_token_unique") &&
+    indexExists(sqlite, "estimates_creation_token_unique");
+  const adoptPendingSchemaMigration =
+    schemaPending &&
+    (looksLikePrereleaseSchema(sqlite) ||
+      Boolean(nextMigrationAddsCreationTokens && alreadyHasCreationTokenSchema));
   const pendingIds = pendingDataMigrationIds(sqlite);
   const upgradeKey =
     String(latestSchemaMigration) +
@@ -147,7 +153,7 @@ function inspectOpenDatabase(
     isFreshDatabase,
     needsBackup,
     schemaPending,
-    adoptPrereleaseSchema,
+    adoptPendingSchemaMigration,
     pendingDataMigrationIds: pendingIds,
     totalSteps,
     backupDirectory: getBackupPaths(databasePath).directory,
@@ -251,7 +257,7 @@ function verifyNoBlankValues(
   if (emptyRow) throw new Error(message);
 }
 
-/** Checks that item positions start at zero and keep using the normal gap. */
+/** Checks the normalized output produced by the legacy item-position backfill. */
 function verifyItemPositions(
   sqlite: Database.Database,
   table: "sale_items" | "estimate_items",
@@ -398,8 +404,16 @@ function verifyProductDates(sqlite: Database.Database): void {
   }
 }
 
-/** Runs the final checks before QuickCart starts using the upgraded database. */
-export function verifyDatabaseUpgrade(sqlite: Database.Database, baseline: UpgradeBaseline): void {
+export type VerifyDatabaseUpgradeOptions = {
+  verifyLegacyBackfills?: boolean;
+};
+
+/** Runs the checks relevant to the work performed by this database upgrade. */
+export function verifyDatabaseUpgrade(
+  sqlite: Database.Database,
+  baseline: UpgradeBaseline,
+  options: VerifyDatabaseUpgradeOptions = {}
+): void {
   const databaseCheck = sqlite.pragma("quick_check", { simple: true });
   if (databaseCheck !== "ok") {
     throw new Error("SQLite found a problem after the database upgrade.");
@@ -425,6 +439,10 @@ export function verifyDatabaseUpgrade(sqlite: Database.Database, baseline: Upgra
 
   verifyPurchasePrices(sqlite, "sale_items", baseline.purchasePrices.saleItems);
   verifyPurchasePrices(sqlite, "estimate_items", baseline.purchasePrices.estimateItems);
+
+  // These assertions validate the v4.3.0 backfills immediately after they run. Values such as
+  // line-item positions can legitimately change later, so unrelated upgrades must not rerun them.
+  if (options.verifyLegacyBackfills === false) return;
 
   verifyNoBlankValues(
     sqlite,
@@ -470,14 +488,20 @@ export function verifyDatabaseUpgrade(sqlite: Database.Database, baseline: Upgra
   }
 }
 
-/** Marks the old unreleased schema as handled without running it again. */
-export function adoptPrereleaseSchema(sqlite: Database.Database, migrationsFolder: string): void {
-  const migration = readMigrationFiles({ migrationsFolder }).at(-1);
-  if (!migration) throw new Error("No database migration was found to adopt.");
+/** Records the next schema migration when its structure is already present in the database. */
+export function adoptPendingSchemaMigration(
+  sqlite: Database.Database,
+  migrationsFolder: string
+): void {
+  const lastSchemaMigration = getLastSchemaMigration(sqlite);
+  const migration = readMigrationFiles({ migrationsFolder }).find(
+    (candidate) => candidate.folderMillis > lastSchemaMigration
+  );
+  if (!migration) throw new Error("No pending database migration was found to adopt.");
 
   sqlite.transaction(() => {
     sqlite.exec(`
-      CREATE TABLE app_data_migrations (
+      CREATE TABLE IF NOT EXISTS app_data_migrations (
         id text PRIMARY KEY NOT NULL,
         applied_at text DEFAULT (STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL
       );
