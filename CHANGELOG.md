@@ -1,5 +1,40 @@
 # Changelog
 
+## v4.4.0 - 29 Aug 2026
+
+Major release with customer accounting, billing updates, printing, and UI improvements.
+
+### Features
+
+- Add customer ledger with payments, quick sales, balance adjustments, and automatic sale entries
+- Add customer overview, activity, sales, and estimates tabs
+- Add customer search, filters, sorting, pagination, keyboard navigation, archiving, and deletion
+- Add transactions dashboard, transaction grouping, and updated transaction details
+- Add thermal receipt, saved receipt, customer ledger, UPI, and account summary printing
+- Add transaction PDF export and notes for sales and estimates
+- Add drag-and-drop billing item ordering and inline item search
+- Add automatic database upgrades
+
+### Improvements
+
+- Update the color system, sidebar, settings, billing preview, dialogs, and transaction views
+- Improve layouts for low-resolution screens
+- Improve product images, product search, and billing search dropdown controls
+- Improve customer search, ledger grouping, and navigation to new sales and estimates
+- Improve app zoom and thermal printer output
+- Add backend integration, utility, and Electron billing tests
+
+### Fixed
+
+- Fix billing autosave races, stale state, and failed request handling
+- Warn before leaving a bill with unsaved changes
+- Prevent empty transactions and partial transaction updates
+- Fix product dropdown mouse and keyboard selection
+- Fix customer and transaction infinite scrolling
+- Fix PDF export, customer badge layout, drag-and-drop rows, and compact-screen clipping
+- Fix app zoom resets when switching or focusing windows
+- Make database upgrades backward compatible
+
 ## v4.3.1 — 05 Jul 2026
 
 ### Features
