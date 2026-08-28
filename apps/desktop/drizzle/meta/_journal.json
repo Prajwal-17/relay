@@ -211,6 +211,20 @@
       "when": 1779126133799,
       "tag": "0029_panoramic_silver_samurai",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "6",
+      "when": 1785238789203,
+      "tag": "0030_dear_bastion",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1787938995418,
+      "tag": "0031_add_creation_tokens",
+      "breakpoints": true
     }
   ]
 }

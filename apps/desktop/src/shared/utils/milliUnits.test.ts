@@ -1,3 +1,4 @@
+import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { fromMilliUnits, toMilliUnits } from "../utils/milliUnits";
 
@@ -15,6 +16,7 @@ describe("toMilliUnits", () => {
   });
 
   it("rounds using Math.round semantics (>=0.5 up, <0.5 down)", () => {
+    expect(toMilliUnits(1.2345)).toBe(1235);
     expect(toMilliUnits(1.0005)).toBe(1001);
     expect(toMilliUnits(1.0004)).toBe(1000);
     expect(toMilliUnits(0.0005)).toBe(1);
@@ -34,6 +36,7 @@ describe("toMilliUnits", () => {
   it("handles negative numbers", () => {
     expect(toMilliUnits(-1)).toBe(-1000);
     expect(toMilliUnits(-1.5)).toBe(-1500);
+    expect(toMilliUnits(-2.75)).toBe(-2750);
     expect(toMilliUnits(-0.001)).toBe(-1);
   });
 
@@ -42,6 +45,10 @@ describe("toMilliUnits", () => {
     expect(toMilliUnits("100")).toBe(100000);
     expect(toMilliUnits("0")).toBe(0);
     expect(toMilliUnits("-2.5")).toBe(-2500);
+  });
+
+  it("accepts whitespace-padded numeric strings", () => {
+    expect(toMilliUnits(" 2.75 ")).toBe(2750);
   });
 
   it("returns 0 for empty string", () => {
@@ -67,8 +74,16 @@ describe("toMilliUnits", () => {
     expect(toMilliUnits(-Infinity)).toBe(0);
   });
 
+  it("returns 0 for a null value passed at runtime", () => {
+    expect(toMilliUnits(null as unknown as number)).toBe(0);
+  });
+
+  it("returns 0 for an array value passed at runtime", () => {
+    expect(toMilliUnits([] as unknown as number)).toBe(0);
+  });
+
   it("handles large numbers without overflow", () => {
-    expect(toMilliUnits(1000000)).toBe(1_000_000_000);
+    expect(toMilliUnits(1_000_000)).toBe(1_000_000_000);
   });
 
   it("is the inverse of fromMilliUnits for clean values", () => {
@@ -113,8 +128,31 @@ describe("fromMilliUnits", () => {
     expect(fromMilliUnits(1_000_000_000)).toBe(1_000_000);
   });
 
-  it("is the inverse of toMilliUnits for integer milli values", () => {
+  it("is the inverse of toMilliUnits for clean values", () => {
     expect(toMilliUnits(fromMilliUnits(5000))).toBe(5000);
     expect(toMilliUnits(fromMilliUnits(1))).toBe(1);
+  });
+});
+
+describe("property-based tests", () => {
+  it("recovers every integer milli-unit without loss (round-trip)", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: -100_000_000, max: 100_000_000 }), (milli) => {
+        expect(toMilliUnits(fromMilliUnits(milli))).toBe(milli);
+      }),
+      { seed: 20260717, numRuns: 1_000 }
+    );
+  });
+
+  it("quantizes to an integer within half a milli-unit", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: -1_000_000, max: 1_000_000 }), (tenThousandths) => {
+        const quantity = tenThousandths / 10_000;
+        const milli = toMilliUnits(quantity);
+        expect(Number.isInteger(milli)).toBe(true);
+        expect(Math.abs(milli * 10 - tenThousandths)).toBeLessThanOrEqual(5);
+      }),
+      { seed: 20260718, numRuns: 1_000 }
+    );
   });
 });

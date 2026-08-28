@@ -99,7 +99,7 @@ const searchProduct = async (
     })
   ]);
 
-  const nextpageNo = searchResult.length === 20 ? params.pageNo + 1 : null;
+  const nextpageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   return {
     nextPageNo: nextpageNo,
@@ -246,7 +246,7 @@ const getTransactionsByProductId = async (
     productRepository.countTransactionsByProductId(productId)
   ]);
 
-  const nextPageNo = transactions.length === params.pageSize ? params.pageNo + 1 : null;
+  const nextPageNo = params.pageNo * params.pageSize < totalCount ? params.pageNo + 1 : null;
 
   return {
     nextPageNo,

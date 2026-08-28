@@ -1,4 +1,5 @@
-import { HighlightedText } from "@/components/highlighted-text";
+import { HighlightedText } from "@/components/app-ui/highlighted-text";
+import { ProductImage } from "@/components/app-ui/product-image";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,9 +12,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ignoredWeight, PROTOCOL_NAME } from "@/constants";
-import { useProductDialog } from "@/hooks/products/useProductDialog";
-import { useProductsStore } from "@/store/productsStore";
+import { getProductImageUrl, ignoredWeight } from "@/constants/renderer.constants";
+import { useProductDialog } from "@/features/products/hooks/useProductDialog";
+import { useProductsStore } from "@/features/products/products.store";
 import {
   ACTION_TYPE,
   DIALOG_MODE,
@@ -26,7 +27,7 @@ import {
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee, paisaToRupeeString } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
-import { Clock, Edit, Eye, Image, RotateCcw, Trash2 } from "lucide-react";
+import { Clock, Edit, Eye, RotateCcw, Trash2 } from "lucide-react";
 
 export default function ProductListItem({ product }: { product: ProductSearchItemDTO }) {
   const setProductId = useProductsStore((state) => state.setProductId);
@@ -60,30 +61,24 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
   };
 
   return (
-    <div className="group hover:bg-accent/50 active:bg-accent/70 flex items-center gap-5 px-5 py-2.5 transition-colors">
-      <div className="border-border bg-muted/50 flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl border shadow-sm">
-        {product.imageUrl ? (
-          <img
-            src={`${PROTOCOL_NAME}${product.imageUrl}`}
-            alt={product.name || "Product-Image"}
-            className="h-full w-full object-contain p-0.5"
-          />
-        ) : (
-          <Image className="text-muted-foreground/20 h-7 w-7" strokeWidth={1.25} />
-        )}
-      </div>
+    <div className="bg-card hover:bg-hover active:bg-selected group flex min-h-(--product-row-height) items-center gap-2.5 border-b px-3 py-2 transition-colors">
+      <ProductImage
+        src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
+        alt={product.name || "Product"}
+        imageClassName="p-0.5"
+      />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
           <h3
-            className={`text-xl leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
+            className={`truncate text-base leading-tight font-semibold ${product.isDeleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"}`}
           >
             <HighlightedText text={product.name} query={searchParam} />
           </h3>
           {showWeight && (
             <Badge
               variant="outline"
-              className="border-border bg-muted text-muted-foreground rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
+              className="border-unit-tag-border bg-unit-tag-bg text-unit-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold shadow-none"
             >
               {product.weight}
               {product.unit}
@@ -92,13 +87,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           {product.mrp && (
             <Badge
               variant="outline"
-              className="border-badge-mrp-border bg-badge-mrp-bg text-badge-mrp-text rounded-full px-2 py-0.5 text-sm font-semibold shadow-sm"
+              className="border-mrp-tag-border bg-mrp-tag-bg text-mrp-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold tabular-nums shadow-none"
             >
               MRP ₹{paisaToRupeeString(product.mrp)}
             </Badge>
           )}
         </div>
-        <div className="text-muted-foreground mt-0.5 flex flex-wrap items-center gap-1.5 text-sm font-medium">
+        <div className="text-muted-foreground mt-0.5 flex items-center gap-1.5 truncate text-xs font-medium">
           <span>{fromMilliUnits(product.totalQuantitySold ?? 0)} sold</span>
           {product.isDeleted && product.deletedAt && (
             <>
@@ -122,7 +117,9 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
       </div>
 
       <div className="shrink-0 text-right">
-        <div className="text-foreground text-2xl font-bold">{formatRupee(product.price)}</div>
+        <div className="text-foreground financial-nums text-base font-semibold">
+          {formatRupee(product.price)}
+        </div>
       </div>
 
       {product.isDeleted ? (
@@ -131,13 +128,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">View</p>
+              <p className="text-xs">View</p>
             </TooltipContent>
           </Tooltip>
 
@@ -145,13 +142,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Clock className="h-5 w-5" />
+                <Clock className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">History</p>
+              <p className="text-xs">History</p>
             </TooltipContent>
           </Tooltip>
 
@@ -159,13 +156,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Permanently Delete</p>
+              <p className="text-xs">Permanently Delete</p>
             </TooltipContent>
           </Tooltip>
 
@@ -173,13 +170,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <RotateCcw className="h-5 w-5" />
+                <RotateCcw className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Restore</p>
+              <p className="text-xs">Restore</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -189,13 +186,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Eye className="h-5 w-5" />
+                <Eye className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">View</p>
+              <p className="text-xs">View</p>
             </TooltipContent>
           </Tooltip>
 
@@ -203,13 +200,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.EDIT)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Edit className="h-5 w-5" />
+                <Edit className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Edit</p>
+              <p className="text-xs">Edit</p>
             </TooltipContent>
           </Tooltip>
 
@@ -217,13 +214,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
-                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">Delete</p>
+              <p className="text-xs">Delete</p>
             </TooltipContent>
           </Tooltip>
 
@@ -231,13 +228,13 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <TooltipTrigger asChild>
               <button
                 onClick={() => prepareAndOpenDialog(DIALOG_MODE.VIEW, INITIAL_TAB.HISTORY)}
-                className="text-muted-foreground hover:bg-secondary hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg transition-all active:scale-[0.95]"
+                className="text-muted-foreground hover:bg-hover hover:text-foreground flex size-8 cursor-pointer items-center justify-center rounded-(--radius-control) transition-colors"
               >
-                <Clock className="h-5 w-5" />
+                <Clock className="size-4" />
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p className="text-base">History</p>
+              <p className="text-xs">History</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -287,7 +284,12 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
             <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
-              onClick={() => permanentDeleteProductMutation.mutate(product.id)}
+              onClick={() =>
+                permanentDeleteProductMutation.mutate({
+                  productId: product.id,
+                  imageId: product.imageUrl
+                })
+              }
               disabled={permanentDeleteProductMutation.isPending}
             >
               {permanentDeleteProductMutation.isPending ? "Deleting..." : "Permanently Delete"}
@@ -312,7 +314,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
           <AlertDialogFooter>
             <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-primary hover:bg-primary/80 text-primary-foreground cursor-pointer"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground cursor-pointer"
               onClick={() => restoreProductMutation.mutate(product.id)}
               disabled={restoreProductMutation.isPending}
             >

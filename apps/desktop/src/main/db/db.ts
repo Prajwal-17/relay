@@ -1,39 +1,47 @@
-import Database from "better-sqlite3";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import fs from "node:fs";
 import path from "node:path";
+import type { DatabaseUpgradeStatus } from "../../shared/types";
 import { getFallbackDbPath } from "../utils/fallbackDbPath";
 import * as schema from "./schema";
+import { coordinateDatabaseUpgrade } from "./upgradeCoordinator";
 
 export let db: BetterSQLite3Database<typeof schema>;
+let initialization: Promise<typeof db> | undefined;
 
-export async function initDb() {
+export type InitDbOptions = {
+  onStatus?: (status: DatabaseUpgradeStatus) => void;
+};
+
+export function getDatabasePath(): string {
+  return process.env.M_VITE_DATABASE_URL || getFallbackDbPath();
+}
+
+export function getMigrationsFolder(): string {
+  const migrationsFolder = process.env.M_VITE_MIGRATION_FOLDER;
+  if (migrationsFolder) return migrationsFolder;
+  if (process.env.M_VITE_IS_PACKAGED === "true") {
+    throw new Error("Database migration resources were not configured.");
+  }
+  return path.resolve(process.cwd(), "drizzle");
+}
+
+export async function initDb(options: InitDbOptions = {}) {
   if (db) return db;
+  if (initialization) return initialization;
 
-  async function getDbPath() {
-    return process.env.M_VITE_DATABASE_URL || getFallbackDbPath();
-  }
+  initialization = coordinateDatabaseUpgrade({
+    databasePath: getDatabasePath(),
+    migrationsFolder: getMigrationsFolder(),
+    onStatus: options.onStatus
+  })
+    .then((result) => {
+      db = result.db;
+      return db;
+    })
+    .catch((error) => {
+      initialization = undefined;
+      throw error;
+    });
 
-  async function getMigrationsFolder() {
-    return process.env.M_VITE_MIGRATION_FOLDER!;
-  }
-
-  const dbPath = await getDbPath();
-  fs.mkdirSync(path.dirname(dbPath!), { recursive: true });
-
-  const sqlite = new Database(dbPath);
-  sqlite.pragma("journal_mode = WAL");
-
-  db = drizzle(sqlite, { schema, logger: false });
-
-  const migrationsFolder = await getMigrationsFolder();
-  if (fs.existsSync(migrationsFolder)) {
-    migrate(db, { migrationsFolder });
-  } else {
-    console.error("Migration folder not found");
-  }
-
-  return db;
+  return initialization;
 }

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { MAX_PRESET_COUNT, weights } from "@/constants";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { processSyncQueue } from "@/utils/syncWorker";
+import { MAX_PRESET_COUNT, weights } from "@/constants/renderer.constants";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { processSyncQueue } from "@/features/billing/syncWorker";
 import { useEffect, useRef } from "react";
 
 const QuantityPresets = ({
@@ -64,9 +64,9 @@ const QuantityPresets = ({
     <>
       <div
         ref={popDownRef}
-        className="bg-muted absolute top-full left-1/2 z-50 mt-2 w-max -translate-x-1/2 rounded-xl px-1 py-2 shadow-2xl"
+        className="bg-popover border-border absolute top-full left-1/2 z-50 mt-1.5 w-72 -translate-x-1/2 rounded-(--radius-panel) border p-2 shadow-md"
       >
-        <div className="grid w-max grid-flow-row grid-cols-4 gap-1 px-1">
+        <div className="grid w-full grid-cols-5 gap-1">
           {weights.map((w, idx) => (
             <Button
               key={idx}
@@ -74,7 +74,7 @@ const QuantityPresets = ({
               data-value={w.weight}
               type="button"
               size="sm"
-              className="col-span-1"
+              className="h-7 px-2 text-xs"
               onClick={(e) => {
                 handlePresetClick(e);
               }}
@@ -84,14 +84,14 @@ const QuantityPresets = ({
           ))}
         </div>
 
-        <Separator className="bg-border my-3 w-full" />
+        <Separator className="bg-border my-1.5 w-full" />
 
-        <div className="grid max-h-48 w-full grid-flow-row grid-cols-5 gap-1 overflow-y-auto scroll-smooth px-2 py-1">
+        <div className="grid w-full grid-cols-8 gap-1">
           {numbers.map((i) => (
             <Button
               variant="outline"
               size="sm"
-              className="h-10 w-full hover:cursor-pointer"
+              className="h-7 w-full px-0 text-xs hover:cursor-pointer"
               key={i}
               data-value={i}
               onClick={(e) => {

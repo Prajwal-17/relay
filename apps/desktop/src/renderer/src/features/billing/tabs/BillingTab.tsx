@@ -1,14 +1,13 @@
 import { cn } from "@/lib/utils";
-import type { BillingTabType } from "@/store/billing/billingTabsStore";
+import type { BillingTabType } from "@/features/billing/store/billingTabs.store";
 import { TRANSACTION_TYPE } from "@shared/types";
 import { X } from "lucide-react";
-import { motion } from "motion/react";
 
 const getTabLabel = (tab: BillingTabType): string => {
   if (tab.transactionNo) {
     return tab.type === TRANSACTION_TYPE.SALE
-      ? `Sale #${tab.transactionNo}`
-      : `Estimate #${tab.transactionNo}`;
+      ? "Sale #" + tab.transactionNo
+      : "Estimate #" + tab.transactionNo;
   }
   return tab.type === TRANSACTION_TYPE.SALE ? "New Sale" : "New Estimate";
 };
@@ -22,62 +21,40 @@ export const BillingTab = ({
   tab: BillingTabType;
   isActive: boolean;
   onSelect: () => void;
-  onClose: (e: React.MouseEvent) => void;
+  onClose: (event: React.MouseEvent) => void;
 }) => {
   const isSale = tab.type === TRANSACTION_TYPE.SALE;
 
   return (
-    <motion.button
-      layout
-      initial={{ opacity: 0, scale: 0.92, y: 4 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{
-        opacity: 0,
-        scale: 0.9,
-        width: 0,
-        marginRight: 0,
-        paddingLeft: 0,
-        paddingRight: 0
-      }}
-      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+    <button
+      type="button"
       onClick={onSelect}
       className={cn(
-        "group relative flex cursor-pointer items-center gap-2.5 rounded-t-lg border-none px-5 py-3 text-sm font-medium whitespace-nowrap transition-colors duration-150",
+        "group focus-visible:ring-ring/30 relative flex h-9 cursor-pointer items-center gap-2 rounded-t-[var(--radius-control)] px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-inset",
         isActive
-          ? "bg-background-secondary text-foreground z-10 -mb-px"
-          : "text-foreground/50 hover:bg-foreground/4 hover:text-foreground/70"
+          ? "bg-selected text-foreground"
+          : "text-muted-foreground hover:bg-hover hover:text-foreground"
       )}
     >
-      <span className={cn("h-3 w-3 shrink-0 rounded-full", isSale ? "bg-success" : "bg-info")} />
-
-      <span className="max-w-34 truncate text-base font-medium">{getTabLabel(tab)}</span>
-
-      <motion.span
+      <span className={cn("size-2 shrink-0 rounded-full", isSale ? "bg-sales" : "bg-estimate")} />
+      <span className="max-w-32 truncate">{getTabLabel(tab)}</span>
+      <span
         role="button"
         tabIndex={-1}
+        aria-label={`Close ${getTabLabel(tab)}`}
         onClick={onClose}
-        whileHover={{ scale: 1.15 }}
-        whileTap={{ scale: 0.9 }}
-        className={cn(
-          "flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-opacity duration-100",
-          isActive
-            ? "hover:bg-foreground/10 hover:opacity-100!"
-            : "hover:bg-foreground/10 hover:opacity-100!"
-        )}
+        className="hover:bg-hover flex size-5 shrink-0 items-center justify-center rounded-sm"
       >
-        <X size={20} />
-      </motion.span>
-
+        <X className="size-3.5" />
+      </span>
       {isActive && (
-        <motion.div
-          layoutId="activeTabAccent"
+        <span
           className={cn(
-            "absolute right-3 bottom-0 left-3 h-0.5 rounded-t-full",
-            isSale ? "bg-success" : "bg-info"
+            "absolute right-2 bottom-0 left-2 h-0.5",
+            isSale ? "bg-sales" : "bg-estimate"
           )}
-          transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
         />
       )}
-    </motion.button>
+    </button>
   );
 };

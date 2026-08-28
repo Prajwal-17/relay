@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { ownerContactSchema } from "@shared/schemas/onboarding.schema";
 import { ArrowRight, User } from "lucide-react";
 import { motion } from "motion/react";
@@ -65,15 +65,15 @@ export const OwnerContactStep = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-col gap-8"
+      className="flex flex-col gap-5"
     >
-      <div className="flex flex-col gap-3">
-        <div className="bg-primary/15 flex h-13 w-13 items-center justify-center rounded-xl">
-          <User className="text-onboarding-icon-dark h-6 w-6" />
+      <div className="flex flex-col gap-2">
+        <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
+          <User className="text-onboarding-icon-dark size-5" />
         </div>
-        <h2 className="text-foreground text-3xl font-bold tracking-tight">Owner & Contact</h2>
+        <h2 className="text-foreground text-xl font-semibold tracking-tight">Owner & Contact</h2>
 
-        <p className="text-muted-foreground text-base">
+        <p className="text-muted-foreground text-sm">
           Printed on invoices as the contact information for your store. <br />
           <span className="text-muted-foreground/60 ml-1">
             (You can change this later in settings)
@@ -81,10 +81,10 @@ export const OwnerContactStep = () => {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {fields.map((field) => (
           <div key={field.id} className="flex flex-col gap-1.5">
-            <Label htmlFor={field.id} className="text-base font-medium">
+            <Label htmlFor={field.id} className="text-sm font-medium">
               {field.label}{" "}
               {field.required ? (
                 <span className="text-destructive">*</span>
@@ -101,7 +101,7 @@ export const OwnerContactStep = () => {
                 field.onChange(e.target.value);
                 if (errors[field.id]) setErrors((prev) => ({ ...prev, [field.id]: "" }));
               }}
-              className={`h-12 text-xl font-medium ${errors[field.id] ? "border-destructive focus-visible:ring-destructive/30" : ""}`}
+              className={`h-9 text-sm font-medium ${errors[field.id] ? "border-destructive focus-visible:ring-destructive/30" : ""}`}
             />
             {errors[field.id] && (
               <motion.p
@@ -127,8 +127,8 @@ export const OwnerContactStep = () => {
         </Button>
         <Button
           onClick={handleNext}
-          size="lg"
-          className="group shadow-primary/20 hover:shadow-primary/30 gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
+          size="default"
+          className="hover:bg-primary-hover group gap-2 px-5 font-semibold"
         >
           Continue
           <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />

@@ -5,15 +5,34 @@ import {
 } from "../../../shared/schemas/customers.schema";
 import { validateRequest } from "../../middleware/validation";
 import { idSchema } from "../../zod";
-import { getEstimatesByCustomerSchema, getSalesByCustomerSchema } from "./customers.schema";
+import {
+  createAdjustmentSchema,
+  createPaymentSchema,
+  createQuickSaleSchema,
+  getLedgerSchema,
+  updateLedgerEntrySchema
+} from "../ledger/ledger.schema";
+import { ledgerService } from "../ledger/ledger.service";
+import {
+  activityQuerySchema,
+  getEstimatesByCustomerSchema,
+  getSalesByCustomerSchema,
+  listCustomersSchema
+} from "./customers.schema";
 import { customersService } from "./customers.service";
 
 export const customersController = new Hono();
 
-// get all customers or search
-customersController.get("/", async (c) => {
-  const searchTerm = c.req.query("query");
-  const result = await customersService.getCustomers(searchTerm ?? "");
+customersController.get("/", validateRequest("query", listCustomersSchema), async (c) => {
+  const { pageNo, pageSize, query, type, sort, includeArchived } = c.req.valid("query");
+  const result = await customersService.getCustomersPaginated({
+    pageNo,
+    pageSize,
+    query,
+    type,
+    sort,
+    includeArchived
+  });
   return c.json(result, 200);
 });
 
@@ -35,6 +54,32 @@ customersController.get("/:id/summary", validateRequest("param", idSchema), asyn
   const result = await customersService.getCustomerSummary(id);
   return c.json(result, 200);
 });
+
+// get recent activity (sales + estimates + ledger) for a customer
+customersController.get(
+  "/:id/activity",
+  validateRequest("param", idSchema),
+  validateRequest("query", activityQuerySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { limit } = c.req.valid("query");
+    const result = await customersService.getCustomerActivity({ customerId: id, limit });
+    return c.json(result, 200);
+  }
+);
+
+// get recent sales for a customer
+customersController.get(
+  "/:id/recent-sales",
+  validateRequest("param", idSchema),
+  validateRequest("query", activityQuerySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { limit } = c.req.valid("query");
+    const result = await customersService.getRecentSales({ customerId: id, limit });
+    return c.json(result, 200);
+  }
+);
 
 // createCustomer
 customersController.post("/", validateRequest("json", createCustomerSchema), async (c) => {
@@ -93,6 +138,99 @@ customersController.post(
     return c.json(result, 200);
   }
 );
+
+// ledger (accounting)
+customersController.get(
+  "/:id/ledger",
+  validateRequest("param", idSchema),
+  validateRequest("query", getLedgerSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const query = c.req.valid("query");
+    const result = await ledgerService.getLedgerByCustomerId({ customerId: id, ...query });
+    return c.json(result, 200);
+  }
+);
+
+customersController.get("/:id/ledger-summary", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  const result = await ledgerService.getLedgerSummary(id);
+  return c.json(result, 200);
+});
+
+customersController.post(
+  "/:id/payments",
+  validateRequest("param", idSchema),
+  validateRequest("json", createPaymentSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createPayment({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.post(
+  "/:id/adjustments",
+  validateRequest("param", idSchema),
+  validateRequest("json", createAdjustmentSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createAdjustment({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.post(
+  "/:id/quick-sales",
+  validateRequest("param", idSchema),
+  validateRequest("json", createQuickSaleSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const payload = c.req.valid("json");
+    const result = await ledgerService.createQuickSale({ customerId: id, payload });
+    return c.json(result, 201);
+  }
+);
+
+customersController.patch(
+  "/:id/ledger/:entryId",
+  validateRequest("param", idSchema),
+  validateRequest("json", updateLedgerEntrySchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { entryId } = c.req.param();
+    const payload = c.req.valid("json");
+    const result = await ledgerService.updateLedgerEntry({ entryId, customerId: id, payload });
+    return c.json(result, 200);
+  }
+);
+
+customersController.delete(
+  "/:id/ledger/:entryId",
+  validateRequest("param", idSchema),
+  async (c) => {
+    const { id } = c.req.valid("param");
+    const { entryId } = c.req.param();
+    await ledgerService.deleteLedgerEntry({ entryId, customerId: id });
+    return c.body(null, 204);
+  }
+);
+
+// archive customer
+customersController.patch("/:id/archive", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await customersService.archiveCustomerById(id);
+  return c.json({ status: "success", data: null }, 200);
+});
+
+// restore customer
+customersController.patch("/:id/restore", validateRequest("param", idSchema), async (c) => {
+  const { id } = c.req.valid("param");
+  await customersService.restoreCustomerById(id);
+  return c.json({ status: "success", data: null }, 200);
+});
 
 // delete customer
 customersController.delete("/:id", validateRequest("param", idSchema), async (c) => {

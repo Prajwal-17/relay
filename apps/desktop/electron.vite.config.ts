@@ -35,6 +35,14 @@ export default defineConfig({
         "@shared": path.resolve(__dirname, "src/shared")
       }
     },
+    build: {
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, "src/renderer/index.html"),
+          upgrade: resolve(__dirname, "src/renderer/upgrade.html")
+        }
+      }
+    },
     server: {
       fs: {
         allow: [".."] // allow parent folders outside of root

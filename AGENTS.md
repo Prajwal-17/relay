@@ -1,257 +1,142 @@
 # AGENTS.md
 
-## Project Overview
+Instructions for coding agents working in the QuickCart repository.
 
-QuickCart is an offline-first desktop billing app for managing invoices, estimates, products, and customers. Built with Electron + React + Hono + SQLite.
+## Sources of truth
 
-## Repository
+- [README.md](README.md): repository setup and entry points
+- [apps/desktop/README.md](apps/desktop/README.md): desktop runtime and operations
+- [DESIGN.md](DESIGN.md): canonical UI, density, accessibility, and viewport contract
+- Source code and package scripts override stale prose when they disagree
 
-- **GitHub**: https://github.com/Prajwal-17/pos
-- **Package Manager**: pnpm (v10+)
-- **Node**: 22.17.0
+Keep documentation concise. Update the relevant source-of-truth document when a change alters a
+public command, architectural invariant, runtime assumption, or design token.
 
-## Architecture
+## Working agreement
 
-```
-src/
-├── main/       # Electron main process + Hono API server + SQLite
-├── preload/    # contextBridge exposing native APIs to renderer
-├── renderer/   # React frontend (Vite + Tailwind v4 + Shadcn/ui)
-└── shared/     # Types, Zod schemas, utils used by both main + renderer
-```
+1. Inspect the target code and nearby tests before editing.
+2. Check `git status` and preserve unrelated or user-authored changes.
+3. Prefer the smallest change that fits the existing architecture.
+4. Use `rg`/`rg --files` for discovery and existing utilities before creating new ones.
+5. Do not perform destructive Git or filesystem operations without explicit authorization.
+6. Validate in proportion to risk and report what was actually run.
 
-### Process Model
+Run app-specific commands from `apps/desktop`, or use `pnpm --dir apps/desktop <command>` from the
+root. Do not run a repository-wide formatter over an unrelated dirty worktree; format only the
+files you changed.
 
-1. **Electron main process** (`src/main/index.ts`) initializes the SQLite database, then **forks** the Hono server as a **child process** (`src/main/server.ts`).
-2. The **React renderer** communicates with the Hono server via HTTP `fetch` on `localhost:4722` (prod) / `localhost:4723` (dev). See `src/renderer/src/lib/apiClient.ts`.
-3. The **preload script** (`src/preload/index.ts`) uses `contextBridge` to expose Electron-specific APIs (print, file dialogs, image save, PDF export) to the renderer.
-4. **IPC handlers** (`src/main/ipcHandlers/`) handle native Electron operations invoked from the renderer.
+## Repository map
 
-## Tech Stack
-
-| Layer               | Technology                                                                 |
-| ------------------- | -------------------------------------------------------------------------- |
-| Desktop shell       | Electron 39                                                                |
-| Build tool          | electron-vite                                                              |
-| Frontend            | React 19, Vite 7, Tailwind CSS v4, Shadcn/ui (new-york style)              |
-| Routing             | React Router v7 (hash router — required for Electron's `file://` protocol) |
-| API server          | Hono 4 (forked child process)                                              |
-| Database            | better-sqlite3 + Drizzle ORM                                               |
-| State (server data) | TanStack Query                                                             |
-| State (client)      | Zustand with immer + devtools middleware                                   |
-| Validation          | Zod v4                                                                     |
-| Animation           | motion (framer-motion)                                                     |
-| Charts              | recharts                                                                   |
-| Testing             | Vitest v4                                                                  |
-| Linting             | ESLint 9 (flat config) + Prettier + prettier-plugin-tailwindcss            |
-
-## Commands
-
-| Command                | Description                                                                  |
-| ---------------------- | ---------------------------------------------------------------------------- |
-| `pnpm dev`             | Start Electron dev mode with hot reload (rebuilds better-sqlite3 first)      |
-| `pnpm build`           | Typecheck (`typecheck:node` + `typecheck:web`) then build with electron-vite |
-| `pnpm test`            | Run Vitest tests                                                             |
-| `pnpm lint`            | Lint with ESLint                                                             |
-| `pnpm format`          | Format with Prettier                                                         |
-| `pnpm typecheck`       | Run both `typecheck:node` and `typecheck:web`                                |
-| `pnpm seed`            | Seed the database with sample data                                           |
-| `pnpm db:migrate:dev`  | Run Drizzle migrations (development)                                         |
-| `pnpm db:migrate:prod` | Run Drizzle migrations (production)                                          |
-| `pnpm db:studio:dev`   | Open Drizzle Studio (development)                                            |
-| `pnpm db:studio:prod`  | Open Drizzle Studio (production)                                             |
-| `pnpm db:push:dev`     | Push schema to dev DB                                                        |
-| `pnpm db:push:prod`    | Push schema to prod DB                                                       |
-| `pnpm build:win`       | Build Windows installer                                                      |
-| `pnpm build:linux`     | Build Linux AppImage + deb                                                   |
-| `pnpm start`           | Preview production Electron build                                            |
-
-Output directories: `out/` (dev build), `dist/` (packaged installers).
-
-## TypeScript Path Aliases
-
-```json
-{
-  "@/*": "src/renderer/src/*",
-  "@shared/*": "src/shared/*"
-}
+```text
+apps/desktop/src/
+  main/       Electron lifecycle, Hono API, SQLite, native handlers
+  preload/    contextBridge APIs for the renderer
+  renderer/   React application
+  shared/     Cross-process types, schemas, constants, utilities
+packages/
+  eslint-config/
+  typescript-config/
 ```
 
-`@/*` works in the renderer. `@shared/*` works in both main and renderer. These are configured in `tsconfig.web.json` and `electron.vite.config.ts`.
+TypeScript aliases:
 
-## Database
+- `@/*` → `apps/desktop/src/renderer/src/*`
+- `@shared/*` → `apps/desktop/src/shared/*`
 
-- **Engine**: SQLite via `better-sqlite3` (WAL journal mode)
-- **ORM**: Drizzle ORM
-- **Schema**: `src/main/db/schema.ts`
-- **Migrations**: `drizzle/` directory (copied into packaged app as extra resources)
-- **DB location**: `app.getPath("userData")/pos.db` (e.g., `~/.config/quickcart/pos.db` on Linux)
-- **Dev DB**: Separate `QuickCart-Dev` directory so dev and prod don't conflict
+## Runtime invariants
 
-### Tables
+- Electron configures the development `userData` path before importing modules that call
+  `app.getPath()`. Keep those modules lazily imported after path setup.
+- The main process initializes SQLite, then forks `src/main/server.ts`.
+- The renderer calls the local Hono API through `src/renderer/src/lib/apiClient.ts`.
+- Development uses `QuickCart-Dev` and port `4723`; production uses `QuickCart` and port `4722`.
+- Renderer routing must use `createHashRouter`; `BrowserRouter` breaks packaged `file://` loads.
+- The preload bridge is for native capabilities only. Do not bypass context isolation or enable
+  renderer Node integration.
+- Packaged migrations are read from `process.resourcesPath/drizzle`; keep `drizzle/` included in
+  Electron Builder resources.
 
-- `app_instance` — Single-row OS install tracking
-- `store_profile` — Store identity (name, owner, address, GSTIN)
-- `customers` — Customer directory (role: cash/account/hotel)
-- `products` — Product catalog (soft-delete via `isDeleted`/`deletedAt`)
-- `product_history` — Price/MRP/purchase price change audit log
-- `sales` — Sales transactions
-- `sale_items` — Line items per sale
-- `estimates` — Estimate transactions
-- `estimate_items` — Line items per estimate
-- `app_preferences` — JSON-config settings
+## Backend conventions
 
-## Module Pattern (N-Tier)
+Every API feature under `src/main/modules/<feature>/` follows:
 
-Every API module follows a strict 3-layer pattern under `src/main/modules/<name>/`:
-
-```
-Controller  (*.controller.ts) — Hono route definitions, input validation
-    ↓
-Service     (*.service.ts)     — Business logic, orchestration
-    ↓
-Repository  (*.repository.ts)  — Raw Drizzle database queries
+```text
+*.controller.ts  HTTP routes and validated transport input
+*.service.ts     Business rules and orchestration
+*.repository.ts  Drizzle queries and persistence
+*.schema.ts      Feature-specific Zod input schemas when needed
+*.types.ts       Feature-specific types when needed
 ```
 
-Plus optional `*.schema.ts` (Zod validation schemas) and `*.types.ts` (TypeScript types).
+- Validate request input at the controller boundary with the existing Zod middleware.
+- Keep database queries out of controllers and business decisions out of repositories.
+- Return endpoint result objects directly. Successful responses do not have a global wrapper.
+  Errors use `{ "error": { "message": "..." } }`, with an optional error code.
+- Use `AppError` or `HTTPException` for expected failures; let the server error handler map them.
+- Pagination uses `pageNo`, `pageSize`, and nullable `nextPageNo`. Preserve the established shape.
 
-### Existing Modules
+### Data rules
 
-| Module         | Prefix                 |
-| -------------- | ---------------------- |
-| `onboarding`   | `/api/onboarding`      |
-| `dashboard`    | `/api/dashboard`       |
-| `products`     | `/api/products`        |
-| `customers`    | `/api/customers`       |
-| `sales`        | `/api/sales`           |
-| `estimates`    | `/api/estimates`       |
-| `preferences`  | `/api/app-preferences` |
-| `storeProfile` | `/api/store-profile`   |
+- Store money as integer **paisa**. Use `paisaToRupees`, `rupeesToPaisa`, `formatRupee`, or
+  `paisaToRupeeString` from `src/shared/utils/utils.ts`; do not store floating-point rupees.
+- Store fractional quantities as integer milli-units through `src/shared/utils/milliUnits.ts`.
+- Regenerate a product's `productSnapshot` with `generateProductSnapshot()` when its identifying
+  fields change. Historical sale and estimate items retain their stored snapshot.
+- Products use soft delete for normal user flows. Hard delete is an explicit, separate operation.
+- SQLite uses WAL mode. Schema changes require a Drizzle migration and migration-path verification
+  in both development and packaged builds.
 
-When adding a new feature that needs API endpoints, follow this same pattern.
+## Renderer conventions
 
-## Key Conventions
+- TanStack Query owns server state; Zustand owns client-only workflow state. Do not mirror query
+  data into a global store without a specific need.
+- Use `apiClient` for renderer HTTP calls and preserve its `ApiError` behavior.
+- Billing uses incremental row sync with an 800 ms debounce. Maintain row sync states and call
+  `flushSync()` before navigation, printing, or export where pending changes would matter.
+- When visible virtualized row heights change, update the corresponding virtualizer estimate in
+  the same change.
+- Preserve keyboard flow, focus visibility, loading, empty, error, long-name, and large-amount
+  states in operational screens.
 
-### Prices are in Paisa
+### UI system
 
-All monetary values are stored as integers in **paisa** (Indian currency subunit). Convert to rupees only for display using utilities from `src/shared/utils/utils.ts`:
+- Read `DESIGN.md` before UI work. Runtime tokens live in
+  `src/renderer/src/index.css`; intentional token changes must update both files.
+- Use shared semantic tokens and density variants instead of page-level hard-coded color and size
+  overrides.
+- Shadcn components under `src/renderer/src/components/ui/` are vendored source, but edits must
+  represent a reusable primitive contract. Prefer composition, a wrapper, or a CVA variant for
+  feature-specific behavior. Do not modify a base primitive to fix only one screen.
+- Use `cn()` from `@/lib/utils` for class merging.
+- Keep invoice and receipt styles isolated from the screen theme.
+- Baseline verification is 1280×650 at 100% zoom; 1024×600 is the supported fallback.
 
-```ts
-import { convertToRupees, convertToPaisa, formatToRupees } from "@shared/utils/utils";
+## Testing and handoff
+
+Minimum checks for renderer or shared TypeScript changes:
+
+```bash
+cd apps/desktop
+pnpm lint
+pnpm typecheck
 ```
 
-### Product Snapshots
+Also run:
 
-Products have a computed `productSnapshot` field — a searchable display string like `"Amul Gold Milk 1L 1Litre 72Rs"`. Generated by `generateProductSnapshot()` in `src/shared/utils/productSnapshot.ts`. This is embedded in `sale_items` and `estimate_items` so past invoices remain accurate when product details change.
+- `pnpm test --run` for business logic, repositories, schemas, utilities, or regression fixes
+- `pnpm build` for Electron configuration, preload/main boundaries, routing, or packaging-sensitive
+  changes
+- Targeted viewport, keyboard, print, and dialog checks for UI work as defined in `DESIGN.md`
 
-### Soft Delete
+Integration tests use in-memory SQLite and helpers from `src/main/tests/helpers/index.ts`. Add or
+update tests with behavior changes; do not weaken assertions merely to make a change pass.
 
-Products use soft delete (`isDeleted` / `deletedAt` fields), not hard delete. There are separate REST endpoints for soft delete and hard delete. Restore is also supported.
+## Common pitfalls
 
-### API Response Format
-
-All endpoints return:
-
-```json
-{ "status": "success", "data": <T> }
-```
-
-Or on error:
-
-```json
-{ "status": "error", "error": { "message": "..." } }
-```
-
-Error handling in `src/main/server.ts` catches `HTTPException`, `SqliteError`, and `AppError` (custom error class from `src/main/utils/appError.ts`).
-
-### Billing Sync Pattern
-
-The billing UI uses a debounced auto-sync pattern:
-
-- Line items are synced to the Hono server incrementally (not batch)
-- `src/renderer/src/utils/syncWorker.ts` debounces changes (800ms) before POSTing
-- Each item tracks row-level sync status: `SAVING` | `IS_DIRTY` | `SYNCED`
-- `flushSync()` provides a promise-based interface to wait for sync completion before navigation/export
-
-### Cursor-Based Pagination
-
-List endpoints use `limit` + `nextPageNo` (cursor) pattern. Returns `null` for `nextPageNo` when there are no more pages.
-
-### Environment Variables
-
-- Env files: `.env.development`, `.env.production` (selected by `MODE`)
-- Main process env vars use `M_VITE_` prefix (required by electron-vite)
-- Renderer env vars use `VITE_` prefix (standard Vite)
-- Schema: `.env.example` at project root
-
-### Zoom Persistence
-
-Zoom level is persisted in `electron-store` and restored on window `ready-to-show`.
-
-## Adding UI Components (Shadcn)
-
-Shadcn/ui uses new-york style with neutral base color. Components live under `src/renderer/src/components/ui/`. Use the `cn()` utility from `@/lib/utils` for className merging. Existing UI components are listed in `components.json`.
-
-## Environment & Modes
-
-| Variable   | Values                       | Effect                              |
-| ---------- | ---------------------------- | ----------------------------------- |
-| `MODE`     | `development` / `production` | Selects env file, DB path, API port |
-| `NODE_ENV` | `development` / `production` | Standard Node env                   |
-
-In dev mode, the app name is `QuickCart-Dev`, userData goes to `QuickCart-Dev/`, and the API runs on port 4723.
-
-## Testing
-
-- **Framework**: Vitest v4
-- **Config**: `src/vitest.config.ts`
-- **Database**: Tests use in-memory SQLite (`:memory:`) via `better-sqlite3`
-- **Test helpers**: `src/main/tests/helpers/index.ts` provides `createTestDb()`, `createTestApp()`, seed functions, and cleanup
-- **Mocking**: The main process `db.ts` is mocked with `vi.mock("../db/db", ...)` to inject the test DB
-- **Test files**:
-
-| File                               | Type                                           |
-| ---------------------------------- | ---------------------------------------------- |
-| `src/main/tests/sales.test.ts`     | Integration (full sale create + sync flow)     |
-| `src/main/tests/estimates.test.ts` | Integration (full estimate create + sync flow) |
-| `src/shared/tests/utils.test.ts`   | Unit (currency conversion utilities)           |
-
-Run tests: `pnpm test`
-
-## CI/CD (GitHub Actions)
-
-### dev-build.yaml
-
-- Trigger: push to `dev` branch
-- Builds Windows + Linux dev installers
-- Uploads artifacts (does not create a release)
-
-### prod-build.yaml
-
-- Trigger: push to `master` branch
-- Builds Windows + Linux production installers
-- Creates a GitHub Release with all artifacts + latest.yml files (for electron-updater)
-
-## Formatting & Linting
-
-- **Prettier**: `singleQuote: false`, `semi: true`, `printWidth: 100`, `trailingComma: "none"`, Tailwind CSS plugin
-- **ESLint**: Flat config (TypeScript + React + React Hooks + React Refresh + Prettier)
-- **Ignored in lint**: `node_modules`, `dist`, `out`, `src/renderer/src/components/ui/**` (Shadcn generated components)
-
-Run before committing: `pnpm format && pnpm lint && pnpm typecheck`
-
-## Common Pitfalls
-
-1. **better-sqlite3 NODE_MODULE_VERSION mismatch**: Always run `pnpm rebuild better-sqlite3` after switching Node versions. The `dev` script does this automatically via `pnpm run rebuild:electron`.
-
-2. **Chrome sandbox (Linux)**: The dev script sets `ELECTRON_DISABLE_SANDBOX=1`. See README for alternative fix.
-
-3. **Module import timing in main process**: Modules that call `app.getPath()` must be lazy-imported after `app.setPath()` has run. This is why `setupIpcHandlers` and `electronStore` use dynamic `import()` in `src/main/index.ts`.
-
-4. **Hash router**: React Router must use `createHashRouter` because Electron loads from `file://` protocol in production. `BrowserRouter` would fail.
-
-5. **Drizzle migrations in packaged app**: The `drizzle/` folder is bundled as extra resources and read from `process.resourcesPath` when packaged. The main process sets `M_VITE_MIGRATION_FOLDER` accordingly.
-
-6. **Single instance lock**: The app prevents multiple instances via `app.requestSingleInstanceLock()`. Second instance triggers focus of the existing window.
-
-7. **Dev vs Prod separation**: Dev builds use `QuickCart-Dev` app name, separate userData directory, separate appId, and different port to avoid conflicts with installed production build.
+- `better-sqlite3` has separate Node and Electron ABIs. Use `pnpm rebuild:node` for Node scripts
+  and `pnpm rebuild:electron` for Electron.
+- Development and production deliberately use separate app names, data directories, and ports.
+- A product row's displayed height and virtualizer estimate must agree.
+- Existing invoice records depend on stored snapshots; do not rebuild their labels from the
+  current product record.
+- App zoom is a user preference, not a layout mechanism.

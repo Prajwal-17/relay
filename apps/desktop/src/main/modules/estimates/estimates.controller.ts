@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { txnPayloadSchema } from "../../../shared/schemas/transaction.schema";
+import { estimateTxnPayloadSchema } from "../../../shared/schemas/transaction.schema";
 import { validateRequest } from "../../middleware/validation";
-import { actionSchema, batchActionSchema, idSchema, itemIdSchema, statusSchema } from "../../zod";
+import { actionSchema, batchActionSchema, idSchema, itemIdSchema } from "../../zod";
 import { filterEstimatesParamsSchema } from "./estimates.schema";
 import { estimatesService } from "./estimates.service";
 
@@ -28,16 +28,20 @@ estimatesController.get("/", validateRequest("query", filterEstimatesParamsSchem
 });
 
 // create new Estimate
-estimatesController.post("/create", validateRequest("json", txnPayloadSchema), async (c) => {
-  const payload = c.req.valid("json");
-  const result = await estimatesService.createEstimate(payload.data);
-  return c.json(result, 200);
-});
+estimatesController.post(
+  "/create",
+  validateRequest("json", estimateTxnPayloadSchema),
+  async (c) => {
+    const payload = c.req.valid("json");
+    const result = await estimatesService.createEstimate(payload.data);
+    return c.json(result, 200);
+  }
+);
 
 estimatesController.post(
   "/:id/sync",
   validateRequest("param", idSchema),
-  validateRequest("json", txnPayloadSchema),
+  validateRequest("json", estimateTxnPayloadSchema),
   async (c) => {
     const { id } = c.req.valid("param");
     const payload = c.req.valid("json");
@@ -76,18 +80,6 @@ estimatesController.post(
     const { action } = c.req.valid("json");
     await estimatesService.batchCheckItemsService(id, action);
     return c.body(null, 204);
-  }
-);
-
-estimatesController.patch(
-  "/:id",
-  validateRequest("param", idSchema),
-  validateRequest("json", statusSchema),
-  async (c) => {
-    const { id } = c.req.valid("param");
-    const { isPaid } = c.req.valid("json");
-    const result = await estimatesService.updateEstimateStatus(id, isPaid);
-    return c.json(result, 200);
   }
 );
 

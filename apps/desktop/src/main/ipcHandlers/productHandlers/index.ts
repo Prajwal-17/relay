@@ -1,5 +1,5 @@
-import { saveProductImage } from "./uploadImage";
+import { registerProductImageHandlers } from "./uploadImage";
 
 export function productHandlers() {
-  saveProductImage();
+  registerProductImageHandlers();
 }

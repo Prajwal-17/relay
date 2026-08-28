@@ -1,9 +1,10 @@
-import { BrowserWindow, dialog, shell } from "electron";
+import { app, BrowserWindow, dialog, shell } from "electron";
 import { ipcMain } from "electron/main";
 import fs from "fs";
 import os from "os";
 import path, { join } from "path";
 import { type ApiResponse, TRANSACTION_TYPE, type TransactionType } from "../../../shared/types";
+import { resolveApiPort } from "../../../shared/runtimeConfig";
 import { formatDateStr } from "../../../shared/utils/dateUtils";
 import { initMainEnv } from "../../loadEnv";
 import { estimatesService } from "../../modules/estimates/estimates.service";
@@ -22,7 +23,8 @@ export function exportAsPdf() {
       try {
         const mode = initMainEnv();
         const isDevBuild = mode === "development";
-        const apiPort = isDevBuild ? 4723 : 4722;
+        const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, mode);
+        const apiToken = process.env.M_VITE_API_TOKEN ?? "";
 
         const preferences = await preferencesService.getPreferences("default");
         const askBeforeSavingPdf = preferences?.config?.exports?.askBeforeSavingPdf;
@@ -57,7 +59,7 @@ export function exportAsPdf() {
         } else {
           let outputDir = preferences?.config?.exports?.defaultPdfLocation;
           if (!outputDir) {
-            outputDir = path.join(os.homedir(), "Downloads");
+            outputDir = path.join(os.homedir(), "Downloads", "Receipts");
           }
 
           if (!fs.existsSync(outputDir)) {
@@ -74,17 +76,19 @@ export function exportAsPdf() {
             sandbox: false,
             contextIsolation: true,
             nodeIntegration: false,
-            additionalArguments: [`--api-port=${apiPort}`]
+            additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
           } as Electron.WebPreferences
         });
 
+        const exportRoute = `/export/pdf/${type}s?id=${id}`;
+
         if (isDevBuild && process.env["ELECTRON_RENDERER_URL"]) {
-          const url = `${process.env["ELECTRON_RENDERER_URL"]}/#/export/pdf/${type}s?id=${id}`;
+          const url = `${process.env["ELECTRON_RENDERER_URL"]}/#${exportRoute}`;
           await exportWindow.loadURL(url);
         } else {
-          const indexPath = join(__dirname, "../renderer/index.html");
+          const indexPath = join(app.getAppPath(), "out/renderer/index.html");
           await exportWindow.loadFile(indexPath, {
-            hash: `/export/pdf/${type}?id=${id}`
+            hash: exportRoute
           });
         }
 

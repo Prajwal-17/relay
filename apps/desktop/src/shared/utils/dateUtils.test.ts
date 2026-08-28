@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import fc from "fast-check";
+import { describe, expect, it, vi } from "vitest";
 import {
   formatDateObjToHHmmss,
   formatDateObjToStringMedium,
@@ -11,226 +12,185 @@ import {
 const VALID_UTC_DATE_STRING = "2025-07-22T10:00:00Z";
 
 describe("formatDateStr", () => {
-  it("returns formatted date string for a valid ISO date string", () => {
-    const result = formatDateStr(VALID_UTC_DATE_STRING);
-    expect(result).not.toBe("-");
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(0);
+  it("renders a valid UTC instant as an IST medium date", () => {
+    expect(formatDateStr(VALID_UTC_DATE_STRING)).toBe("22 Jul 2025");
   });
 
-  it("returns formatted date containing month abbreviation for valid input", () => {
-    const result = formatDateStr(VALID_UTC_DATE_STRING);
-    expect(result).toMatch(/Jul/);
+  it("uses the IST calendar date even when the host timezone is UTC", () => {
+    vi.stubEnv("TZ", "UTC");
+    try {
+      // 20:00Z + 5:30 = 01:30 next day -> 2 Jan 2025
+      expect(formatDateStr("2025-01-01T20:00:00Z")).toBe("2 Jan 2025");
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
-  it("returns formatted date starting with day number for valid input", () => {
-    const result = formatDateStr(VALID_UTC_DATE_STRING);
-    const dayNumber = new Date(VALID_UTC_DATE_STRING).getDate();
-    expect(result).toMatch(new RegExp(`^${dayNumber}\\s`));
-  });
-
-  it('returns "-" for undefined input', () => {
-    expect(formatDateStr(undefined)).toBe("-");
-  });
-
-  it('returns "-" for empty string input', () => {
-    expect(formatDateStr("")).toBe("-");
-  });
-
-  it('returns "-" for invalid date string', () => {
-    expect(formatDateStr("not-a-date")).toBe("-");
-  });
-
-  it('returns "-" for null-like values passed as undefined', () => {
+  it('returns "-" when no argument is supplied', () => {
     expect(formatDateStr()).toBe("-");
   });
 
-  it('returns "-" for null input at runtime instead of producing garbage', () => {
+  it('returns "-" for an empty string', () => {
+    expect(formatDateStr("")).toBe("-");
+  });
+
+  it('returns "-" for an unparseable date string', () => {
+    expect(formatDateStr("not-a-date")).toBe("-");
+  });
+
+  it('returns "-" for null passed at runtime', () => {
     // @ts-expect-error testing runtime null
     expect(formatDateStr(null)).toBe("-");
+  });
+
+  it('returns "-" for a non-string value passed at runtime', () => {
+    expect(formatDateStr(123 as unknown as string)).toBe("-");
   });
 });
 
 describe("formatDateObjToStringMedium", () => {
-  it("formats a Date object to medium style string", () => {
-    const date = new Date("2025-12-25T00:00:00Z");
-    const result = formatDateObjToStringMedium(date);
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(0);
+  it("formats a Date object as 'D Mon YYYY'", () => {
+    expect(formatDateObjToStringMedium(new Date("2025-07-22T10:00:00Z"))).toBe("22 Jul 2025");
   });
 
-  it("includes month abbreviation in formatted output", () => {
-    const date = new Date("2025-07-04T00:00:00Z");
-    const result = formatDateObjToStringMedium(date);
-    expect(result).toMatch(/Jul/);
+  it("includes the four-digit year", () => {
+    expect(formatDateObjToStringMedium(new Date("2025-03-15T00:00:00Z"))).toContain("2025");
   });
 
-  it("includes year in formatted output", () => {
-    const date = new Date("2025-03-15T00:00:00Z");
-    const result = formatDateObjToStringMedium(date);
-    expect(result).toContain("2025");
-  });
-
-  it("returns '-' or empty string for invalid Date object instead of 'Invalid Date'", () => {
-    const date = new Date("not-a-date");
-    const result = formatDateObjToStringMedium(date);
+  it("does not leak the literal 'Invalid Date' for a bad Date object", () => {
+    const result = formatDateObjToStringMedium(new Date("not-a-date"));
     expect(result).not.toMatch(/invalid/i);
   });
 });
 
 describe("formatDateObjToHHmmss", () => {
-  it("formats date to HH:mm string", () => {
-    const date = new Date(2025, 0, 1, 14, 30, 0);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toMatch(/^\d{2}:\d{2}$/);
-    expect(result).toBe("14:30");
+  it("formats a typical time as HH:mm (24-hour, padded)", () => {
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 14, 30, 0))).toBe("14:30");
   });
 
-  it("pads single-digit hours with leading zero", () => {
-    const date = new Date(2025, 0, 1, 5, 5, 0);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toBe("05:05");
+  it("zero-pads single-digit hours and minutes", () => {
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 5, 5, 0))).toBe("05:05");
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 12, 9, 0))).toBe("12:09");
   });
 
-  it("pads single-digit minutes with leading zero", () => {
-    const date = new Date(2025, 0, 1, 12, 9, 0);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toBe("12:09");
+  it("renders midnight as 00:00", () => {
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 0, 0, 0))).toBe("00:00");
   });
 
-  it("handles midnight correctly", () => {
-    const date = new Date(2025, 0, 1, 0, 0, 0);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toBe("00:00");
+  it("renders the last minute of the day as 23:59", () => {
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 23, 59, 0))).toBe("23:59");
   });
 
-  it("handles end of day (23:59)", () => {
-    const date = new Date(2025, 0, 1, 23, 59, 0);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toBe("23:59");
+  it("drops seconds from the output", () => {
+    expect(formatDateObjToHHmmss(new Date(2025, 0, 1, 12, 30, 45))).toMatch(/^\d{2}:\d{2}$/);
   });
 
-  it("does not include seconds in output", () => {
-    const date = new Date(2025, 0, 1, 12, 30, 45);
-    const result = formatDateObjToHHmmss(date);
-    expect(result).toMatch(/^\d{2}:\d{2}$/);
+  it('returns "-" for an invalid Date object instead of NaN fields', () => {
+    expect(formatDateObjToHHmmss(new Date("not-a-date"))).toBe("-");
   });
 });
 
 describe("formatDateStrToISTDateObject", () => {
-  it("returns a Date object for valid date-time string", () => {
-    const result = formatDateStrToISTDateObject("2025-08-31 06:38:13");
-    expect(result).toBeInstanceOf(Date);
-    expect(result).not.toBeNull();
+  it("parses an IST wall-clock timestamp to its UTC instant", () => {
+    // 06:38:13 IST = 01:08:13 UTC
+    expect(formatDateStrToISTDateObject("2025-08-31 06:38:13")?.toISOString()).toBe(
+      "2025-08-31T01:08:13.000Z"
+    );
   });
 
-  it("returns null for empty string input", () => {
+  it("parses an ISO UTC timestamp verbatim", () => {
+    expect(formatDateStrToISTDateObject("2025-08-31T06:38:13Z")?.toISOString()).toBe(
+      "2025-08-31T06:38:13.000Z"
+    );
+  });
+
+  it("returns a real Date instance for valid input", () => {
+    expect(formatDateStrToISTDateObject("2025-08-31 06:38:13")).toBeInstanceOf(Date);
+  });
+
+  it("returns null for an impossible calendar date", () => {
+    expect(formatDateStrToISTDateObject("2025-02-30 06:38:13")).toBeNull();
+  });
+
+  it("returns null for an unparseable string", () => {
+    expect(formatDateStrToISTDateObject("not-a-date")).toBeNull();
+  });
+
+  it("returns null for an empty string", () => {
     expect(formatDateStrToISTDateObject("")).toBeNull();
   });
 
-  it("returns null for falsy input", () => {
-    // @ts-expect-error testing runtime behavior with null
+  it("returns null for null and undefined at runtime", () => {
+    // @ts-expect-error testing runtime null
     expect(formatDateStrToISTDateObject(null)).toBeNull();
-    // @ts-expect-error testing runtime behavior with undefined
+    // @ts-expect-error testing runtime undefined
     expect(formatDateStrToISTDateObject(undefined)).toBeNull();
-  });
-
-  it("returns valid Date with correct UTC time for IST-formatted input", () => {
-    const date = formatDateStrToISTDateObject("2025-08-31 06:38:13");
-    expect(date).not.toBeNull();
-    if (date) {
-      expect(date.getTime()).toBeGreaterThan(0);
-      expect(isNaN(date.getTime())).toBe(false);
-    }
-  });
-
-  it("returns null for invalid date string instead of Invalid Date object", () => {
-    expect(formatDateStrToISTDateObject("not-a-date")).toBeNull();
   });
 });
 
 describe("formatDateStrToISTDateStr", () => {
-  it("returns an object with fullDate and timePart keys", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(result).toHaveProperty("fullDate");
-    expect(result).toHaveProperty("timePart");
+  it("splits a UTC instant into IST date and 12-hour time parts", () => {
+    // 10:00Z + 5:30 = 15:30 IST
+    expect(formatDateStrToISTDateStr(VALID_UTC_DATE_STRING)).toEqual({
+      fullDate: "22 Jul 2025",
+      timePart: "03:30 pm"
+    });
   });
 
-  it("returns non-empty fullDate string", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(typeof result.fullDate).toBe("string");
-    expect(result.fullDate.length).toBeGreaterThan(0);
+  it("rolls the date forward across the year boundary", () => {
+    // 2025-12-31T18:30:00Z = 2026-01-01 00:00 IST
+    expect(formatDateStrToISTDateStr("2025-12-31T18:30:00Z")).toEqual({
+      fullDate: "1 Jan 2026",
+      timePart: "12:00 am"
+    });
   });
 
-  it("returns non-empty timePart string", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(typeof result.timePart).toBe("string");
-    expect(result.timePart.length).toBeGreaterThan(0);
+  it("returns '-' for both fields on an unparseable string", () => {
+    expect(formatDateStrToISTDateStr("not-a-date")).toEqual({
+      fullDate: "-",
+      timePart: "-"
+    });
   });
 
-  it("timePart includes am/pm for 12-hour format", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(result.timePart).toMatch(/am|pm/i);
-  });
-
-  it("converts UTC noon (10:00Z) to IST evening time (15:30)", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(result.timePart).toMatch(/03:30|3:30/);
-  });
-
-  it("fullDate matches medium date style pattern", () => {
-    const result = formatDateStrToISTDateStr(VALID_UTC_DATE_STRING);
-    expect(result.fullDate).toMatch(/22.*Jul.*2025/);
-  });
-
-  it("returns '-' for fullDate and timePart on invalid date string (no garbage)", () => {
-    const result = formatDateStrToISTDateStr("not-a-date");
-    expect(result.fullDate).toBe("-");
-    expect(result.timePart).toBe("-");
-  });
-
-  it("returns '-' for fullDate and timePart on empty string (no garbage)", () => {
-    const result = formatDateStrToISTDateStr("");
-    expect(result.fullDate).toBe("-");
-    expect(result.timePart).toBe("-");
+  it("returns '-' for both fields on an empty string", () => {
+    expect(formatDateStrToISTDateStr("")).toEqual({
+      fullDate: "-",
+      timePart: "-"
+    });
   });
 });
 
 describe("formatDateStrToISTDateTimeStr", () => {
-  it("returns a string containing date and time", () => {
-    const result = formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING);
-    expect(typeof result).toBe("string");
-    expect(result.length).toBeGreaterThan(0);
+  it("joins the IST date and 12-hour time with a single space", () => {
+    expect(formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING)).toBe("22 Jul 2025 03:30 pm");
   });
 
-  it("returns string containing a space between date and time", () => {
-    const result = formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING);
-    expect(result).toMatch(/\s/);
+  it("rolls the date forward across the year boundary", () => {
+    expect(formatDateStrToISTDateTimeStr("2025-12-31T18:30:00Z")).toBe("1 Jan 2026 12:00 am");
   });
 
-  it("includes date components (day, month, year)", () => {
-    const result = formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING);
-    expect(result).toMatch(/22/);
-    expect(result).toMatch(/Jul/);
-    expect(result).toMatch(/2025/);
-  });
-
-  it("includes time components in 12-hour format", () => {
-    const result = formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING);
-    expect(result).toMatch(/am|pm/i);
-    expect(result).toMatch(/\d{2}:\d{2}/);
-  });
-
-  it("converts UTC noon (10:00Z) to IST evening time (15:30)", () => {
-    const result = formatDateStrToISTDateTimeStr(VALID_UTC_DATE_STRING);
-    expect(result).toMatch(/03:30|3:30/);
-  });
-
-  it('returns "-" for invalid date string instead of producing garbage', () => {
+  it('returns "-" for an unparseable string', () => {
     expect(formatDateStrToISTDateTimeStr("not-a-date")).toBe("-");
   });
 
-  it('returns "-" for empty string instead of producing garbage', () => {
+  it('returns "-" for an empty string', () => {
     expect(formatDateStrToISTDateTimeStr("")).toBe("-");
+  });
+});
+
+describe("composition invariant", () => {
+  it("formatDateStrToISTDateTimeStr is the concatenation of the split parts, for any valid instant", () => {
+    fc.assert(
+      fc.property(
+        fc
+          .integer({ min: 0, max: 2_000_000_000 })
+          .map((seconds) => new Date(seconds * 1_000).toISOString()),
+        (isoDate) => {
+          const { fullDate, timePart } = formatDateStrToISTDateStr(isoDate);
+          expect(formatDateStrToISTDateTimeStr(isoDate)).toBe(`${fullDate} ${timePart}`);
+        }
+      ),
+      { seed: 20260720, numRuns: 500 }
+    );
   });
 });

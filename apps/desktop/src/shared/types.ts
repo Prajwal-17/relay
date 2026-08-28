@@ -1,6 +1,6 @@
 // types used globally for both frontend & api service
 import type z from "zod";
-import type { createCustomerSchema } from "./schemas/customers.schema";
+import type { createCustomerSchema, updateCustomerSchema } from "./schemas/customers.schema";
 import type { createProductSchema, updateProductSchema } from "./schemas/products.schema";
 import type {
   lineItemSchema,
@@ -19,6 +19,15 @@ export type Customer = {
   name: string;
   contact: string | null;
   customerType: string;
+  notes: string | null;
+  address: string | null;
+  outstandingBalance: number | null;
+  isArchived: boolean;
+  archivedAt: string | null;
+  lastPurchaseAt?: string | null;
+  lastPurchaseAmt?: number | null;
+  lastPaymentAt?: string | null;
+  lastPaymentAmt?: number | null;
   updatedAt?: string;
   createdAt?: string;
 };
@@ -76,13 +85,13 @@ export type ProductHistory = {
 };
 
 export type ProductTransaction = {
+  id: string;
   type: TransactionType;
   transactionNo: number;
   customerName: string;
   quantity: number;
   price: number;
   totalPrice: number;
-  isPaid: boolean;
   createdAt: string;
 };
 
@@ -92,9 +101,12 @@ export type UnifiedTransaction = {
   transactionNo: number;
   customerId: string | null;
   customer: Customer;
+  notes: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  isPaid: boolean;
+  isAddedToAccounting?: boolean;
+  canModify?: boolean;
+  recordedAt?: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -112,6 +124,7 @@ export type UnifiedTransactionItem = {
   totalPrice: number;
   purchasePrice: number | null;
   checkedQty: number;
+  position: number;
 };
 
 export type UnifiedTransctionWithItems = UnifiedTransaction & {
@@ -126,7 +139,7 @@ export type Sale = {
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  isPaid: boolean;
+  recordedAt: string;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -137,7 +150,6 @@ export type Estimate = {
   customerId: string | null;
   grandTotal: number | null;
   totalQuantity: number | null;
-  isPaid: boolean;
   createdAt?: string;
   updatedAt?: string;
 };
@@ -156,6 +168,7 @@ export type SaleItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type EstimateItem = {
@@ -172,6 +185,7 @@ export type EstimateItem = {
   quantity: number;
   totalPrice: number;
   checkedQty: number;
+  position: number;
 };
 
 export type PageNo = number | null;
@@ -211,7 +225,7 @@ export type SalePayload = {
   customerContact: string | null;
   grandTotal: number;
   totalQuantity: number | null;
-  isPaid: boolean;
+  addToAccounting: boolean;
   createdAt?: string;
   items: SalePayloadItem[];
 };
@@ -237,7 +251,6 @@ export type EstimatePayload = {
   customerContact: string | null;
   grandTotal: number;
   totalQuantity: number | null;
-  isPaid: boolean;
   createdAt: string;
   items: EstimatePayloadItem[];
 };
@@ -256,7 +269,7 @@ export type EstimatePayloadItem = {
 };
 
 export type CreateCustomerPayload = z.infer<typeof createCustomerSchema>;
-export type UpdateCustomerPayload = z.infer<typeof updateProductSchema>;
+export type UpdateCustomerPayload = z.infer<typeof updateCustomerSchema>;
 
 export type CreateProductPayload = z.infer<typeof createProductSchema>;
 export type UpdateProductPayload = z.infer<typeof updateProductSchema>;
@@ -301,6 +314,13 @@ export const PRODUCT_FILTER = {
   DELETED: "deleted"
 } as const;
 
+export const CUSTOMER_TYPE = {
+  ALL: "all",
+  CASH: "cash",
+  ACCOUNT: "account",
+  HOTEL: "hotel"
+} as const;
+
 export const SortOption = {
   DATE_NEWEST_FIRST: "date_newest_first",
   DATE_OLDEST_FIRST: "date_oldest_first",
@@ -317,6 +337,130 @@ export const PRODUCT_SORT_BY = {
   MRP_HIGH_LOW: "mrp_high_low"
 } as const;
 
+export const CUSTOMER_SORT_BY = {
+  NAME_ASC: "name_asc",
+  NAME_DESC: "name_desc",
+  NEWEST: "newest",
+  OLDEST: "oldest"
+} as const;
+
+export const CUSTOMER_TXN_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc",
+  AMOUNT_DESC: "amount_desc",
+  AMOUNT_ASC: "amount_asc"
+} as const;
+
+export const LEDGER_ENTRY_TYPE = {
+  SALE: "sale",
+  QUICK_SALE: "quick_sale",
+  PAYMENT: "payment",
+  ADJUSTMENT: "adjustment",
+  OPENING_BALANCE: "opening_balance"
+} as const;
+
+export type LedgerEntryType = (typeof LEDGER_ENTRY_TYPE)[keyof typeof LEDGER_ENTRY_TYPE];
+
+export const LEDGER_TYPE_FILTER = {
+  ALL: "all",
+  ...LEDGER_ENTRY_TYPE
+} as const;
+
+export type LedgerTypeFilter = (typeof LEDGER_TYPE_FILTER)[keyof typeof LEDGER_TYPE_FILTER];
+
+export const LEDGER_SORT = {
+  DATE_DESC: "date_desc",
+  DATE_ASC: "date_asc"
+} as const;
+
+export type LedgerSort = (typeof LEDGER_SORT)[keyof typeof LEDGER_SORT];
+
+export const PAYMENT_MODE = {
+  CASH: "cash",
+  UPI: "upi",
+  CARD: "card"
+} as const;
+
+export type PaymentMode = (typeof PAYMENT_MODE)[keyof typeof PAYMENT_MODE];
+
+export const ACTIVITY_KIND = {
+  SALE: "sale",
+  ESTIMATE: "estimate",
+  PAYMENT: "payment",
+  ADJUSTMENT: "adjustment",
+  QUICK_SALE: "quick_sale",
+  OPENING_BALANCE: "opening_balance"
+} as const;
+
+export type ActivityKind = (typeof ACTIVITY_KIND)[keyof typeof ACTIVITY_KIND];
+
+export type ActivityEvent = {
+  id: string;
+  date: string;
+  kind: ActivityKind;
+  title: string;
+  description: string;
+};
+
+export type RecentSalePreview = {
+  id: string;
+  invoiceNo: number;
+  grandTotal: number;
+  createdAt: string;
+};
+
+export type LedgerEntry = {
+  id: string;
+  customerId: string;
+  type: LedgerEntryType;
+  saleId: string | null;
+  invoiceNo: number | null;
+  amountDue: number;
+  amountPaid: number;
+  paymentMode: string | null;
+  notes: string | null;
+  runningBalance: number;
+  createdAt: string;
+};
+
+export type LedgerSummary = {
+  currentBalance: number;
+  totalDue: number;
+  totalPaid: number;
+  openingBalance: number;
+  avgSale: number;
+  salesCount: number;
+  lastPayment: { amount: number; mode: string; date: string } | null;
+};
+
+export type CreatePaymentPayload = {
+  amount: number;
+  mode: PaymentMode;
+  notes?: string;
+};
+
+export type CreatePaymentResult = {
+  ledgerEntryId: string;
+};
+
+export type CreateAdjustmentPayload = {
+  amount: number;
+  direction: "due" | "paid";
+  notes?: string;
+};
+
+export type CreateQuickSalePayload = {
+  amount: number;
+  notes?: string;
+};
+
+export type UpdateLedgerEntryPayload = {
+  amountDue?: number;
+  amountPaid?: number;
+  paymentMode?: string;
+  notes?: string;
+};
+
 export const PROPERTY_FILTER = {
   HAS_MRP: "hasMrp",
   HAS_PURCHASE_PRICE: "hasPurchasePrice"
@@ -324,9 +468,15 @@ export const PROPERTY_FILTER = {
 
 export type ProductFilterType = (typeof PRODUCT_FILTER)[keyof typeof PRODUCT_FILTER];
 
+export type CustomerType = (typeof CUSTOMER_TYPE)[keyof typeof CUSTOMER_TYPE];
+
 export type SortType = (typeof SortOption)[keyof typeof SortOption];
 
 export type ProductSortByType = (typeof PRODUCT_SORT_BY)[keyof typeof PRODUCT_SORT_BY];
+
+export type CustomerSortByType = (typeof CUSTOMER_SORT_BY)[keyof typeof CUSTOMER_SORT_BY];
+
+export type CustomerTxnSort = (typeof CUSTOMER_TXN_SORT)[keyof typeof CUSTOMER_TXN_SORT];
 
 export type PropertyFilterType = (typeof PROPERTY_FILTER)[keyof typeof PROPERTY_FILTER];
 
@@ -459,15 +609,49 @@ export const PRODUCT_OPERATION = {
 
 export type ProductOperation = (typeof PRODUCT_OPERATION)[keyof typeof PRODUCT_OPERATION];
 
+export type ReceiptCutMode = "partial" | "full" | "none";
+export type PrintRenderMode = "raster" | "device-text";
+
+export type UpiQrProfile = {
+  id: string;
+  label: string;
+  upiId: string;
+  payeeName: string;
+};
+
+export type PrintingConfig = {
+  printerName: string;
+  defaultPrintMode: PrintRenderMode;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  showAddress: boolean;
+  showPhone: boolean;
+  showGstinOnSales: boolean;
+  showCustomerName: boolean;
+  showSavings: boolean;
+  savingsThresholdPaisa: number;
+  showLedgerPaymentMode: boolean;
+  showLedgerNotes: boolean;
+  footerMessage: string;
+  upiQrProfiles: UpiQrProfile[];
+  defaultUpiQrProfileId: string | null;
+  printUpiQrOnSales: boolean;
+  printUpiQrOnEstimates: boolean;
+  includeAmountInUpiQr: boolean;
+};
 export interface AppConfig {
   billing: {
     defaultCustomerId: string;
+    searchDropdown: {
+      scale: number;
+    };
   };
   exports: {
     askBeforeSavingPdf: boolean;
     defaultPdfLocation: string;
     defaultExportFormat: string;
   };
+  printing: PrintingConfig;
 }
 
 export type AppPreferencesResponse = {
@@ -475,6 +659,8 @@ export type AppPreferencesResponse = {
   storeId: string;
   config: AppConfig;
 };
+
+export type AppPreferencesDefaults = AppConfig;
 
 export type StoreProfile = {
   id: string;
@@ -495,7 +681,8 @@ export type StoreProfile = {
 // ------------
 
 export interface ProductsApi {
-  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ url: string }>>;
+  saveProductImage: (dataUrl: string) => Promise<ApiResponse<{ id: string }>>;
+  deleteProductImage: (imageId: string) => Promise<ApiResponse<null>>;
 }
 
 export interface DialogApi {
@@ -503,6 +690,150 @@ export interface DialogApi {
 }
 
 export interface ExportApi {
-  exportAsPdf: (id: string, type: TransactionType) => Promise<string | null>;
+  exportAsPdf: (id: string, type: TransactionType) => Promise<ApiResponse<string>>;
   showItemInFolder: (path: string) => void;
+}
+
+export type RawReceiptItem = {
+  name: string;
+  quantity: string;
+  checkedQty?: number;
+  unitPricePaisa: number;
+  totalPaisa: number;
+  mrpPaisa?: number;
+};
+
+export type RawReceiptAccountSettlement = {
+  previousBalancePaisa: number;
+  currentBillPaisa: number;
+  totalDuePaisa: number;
+  paymentPaisa: number;
+  balancePaisa: number;
+};
+
+export type RawReceiptData = {
+  storeName: string;
+  addressLines: string[];
+  phone?: string;
+  gstin?: string;
+  transactionType: "sale" | "estimate";
+  transactionNo: number;
+  customerName: string;
+  dateTime: string;
+  items: RawReceiptItem[];
+  subtotalPaisa: number;
+  totalPaisa: number;
+  savingsPaisa?: number;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  footerMessage?: string;
+  upi?: {
+    id: string;
+    payeeName: string;
+    includeAmount: boolean;
+  };
+  accountSettlement?: RawReceiptAccountSettlement;
+};
+
+export type RawLedgerEntry = {
+  dateTime: string;
+  particulars: string;
+  amountDuePaisa: number;
+  amountPaidPaisa: number;
+  runningBalancePaisa: number;
+  paymentMode?: string;
+  notes?: string;
+};
+
+export type RawLedgerStatementData = {
+  storeName: string;
+  addressLines: string[];
+  phone?: string;
+  customerName: string;
+  generatedAt: string;
+  entries: RawLedgerEntry[];
+  previousBalancePaisa?: number;
+  totalDuePaisa: number;
+  totalPaidPaisa: number;
+  closingBalancePaisa: number;
+  extraFeedLines: number;
+  cutMode: ReceiptCutMode;
+  footerMessage?: string;
+};
+
+export type SystemPrinterInfo = {
+  name: string;
+  displayName: string;
+  description: string;
+};
+
+export type MonochromeRasterData = {
+  dataBase64: string;
+  width: number;
+  height: number;
+  stride: number;
+};
+
+export type RasterReceiptSegments = {
+  body: MonochromeRasterData;
+  afterQr?: MonochromeRasterData;
+};
+
+export type RasterLedgerSegments = {
+  body: MonochromeRasterData;
+};
+
+export type RawPrintResult = {
+  bytesWritten: number;
+  modeUsed: PrintRenderMode;
+  fellBack: boolean;
+};
+
+export interface RawPrintApi {
+  listPrinters(): Promise<ApiResponse<SystemPrinterInfo[]>>;
+  printReceipt(
+    receipt: RawReceiptData,
+    raster?: RasterReceiptSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
+  printLedger(
+    statement: RawLedgerStatementData,
+    raster?: RasterLedgerSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
+  printReceiptWithLedger(
+    receipt: RawReceiptData,
+    statement: RawLedgerStatementData,
+    receiptRaster?: RasterReceiptSegments,
+    ledgerRaster?: RasterLedgerSegments
+  ): Promise<ApiResponse<RawPrintResult>>;
+}
+
+export interface ZoomApi {
+  getZoom: () => Promise<{ zoomFactor: number }>;
+  setZoom: (factor: number) => Promise<{ zoomFactor: number }>;
+  getBounds: () => Promise<{ min: number; max: number; default: number }>;
+}
+
+export type DatabaseUpgradeStatus = {
+  state:
+    | "checking"
+    | "backing_up"
+    | "schema"
+    | "data"
+    | "verifying"
+    | "starting"
+    | "failed"
+    | "complete";
+  label: string;
+  currentStep: number;
+  totalSteps: number;
+  backupAvailable: boolean;
+  errorMessage?: string;
+};
+
+export interface DatabaseUpgradeApi {
+  getStatus(): Promise<DatabaseUpgradeStatus>;
+  onStatus(listener: (status: DatabaseUpgradeStatus) => void): () => void;
+  retry(): Promise<void>;
+  openBackupFolder(): Promise<void>;
+  quit(): void;
 }

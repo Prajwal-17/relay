@@ -16,47 +16,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { DEFAULT_HOUR } from "@/constants";
-import { apiClient } from "@/lib/apiClient";
-import { billingCoordinator } from "@/store/billing/billingCoordinator";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { MAX_BILLING_TABS, useBillingTabsStore } from "@/store/billing/billingTabsStore";
-import { useSidebarStore } from "@/store/sidebarStore";
-import { processSyncQueue } from "@/utils/syncWorker";
-import { type TransactionType } from "@shared/types";
-import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
-import { useQueryClient } from "@tanstack/react-query";
 import {
-  CalendarDays,
-  Clock,
-  Copy,
-  MoreVertical,
-  PanelLeftOpen,
-  Trash2,
-  UserRound
-} from "lucide-react";
-import { useState, type ChangeEvent } from "react";
+  TimePicker,
+  TimePickerContent,
+  TimePickerHour,
+  TimePickerInput,
+  TimePickerInputGroup,
+  TimePickerMinute,
+  TimePickerPeriod,
+  TimePickerSeparator,
+  TimePickerTrigger
+} from "@/components/ui/time-picker";
+import { DEFAULT_HOUR } from "@/constants/renderer.constants";
+import { useCustomer } from "@/features/customers/hooks/useCustomer";
+import { apiClient } from "@/lib/apiClient";
+import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { MAX_BILLING_TABS, useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
+import { usePreviewTabStore } from "@/features/billing/store/previewTab.store";
+import { processSyncQueue } from "@/features/billing/syncWorker";
+import { DASHBOARD_TYPE, type DashboardType } from "@shared/types";
+import { formatDateObjToHHmmss, formatDateObjToStringMedium } from "@shared/utils/dateUtils";
+import { formatRupee } from "@shared/utils/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { CalendarDays, Copy, MoreVertical, PanelRightOpen, Trash2 } from "lucide-react";
+import { useState, type CSSProperties } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { CustomerNameInput } from "./CustomerInputBox";
+import SaleAccountControl from "./SaleAccountControl";
 
 const BillingHeader = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
   );
-  const updateField = useBillingSessionStore((state) => state.updateField);
+  const updatePersistentField = useBillingSessionStore((state) => state.updatePersistentField);
 
   const [open, setOpen] = useState(false);
-  const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
-  const isSidebarPinned = useSidebarStore((state) => state.isSidebarPinned);
-  const setIsSidebarOpen = useSidebarStore((state) => state.setIsSidebarOpen);
-  const setIsSidebarPinned = useSidebarStore((state) => state.setIsSidebarPinned);
+  const isPreviewOpen = usePreviewTabStore((state) => state.isPanelOpen);
+  const setPreviewOpen = usePreviewTabStore((state) => state.setPanelOpen);
 
-  const { type, id } = useParams<{ type: TransactionType; id?: string }>();
+  const { type, id } = useParams<{ type: DashboardType; id?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -79,7 +81,7 @@ const BillingHeader = () => {
       queryClient.removeQueries({ queryKey: [type.slice(0, -1), id, activeTabId] });
 
       // remove tab from store
-      const newActiveId = billingCoordinator.removeTab(activeTabId);
+      const newActiveId = billingCoordinator.removeTab(activeTabId, { discard: true });
       if (newActiveId) {
         const next = useBillingTabsStore.getState().tabs.find((t) => t.id === newActiveId);
         if (next) navigate(next.routePath);
@@ -120,9 +122,9 @@ const BillingHeader = () => {
     }
   };
 
-  const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") return;
-    const [hoursString = "", minutesString = ""] = e.target.value.split(":");
+  const handleTimeChange = (value: string) => {
+    if (!value) return;
+    const [hoursString = "", minutesString = ""] = value.split(":");
 
     const hours = parseInt(hoursString, 10);
     const minutes = parseInt(minutesString, 10);
@@ -131,10 +133,9 @@ const BillingHeader = () => {
       return;
     }
     const udpatedDate = new Date(billingDate);
-    udpatedDate.setHours(hours);
-    udpatedDate.setMinutes(minutes);
+    udpatedDate.setHours(hours, minutes, 0, 0);
     localStorage.setItem("bill-preview-date", udpatedDate.toISOString());
-    updateField(activeTabId, "billingDate", udpatedDate);
+    updatePersistentField(activeTabId, "billingDate", udpatedDate);
     if (activeTabId) processSyncQueue(activeTabId);
   };
 
@@ -142,7 +143,6 @@ const BillingHeader = () => {
     const now = new Date();
     const selectedDate = new Date(date);
 
-    updateField(activeTabId, "billingDate", date);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     const isToday =
       selectedDate.getDate() === now.getDate() && selectedDate.getMonth() === now.getMonth();
@@ -153,11 +153,16 @@ const BillingHeader = () => {
       selectedDate.setHours(DEFAULT_HOUR, 0, 0, 0);
     }
 
-    updateField(activeTabId, "billingDate", selectedDate);
+    updatePersistentField(activeTabId, "billingDate", selectedDate);
     localStorage.setItem("bill-preview-date", selectedDate.toISOString());
     if (activeTabId) processSyncQueue(activeTabId);
     setOpen(false);
   };
+
+  const { customer } = useCustomer(session?.customerId ?? undefined);
+  const customerType =
+    customer?.customerType ?? (!session?.customerId && customerName ? "cash" : null);
+  const outstandingBalance = customer?.outstandingBalance ?? 0;
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -167,45 +172,34 @@ const BillingHeader = () => {
   const hasRealCustomer = customerName && customerName !== "DEFAULT" && customerName !== "";
 
   return (
-    <div className="bg-card border-border/60 mx-4 my-2 flex flex-col gap-4 rounded-2xl border p-4 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => {
-                  const nextPinnedState = !(isSidebarOpen && isSidebarPinned);
-                  setIsSidebarPinned(nextPinnedState);
-                  setIsSidebarOpen(nextPinnedState);
-                }}
-                className="hover:bg-accent/60 text-muted-foreground hover:text-foreground flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-150"
-              >
-                <PanelLeftOpen size={22} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">Toggle sidebar</TooltipContent>
-          </Tooltip>
-
-          <div className="flex items-baseline gap-2.5">
-            <span className="text-foreground text-lg font-bold tracking-tight">
-              {type.charAt(0).toUpperCase() + type.slice(1)}
-            </span>
-            <span className="text-muted-foreground/40 text-xl font-light">/</span>
-            <span className="text-foreground font-mono text-2xl font-extrabold tracking-tight tabular-nums">
-              #{transactionNo ?? "New"}
-            </span>
-          </div>
+    <section className="bg-card border-frame mx-3 mt-2 shrink-0 rounded-(--radius-panel) border px-3 py-2">
+      <div className="flex min-w-0 items-center justify-between gap-3">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <span
+            className={
+              type === DASHBOARD_TYPE.SALES
+                ? "text-sales-foreground text-base font-bold"
+                : "text-estimate-foreground text-base font-bold"
+            }
+          >
+            {type === DASHBOARD_TYPE.SALES ? "Sale" : "Estimate"}
+          </span>
+          <span className="text-muted-foreground text-sm">/</span>
+          <span className="text-foreground truncate text-lg font-bold tabular-nums">
+            #{transactionNo ?? "New"}
+          </span>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="bg-muted/60 border-border/50 flex items-center rounded-xl border p-1.5">
+        <div className="flex shrink-0 items-center gap-2">
+          <div className="bg-muted border-border flex items-center rounded-(--radius-control) border p-0.5">
             <Popover open={open} onOpenChange={setOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="hover:bg-background h-9 rounded-lg px-3.5 text-base font-medium"
+                  size="sm"
+                  className="bg-transparent px-2 text-sm font-medium"
                 >
-                  <CalendarDays size={16} className="text-muted-foreground/70 mr-2" />
+                  <CalendarDays className="text-muted-foreground" />
                   {formatDateObjToStringMedium(billingDate)}
                 </Button>
               </PopoverTrigger>
@@ -214,114 +208,116 @@ const BillingHeader = () => {
                   mode="single"
                   selected={billingDate}
                   onSelect={(date) => {
-                    if (!date) return;
-                    handleDateChange(date);
+                    if (date) handleDateChange(date);
                   }}
                 />
               </PopoverContent>
             </Popover>
 
-            <div className="bg-border/50 mx-1.5 h-6 w-px shrink-0" />
+            <div className="bg-border h-5 w-px shrink-0" />
 
-            <div className="hover:bg-background flex h-9 items-center rounded-lg px-2.5 transition-colors">
-              <Clock size={16} className="text-muted-foreground/70 mr-2 shrink-0" />
-              <Input
-                type="time"
-                id="time-picker"
-                step="60"
-                value={formatDateObjToHHmmss(billingDate)}
-                onChange={(e) => handleTimeChange(e)}
-                className="h-9 w-24 border-none bg-transparent px-1 text-base! font-medium shadow-none focus-visible:ring-0 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
-              />
-            </div>
+            <TimePicker
+              value={formatDateObjToHHmmss(billingDate)}
+              onValueChange={handleTimeChange}
+              locale="en-US"
+            >
+              <TimePickerInputGroup
+                className="h-8 w-auto cursor-pointer gap-1 rounded-(--radius-control) border-none bg-transparent px-2 shadow-none"
+                style={
+                  {
+                    "--time-picker-hour-input-width": "2.5ch",
+                    "--time-picker-minute-input-width": "2.5ch"
+                  } as CSSProperties
+                }
+              >
+                <TimePickerInput segment="hour" className="text-sm font-medium" />
+                <TimePickerSeparator className="text-muted-foreground" />
+                <TimePickerInput segment="minute" className="text-sm font-medium" />
+                <TimePickerInput segment="period" className="text-xs font-medium" />
+                <TimePickerTrigger className="text-muted-foreground ml-0.5 shrink-0" />
+              </TimePickerInputGroup>
+              <TimePickerContent align="end" className="max-w-none">
+                <TimePickerHour />
+                <TimePickerMinute />
+                <TimePickerPeriod />
+              </TimePickerContent>
+            </TimePicker>
           </div>
 
-          {id && (
-            <>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="border-border/60 hover:bg-accent/60 text-foreground flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl"
-                  >
-                    <MoreVertical size={18} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-40">
-                  <DropdownMenuItem
-                    onClick={handleDuplicate}
-                    disabled={isDuplicating}
-                    className="cursor-pointer gap-2 py-2 text-base font-semibold"
-                  >
-                    <Copy size={16} />
-                    Duplicate
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setIsDeleteDialogOpen(true)}
-                    className="text-destructive focus:text-destructive cursor-pointer gap-2 py-2 text-base font-semibold"
-                  >
-                    <Trash2 size={16} />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <Button
+            type="button"
+            variant={isPreviewOpen ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => setPreviewOpen(!isPreviewOpen)}
+            className="gap-1.5 px-2.5 text-xs"
+          >
+            <PanelRightOpen />
+          </Button>
 
-              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle className="text-lg">
-                      Are you absolutely sure?
-                    </AlertDialogTitle>
-                    <AlertDialogDescription className="text-base">
-                      This will permanently delete this transaction from the database and close the
-                      tab.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDelete}
-                      disabled={isDeleting}
-                      className="bg-destructive hover:bg-destructive/80 text-destructive-foreground cursor-pointer"
-                    >
-                      {isDeleting ? "Deleting..." : "Delete"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
+          {id && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon-sm" aria-label="Transaction actions">
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-40">
+                <DropdownMenuItem onClick={handleDuplicate} disabled={isDuplicating}>
+                  <Copy />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+                  <Trash2 />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-muted-foreground/80 ml-1 text-xs font-semibold tracking-wider uppercase">
-          Customer Details
-        </span>
-        <div className="flex items-center gap-3">
-          <CustomerNameInput />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={0}>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  disabled={!hasRealCustomer}
-                  className="h-12 gap-2 px-5 text-base font-medium disabled:opacity-50"
-                >
-                  <UserRound size={18} />
-                  View Account
-                </Button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">
-              {hasRealCustomer ? "View customer account" : "Select a customer first"}
-            </TooltipContent>
-          </Tooltip>
+      <div className="mt-2 flex min-w-0 items-end gap-2">
+        <div className="w-full max-w-xl min-w-56 flex-1">
+          <span className="text-muted-foreground mb-1 block text-xs font-semibold">
+            Customer details
+          </span>
+          <CustomerNameInput customerType={customerType} />
         </div>
+        {hasRealCustomer && (
+          <span className="bg-hover text-foreground mb-0.5 shrink-0 rounded-(--radius-control) px-2.5 py-1.5 text-xs font-semibold tabular-nums">
+            {outstandingBalance > 0
+              ? "Due " + formatRupee(outstandingBalance)
+              : outstandingBalance < 0
+                ? "Advance " + formatRupee(Math.abs(outstandingBalance))
+                : "Settled"}
+          </span>
+        )}
+        <SaleAccountControl />
       </div>
-    </div>
+
+      {id && (
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This permanently removes the transaction and closes its billing tab.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground"
+              >
+                {isDeleting ? "Deleting..." : "Delete transaction"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </section>
   );
 };
 

@@ -273,13 +273,13 @@ const getTransactionsByProductId = async (params: {
 }) => {
   const saleRows = db
     .select({
+      id: sales.id,
       type: sql<string>`'sale'`.as("type"),
       transactionNo: sales.invoiceNo,
       customerName: customers.name,
       quantity: saleItems.quantity,
       price: saleItems.price,
       totalPrice: saleItems.totalPrice,
-      isPaid: sales.isPaid,
       createdAt: sales.createdAt
     })
     .from(saleItems)
@@ -290,13 +290,13 @@ const getTransactionsByProductId = async (params: {
 
   const estimateRows = db
     .select({
+      id: estimates.id,
       type: sql<string>`'estimate'`.as("type"),
       transactionNo: estimates.estimateNo,
       customerName: customers.name,
       quantity: estimateItems.quantity,
       price: estimateItems.price,
       totalPrice: estimateItems.totalPrice,
-      isPaid: estimates.isPaid,
       createdAt: estimates.createdAt
     })
     .from(estimateItems)

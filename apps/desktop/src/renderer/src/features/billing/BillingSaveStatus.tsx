@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
-import { useBillingSessionStore } from "@/store/billing/billingSessionStore";
-import { useBillingTabsStore } from "@/store/billing/billingTabsStore";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 
 export const BillingSaveStatus = () => {
@@ -12,12 +12,15 @@ export const BillingSaveStatus = () => {
 
   return (
     <div
+      role="status"
+      aria-live="polite"
+      aria-label="Billing save status"
       className={cn(
-        "flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-base font-semibold ring-1 transition-colors duration-300",
-        currentStatus === "saving" && "bg-info/15 text-info ring-info/25",
-        currentStatus === "saved" && "bg-success/15 text-success ring-success/25",
-        currentStatus === "unsaved" && "bg-warning/15 text-warning ring-warning/25",
-        currentStatus === "error" && "bg-destructive/15 text-destructive ring-destructive/25"
+        "flex h-7 items-center gap-1.5 rounded-md px-2 text-xs font-semibold ring-1 transition-colors duration-150",
+        currentStatus === "saving" && "bg-selected text-foreground ring-border",
+        currentStatus === "saved" && "bg-success text-success-foreground ring-success",
+        currentStatus === "unsaved" && "bg-warning text-warning-foreground ring-warning",
+        currentStatus === "error" && "bg-destructive text-destructive-foreground ring-destructive"
       )}
     >
       {currentStatus === "saving" && (
@@ -30,7 +33,7 @@ export const BillingSaveStatus = () => {
       {currentStatus === "saved" && (
         <>
           <CheckCircle2 size={15} />
-          <span>Saved Changes</span>
+          <span>Saved</span>
         </>
       )}
 

@@ -1,7 +1,7 @@
 import quickcartLogo from "@/assets/quickcart.svg";
 import { Button } from "@/components/ui/button";
-import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants/renderer.constants";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 
@@ -14,7 +14,7 @@ export const WelcomeStep = () => {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -24 }}
       transition={{ duration: 0.45, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-col items-center justify-center gap-8 text-center"
+      className="flex flex-col items-center justify-center gap-5 text-center"
     >
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
@@ -25,7 +25,7 @@ export const WelcomeStep = () => {
         <img
           src={quickcartLogo}
           alt={`${PRODUCT_NAME} logo`}
-          className="h-20 w-auto rounded-2xl object-contain sm:h-24"
+          className="h-16 w-auto rounded-(--radius-panel) object-contain"
         />
       </motion.div>
 
@@ -35,10 +35,10 @@ export const WelcomeStep = () => {
         transition={{ duration: 0.4, delay: 0.15, ease: [0.23, 1, 0.32, 1] }}
         className="flex flex-col gap-3"
       >
-        <h1 className="text-foreground text-5xl font-bold tracking-tight">
-          Welcome to <span className="text-primary drop-shadow-sm">{PRODUCT_NAME}</span>
+        <h1 className="text-foreground text-4xl font-bold tracking-tight">
+          Welcome to <span className="text-foreground">{PRODUCT_NAME}</span>
         </h1>
-        <p className="text-muted-foreground max-w-md text-lg leading-relaxed">
+        <p className="text-muted-foreground max-w-md text-sm leading-relaxed">
           Your all in one billing companion. Let&apos;s take 2 minutes to set up your store before
           you start creating invoices.
         </p>
@@ -53,7 +53,7 @@ export const WelcomeStep = () => {
         {FEATURE_PILLS.map((feat) => (
           <span
             key={feat}
-            className="border-primary/30 bg-primary/10 text-foreground rounded-full border px-4 py-1.5 text-sm font-medium"
+            className="border-border bg-hover text-foreground rounded-full border px-3 py-1 text-xs font-medium"
           >
             {feat}
           </span>
@@ -68,7 +68,7 @@ export const WelcomeStep = () => {
         <Button
           size="lg"
           onClick={nextStep}
-          className="group shadow-primary/30 hover:shadow-primary/40 h-14 gap-2 rounded-xl px-10 text-lg font-semibold shadow-lg transition-all duration-200 hover:shadow-xl"
+          className="hover:bg-primary-hover group h-10 gap-2 rounded-(--radius-control) px-6 text-sm font-semibold"
         >
           Get Started
           <ArrowRight className="h-4.5 w-4.5 transition-transform duration-200 group-hover:translate-x-1" />

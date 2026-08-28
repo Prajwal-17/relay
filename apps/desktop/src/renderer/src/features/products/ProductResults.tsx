@@ -1,5 +1,6 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Card } from "@/components/ui/card";
-import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/features/products/hooks/useProductSearch";
 import type { ProductSearchItemDTO } from "@shared/types";
 import { LoaderCircle, Search } from "lucide-react";
 import { useEffect } from "react";
@@ -14,7 +15,10 @@ export default function ProductResults() {
     status,
     hasNextPage,
     fetchNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    isError,
+    isFetchNextPageError,
+    refetch
   } = useProductSearch(PRODUCTSEARCH_TYPE.PRODUCTPAGE);
 
   const totalVirtualRows = hasNextPage ? searchResults.length + 1 : searchResults.length;
@@ -23,28 +27,48 @@ export default function ProductResults() {
     if (virtualItems.length === 0) return;
 
     const lastItem = virtualItems[virtualItems.length - 1];
-    if (lastItem && lastItem.index >= totalVirtualRows - 1 && hasNextPage && !isFetchingNextPage) {
+    if (
+      lastItem &&
+      lastItem.index >= totalVirtualRows - 1 &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isFetchNextPageError
+    ) {
       fetchNextPage();
     }
-  }, [totalVirtualRows, hasNextPage, isFetchingNextPage, fetchNextPage, virtualItems]);
+  }, [
+    totalVirtualRows,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+    fetchNextPage,
+    virtualItems
+  ]);
 
   return (
-    <Card className="border-border bg-background flex min-h-0 flex-1 flex-col border py-2 shadow-sm">
+    <Card className="border-border bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border py-0 shadow-none">
       {status === "pending" ? (
         <div className="my-8 flex justify-center gap-3">
-          <div className="text-muted-foreground text-xl font-semibold">Loading</div>
-          <LoaderCircle className="text-primary animate-spin" size={26} />
+          <div className="text-muted-foreground text-sm font-semibold">Loading</div>
+          <LoaderCircle className="text-primary animate-spin" size={18} />
         </div>
+      ) : isError && searchResults.length === 0 ? (
+        <ErrorState
+          layout="page"
+          title="Products could not be loaded"
+          description="Your products are unchanged. Try loading the list again."
+          primaryAction={{ label: "Try again", onClick: () => void refetch() }}
+        />
       ) : (
         <>
           {searchResults.length === 0 ? (
             <div className="text-muted-foreground p-16 text-center">
-              <Search className="mx-auto mb-6 h-16 w-16 opacity-30" />
-              <h3 className="text-foreground mb-3 text-xl font-semibold">No products found</h3>
+              <Search className="mx-auto mb-4 size-12 opacity-30" />
+              <h3 className="text-foreground mb-2 text-lg font-semibold">No products found</h3>
               <p className="text-muted-foreground font-medium">Try adjusting your search</p>
             </div>
           ) : (
-            <div ref={parentRef} className="relative flex-1 overflow-auto scroll-smooth">
+            <div ref={parentRef} className="relative flex-1 overflow-auto overscroll-contain">
               <div
                 style={{
                   height: `${rowVirtualizer.getTotalSize()}px`,
@@ -73,10 +97,19 @@ export default function ProductResults() {
                   })}
                 </div>
               </div>
+              {isFetchNextPageError && (
+                <ErrorState
+                  layout="compact"
+                  className="m-2"
+                  title="More products could not be loaded"
+                  description="The products already shown are still available."
+                  primaryAction={{ label: "Try again", onClick: () => void fetchNextPage() }}
+                />
+              )}
               {!hasNextPage && searchResults.length > 0 && (
-                <div className="text-muted-foreground flex flex-col items-center py-4 text-center">
-                  <div className="text-2xl font-medium">No more products</div>
-                  <p className="mt-2 text-base opacity-75">
+                <div className="text-muted-foreground flex flex-col items-center py-2 text-center">
+                  <div className="text-xs font-medium">No more products</div>
+                  <p className="mt-0.5 text-xs opacity-75">
                     You&apos;ve reached the end of the list
                   </p>
                 </div>

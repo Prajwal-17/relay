@@ -1,12 +1,14 @@
 import { BrowserWindow, Menu } from "electron";
+import { getZoomFactorForShortcut } from "../shared/utils/zoomUtils";
 import { store } from "./electronStore";
 import { checkForUpdates } from "./updater";
+import { setZoom } from "./zoom";
 
 // Menu setup examples
 // - https://www.electronjs.org/docs/latest/api/menu#examples
 // - https://stackoverflow.com/questions/45811603/create-electron-menu-in-typescript
 
-export function setupMenu() {
+export function setupMenu({ autoHideMenuBar = true }: { autoHideMenuBar?: boolean } = {}) {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: "View",
@@ -20,10 +22,11 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            const zoom = web.getZoomFactor();
-            store.set("zoomFactor", zoom + 0.1);
-            web.setZoomFactor(zoom + 0.1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "increase")
+            );
           }
         },
         {
@@ -32,10 +35,11 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            const zoom = web.getZoomFactor();
-            store.set("zoomFactor", zoom - 0.1);
-            web.setZoomFactor(zoom - 0.1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "decrease")
+            );
           }
         },
         {
@@ -44,9 +48,11 @@ export function setupMenu() {
           click: () => {
             const win = BrowserWindow.getFocusedWindow();
             if (!win) return;
-            const web = win.webContents;
-            store.set("zoomFactor", 1);
-            web.setZoomFactor(1);
+            setZoom(
+              win.webContents,
+              store,
+              getZoomFactorForShortcut(win.webContents.getZoomFactor(), "reset")
+            );
           }
         }
       ]
@@ -67,4 +73,9 @@ export function setupMenu() {
 
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+
+  for (const window of BrowserWindow.getAllWindows()) {
+    window.setAutoHideMenuBar(autoHideMenuBar);
+    window.setMenuBarVisibility(!autoHideMenuBar);
+  }
 }

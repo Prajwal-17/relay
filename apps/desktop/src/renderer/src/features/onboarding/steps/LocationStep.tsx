@@ -10,9 +10,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useCompleteOnboarding } from "@/hooks/onboarding/useCompleteOnboarding";
+import { useCompleteOnboarding } from "@/features/onboarding/hooks/useCompleteOnboarding";
 import { cn } from "@/lib/utils";
-import { useOnboardingStore } from "@/store/onboardingStore";
+import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
 import { locationSchema } from "@shared/schemas/onboarding.schema";
 import type { ICity, IState } from "country-state-city";
 import { ArrowRight, Check, ChevronsUpDown, Loader2, MapPin } from "lucide-react";
@@ -61,7 +61,10 @@ export const LocationStep = () => {
   }, [formData.stateCode]);
 
   const validate = () => {
-    const result = locationSchema.safeParse(formData);
+    const result = locationSchema.safeParse({
+      ...formData,
+      gstin: formData.gstin || null
+    });
     if (!result.success) {
       const newErrors: Record<string, string> = {};
       result.error.issues.forEach((err) => {
@@ -84,21 +87,23 @@ export const LocationStep = () => {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -40 }}
       transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-4"
     >
-      <div className="flex flex-col gap-3">
-        <div className="bg-primary/15 flex h-13 w-13 items-center justify-center rounded-xl">
-          <MapPin className="text-onboarding-icon-dark h-6 w-6" />
+      <div className="flex flex-col gap-2">
+        <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
+          <MapPin className="text-onboarding-icon-dark size-5" />
         </div>
-        <h2 className="text-foreground text-3xl font-bold tracking-tight">Location & Compliance</h2>
-        <p className="text-muted-foreground text-base">
+        <h2 className="text-foreground text-xl font-semibold tracking-tight">
+          Location & Compliance
+        </h2>
+        <p className="text-muted-foreground text-sm">
           Your store address and tax registration details.
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="addressLine1" className="text-base font-medium">
+          <Label htmlFor="addressLine1" className="text-sm font-medium">
             Address Line 1 <span className="text-destructive">*</span>
           </Label>
           <Input
@@ -109,7 +114,7 @@ export const LocationStep = () => {
               setFormData({ addressLine1: e.target.value });
               if (errors.addressLine1) setErrors((prev) => ({ ...prev, addressLine1: "" }));
             }}
-            className={`h-12 text-lg font-medium ${errors.addressLine1 ? "border-destructive" : ""}`}
+            className={`h-9 text-sm font-medium ${errors.addressLine1 ? "border-destructive" : ""}`}
           />
           {errors.addressLine1 && (
             <motion.p
@@ -123,7 +128,7 @@ export const LocationStep = () => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="addressLine2" className="text-base font-medium">
+          <Label htmlFor="addressLine2" className="text-sm font-medium">
             Address Line 2 <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
           <Input
@@ -131,22 +136,22 @@ export const LocationStep = () => {
             placeholder="e.g. Near Town Hall"
             value={formData.addressLine2}
             onChange={(e) => setFormData({ addressLine2: e.target.value })}
-            className="h-12 text-base"
+            className="h-9 text-sm"
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label className="text-base font-medium">Country</Label>
+          <Label className="text-sm font-medium">Country</Label>
           <Input
             value="India"
             disabled
-            className="disabled:bg-muted/50 disabled:text-muted-foreground h-12 text-base font-medium opacity-100 disabled:cursor-not-allowed"
+            className="disabled:bg-muted/50 disabled:text-muted-foreground h-9 text-sm font-medium opacity-100 disabled:cursor-not-allowed"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label className="text-base font-medium">
+            <Label className="text-sm font-medium">
               State <span className="text-destructive">*</span>
             </Label>
             <Popover open={stateOpen} onOpenChange={setStateOpen}>
@@ -156,7 +161,7 @@ export const LocationStep = () => {
                   role="combobox"
                   aria-expanded={stateOpen}
                   className={cn(
-                    "h-12 w-full justify-between text-base font-normal",
+                    "h-9 w-full justify-between text-sm font-normal",
                     !formData.stateCode && "text-muted-foreground",
                     errors.state && "border-destructive"
                   )}
@@ -211,7 +216,7 @@ export const LocationStep = () => {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label className="text-base font-medium">
+            <Label className="text-sm font-medium">
               City <span className="text-destructive">*</span>
             </Label>
             <Popover open={cityOpen} onOpenChange={setCityOpen}>
@@ -222,7 +227,7 @@ export const LocationStep = () => {
                   aria-expanded={cityOpen}
                   disabled={!formData.stateCode}
                   className={cn(
-                    "h-12 w-full justify-between text-base font-normal",
+                    "h-9 w-full justify-between text-sm font-normal",
                     !formData.city && "text-muted-foreground",
                     errors.city && "border-destructive"
                   )}
@@ -283,7 +288,7 @@ export const LocationStep = () => {
 
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pincode" className="text-base font-medium">
+            <Label htmlFor="pincode" className="text-sm font-medium">
               Pincode <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -295,7 +300,7 @@ export const LocationStep = () => {
                 setFormData({ pincode: e.target.value.replace(/\D/g, "") });
                 if (errors.pincode) setErrors((prev) => ({ ...prev, pincode: "" }));
               }}
-              className={`h-12 text-base ${errors.pincode ? "border-destructive" : ""}`}
+              className={`h-9 text-sm ${errors.pincode ? "border-destructive" : ""}`}
             />
             {errors.pincode && (
               <motion.p
@@ -309,7 +314,7 @@ export const LocationStep = () => {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="gstin" className="text-base font-medium">
+            <Label htmlFor="gstin" className="text-sm font-medium">
               GSTIN <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
@@ -321,7 +326,7 @@ export const LocationStep = () => {
                 setFormData({ gstin: e.target.value.toUpperCase() });
                 if (errors.gstin) setErrors((prev) => ({ ...prev, gstin: "" }));
               }}
-              className={`h-12 font-mono text-base tracking-wider ${errors.gstin ? "border-destructive" : ""}`}
+              className={`h-9 font-mono text-sm tracking-wider ${errors.gstin ? "border-destructive" : ""}`}
             />
             {errors.gstin && (
               <motion.p
@@ -348,8 +353,8 @@ export const LocationStep = () => {
         <Button
           onClick={handleNext}
           disabled={mutation.isPending}
-          size="lg"
-          className="group shadow-primary/20 hover:shadow-primary/30 gap-2 rounded-xl px-7 text-base font-semibold shadow-md hover:shadow-lg"
+          size="default"
+          className="hover:bg-primary-hover group gap-2 px-5 font-semibold"
         >
           {mutation.isPending ? (
             <>

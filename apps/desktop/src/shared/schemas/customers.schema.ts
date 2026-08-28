@@ -6,16 +6,21 @@ export const createCustomerSchema = CustomerSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true
-}).extend({
-  customerType: z.enum(CustomerRole).default(CustomerRole.CASH)
-});
+})
+  .extend({
+    customerType: z.enum(CustomerRole).default(CustomerRole.CASH),
+    openingBalance: z.number().int().nonnegative().optional()
+  })
+  .strict();
 
 export const updateCustomerSchema = CustomerSchema.omit({
   id: true,
   createdAt: true,
   updatedAt: true
-}).extend({
-  customerType: z.enum(CustomerRole).optional()
-});
+})
+  .extend({
+    customerType: z.enum(CustomerRole).optional()
+  })
+  .strict();
 
 export const dirtyFieldsCustomerSchema = updateCustomerSchema.partial();

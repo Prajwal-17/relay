@@ -1,142 +1,246 @@
-import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow } from "electron";
-import { fork, type ChildProcess } from "node:child_process";
-import path, { join, resolve } from "node:path";
-import { initDb } from "./db/db";
+import fs from "node:fs";
+import { randomUUID } from "node:crypto";
+import { isAbsolute, join, resolve } from "node:path";
+import { resolveApiPort } from "../shared/runtimeConfig";
+import type { DatabaseUpgradeStatus } from "../shared/types";
+import type { UpgradeInspection } from "./db/upgradeCoordinator";
 import { initMainEnv } from "./loadEnv";
+import { createMainWindow } from "./mainWindow";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
+import { startServerProcess, stopServerProcess } from "./serverProcess";
+import { UpgradeWindowController } from "./upgrade/upgradeWindow";
+import type { ZoomStore } from "./zoom";
 
-const mode = initMainEnv();
-const isDevBuild = mode === "development";
-let serverProcess: ChildProcess;
+const isDevBuild = initMainEnv() === "development";
+let mainWindow: BrowserWindow | undefined;
+const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, process.env.MODE);
+const apiToken = process.env.M_VITE_API_TOKEN?.trim() || randomUUID();
+let appStore: ZoomStore | undefined;
+let upgradeWindow: UpgradeWindowController | undefined;
+let bootPromise: Promise<void> | undefined;
+let applicationStarted = false;
 
-registerProtocol();
-
-if (isDevBuild) {
-  app.setName("QuickCart-Dev");
-} else {
-  app.setName("QuickCart");
-}
+app.setName(isDevBuild ? "QuickCart-Dev" : "QuickCart");
 
 if (process.platform === "win32") {
   app.setAppUserModelId(isDevBuild ? "com.quickcart-dev.app" : "com.quickcart.app");
 }
 
-// when in prod -> electron uses its default path (/Quickcart) but for dev set it explicitly
-if (isDevBuild) {
+const configuredUserDataDirectory = process.env.M_VITE_USER_DATA_DIR;
+if (configuredUserDataDirectory) {
+  if (!isAbsolute(configuredUserDataDirectory)) {
+    throw new Error("M_VITE_USER_DATA_DIR must be an absolute path.");
+  }
+  if (!fs.existsSync(configuredUserDataDirectory)) {
+    throw new Error("M_VITE_USER_DATA_DIR must exist before QuickCart starts.");
+  }
+  if (!fs.statSync(configuredUserDataDirectory).isDirectory()) {
+    throw new Error("M_VITE_USER_DATA_DIR must point to a directory.");
+  }
+  app.setPath("userData", configuredUserDataDirectory);
+} else if (isDevBuild) {
+  // Keep normal development data separate from the installed app.
   app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
 }
 
-let mainWindow: BrowserWindow;
-const gotTheLock = app.requestSingleInstanceLock();
+process.env.M_VITE_API_PORT = String(apiPort);
+process.env.M_VITE_API_TOKEN = apiToken;
+registerProtocol();
 
-// prevent creating multiple instances
-if (!gotTheLock) {
+// Path-dependent database modules are loaded only after userData is final.
+const databaseModules = Promise.all([
+  import("./db/backup"),
+  import("./db/db"),
+  import("./db/upgradeCoordinator")
+]).then(([backup, database, upgrade]) => ({ ...backup, ...database, ...upgrade }));
+
+if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
+  // second-instance => to bring already opened window when clicked twice on app
   app.on("second-instance", () => {
-    if (mainWindow) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
+    if (upgradeWindow) {
+      upgradeWindow.focus();
+      return;
     }
+    if (!mainWindow) return;
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
   });
 
   app.whenReady().then(async () => {
     handleAssetsProtocol();
-    /*
-     * All main-process modules that touch app.getPath() are lazy-imported here,
-     * have to load both modules at same time instead of one after other
-     * forcing to load the modules after app.setPath() so that we can access app.getPath() in db.ts
-     * this ensures the db path is valid & in exact location
-     */
-    const [{ setupIpcHandlers }] = await Promise.all([import("./setupIpcHandlers")]);
+
+    const [{ setupIpcHandlers }, { store }] = await Promise.all([
+      import("./setupIpcHandlers"),
+      import("./electronStore")
+    ]);
+    appStore = store;
     setupIpcHandlers();
 
-    // pass to forked server process (electron's app isnt available there)
+    // these values are passed to the forked server process.
     process.env.M_VITE_DATABASE_URL = join(app.getPath("userData"), "pos.db");
     process.env.M_VITE_IS_PACKAGED = String(app.isPackaged);
     process.env.M_VITE_MIGRATION_FOLDER = app.isPackaged
-      ? path.join(process.resourcesPath, "drizzle")
-      : path.join(__dirname, "../../drizzle");
+      ? join(process.resourcesPath, "drizzle")
+      : join(__dirname, "../../drizzle");
 
-    await initDb();
+    await boot();
 
-    serverProcess = fork(join(__dirname, "server.js"), [], {
-      env: process.env,
-      stdio: "inherit"
-    });
-
-    serverProcess.on("spawn", () => {
-      console.info("Spawed child process");
-    });
-
-    serverProcess.on("error", (err) => {
-      console.error("Failed to start Hono server", err);
-    });
-
-    createWindow();
-
-    app.on("activate", function () {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    app.on("activate", async () => {
+      // window re-opening behaviour
+      if (applicationStarted && BrowserWindow.getAllWindows().length === 0) {
+        const window = await openMainWindow();
+        window.show();
+      }
     });
   });
 }
 
-function createWindow(): void {
-  const apiPort = isDevBuild ? 4723 : 4722;
+function checkingStatus(totalSteps: number, backupAvailable: boolean): DatabaseUpgradeStatus {
+  return {
+    state: "checking",
+    label: "Checking your local database",
+    currentStep: 0,
+    totalSteps: Math.max(totalSteps, 1),
+    backupAvailable
+  };
+}
 
-  mainWindow = new BrowserWindow({
-    show: false,
-    height: 768,
-    width: 1366,
-    autoHideMenuBar: false,
-    webPreferences: {
-      preload: join(__dirname, "../preload/index.js"),
-      sandbox: false,
-      contextIsolation: true,
-      nodeIntegration: false,
-      additionalArguments: [`--api-port=${apiPort}`]
-    } as Electron.WebPreferences
-  });
+function errorMessage(error: unknown): string {
+  let current = error;
+  let message = "";
 
-  mainWindow.once("ready-to-show", async () => {
-    // lazy import - electronStore must only load after app.setPath() has run
-    const { store } = await import("./electronStore");
-    const zoomFactor = store.get("zoomFactor") as number;
-    mainWindow.webContents.setZoomFactor(zoomFactor);
-    mainWindow.show();
-    // mainWindow.maximize();
-  });
-
-  import("./setupMenu").then(({ setupMenu }) => setupMenu());
-
-  // catch keyboard events
-  // https://stackoverflow.com/a/75716165/25649886
-  mainWindow.webContents.on("before-input-event", (_, input) => {
-    if (input.type === "keyDown" && input.key === "F12") {
-      if (mainWindow.webContents.isDevToolsOpened()) {
-        mainWindow.webContents.closeDevTools();
-      } else {
-        mainWindow.webContents.openDevTools({ mode: "right" });
-      }
-    }
-  });
-
-  if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
-    mainWindow.loadURL(process.env["ELECTRON_RENDERER_URL"]);
-  } else {
-    mainWindow.loadFile(join(__dirname, "../renderer/index.html"));
+  while (current instanceof Error) {
+    if (current.message.trim()) message = current.message;
+    current = current.cause;
   }
+
+  return message || "QuickCart could not update the local database.";
+}
+
+async function ensureUpgradeWindow(
+  inspection: Pick<UpgradeInspection, "isFreshDatabase" | "totalSteps" | "backupDirectory">
+): Promise<UpgradeWindowController> {
+  if (upgradeWindow) return upgradeWindow;
+
+  const { getBackupPaths, getDatabasePath } = await databaseModules;
+  const backupAvailable = fs.existsSync(getBackupPaths(getDatabasePath()).latest);
+  upgradeWindow = new UpgradeWindowController({
+    isFreshDatabase: inspection.isFreshDatabase,
+    initialStatus: checkingStatus(inspection.totalSteps, backupAvailable),
+    backupDirectory: inspection.backupDirectory,
+    preloadPath: join(__dirname, "../preload/index.js"),
+    rendererUrl: isDevBuild ? process.env.ELECTRON_RENDERER_URL : undefined,
+    onRetry: retryBoot
+  });
+  await upgradeWindow.create();
+  return upgradeWindow;
+}
+
+async function retryBoot(): Promise<void> {
+  const activeBoot = bootPromise;
+  if (activeBoot) await activeBoot;
+  await boot();
+}
+
+async function boot(): Promise<void> {
+  if (bootPromise) return bootPromise;
+  bootPromise = runBoot().finally(() => {
+    bootPromise = undefined;
+  });
+  return bootPromise;
+}
+
+async function runBoot(): Promise<void> {
+  const { getBackupPaths, getDatabasePath, getMigrationsFolder, initDb, inspectDatabaseUpgrade } =
+    await databaseModules;
+  const databasePath = getDatabasePath();
+  const migrationsFolder = getMigrationsFolder();
+  let inspection: UpgradeInspection | undefined;
+
+  try {
+    inspection = inspectDatabaseUpgrade(databasePath, migrationsFolder);
+    if (inspection.required) {
+      const controller = await ensureUpgradeWindow(inspection);
+      controller.update(
+        checkingStatus(inspection.totalSteps, fs.existsSync(getBackupPaths(databasePath).latest))
+      );
+    }
+
+    await initDb({ onStatus: (status) => upgradeWindow?.update(status) });
+    await startApplication(inspection);
+  } catch (error) {
+    console.error("Database upgrade or startup failed", error);
+    stopServerProcess();
+    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.destroy();
+
+    const fallback = inspection ?? {
+      isFreshDatabase: !fs.existsSync(databasePath),
+      totalSteps: 1,
+      backupDirectory: getBackupPaths(databasePath).directory
+    };
+    const controller = await ensureUpgradeWindow(fallback);
+    const previous = controller.getStatus();
+    controller.update({
+      state: "failed",
+      label: "Database update stopped",
+      currentStep: previous.currentStep,
+      totalSteps: previous.totalSteps,
+      backupAvailable: fs.existsSync(getBackupPaths(databasePath).latest),
+      errorMessage: errorMessage(error)
+    });
+  }
+}
+
+async function startApplication(inspection?: UpgradeInspection): Promise<void> {
+  if (applicationStarted) return;
+
+  if (upgradeWindow) {
+    const previous = upgradeWindow.getStatus();
+    const totalSteps = Math.max(inspection?.totalSteps ?? previous.totalSteps, 1);
+    upgradeWindow.update({
+      state: "starting",
+      label: "Starting QuickCart",
+      currentStep: totalSteps,
+      totalSteps,
+      backupAvailable: previous.backupAvailable
+    });
+  }
+
+  await startServerProcess();
+  const window = await openMainWindow();
+  window.show();
+  applicationStarted = true;
+
+  if (!upgradeWindow) return;
+  upgradeWindow.update({
+    ...upgradeWindow.getStatus(),
+    state: "complete",
+    label: "QuickCart is ready"
+  });
+  upgradeWindow.close();
+  upgradeWindow = undefined;
+}
+
+async function openMainWindow(): Promise<BrowserWindow> {
+  const handle = createMainWindow({
+    isDevBuild,
+    apiPort,
+    apiToken,
+    maximizeOnReady: !configuredUserDataDirectory,
+    store: appStore
+  });
+  mainWindow = handle.window;
+  handle.window.on("closed", () => {
+    if (mainWindow === handle.window) mainWindow = undefined;
+  });
+  return handle.ready;
 }
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  if (process.platform !== "darwin" && applicationStarted) app.quit();
 });
 
-app.on("will-quit", () => {
-  if (serverProcess) {
-    serverProcess.kill();
-  }
-});
+app.on("will-quit", () => stopServerProcess());

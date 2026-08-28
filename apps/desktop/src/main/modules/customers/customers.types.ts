@@ -1,12 +1,47 @@
+import type { CustomerSortByType, CustomerTxnSort, CustomerType } from "../../../shared/types";
+
 export type PaginatedQuery = {
   pageNo: number;
   pageSize: number;
 };
 
-export type SalesByCustomerParams = PaginatedQuery & {
-  customerId: string;
+export type ListCustomersParams = {
+  pageNo: number;
+  pageSize: number;
+  query: string;
+  type: CustomerType;
+  sort: CustomerSortByType;
+  includeArchived: boolean;
 };
 
-export type EstimatesByCustomerParams = PaginatedQuery & {
+export type TxnByCustomerParams = {
   customerId: string;
+  pageNo: number;
+  pageSize: number;
+  search: string;
+  sort: CustomerTxnSort;
+};
+
+export type SalesByCustomerParams = TxnByCustomerParams;
+
+export type EstimatesByCustomerParams = TxnByCustomerParams;
+
+export type ActivityParams = {
+  customerId: string;
+  limit: number;
+};
+
+export type RecentSalesParams = {
+  customerId: string;
+  limit: number;
+};
+
+export type LedgerEventRow = {
+  id: string;
+  type: string;
+  amountDue: number | null;
+  amountPaid: number | null;
+  paymentMode: string | null;
+  notes: string | null;
+  createdAt: string;
 };

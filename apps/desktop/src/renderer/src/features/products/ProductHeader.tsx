@@ -12,9 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import { PRODUCT_SORT_OPTIONS, PRODUCT_STATUS_OPTIONS } from "@/constants";
-import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/hooks/products/useProductSearch";
-import { useProductsStore } from "@/store/productsStore";
+import { PRODUCT_SORT_OPTIONS, PRODUCT_STATUS_OPTIONS } from "@/constants/renderer.constants";
+import { PRODUCTSEARCH_TYPE, useProductSearch } from "@/features/products/hooks/useProductSearch";
+import { useProductsStore } from "@/features/products/products.store";
 import { PRODUCT_FILTER, type ProductFilterType } from "@shared/types";
 import { ArrowDownAZ, Check, ChevronDown, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -60,26 +60,26 @@ export default function ProductHeader() {
     (hasPurchasePrice ? 1 : 0);
 
   return (
-    <div className="sticky top-0 z-10 space-y-2.5">
-      <div className="border-border bg-card flex items-center gap-3.5 rounded-xl border px-5 py-4 shadow-sm">
+    <div className="sticky top-0 z-10 space-y-2">
+      <div className="border-border bg-card flex items-center gap-2 rounded-(--radius-panel) border px-3 py-2">
         <div className="relative min-w-0 flex-1">
-          <Search className="text-muted-foreground absolute top-1/2 left-5 h-7 w-7 -translate-y-1/2" />
+          <Search className="text-muted-foreground absolute top-1/2 left-3 size-4.5 -translate-y-1/2" />
           <Input
             ref={inputRef}
             placeholder="Search products…"
             value={productsSearchParam}
             onChange={(e) => setProductsSearchParam(e.target.value)}
-            className="bg-muted/60 focus-visible:border-borderprimary focus-visible:bg-background h-14 rounded-xl border-transparent pr-14 pl-15 text-lg! font-medium shadow-none transition-colors"
+            className="bg-card focus-visible:border-ring h-10 rounded-(--radius-control) pr-10 pl-10 text-base font-medium shadow-none md:text-base"
           />
           {productsSearchParam && (
             <button
-              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer rounded-md p-1.5 transition-colors"
+              className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 cursor-pointer rounded-md p-1 transition-colors"
               onClick={() => {
                 setProductsSearchParam("");
                 inputRef.current?.focus();
               }}
             >
-              <X className="h-6 w-6" />
+              <X className="size-4" />
             </button>
           )}
         </div>
@@ -88,10 +88,9 @@ export default function ProductHeader() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              size="lg"
-              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 relative cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
+              className="border-border bg-muted/50 text-foreground hover:bg-hover relative cursor-pointer gap-2 px-3.5 text-sm font-semibold shadow-none transition-all"
             >
-              <SlidersHorizontal className="h-5 w-5" />
+              <SlidersHorizontal className="size-4" />
               Filter
               {activeFilterCount > 0 && (
                 <span className="bg-primary text-primary-foreground ml-0.5 flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-bold">
@@ -100,14 +99,14 @@ export default function ProductHeader() {
               )}
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="border-border/80 w-80 rounded-xl p-0 shadow-lg">
-            <div className="px-5 pt-3 pb-3">
-              <h4 className="text-foreground text-base font-semibold tracking-tight">Filters</h4>
+          <PopoverContent align="start" className="border-border/80 w-72 rounded-xl p-0 shadow-lg">
+            <div className="px-4 pt-3 pb-2">
+              <h4 className="text-foreground text-sm font-semibold tracking-tight">Filters</h4>
             </div>
             <Separator />
 
-            <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+            <div className="p-4">
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
                 Status
               </p>
               <div className="space-y-1">
@@ -115,10 +114,10 @@ export default function ProductHeader() {
                   <button
                     key={option.value}
                     onClick={() => setFilterType(option.value as ProductFilterType)}
-                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                       filterType === option.value
                         ? "bg-foreground/10 text-foreground"
-                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                        : "text-muted-foreground hover:bg-hover hover:text-foreground"
                     }`}
                   >
                     {option.label}
@@ -130,8 +129,8 @@ export default function ProductHeader() {
 
             <Separator />
 
-            <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+            <div className="p-4">
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
                 Price Range
               </p>
               <div className="flex items-center gap-2.5">
@@ -155,17 +154,17 @@ export default function ProductHeader() {
 
             <Separator />
 
-            <div className="p-5">
-              <p className="text-muted-foreground mb-3 text-xs font-semibold tracking-wider uppercase">
+            <div className="p-4">
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
                 Properties
               </p>
               <div className="space-y-1">
                 <button
                   onClick={toggleMrpFilter}
-                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     hasMrp
                       ? "bg-foreground/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-hover hover:text-foreground"
                   }`}
                 >
                   Has MRP
@@ -173,10 +172,10 @@ export default function ProductHeader() {
                 </button>
                 <button
                   onClick={togglePurchasePriceFilter}
-                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3.5 py-2.5 text-base font-medium transition-colors ${
+                  className={`flex w-full cursor-pointer items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     hasPurchasePrice
                       ? "bg-foreground/10 text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                      : "text-muted-foreground hover:bg-hover hover:text-foreground"
                   }`}
                 >
                   Has Purchase Price
@@ -218,10 +217,9 @@ export default function ProductHeader() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              size="lg"
-              className="border-border bg-muted/50 text-foreground hover:bg-muted/60 cursor-pointer gap-2.5 px-5 text-lg font-semibold shadow-none transition-all"
+              className="border-border bg-muted/50 text-foreground hover:bg-hover cursor-pointer gap-2 px-3.5 text-sm font-semibold shadow-none transition-all"
             >
-              <ArrowDownAZ className="h-5 w-5" />
+              <ArrowDownAZ className="size-4" />
               {activeSortLabel ?? "Sort"}
               <ChevronDown className="h-3.5 w-3.5 opacity-60" />
             </Button>
@@ -238,9 +236,9 @@ export default function ProductHeader() {
                   <DropdownMenuRadioItem
                     key={option.value}
                     value={option.value}
-                    className="cursor-pointer gap-2.5 rounded-lg py-2.5 text-base font-medium"
+                    className="cursor-pointer gap-2 rounded-lg py-2 text-sm font-medium"
                   >
-                    <Icon className="h-4 w-4 opacity-60" />
+                    <Icon className="size-3.5 opacity-60" />
                     {option.label}
                   </DropdownMenuRadioItem>
                 );
@@ -265,16 +263,16 @@ export default function ProductHeader() {
             setActionType("add");
             setOpenProductDialog();
           }}
-          className="bg-primary hover:bg-primary/85 text-primary-foreground h-12 cursor-pointer gap-2.5 rounded-lg px-6 text-base font-semibold shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
+          className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
         >
-          <Plus className="h-5 w-5" strokeWidth={2.5} />
+          <Plus className="size-4" strokeWidth={2.5} />
           Add Product
         </Button>
       </div>
 
       {/* active filters */}
-      <div className="border-border/60 bg-card flex flex-wrap items-center justify-between gap-4 rounded-xl border px-5 py-3.5">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="border-border bg-card flex flex-wrap items-center justify-between gap-2 rounded-(--radius-panel) border px-3 py-1.5">
+        <div className="flex flex-wrap items-center gap-2">
           <FilterChip
             label="Status"
             value={PRODUCT_STATUS_OPTIONS.find((s) => s.value === filterType)?.label ?? filterType}
@@ -331,9 +329,9 @@ export default function ProductHeader() {
 
           <button
             onClick={() => setFilterOpen(true)}
-            className="text-muted-foreground hover:text-foreground hover:bg-muted/50 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-medium transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-hover flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-3.5" />
             Add filter
           </button>
 
@@ -361,15 +359,15 @@ export default function ProductHeader() {
                 if (hasMrp) toggleMrpFilter();
                 if (hasPurchasePrice) togglePurchasePriceFilter();
               }}
-              className="text-destructive hover:text-destructive hover:bg-destructive/8 flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-base font-semibold transition-colors"
+              className="text-destructive hover:text-destructive hover:bg-destructive/8 flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors"
             >
-              <X className="h-4 w-4" />
+              <X className="size-3.5" />
               Clear all
             </button>
           )}
         </div>
 
-        <div className="text-muted-foreground ml-auto shrink-0 font-sans text-base font-semibold select-none">
+        <div className="text-muted-foreground ml-auto shrink-0 font-sans text-sm font-medium select-none">
           Showing {totalCount} {totalCount === 1 ? "result" : "results"}
         </div>
       </div>
@@ -387,8 +385,8 @@ function FilterChip({
   onRemove?: () => void;
 }) {
   return (
-    <span className="border-border bg-muted/60 text-foreground inline-flex items-center gap-2 rounded-lg border py-2 pr-2.5 pl-3.5 text-lg font-medium transition-all">
-      <span className="text-muted-foreground text-base">{label}:</span>
+    <span className="border-border bg-muted/60 text-foreground inline-flex items-center gap-2 rounded-lg border py-1 pr-2 pl-3 text-sm font-medium transition-all">
+      <span className="text-muted-foreground text-xs">{label}:</span>
       <span className="font-semibold">{value}</span>
       {onRemove && (
         <button

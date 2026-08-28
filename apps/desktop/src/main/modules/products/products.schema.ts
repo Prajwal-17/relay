@@ -2,9 +2,9 @@ import z from "zod";
 import { PRODUCT_FILTER, PRODUCT_SORT_BY } from "../../../shared/types";
 
 export const productSearchSchema = z.object({
-  query: z.string().default(" "),
+  query: z.string().default(""),
   pageNo: z.coerce.number().min(1).nonnegative().default(1),
-  pageSize: z.coerce.number().nonnegative().max(100).default(20),
+  pageSize: z.coerce.number().positive().max(100).default(20),
   filterType: z.enum(PRODUCT_FILTER).default(PRODUCT_FILTER.ACTIVE),
   sortBy: z
     .enum(PRODUCT_SORT_BY)
@@ -23,21 +23,18 @@ export const productSearchSchema = z.object({
     .optional()
     .catch(undefined)
     .transform((v) => v ?? null),
-  hasMrp: z.coerce
-    .boolean()
-    .optional()
-    .catch(false)
-    .transform((v) => v ?? false),
-  hasPurchasePrice: z.coerce
-    .boolean()
-    .optional()
-    .catch(false)
-    .transform((v) => v ?? false),
+  hasMrp: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  hasPurchasePrice: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
   billingMode: z
     .enum(["true", "false"])
-    .optional()
-    .transform((val) => val === "true")
-    .catch(false)
+    .default("false")
+    .transform((value) => value === "true")
 });
 
 export const productTransactionsSchema = z.object({

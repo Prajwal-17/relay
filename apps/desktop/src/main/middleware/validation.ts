@@ -9,13 +9,17 @@ export const validateRequest = <Target extends keyof ValidationTargets, T extend
 ) => {
   return zValidator(target, schema, (result, c) => {
     if (!result.success) {
-      const errors = result.error.issues.map((err) => ({
+      const details = result.error.issues.map((err) => ({
         field: err.path.join("."),
         message: err.message
       }));
+      const message = details.map((d) => d.message).join(", ");
       return c.json(
         {
-          error: errors
+          error: {
+            message,
+            details
+          }
         },
         400
       );

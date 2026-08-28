@@ -1,7 +1,7 @@
 appId: com.quickcart.app
 productName: QuickCart
 extraMetadata: # injects properties into package.json
-  name: quickcart-dev
+  name: quickcart
 directories:
   buildResources: build
 files:

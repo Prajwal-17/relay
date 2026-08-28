@@ -4,11 +4,12 @@
  * @returns {string}
  */
 export function formatDateStr(dateStr?: string): string {
-  if (!dateStr) return "-";
+  if (!dateStr || typeof dateStr !== "string") return "-";
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return "-";
   return date.toLocaleString("en-IN", {
-    dateStyle: "medium"
+    dateStyle: "medium",
+    timeZone: "Asia/Kolkata"
   });
 }
 
@@ -30,6 +31,7 @@ export function formatDateObjToStringMedium(dateObj: Date) {
  * @returns {string}
  */
 export function formatDateObjToHHmmss(dateObj: Date) {
+  if (isNaN(dateObj.getTime())) return "-";
   const hours = dateObj.getHours().toString().padStart(2, "0");
   const minutes = dateObj.getMinutes().toString().padStart(2, "0");
 
@@ -37,21 +39,33 @@ export function formatDateObjToHHmmss(dateObj: Date) {
 }
 
 /**
- * Format ISO date string to IST Date Object
- * @param {string} dateStr
- * @returns {Date}
+ * Parse a date string to a Date object.
+ * - Inputs without timezone info are treated as IST (+05:30).
+ * - Inputs with Z or +/-HH:MM offset are parsed as-is.
+ * Returns null for invalid/unparseable input.
  */
 export function formatDateStrToISTDateObject(dateStr: string) {
-  // '2025-08-31 06:38:13' -> '2025-08-31T06:38:13Z'
-  if (!dateStr) {
+  if (!dateStr) return null;
+
+  // extract date
+  const m = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+
+  // to prevent invalid date (e.g. Feb 30 → Mar 2) which returns NaN
+  // validate via UTC so we can reject it
+  const check = new Date(Date.UTC(y, mo - 1, d));
+  if (check.getUTCFullYear() !== y || check.getUTCMonth() + 1 !== mo || check.getUTCDate() !== d) {
     return null;
   }
-  const utcTimestamp = dateStr.replace(" ", "T") + "Z";
 
-  const date = new Date(utcTimestamp);
-  if (isNaN(date.getTime())) return null;
+  const withT = dateStr.replace(" ", "T");
+  const dateStrForParsing = /(?:Z|[+-]\d{2}:\d{2})$/.test(dateStr) ? withT : withT + "+05:30";
 
-  return date;
+  const date = new Date(dateStrForParsing);
+  return isNaN(date.getTime()) ? null : date;
 }
 
 /**
@@ -102,4 +116,8 @@ export function formatDateStrToISTDateTimeStr(dateStr: string) {
   });
 
   return `${fullDate} ${timePart}`;
+}
+
+export function isWithinTwoDays(createdAt: string): boolean {
+  return Date.now() - new Date(createdAt).getTime() <= 48 * 60 * 60 * 1000;
 }
