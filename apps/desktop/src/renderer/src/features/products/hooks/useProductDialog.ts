@@ -71,12 +71,6 @@ export const useProductDialog = () => {
 
     const updates: Record<string, any> = { [field]: value };
 
-    if (field === "unit" && (value === "none" || value === "")) {
-      updates.weight = "";
-    } else if (field === "weight" && (value === "" || value === null)) {
-      updates.unit = "none";
-    }
-
     setFormDataState(updates);
 
     if (actionType === ACTION_TYPE.BILLING_PAGE_EDIT || actionType === ACTION_TYPE.EDIT) {

@@ -20,11 +20,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import type { CustomerTxn } from "@/features/customers/hooks/useCustomerTransactions";
 import type { MutationVariables } from "@/features/customers/hooks/useCustomerTxnMutations";
+import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
-  ArrowUpRight,
   Copy,
   Edit,
   Eye,
@@ -109,25 +109,7 @@ function TxnRowActionsInner({
     try {
       const response = await window.exportApi.exportAsPdf(txn.id, type);
       if (response?.status === "success") {
-        const filePath = response.data;
-        toast.success(
-          (t) => (
-            <div className="flex items-center gap-4 whitespace-nowrap">
-              <span className="font-medium">PDF saved successfully</span>
-              <button
-                onClick={() => {
-                  window.exportApi.showItemInFolder(filePath);
-                  toast.dismiss(t.id);
-                }}
-                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-xl font-medium transition-colors hover:underline"
-              >
-                Open
-                <ArrowUpRight size={18} />
-              </button>
-            </div>
-          ),
-          { duration: 4000, style: { maxWidth: "fit-content" } }
-        );
+        showPdfExportSuccessToast(response.data);
       } else {
         toast.error(response?.error?.message || "Failed to generate PDF");
       }

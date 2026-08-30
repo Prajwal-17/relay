@@ -62,9 +62,7 @@ export function exportAsPdf() {
             outputDir = path.join(os.homedir(), "Downloads", "Receipts");
           }
 
-          if (!fs.existsSync(outputDir)) {
-            fs.mkdirSync(outputDir, { recursive: true });
-          }
+          await fs.promises.mkdir(outputDir, { recursive: true });
           pdfPath = path.join(outputDir, filename);
         }
 
@@ -72,10 +70,11 @@ export function exportAsPdf() {
           show: false,
           autoHideMenuBar: false,
           webPreferences: {
-            preload: join(__dirname, "../preload/index.js"),
+            preload: join(app.getAppPath(), "out/preload/index.js"),
             sandbox: false,
             contextIsolation: true,
             nodeIntegration: false,
+            backgroundThrottling: false,
             additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
           } as Electron.WebPreferences
         });
@@ -94,30 +93,39 @@ export function exportAsPdf() {
 
         await exportWindow.webContents.executeJavaScript(`
           new Promise((resolve, reject) => {
-            // if rendered, resolve
-            if (document.getElementById('pdf-ready-marker')) {
-              return resolve();
-            }
-
-            // watch the DOM for changes
-            const observer = new MutationObserver((mutations, obs) => {
-              if (document.getElementById('pdf-ready-marker')) {
-                obs.disconnect(); // stop watching
-                resolve();
+            let settled = false;
+            const finish = (callback, value) => {
+              if (settled) return;
+              settled = true;
+              observer.disconnect();
+              clearTimeout(timeout);
+              callback(value);
+            };
+            const inspect = () => {
+              const errorMarker = document.querySelector('[data-pdf-export-error]');
+              if (errorMarker) {
+                const message =
+                  errorMarker.getAttribute('data-pdf-export-error') ||
+                  errorMarker.textContent?.replace(/\\s+/g, ' ').trim();
+                finish(reject, new Error(message || 'The PDF page could not be prepared.'));
+                return;
               }
-            });
+              if (!document.getElementById('pdf-ready-marker')) return;
 
+              Promise.resolve(document.fonts?.ready)
+                .then(() => new Promise((painted) => requestAnimationFrame(() => painted())))
+                .then(() => finish(resolve, true))
+                .catch((error) => finish(reject, error));
+            };
+            const observer = new MutationObserver(inspect);
             observer.observe(document.body, { childList: true, subtree: true });
-
-            setTimeout(() => {
-              obs.disconnect();
-              reject(new Error('Timeout waiting for pdf-ready-marker'));
-            }, 15000);
+            const timeout = setTimeout(
+              () => finish(reject, new Error('Timed out while preparing the PDF.')),
+              8000
+            );
+            inspect();
           })
         `);
-
-        // slight delay for css/fonts to fully paint after DOM is ready
-        await new Promise((r) => setTimeout(r, 500));
 
         const pdfBuffer = await exportWindow.webContents.printToPDF({
           pageSize: "A4",
@@ -127,21 +135,17 @@ export function exportAsPdf() {
 
         await fs.promises.writeFile(pdfPath, pdfBuffer);
 
-        if (exportWindow && !exportWindow.isDestroyed()) {
-          exportWindow.close();
-        }
-
-        // open path
         return { status: "success", data: pdfPath };
       } catch (error) {
         console.error("Error generating PDF:", error);
-        if (exportWindow && !exportWindow.isDestroyed()) {
-          exportWindow.close();
-        }
         return {
           status: "error",
           error: { message: (error as Error).message ?? "Failed to generate pdf" }
         };
+      } finally {
+        if (exportWindow && !exportWindow.isDestroyed()) {
+          exportWindow.close();
+        }
       }
     }
   );

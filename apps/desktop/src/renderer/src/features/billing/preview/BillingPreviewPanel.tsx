@@ -62,11 +62,17 @@ const BillingPreviewPanel = () => {
           </Button>
         </div>
 
-        <TabsContent value="bill" className="bg-muted min-h-0 flex-1 overflow-y-auto">
+        <TabsContent
+          value="bill"
+          className="bg-muted min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto"
+        >
           <BillPreview />
         </TabsContent>
 
-        <TabsContent value="customer" className="min-h-0 flex-1 overflow-y-auto">
+        <TabsContent
+          value="customer"
+          className="min-h-0 flex-1 [scrollbar-gutter:stable] overflow-y-auto"
+        >
           <CustomerAccountTab />
         </TabsContent>
       </Tabs>

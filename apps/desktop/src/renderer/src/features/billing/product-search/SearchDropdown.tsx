@@ -9,6 +9,7 @@ import { useSearchDropdownStore } from "@/features/billing/product-search/search
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
+import { focusLatestEmptyLineItem } from "@/features/billing/billingFocus";
 import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 import {
   BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
@@ -24,13 +25,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const SEARCH_DROPDOWN_MAX_HEIGHT = 440;
-const SEARCH_DROPDOWN_MAX_WIDTH = 880;
-const SEARCH_DROPDOWN_COMPACT_MAX_WIDTH = 720;
+const SEARCH_DROPDOWN_MAX_WIDTH = 820;
+const SEARCH_DROPDOWN_COMPACT_MAX_WIDTH = 680;
 const KEYBOARD_SCROLL_AHEAD = 2;
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
-  const setActiveRowId = useSearchDropdownStore((state) => state.setActiveRowId);
   const setItemQuery = useSearchDropdownStore((state) => state.setItemQuery);
   const itemQuery = useSearchDropdownStore((state) => state.itemQuery);
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -185,7 +185,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   };
 
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
-  const hasAdjustedWorkspaceScrollRef = useRef(false);
 
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({ display: "none" });
   const [dropdownLayout, setDropdownLayout] = useState({
@@ -302,29 +301,42 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     return () => window.removeEventListener("resize", updateDropdownLayout);
   }, [updateDropdownLayout]);
 
-  // Keep the result viewport stable and move the billing workspace only as much as needed.
+  // The virtualized results settle after the first render, so observe the real dropdown size
+  // instead of relying on a one-time measurement that can run too early.
   useEffect(() => {
-    if (hasAdjustedWorkspaceScrollRef.current || searchResults.length === 0) return;
+    const element = dropdownContainerRef.current;
+    const billingScrollContainer = element?.closest<HTMLElement>("[data-billing-scroll-container]");
+    if (!element || !billingScrollContainer) return;
 
-    const el = dropdownContainerRef.current;
-    const billingScrollContainer = el?.closest<HTMLElement>("[data-billing-scroll-container]");
-    if (!el || !billingScrollContainer) return;
+    let frame: number | null = null;
+    const revealDropdown = () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        const dropdownRect = element.getBoundingClientRect();
+        const scrollViewportRect = billingScrollContainer.getBoundingClientRect();
+        const viewportInset = 12;
+        const visibleBottom =
+          Math.min(scrollViewportRect.bottom, window.innerHeight) - viewportInset;
+        const requiredScroll = Math.max(0, dropdownRect.bottom - visibleBottom);
+        if (requiredScroll <= 1) return;
 
-    const frame = window.requestAnimationFrame(() => {
-      const dropdownRect = el.getBoundingClientRect();
-      const scrollViewportRect = billingScrollContainer.getBoundingClientRect();
-      const viewportInset = 12;
-      const visibleBottom = Math.min(scrollViewportRect.bottom, window.innerHeight) - viewportInset;
-      const requiredScroll = Math.max(0, dropdownRect.bottom - visibleBottom);
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth";
+        billingScrollContainer.scrollBy({ top: requiredScroll, behavior });
+      });
+    };
 
-      hasAdjustedWorkspaceScrollRef.current = true;
-      if (requiredScroll > 0) {
-        billingScrollContainer.scrollBy({ top: requiredScroll, behavior: "auto" });
-      }
-    });
+    const observer = new ResizeObserver(revealDropdown);
+    observer.observe(element);
+    revealDropdown();
 
-    return () => window.cancelAnimationFrame(frame);
-  }, [searchResults.length]);
+    return () => {
+      observer.disconnect();
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
+  }, []);
 
   const openNewProductDialog = () => {
     setIsDropdownOpen(false);
@@ -382,34 +394,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     searchResults.length
   ]);
 
-  const focusNextRow = useCallback(() => {
-    setTimeout(() => {
-      if (!activeTabId) return;
-      const session = useBillingSessionStore.getState().sessions[activeTabId];
-      if (!session) return;
-
-      const visibleItems = session.lineItems.filter((item) => !item.isDeleted);
-      const currentIdx = visibleItems.findIndex((item) => item.rowId === rowId);
-      if (currentIdx === -1) return;
-
-      // only auto focus if the immediate next row is empty
-      const nextRow = visibleItems[currentIdx + 1];
-      if (!nextRow || nextRow.name !== "") return;
-
-      setActiveRowId(nextRow.rowId);
-      setItemQuery("");
-      setIsDropdownOpen(true);
-
-      const inputs = document.querySelectorAll<HTMLInputElement>(
-        'input[placeholder="Search products"]'
-      );
-      const nextInput = inputs[currentIdx + 1];
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }, 50);
-  }, [activeTabId, setActiveRowId, setItemQuery, setIsDropdownOpen, rowId]);
-
   const selectProduct = useCallback(
     (index: number) => {
       const product = searchResults[index];
@@ -419,7 +403,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       setIsDropdownOpen(false);
       addEmptyLineItem(activeTabId);
       processSyncQueue(activeTabId);
-      focusNextRow();
+      focusLatestEmptyLineItem(activeTabId);
     },
     [
       searchResults,
@@ -428,8 +412,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       addLineItem,
       setItemQuery,
       setIsDropdownOpen,
-      addEmptyLineItem,
-      focusNextRow
+      addEmptyLineItem
     ]
   );
 

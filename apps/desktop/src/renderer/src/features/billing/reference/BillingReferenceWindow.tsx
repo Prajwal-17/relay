@@ -648,7 +648,8 @@ const BillingReferenceWindow = () => {
   const handleImagePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!referenceImageUrl || event.button !== 0) return;
     if ((event.target as HTMLElement).closest("button")) return;
-    event.currentTarget.focus();
+    event.preventDefault();
+    event.currentTarget.focus({ preventScroll: true });
     event.currentTarget.setPointerCapture(event.pointerId);
     imageInteractionRef.current = {
       pointerId: event.pointerId,
@@ -830,10 +831,11 @@ const BillingReferenceWindow = () => {
                 onPointerMove={handleImagePointerMove}
                 onPointerUp={finishImagePan}
                 onPointerCancel={finishImagePan}
+                onDragStart={(event) => event.preventDefault()}
                 onDoubleClick={resetImageView}
                 onKeyDown={handleImageKeyDown}
                 className={cn(
-                  "bg-muted focus-visible:ring-ring relative min-h-0 flex-1 touch-none overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-inset",
+                  "bg-muted focus-visible:ring-ring relative min-h-0 flex-1 touch-none overflow-hidden outline-none select-none focus-visible:ring-2 focus-visible:ring-inset",
                   referenceImageUrl
                     ? zoom > MIN_ZOOM
                       ? "cursor-grab"
@@ -854,7 +856,8 @@ const BillingReferenceWindow = () => {
                     src={referenceImageUrl}
                     alt={`Handwritten order sheet: ${referenceImage.fileName}`}
                     draggable={false}
-                    className="pointer-events-none absolute top-1/2 left-1/2 max-w-none shadow-sm select-none"
+                    onDragStart={(event) => event.preventDefault()}
+                    className="pointer-events-none absolute top-1/2 left-1/2 max-w-none shadow-sm select-none [-webkit-user-drag:none]"
                     style={{
                       width: fittedImageSize.width,
                       height: fittedImageSize.height,

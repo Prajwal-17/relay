@@ -55,7 +55,7 @@ export const createProductSchema = productCoreSchema.superRefine((data, ctx) => 
   if (hasWeight && !hasUnit) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Unit is required when weight is provided",
+      message: "Select a unit or clear the weight",
       path: ["unit"]
     });
   }
@@ -63,7 +63,7 @@ export const createProductSchema = productCoreSchema.superRefine((data, ctx) => 
   if (hasUnit && !hasWeight) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Weight is required when unit is selected",
+      message: "Enter a weight or set Unit to none",
       path: ["weight"]
     });
   }

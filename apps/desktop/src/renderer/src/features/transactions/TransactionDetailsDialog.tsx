@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import { useViewModal } from "@/features/transactions/hooks/useViewModal";
+import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { cn } from "@/lib/utils";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
 import { BATCH_CHECK_ACTION, type DashboardType } from "@shared/types";
@@ -257,24 +258,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
   const handleExportPdf = useCallback(async () => {
     const filePath = await exportPdf();
     if (!filePath) return;
-    toast.success(
-      (toastInstance) => (
-        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="font-medium">PDF saved successfully</span>
-          <button
-            onClick={() => {
-              window.exportApi.showItemInFolder(filePath);
-              toast.dismiss(toastInstance.id);
-            }}
-            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5 text-sm font-medium transition-colors hover:underline"
-          >
-            Open
-            <ArrowUpRight className="size-4" />
-          </button>
-        </div>
-      ),
-      { duration: 4000 }
-    );
+    showPdfExportSuccessToast(filePath);
   }, [exportPdf]);
 
   const createdAt = data?.createdAt ?? data?.recordedAt;

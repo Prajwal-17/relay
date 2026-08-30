@@ -144,6 +144,7 @@ const LineItemRow = memo(
           </div>
           <div className="relative min-w-0">
             <input
+              data-billing-product-input={item.rowId}
               aria-label={`Product row ${idx + 1}`}
               value={
                 activeRowId === item.rowId && isDropdownOpen ? itemQuery : item.productSnapshot
@@ -158,10 +159,14 @@ const LineItemRow = memo(
                 setIsDropdownOpen(true);
               }}
               onChange={(e) => {
-                if (!getActiveTabId()) return;
-                setItemQuery(e.target.value);
+                const tabId = getActiveTabId();
+                if (!tabId) return;
+                const nextProductSnapshot = e.target.value;
+                setItemQuery(nextProductSnapshot);
                 setActiveRowId(item.rowId);
                 setIsDropdownOpen(true);
+                updateLineItem(tabId, item.rowId, "productSnapshot", nextProductSnapshot);
+                processSyncQueue(tabId);
               }}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" || (isDropdownOpen && activeRowId === item.rowId)) {
@@ -189,7 +194,7 @@ const LineItemRow = memo(
             >
               <button
                 className={cn(
-                  "text-foreground hover:bg-hover border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-l-lg border-r transition-colors",
+                  "text-foreground hover:bg-hover border-border flex h-full w-9 shrink-0 cursor-pointer items-center justify-center rounded-l-lg border-r transition-colors",
                   checkedFieldColor
                 )}
                 onClick={() => {
@@ -202,7 +207,7 @@ const LineItemRow = memo(
                 }}
                 aria-label="Increase quantity"
               >
-                <Plus size={16} strokeWidth={2.5} />
+                <Plus size={18} strokeWidth={2.5} />
               </button>
               <input
                 aria-label={`Quantity row ${idx + 1}`}
@@ -228,7 +233,7 @@ const LineItemRow = memo(
               <button
                 disabled={parseFloat(item.quantity || "0") <= 1}
                 className={cn(
-                  "text-foreground hover:bg-hover border-border flex h-full w-8 cursor-pointer items-center justify-center rounded-r-lg border-l transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                  "text-foreground hover:bg-hover border-border flex h-full w-9 shrink-0 cursor-pointer items-center justify-center rounded-r-lg border-l transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                   checkedFieldColor
                 )}
                 onClick={() => {
@@ -243,7 +248,7 @@ const LineItemRow = memo(
                 }}
                 aria-label="Decrease quantity"
               >
-                <Minus size={16} strokeWidth={2.5} />
+                <Minus size={18} strokeWidth={2.5} />
               </button>
               <QuantityPresets
                 rowId={item.rowId}

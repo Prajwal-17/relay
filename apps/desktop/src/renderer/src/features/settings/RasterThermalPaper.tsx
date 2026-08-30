@@ -488,14 +488,17 @@ export function ScaledThermalPaper({
 
     const measure = () => {
       const scale = Math.min(1, frame.clientWidth / RASTER_PAPER_WIDTH);
-      setLayout({ scale, height: paper.offsetHeight * scale });
+      const height = paper.offsetHeight * scale;
+      setLayout((current) =>
+        current.scale === scale && current.height === height ? current : { scale, height }
+      );
     };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(frame);
     observer.observe(paper);
     return () => observer.disconnect();
-  }, [children, cutMode, extraFeedLines]);
+  }, []);
 
   return (
     <div ref={frameRef} className="w-full" style={{ height: layout.height || undefined }}>

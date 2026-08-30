@@ -102,12 +102,12 @@ describe("products write integration", () => {
     [
       "weight without unit",
       { ...productPayload(), unit: null },
-      "Unit is required when weight is provided"
+      "Select a unit or clear the weight"
     ],
     [
       "unit without weight",
       { ...productPayload(), weight: null },
-      "Weight is required when unit is selected"
+      "Enter a weight or set Unit to none"
     ]
   ])("rejects %s without database side effects", async (_label, payload, message) => {
     const response = await requestJson(app, "POST", "/api/products", payload);
@@ -170,6 +170,26 @@ describe("products write integration", () => {
       .all();
     expect(history).toHaveLength(1);
   });
+
+  it.each([
+    ["weight", { weight: null }, "Enter a weight or set Unit to none"],
+    ["unit", { unit: null }, "Select a unit or clear the weight"]
+  ])(
+    "rejects clearing only the %s while preserving the stored measurement",
+    async (_field, payload, message) => {
+      const createResponse = await requestJson(app, "POST", "/api/products", productPayload());
+      const created = await readJson<{ id: string }>(createResponse);
+
+      const response = await requestJson(app, "PATCH", `/api/products/${created.id}`, payload);
+
+      expect(response.status).toBe(400);
+      expect((await readJson<ErrorBody>(response)).error.message).toBe(message);
+      expect(db.select().from(products).where(eq(products.id, created.id)).get()).toMatchObject({
+        weight: "500",
+        unit: "g"
+      });
+    }
+  );
 
   it("normalizes the none unit and maintains disable timestamps", async () => {
     const createResponse = await requestJson(

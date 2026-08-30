@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import type { MutationVariables } from "@/features/transactions/hooks/useDashboard";
+import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { getCustomerAvatarStyle } from "@/features/customers/customerAvatar";
 import { cn } from "@/lib/utils";
 import type { UnifiedTransaction } from "@shared/types";
@@ -26,7 +27,6 @@ import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import {
-  ArrowUpRight,
   Copy,
   Edit,
   Eye,
@@ -120,34 +120,17 @@ const TransactionTableRow = ({
 
   const handleSavePdf = useCallback(async () => {
     setPdfLoading(true);
+    const toastId = toast.loading("Exporting PDF…");
     try {
       const response = await window.exportApi.exportAsPdf(transaction.id, transaction.type);
       if (response?.status === "success") {
-        const filePath = response.data;
-        toast.success(
-          (t) => (
-            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="text-sm font-medium">PDF saved successfully</span>
-              <button
-                onClick={() => {
-                  window.exportApi.showItemInFolder(filePath);
-                  toast.dismiss(t.id);
-                }}
-                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-sm font-medium transition-colors hover:underline"
-              >
-                Open
-                <ArrowUpRight size={14} />
-              </button>
-            </div>
-          ),
-          { duration: 4000 }
-        );
+        showPdfExportSuccessToast(response.data, toastId);
       } else {
-        toast.error(response?.error?.message || "Failed to generate PDF");
+        toast.error(response?.error?.message || "Failed to generate PDF", { id: toastId });
       }
     } catch (error) {
       console.error("PDF Export failed", error);
-      toast.error("Failed to export PDF");
+      toast.error("Failed to export PDF", { id: toastId });
     } finally {
       setPdfLoading(false);
     }

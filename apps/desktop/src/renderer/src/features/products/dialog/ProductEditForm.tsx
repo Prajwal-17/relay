@@ -16,10 +16,17 @@ import { useProductsStore } from "@/features/products/products.store";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
 import { ACTION_TYPE, DIALOG_MODE } from "@shared/types";
+import { AlertTriangle } from "lucide-react";
 import { motion } from "motion/react";
 import { useMemo } from "react";
 import { ProductImageCropSelector } from "./ProductImageCropSelector";
 import { StatusIndicator } from "./StatusIndicator";
+
+function parsePositiveAmount(value: string | null | undefined): number | null {
+  if (value === null || value === undefined || value.trim() === "") return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
 
 export const ProductEditForm = () => {
   const formDataState = useProductsStore((state) => state.formDataState);
@@ -30,6 +37,24 @@ export const ProductEditForm = () => {
   const setOpenProductDialog = useProductsStore((state) => state.setOpenProductDialog);
 
   const { handleInputChange, handleSubmit, productMutation } = useProductDialog();
+  const priceWarnings = useMemo(() => {
+    const sellingPrice = parsePositiveAmount(formDataState.price);
+    const purchasePrice = parsePositiveAmount(formDataState.purchasePrice);
+    const mrp = parsePositiveAmount(formDataState.mrp);
+    const warnings: string[] = [];
+
+    if (sellingPrice !== null && purchasePrice !== null && sellingPrice < purchasePrice) {
+      warnings.push("Selling price is below purchase price.");
+    }
+    if (sellingPrice !== null && mrp !== null && sellingPrice > mrp) {
+      warnings.push("Selling price is above MRP.");
+    }
+    if (purchasePrice !== null && mrp !== null && purchasePrice > mrp) {
+      warnings.push("Purchase price is above MRP.");
+    }
+
+    return warnings;
+  }, [formDataState.mrp, formDataState.price, formDataState.purchasePrice]);
 
   return (
     <motion.div
@@ -181,6 +206,17 @@ export const ProductEditForm = () => {
               {errors.mrp && <div className="text-destructive">{errors.mrp}</div>}
             </div>
           </div>
+
+          {priceWarnings.length > 0 && (
+            <div role="status" aria-live="polite" className="text-warning flex gap-2 text-xs">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              <div className="space-y-0.5 font-medium">
+                {priceWarnings.map((warning) => (
+                  <p key={warning}>{warning}</p>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

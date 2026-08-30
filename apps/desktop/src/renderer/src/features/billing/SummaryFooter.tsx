@@ -8,8 +8,9 @@ import useTransaction from "@/features/billing/hooks/useTransaction";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { flushSync } from "@/features/billing/syncWorker";
+import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { TRANSACTION_TYPE } from "@shared/types";
-import { ArrowUpRight, FileText, Loader2, Printer, Save } from "lucide-react";
+import { FileText, Loader2, Printer, Save } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -106,36 +107,21 @@ export const SummaryFooter = () => {
   }, [waitForSync, navigate, type]);
 
   const handleExportPdf = useCallback(async () => {
-    if (!id || !type) {
-      toast.error("Save this bill before exporting a PDF.");
+    if (!activeTabId || !type) {
+      toast.error("The billing session is no longer available.");
       return;
     }
     setLoadingAction("pdf");
     try {
       const synced = await waitForSync();
       if (!synced) return;
-      const txnType = type === "sales" ? TRANSACTION_TYPE.SALE : TRANSACTION_TYPE.ESTIMATE;
-      const response = await window.exportApi.exportAsPdf(id, txnType);
+      const session = readSynchronizedSession();
+      if (!session.billingId) {
+        throw new Error("Save this bill before exporting a PDF.");
+      }
+      const response = await window.exportApi.exportAsPdf(session.billingId, session.billingType);
       if (response && response.status === "success") {
-        const filePath = response.data;
-        toast.success(
-          (t) => (
-            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="font-medium">PDF saved successfully</span>
-              <button
-                onClick={() => {
-                  window.exportApi.showItemInFolder(filePath);
-                  toast.dismiss(t.id);
-                }}
-                className="text-foreground/70 hover:text-foreground inline-flex items-center gap-0.5 text-sm font-medium transition-colors hover:underline"
-              >
-                Open
-                <ArrowUpRight size={18} />
-              </button>
-            </div>
-          ),
-          { duration: 4000 }
-        );
+        showPdfExportSuccessToast(response.data);
         navigate(`/dashboard/${type}`);
       } else {
         toast.error(response?.error?.message || "Failed to generate PDF");
@@ -146,7 +132,7 @@ export const SummaryFooter = () => {
     } finally {
       setLoadingAction(null);
     }
-  }, [id, type, waitForSync, navigate]);
+  }, [activeTabId, type, waitForSync, readSynchronizedSession, navigate]);
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -187,7 +173,7 @@ export const SummaryFooter = () => {
         variant="outline"
         disabled={loadingAction !== null}
         onClick={handleExportPdf}
-        title={!id ? "Save the bill before exporting a PDF" : "Save as PDF"}
+        title={!id ? "Save the bill and export it as PDF" : "Save as PDF"}
       >
         {loadingAction === "pdf" ? <Loader2 className="animate-spin" /> : <FileText />}
         {loadingAction === "pdf" ? "Saving..." : "Save PDF"}

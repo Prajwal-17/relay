@@ -43,7 +43,10 @@ export default function PdfInvoicePage() {
 
   if (!hasValidParams) {
     return (
-      <div className="bg-background h-screen w-full">
+      <div
+        className="bg-background h-screen w-full"
+        data-pdf-export-error="This PDF link is invalid."
+      >
         <ErrorState
           layout="page"
           title="This PDF link is invalid"
@@ -68,7 +71,12 @@ export default function PdfInvoicePage() {
   if (isTxnError) {
     const isNotFound = txnError instanceof ApiError && txnError.status === 404;
     return (
-      <div className="bg-background h-screen w-full">
+      <div
+        className="bg-background h-screen w-full"
+        data-pdf-export-error={
+          isNotFound ? "Transaction not found." : "Transaction could not be loaded."
+        }
+      >
         <ErrorState
           layout="page"
           title={isNotFound ? "Transaction not found" : "Transaction could not be loaded"}
@@ -92,7 +100,10 @@ export default function PdfInvoicePage() {
 
   if (isProfileError) {
     return (
-      <div className="bg-background h-screen w-full">
+      <div
+        className="bg-background h-screen w-full"
+        data-pdf-export-error="Store details could not be loaded."
+      >
         <ErrorState
           layout="page"
           title="Store details could not be loaded"
@@ -110,7 +121,10 @@ export default function PdfInvoicePage() {
 
   if (!transaction) {
     return (
-      <div className="bg-background flex h-screen w-full items-center justify-center p-3">
+      <div
+        className="bg-background flex h-screen w-full items-center justify-center p-3"
+        data-pdf-export-error="Transaction not found."
+      >
         <div className="border-border bg-card flex min-w-64 flex-col items-center gap-2 rounded-(--radius-panel) border p-4 text-center">
           <FileWarning className="text-destructive size-6" />
           <p className="text-foreground text-sm font-semibold">Transaction not found</p>

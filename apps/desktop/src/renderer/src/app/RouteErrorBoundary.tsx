@@ -37,7 +37,10 @@ export const RouteErrorBoundary = ({ scope }: { scope: BoundaryScope }) => {
   const fullWindow = scope === "root" || scope === "pdf";
 
   return (
-    <div className={fullWindow ? "bg-background h-screen w-full" : "bg-background h-full p-3"}>
+    <div
+      className={fullWindow ? "bg-background h-screen w-full" : "bg-background h-full p-3"}
+      data-pdf-export-error={scope === "pdf" ? copy.title : undefined}
+    >
       <ErrorState
         layout="page"
         title={isNotFound ? "The requested record was not found" : copy.title}

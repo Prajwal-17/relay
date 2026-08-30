@@ -98,8 +98,8 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe("catalog product replacement drafts", () => {
-  it("keeps a half-typed replacement out of committed billing data and autosave after 800 ms", async () => {
+describe("catalog product replacement and custom items", () => {
+  it("turns an edited catalog product label into a custom transaction item", () => {
     const tabId = "replacement-draft";
     const committed = initializeCommittedTab(tabId, product("Committed Product", 12_345));
     useBillingSessionStore.getState().updateLineItem(tabId, committed.rowId, "quantity", "1.234");
@@ -108,30 +108,44 @@ describe("catalog product replacement drafts", () => {
         .getState()
         .sessions[tabId]!.lineItems.find((item) => item.rowId === committed.rowId)!
     };
-    const payloadBeforeTyping = databasePayload(tabId, rowBeforeTyping);
 
-    render(<LineItemRow idx={0} item={rowBeforeTyping} isCountColumnVisible={false} disableDrag />);
+    const view = render(
+      <LineItemRow idx={0} item={rowBeforeTyping} isCountColumnVisible={false} disableDrag />
+    );
     fireEvent.change(screen.getByRole("textbox", { name: "Product row 1" }), {
       target: { value: "Different Prod" }
     });
-    await act(async () => vi.advanceTimersByTimeAsync(801));
 
     const rowAfterTyping = useBillingSessionStore
       .getState()
       .sessions[tabId]!.lineItems.find((item) => item.rowId === committed.rowId)!;
     expect.soft(rowAfterTyping).toMatchObject({
       id: rowBeforeTyping.id,
-      productId: rowBeforeTyping.productId,
-      name: rowBeforeTyping.name,
-      productSnapshot: rowBeforeTyping.productSnapshot,
+      productId: null,
+      name: "Different Prod",
+      productSnapshot: "Different Prod",
+      weight: null,
+      unit: null,
+      mrp: null,
       price: rowBeforeTyping.price,
       quantity: rowBeforeTyping.quantity,
       totalPrice: rowBeforeTyping.totalPrice,
-      revision: rowBeforeTyping.revision
+      isInventoryItem: false,
+      revision: rowBeforeTyping.revision + 1
     });
-    expect.soft(databasePayload(tabId, rowAfterTyping)).toEqual(payloadBeforeTyping);
-    expect.soft(scheduleMock).not.toHaveBeenCalled();
+    expect.soft(databasePayload(tabId, rowAfterTyping).data.items[0]).toMatchObject({
+      productId: null,
+      name: "Different Prod",
+      productSnapshot: "Different Prod"
+    });
+    expect.soft(scheduleMock).toHaveBeenCalledWith(tabId);
     expect.soft(useSearchDropdownStore.getState().itemQuery).toBe("Different Prod");
+
+    act(() => useSearchDropdownStore.getState().setIsDropdownOpen(false));
+    view.rerender(
+      <LineItemRow idx={0} item={rowAfterTyping} isCountColumnVisible={false} disableDrag />
+    );
+    expect(screen.getByRole("textbox", { name: "Product row 1" })).toHaveValue("Different Prod");
   });
 
   it("commits every catalog field together and increments the row revision exactly once", () => {

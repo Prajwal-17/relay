@@ -15,7 +15,8 @@ const mocks = vi.hoisted(() => ({
   printSavedReceipt: vi.fn(),
   toastSuccess: vi.fn(),
   toastError: vi.fn(),
-  toastWarning: vi.fn()
+  toastWarning: vi.fn(),
+  toastLoading: vi.fn()
 }));
 
 vi.mock("@/features/billing/hooks/useRawReceiptPrint", () => ({
@@ -26,6 +27,7 @@ vi.mock("react-hot-toast", () => ({
   default: Object.assign(mocks.toastWarning, {
     success: mocks.toastSuccess,
     error: mocks.toastError,
+    loading: mocks.toastLoading,
     dismiss: vi.fn()
   })
 }));
@@ -67,6 +69,54 @@ describe("transaction row print actions", () => {
       bytesWritten: 512,
       modeUsed: "raster",
       fellBack: false
+    });
+    mocks.toastLoading.mockReturnValue("pdf-toast");
+    Object.defineProperty(window, "exportApi", {
+      configurable: true,
+      value: {
+        exportAsPdf: vi.fn().mockResolvedValue({
+          status: "success",
+          data: "/tmp/sale-42.pdf"
+        }),
+        showItemInFolder: vi.fn()
+      }
+    });
+  });
+
+  it("shows PDF export progress and replaces it with success feedback", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <TransactionTableRow
+        pathname="sales"
+        transaction={{
+          type: "sale",
+          id: "sale-42",
+          transactionNo: 42,
+          customerId: null,
+          customerName: "Walk-in",
+          notes: null,
+          grandTotal: 12500,
+          totalQuantity: 1000,
+          canModify: true,
+          createdAt: "2026-08-12T10:15:00.000Z"
+        }}
+        search=""
+        deleteMutation={deleteMutation}
+        convertMutation={convertMutation}
+        duplicateMutation={duplicateMutation}
+        setIsViewModalOpen={vi.fn()}
+        setTransactionId={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "More transaction actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Export PDF" }));
+
+    expect(mocks.toastLoading).toHaveBeenCalledWith("Exporting PDF…");
+    await waitFor(() => expect(mocks.toastSuccess).toHaveBeenCalled());
+    expect(mocks.toastSuccess.mock.calls[0]?.[1]).toMatchObject({
+      id: "pdf-toast",
+      duration: 6000
     });
   });
 

@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
   fetchSummary: vi.fn(),
   buildSettlement: vi.fn(),
   toastError: vi.fn(),
+  toastSuccess: vi.fn(),
   toastWarning: vi.fn(),
   billingSession: {
     billingType: "sale",
@@ -74,7 +75,7 @@ vi.mock("@/features/billing/syncWorker", () => ({
 vi.mock("react-hot-toast", () => ({
   default: Object.assign(mocks.toastWarning, {
     error: mocks.toastError,
-    success: vi.fn(),
+    success: mocks.toastSuccess,
     dismiss: vi.fn()
   })
 }));
@@ -126,6 +127,16 @@ describe("Save & Print RAW workflow", () => {
     });
     mocks.fetchSummary.mockResolvedValue({ currentBalance: 700000 });
     mocks.buildSettlement.mockReturnValue(settlement);
+    Object.defineProperty(window, "exportApi", {
+      configurable: true,
+      value: {
+        exportAsPdf: vi.fn().mockResolvedValue({
+          status: "success",
+          data: "/tmp/sale-1.pdf"
+        }),
+        showItemInFolder: vi.fn()
+      }
+    });
   });
 
   it("awaits sync and printer acceptance before navigating", async () => {
@@ -219,6 +230,18 @@ describe("Save & Print RAW workflow", () => {
         { icon: "⚠️" }
       )
     );
+    expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
+  });
+
+  it("exports with the synchronized billing id even before the route updates", async () => {
+    render(<SummaryFooter />);
+    fireEvent.click(screen.getByRole("button", { name: "Save PDF" }));
+
+    expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
+    await waitFor(() =>
+      expect(window.exportApi.exportAsPdf).toHaveBeenCalledWith("sale-1", "sale")
+    );
+    expect(mocks.toastSuccess).toHaveBeenCalled();
     expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
   });
 });

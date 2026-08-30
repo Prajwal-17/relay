@@ -10,6 +10,7 @@ import {
   type ProductTransaction,
   type UpdateProductPayload
 } from "../../../shared/types";
+import { updateProductSchema } from "../../../shared/schemas/products.schema";
 import { generateProductSnapshot } from "../../../shared/utils/productSnapshot";
 import { paisaToRupees } from "../../../shared/utils/utils";
 import { products } from "../../db/schema";
@@ -125,6 +126,18 @@ const updateProduct = async (
   if (!existingProduct) {
     throw new AppError("Product not found", 400);
   }
+
+  const updatedProductValidation = updateProductSchema.safeParse({
+    ...existingProduct,
+    ...payload
+  });
+  if (!updatedProductValidation.success) {
+    throw new AppError(
+      updatedProductValidation.error.issues[0]?.message ?? "Product details are invalid",
+      400
+    );
+  }
+
   const updatedFields: Record<string, any> = {};
 
   for (const field in payload) {

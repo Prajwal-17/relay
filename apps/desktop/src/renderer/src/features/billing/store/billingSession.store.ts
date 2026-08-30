@@ -292,7 +292,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
               updatedItem = {
                 ...updatedItem,
                 productId: null,
-                name: "",
+                name: String(value),
                 weight: null,
                 unit: null,
                 mrp: null

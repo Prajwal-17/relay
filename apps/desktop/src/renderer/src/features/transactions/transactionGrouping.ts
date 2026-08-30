@@ -82,6 +82,7 @@ const getTransactionGroup = (
     key: `${parts.year}-${parts.month}-${parts.day}`,
     label: new Intl.DateTimeFormat("en-IN", {
       timeZone: IST_TIME_ZONE,
+      weekday: "long",
       day: "numeric",
       month: "short",
       year: "numeric"

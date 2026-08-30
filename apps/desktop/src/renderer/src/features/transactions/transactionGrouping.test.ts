@@ -18,12 +18,21 @@ describe("buildTransactionDisplayRows", () => {
     const rows = buildTransactionDisplayRows(transactions, "day");
 
     expect(rows.map((row) => (row.kind === "group" ? row.label : row.transaction.id))).toEqual([
-      "12 Aug 2026",
+      "Wednesday, 12 Aug 2026",
       "estimate-3",
       "estimate-2",
-      "31 Jul 2026",
+      "Friday, 31 Jul 2026",
       "estimate-1"
     ]);
+  });
+
+  it("includes the weekday in day grouping labels", () => {
+    const rows = buildTransactionDisplayRows(
+      [{ id: "sale-27", transactionNo: 27, createdAt: "2026-08-27T08:00:00.000Z" }],
+      "day"
+    );
+
+    expect(rows[0]).toMatchObject({ kind: "group", label: "Thursday, 27 Aug 2026" });
   });
 
   it("supports month dividers for customer-shaped transaction records", () => {

@@ -13,6 +13,7 @@ import { useBillingSessionStore } from "@/features/billing/store/billingSession.
 import { useProductsStore } from "@/features/products/products.store";
 import { useSidebarStore } from "@/app/sidebar.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
+import { focusLatestEmptyLineItem } from "@/features/billing/billingFocus";
 import {
   DndContext,
   PointerSensor,
@@ -61,6 +62,24 @@ const LineItemsTable = () => {
       document.body.classList.remove("dragging-active");
     };
   }, []);
+
+  useEffect(() => {
+    if (!activeTabId) return;
+
+    const handleEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      if (!(event.target instanceof Element) || !event.target.closest("[data-billing-row-id]")) {
+        return;
+      }
+
+      event.preventDefault();
+      setSearchQuery("");
+      focusLatestEmptyLineItem(activeTabId);
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [activeTabId]);
 
   const session = useBillingSessionStore((state) =>
     activeTabId ? state.sessions[activeTabId] : null
