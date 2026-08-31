@@ -160,8 +160,8 @@ const BillingPageContent = () => {
   return (
     <div className="flex h-full flex-col">
       <BillingTabBar />
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div className="bg-background-secondary relative flex min-w-0 flex-1 flex-col">
+      <div className="flex h-0 min-h-0 flex-1 overflow-hidden">
+        <div className="bg-background-secondary relative flex min-h-0 min-w-0 flex-1 flex-col">
           <div
             data-billing-scroll-container
             className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
