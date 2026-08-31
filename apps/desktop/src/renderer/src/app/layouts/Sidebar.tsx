@@ -209,6 +209,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
     return (
       <Link
         to={item.href}
+        draggable={false}
         key={item.href}
         onClick={() => {
           if (isOverlay) {
@@ -257,6 +258,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         <div className="border-b-frame flex h-(--app-header-height) shrink-0 items-center border-b px-3">
           <Link
             to="/"
+            draggable={false}
             onClick={() => {
               if (isOverlay) {
                 setIsSidebarOpen(false);
@@ -268,6 +270,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               <img
                 src={quickcartLogo}
                 alt="QuickCart logo"
+                draggable={false}
                 className="h-full w-full object-contain"
               />
             </div>
@@ -287,7 +290,11 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               size="lg"
               className="bg-primary hover:bg-primary-hover text-primary-foreground h-10 w-full cursor-pointer justify-center gap-2 px-3 text-sm font-semibold"
             >
-              <Link to="/billing/sales/create" onClick={handleBillingShortcutClick}>
+              <Link
+                to="/billing/sales/create"
+                draggable={false}
+                onClick={handleBillingShortcutClick}
+              >
                 <ShoppingCart className="size-4.5" />
                 <span className="text-navigation">New Sale</span>
               </Link>
@@ -297,7 +304,11 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
               asChild
               className="border-estimate bg-card text-estimate-foreground hover:bg-estimate-soft h-9 w-full cursor-pointer justify-center gap-2 border px-3 text-sm font-semibold"
             >
-              <Link to="/billing/estimates/create" onClick={handleBillingShortcutClick}>
+              <Link
+                to="/billing/estimates/create"
+                draggable={false}
+                onClick={handleBillingShortcutClick}
+              >
                 <FileText className="size-4.5" />
                 <span className="text-navigation">New Estimate</span>
               </Link>
@@ -324,6 +335,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
         <div className="border-t-frame shrink-0 border-t px-2 py-2">
           <Link
             to="/settings/store-profile"
+            draggable={false}
             onClick={() => {
               if (isOverlay) {
                 setIsSidebarOpen(false);

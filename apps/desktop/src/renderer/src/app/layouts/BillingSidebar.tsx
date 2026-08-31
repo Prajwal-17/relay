@@ -43,6 +43,7 @@ export const BillingSidebar = () => {
       <IconTooltip key={item.href} label={item.title}>
         <Link
           to={item.href}
+          draggable={false}
           aria-label={item.title}
           className={cn(
             "flex size-10 items-center justify-center rounded-(--radius-control) transition-colors duration-150 outline-none [&_svg]:size-4.5",
@@ -67,10 +68,16 @@ export const BillingSidebar = () => {
         <IconTooltip label="QuickCart home">
           <Link
             to="/"
+            draggable={false}
             aria-label="QuickCart home"
             className="bg-background border-border focus-visible:ring-ring flex size-8 items-center justify-center rounded-(--radius-control) border p-1.5 outline-none focus-visible:ring-2"
           >
-            <img src={quickcartLogo} alt="" className="h-full w-full object-contain" />
+            <img
+              src={quickcartLogo}
+              alt=""
+              draggable={false}
+              className="h-full w-full object-contain"
+            />
           </Link>
         </IconTooltip>
       </header>
@@ -83,7 +90,7 @@ export const BillingSidebar = () => {
               size="icon-lg"
               className="bg-primary hover:bg-primary-hover text-primary-foreground"
             >
-              <Link to="/billing/sales/create" aria-label="New Sale">
+              <Link to="/billing/sales/create" draggable={false} aria-label="New Sale">
                 <ShoppingCart className="size-4.5" />
               </Link>
             </Button>
@@ -95,7 +102,7 @@ export const BillingSidebar = () => {
               size="icon-lg"
               className="border-estimate bg-card text-estimate-foreground hover:bg-estimate-soft border"
             >
-              <Link to="/billing/estimates/create" aria-label="New Estimate">
+              <Link to="/billing/estimates/create" draggable={false} aria-label="New Estimate">
                 <FileText className="size-4.5" />
               </Link>
             </Button>
@@ -118,6 +125,7 @@ export const BillingSidebar = () => {
         <IconTooltip label={storeProfile?.storeName || "Store profile"}>
           <Link
             to="/settings/store-profile"
+            draggable={false}
             aria-label={storeProfile?.storeName || "Store profile"}
             className="bg-selected text-foreground hover:bg-hover focus-visible:ring-ring flex size-9 items-center justify-center rounded-(--radius-control) text-xs font-semibold transition-colors outline-none focus-visible:ring-2"
           >

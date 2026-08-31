@@ -19,9 +19,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useBlocker } from "react-router-dom";
 
 function errorMessage(error: unknown): string {
-  return error instanceof Error && error.message.trim()
-    ? error.message
-    : "QuickCart could not save the latest billing changes.";
+  const message = error instanceof Error ? error.message.trim() : "";
+
+  if (message.includes("Select a product or clear the unfinished product search.")) {
+    return "Select a product or clear the search.";
+  }
+  if (message.includes("Add a valid item and customer before saving this bill.")) {
+    return "Add an item and select a customer.";
+  }
+  if (message.includes("Wait for the initial billing request to finish")) {
+    return "Wait for the bill to finish saving.";
+  }
+  return "QuickCart couldn't save your changes.";
 }
 
 export function BillingPersistenceGuard({ children }: { children: React.ReactNode }) {
@@ -145,13 +154,11 @@ export function BillingPersistenceGuard({ children }: { children: React.ReactNod
           }}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle>Billing changes were not saved</AlertDialogTitle>
-            <AlertDialogDescription>
-              {message} Stay here and retry, or explicitly discard the unsaved changes.
-            </AlertDialogDescription>
+            <AlertDialogTitle>Changes not saved</AlertDialogTitle>
+            <AlertDialogDescription>{message}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleStay}>Stay on the page</AlertDialogCancel>
+            <AlertDialogCancel onClick={handleStay}>Stay</AlertDialogCancel>
             <AlertDialogAction
               type="button"
               onClick={(event) => {
@@ -159,9 +166,9 @@ export function BillingPersistenceGuard({ children }: { children: React.ReactNod
                 void handleRetry();
               }}
               disabled={isRetrying}
-              aria-label="Retry save"
+              aria-label="Try saving again"
             >
-              {isRetrying ? "Retrying…" : "Retry save"}
+              {isRetrying ? "Trying…" : "Try again"}
             </AlertDialogAction>
             <AlertDialogAction
               type="button"
@@ -170,10 +177,10 @@ export function BillingPersistenceGuard({ children }: { children: React.ReactNod
                 void handleDiscard();
               }}
               disabled={isRetrying}
-              aria-label="Discard unsaved changes"
+              aria-label="Discard changes"
               className="bg-destructive text-destructive-foreground"
             >
-              Discard unsaved changes
+              Discard
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

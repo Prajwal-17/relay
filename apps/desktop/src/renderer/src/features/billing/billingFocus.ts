@@ -1,12 +1,12 @@
 import { useSearchDropdownStore } from "@/features/billing/product-search/searchDropdown.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 
-export function focusLatestEmptyLineItem(tabId: string): void {
+export function focusFirstEmptyLineItem(tabId: string): void {
   window.requestAnimationFrame(() => {
     const session = useBillingSessionStore.getState().sessions[tabId];
-    const emptyRow = [...(session?.lineItems ?? [])]
-      .reverse()
-      .find((item) => !item.isDeleted && item.productSnapshot.trim() === "");
+    const emptyRow = (session?.lineItems ?? []).find(
+      (item) => !item.isDeleted && item.productSnapshot.trim() === ""
+    );
     if (!emptyRow) return;
 
     const searchStore = useSearchDropdownStore.getState();

@@ -141,7 +141,7 @@ const TransactionTableRow = ({
       <span
         aria-hidden="true"
         className={cn(
-          "flex size-7 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold",
+          "border-border flex size-7 shrink-0 items-center justify-center rounded-(--radius-control) border text-xs font-semibold",
           getCustomerAvatarStyle(transaction.customerId, transaction.customerName)
         )}
       >

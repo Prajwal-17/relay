@@ -13,7 +13,7 @@ import { useBillingSessionStore } from "@/features/billing/store/billingSession.
 import { useProductsStore } from "@/features/products/products.store";
 import { useSidebarStore } from "@/app/sidebar.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
-import { focusLatestEmptyLineItem } from "@/features/billing/billingFocus";
+import { focusFirstEmptyLineItem } from "@/features/billing/billingFocus";
 import {
   DndContext,
   PointerSensor,
@@ -74,7 +74,7 @@ const LineItemsTable = () => {
 
       event.preventDefault();
       setSearchQuery("");
-      focusLatestEmptyLineItem(activeTabId);
+      focusFirstEmptyLineItem(activeTabId);
     };
 
     document.addEventListener("keydown", handleEscape);

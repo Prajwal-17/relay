@@ -9,7 +9,7 @@ import { useSearchDropdownStore } from "@/features/billing/product-search/search
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
-import { focusLatestEmptyLineItem } from "@/features/billing/billingFocus";
+import { focusFirstEmptyLineItem } from "@/features/billing/billingFocus";
 import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 import {
   BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
@@ -403,7 +403,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
       setIsDropdownOpen(false);
       addEmptyLineItem(activeTabId);
       processSyncQueue(activeTabId);
-      focusLatestEmptyLineItem(activeTabId);
+      focusFirstEmptyLineItem(activeTabId);
     },
     [
       searchResults,
@@ -649,7 +649,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             <ProductImage
                               src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
                               alt={product.name || "Product"}
-                              className="size-10 shrink-0"
+                              className="border-border bg-card size-10 shrink-0 border"
                             />
 
                             <div className="min-w-0 flex-1">

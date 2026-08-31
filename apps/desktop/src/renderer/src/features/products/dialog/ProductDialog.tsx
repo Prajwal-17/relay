@@ -111,6 +111,11 @@ export function ProductDialog() {
         onKeyDownCapture={(e) => {
           if (productMutation.isPending) e.preventDefault();
         }}
+        onEscapeKeyDown={(e) => {
+          // Keep billing's search dropdown open when Escape dismisses this dialog.
+          e.stopPropagation();
+          if (productMutation.isPending) e.preventDefault();
+        }}
         className="flex h-[min(760px,calc(100dvh-1.5rem))] w-[calc(100vw-1.5rem)] min-w-0 flex-col overflow-hidden p-0 sm:max-w-6xl"
       >
         <Tabs

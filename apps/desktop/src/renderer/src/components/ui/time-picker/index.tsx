@@ -189,7 +189,11 @@ interface StoreState {
 interface Store {
   subscribe: (callback: () => void) => () => void;
   getState: () => StoreState;
-  setState: <K extends keyof StoreState>(key: K, value: StoreState[K]) => void;
+  setState: <K extends keyof StoreState>(
+    key: K,
+    value: StoreState[K],
+    emitChange?: boolean
+  ) => void;
   notify: () => void;
 }
 
@@ -347,15 +351,15 @@ function TimePicker(props: TimePickerProps) {
         return () => listenersRef.current.delete(cb);
       },
       getState: () => stateRef.current,
-      setState: (key, value) => {
+      setState: (key, value, emitChange = true) => {
         if (Object.is(stateRef.current[key], value)) return;
 
         if (key === "value" && typeof value === "string") {
           stateRef.current.value = value;
-          propsRef.current.onValueChange?.(value);
+          if (emitChange) propsRef.current.onValueChange?.(value);
         } else if (key === "open" && typeof value === "boolean") {
           stateRef.current.open = value;
-          propsRef.current.onOpenChange?.(value);
+          if (emitChange) propsRef.current.onOpenChange?.(value);
           if (!value) {
             stateRef.current.openedViaFocus = false;
           }
@@ -377,13 +381,13 @@ function TimePicker(props: TimePickerProps) {
 
   useIsomorphicLayoutEffect(() => {
     if (valueProp !== undefined) {
-      store.setState("value", valueProp);
+      store.setState("value", valueProp, false);
     }
   }, [valueProp]);
 
   useIsomorphicLayoutEffect(() => {
     if (open !== undefined) {
-      store.setState("open", open);
+      store.setState("open", open, false);
     }
   }, [open]);
 

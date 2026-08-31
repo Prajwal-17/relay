@@ -425,8 +425,8 @@
   }
 
   ::selection {
-    background-color: var(--selected);
-    color: var(--ink);
+    background-color: var(--counter-accent);
+    color: var(--on-primary);
   }
 
   button,
