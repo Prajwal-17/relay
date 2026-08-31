@@ -17,10 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { HighlightedText } from "@/components/app-ui/highlighted-text";
-import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import type { MutationVariables } from "@/features/transactions/hooks/useDashboard";
 import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { getCustomerAvatarStyle } from "@/features/customers/customerAvatar";
+import { TransactionPrintDialog } from "@/features/transactions/TransactionPrintDialog";
 import { cn } from "@/lib/utils";
 import type { UnifiedTransaction } from "@shared/types";
 import { formatDateStrToISTDateStr } from "@shared/utils/dateUtils";
@@ -34,7 +34,6 @@ import {
   Loader2,
   LoaderCircle,
   MoreVertical,
-  Printer,
   RefreshCcw,
   Trash2
 } from "lucide-react";
@@ -66,9 +65,7 @@ const TransactionTableRow = ({
   setTransactionId: (id: string) => void;
 }) => {
   const navigate = useNavigate();
-  const { printSavedReceipt } = useRawReceiptPrint();
   const [activeDialog, setActiveDialog] = useState<"convert" | "delete" | "idle">("idle");
-  const [isPrinting, setIsPrinting] = useState(false);
 
   const handleView = useCallback(() => {
     setIsViewModalOpen(true);
@@ -94,25 +91,6 @@ const TransactionTableRow = ({
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type: transaction.type, id: transaction.id });
   }, [duplicateMutation, transaction.type, transaction.id]);
-
-  const handlePrint = useCallback(async () => {
-    setIsPrinting(true);
-    try {
-      const result = await printSavedReceipt({ id: transaction.id, type: transaction.type });
-      if (result.fellBack) {
-        toast("Printed using device text because the high-quality receipt could not be prepared", {
-          icon: "⚠️"
-        });
-      } else {
-        toast.success("Print job sent to printer.");
-      }
-    } catch (error) {
-      console.error("Transaction print failed", error);
-      toast.error(error instanceof Error ? error.message : "Print failed.");
-    } finally {
-      setIsPrinting(false);
-    }
-  }, [printSavedReceipt, transaction.id, transaction.type]);
 
   const canModify = pathname !== "sales" || transaction.canModify !== false;
 
@@ -242,24 +220,12 @@ const TransactionTableRow = ({
               </TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger
-                onClick={() => void handlePrint()}
-                type="button"
-                aria-label={`Print transaction ${transaction.transactionNo}`}
-                disabled={isPrinting}
-                className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isPrinting ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Printer className="size-4" />
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-sm">{isPrinting ? "Printing…" : "Print"}</p>
-              </TooltipContent>
-            </Tooltip>
+            <TransactionPrintDialog
+              id={transaction.id}
+              transactionNo={transaction.transactionNo}
+              type={transaction.type}
+              totalPaisa={transaction.grandTotal}
+            />
 
             <Tooltip>
               <TooltipTrigger

@@ -1,10 +1,14 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import {
+  ReceiptQrModeSelector,
+  type ReceiptQrMode
+} from "@/features/billing/ReceiptQrModeSelector";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { useCustomerLedgerSummary } from "@/features/customers/hooks/useCustomerLedger";
 import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 import { cn } from "@/lib/utils";
-import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
-import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { TRANSACTION_TYPE } from "@shared/types";
 import {
   getDefaultUpiQrProfile,
@@ -12,7 +16,7 @@ import {
   resolveUpiQrProfile
 } from "@shared/utils/upiQrProfiles";
 import { formatRupee } from "@shared/utils/utils";
-import { BadgeIndianRupee, IndianRupee, Printer, QrCode } from "lucide-react";
+import { BadgeIndianRupee, QrCode } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import {
   buildBillingAccountSettlement,
@@ -119,6 +123,11 @@ export function BillingPrintOptions() {
   const includeUpiQr = upiIsReady && (storedUpiOption ?? defaultUpiQr);
   const includeAmountInUpiQr =
     includeUpiQr && (storedAmountOption ?? printing?.includeAmountInUpiQr ?? true);
+  const receiptQrMode: ReceiptQrMode = !includeUpiQr
+    ? "receipt"
+    : includeAmountInUpiQr
+      ? "upi-exact"
+      : "upi-open";
 
   const hasNamedCustomer = Boolean(customerId && customerName);
   const isDefaultCustomer = Boolean(
@@ -163,8 +172,6 @@ export function BillingPrintOptions() {
 
   if (!activeTabId || !session) return null;
 
-  const upiStatus = !printing ? "Loading…" : !upiIsReady ? "Add a UPI account first" : undefined;
-  const amountStatus = !printing ? "Loading…" : !upiIsReady ? "UPI unavailable" : undefined;
   const accountStatus = !isSale
     ? "Sales only"
     : !hasNamedCustomer || isDefaultCustomer
@@ -173,14 +180,9 @@ export function BillingPrintOptions() {
         ? "Use Add to account first"
         : undefined;
 
-  const handleUpiQrChange = (checked: boolean) => {
-    updatePrintOption(activeTabId, "includeUpiQr", checked);
-    if (!checked) updatePrintOption(activeTabId, "includeAmountInUpiQr", false);
-  };
-
-  const handleExactAmountChange = (checked: boolean) => {
-    updatePrintOption(activeTabId, "includeAmountInUpiQr", checked);
-    if (checked && !includeUpiQr) updatePrintOption(activeTabId, "includeUpiQr", true);
+  const handleReceiptQrModeChange = (mode: ReceiptQrMode) => {
+    updatePrintOption(activeTabId, "includeUpiQr", mode !== "receipt");
+    updatePrintOption(activeTabId, "includeAmountInUpiQr", mode === "upi-exact");
   };
 
   const handleUpiProfileChange = (profileId: string) => {
@@ -193,94 +195,104 @@ export function BillingPrintOptions() {
   };
 
   return (
-    <section aria-labelledby="billing-options-title">
+    <section aria-label="Bill options">
       <fieldset>
         <legend className="sr-only">Bill options</legend>
 
-        <div className="border-frame flex h-8 items-center gap-2 border-b px-2">
-          <Printer className="text-muted-foreground size-4" aria-hidden="true" />
-          <span id="billing-options-title" className="text-foreground text-sm font-semibold">
-            Bill options
-          </span>
-        </div>
-
         <div className="divide-border divide-y">
-          <BillOption
-            id="billing-print-upi-qr"
-            label="UPI payment QR"
-            icon={<QrCode className="size-4" />}
-            status={upiStatus}
-            checked={includeUpiQr}
-            disabled={!printing || !upiIsReady}
-            onCheckedChange={handleUpiQrChange}
-          />
-          {includeUpiQr && selectedUpiProfile ? (
-            <div className="px-2 py-2">
-              <span
-                id="billing-upi-profile-label"
-                className="text-muted-foreground block text-xs font-medium"
-              >
-                Payment account
-              </span>
-              <Select value={selectedUpiProfile.id} onValueChange={handleUpiProfileChange}>
-                <SelectTrigger
-                  id="billing-upi-profile"
-                  aria-labelledby="billing-upi-profile-label"
-                  className="mt-1 h-11 w-full min-w-0 px-2.5 py-1 text-left"
-                >
-                  <span className="flex min-w-0 flex-1 items-center gap-2">
-                    <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)">
-                      <QrCode className="size-3.5" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span
-                        className="text-foreground block truncate text-xs font-semibold"
-                        title={selectedUpiProfile.label}
-                      >
-                        {selectedUpiProfile.label}
-                      </span>
-                      <span
-                        className="text-muted-foreground block truncate text-xs"
-                        title={selectedUpiProfile.upiId}
-                      >
-                        {selectedUpiProfile.upiId}
-                        {selectedUpiProfile.id === printing?.defaultUpiQrProfileId
-                          ? " · Default"
-                          : ""}
-                      </span>
-                    </span>
+          <div className="space-y-2 px-2 py-2.5">
+            <ReceiptQrModeSelector
+              id={`billing-print-mode-${activeTabId}`}
+              mode={receiptQrMode}
+              totalPaisa={currentBillPaisa}
+              upiDisabled={!printing || !upiIsReady}
+              density="compact"
+              onModeChange={handleReceiptQrModeChange}
+            />
+            {!printing || !upiIsReady ? (
+              <p className="text-muted-foreground text-xs">
+                {!printing
+                  ? "Loading print settings…"
+                  : "Add a UPI account in Settings → Printing."}
+              </p>
+            ) : null}
+            {includeUpiQr && selectedUpiProfile ? (
+              <div className="border-border rounded-(--radius-panel) border p-2.5">
+                <div className="mb-1.5 flex items-center justify-between gap-3">
+                  <span
+                    id="billing-upi-profile-label"
+                    className="text-foreground text-sm font-medium"
+                  >
+                    UPI account
                   </span>
-                </SelectTrigger>
-                <SelectContent
-                  align="start"
-                  className="w-[var(--radix-select-trigger-width)] min-w-0"
-                >
-                  {orderedUpiProfiles.map((profile) => (
-                    <SelectItem key={profile.id} value={profile.id} className="min-w-0 py-2">
-                      <span className="min-w-0">
-                        <span className="text-foreground block truncate text-xs font-semibold">
-                          {profile.label}
+                  {orderedUpiProfiles.length > 1 ? (
+                    <span className="text-muted-foreground text-xs">
+                      {orderedUpiProfiles.length} saved
+                    </span>
+                  ) : null}
+                </div>
+                {orderedUpiProfiles.length === 1 ? (
+                  <div
+                    aria-labelledby="billing-upi-profile-label"
+                    className="bg-muted flex h-10 min-w-0 items-center gap-2 rounded-(--radius-control) px-2.5"
+                  >
+                    <QrCode className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+                    <span
+                      className="text-foreground min-w-0 flex-1 truncate text-sm font-medium"
+                      title={selectedUpiProfile.label}
+                    >
+                      {selectedUpiProfile.label}
+                    </span>
+                    <span
+                      className="text-muted-foreground max-w-36 truncate text-xs"
+                      title={selectedUpiProfile.upiId}
+                    >
+                      {selectedUpiProfile.upiId}
+                    </span>
+                  </div>
+                ) : (
+                  <Select value={selectedUpiProfile.id} onValueChange={handleUpiProfileChange}>
+                    <SelectTrigger
+                      id="billing-upi-profile"
+                      aria-labelledby="billing-upi-profile-label"
+                      className="h-10 w-full min-w-0 px-2.5 text-left"
+                    >
+                      <span className="flex min-w-0 flex-1 items-center gap-2">
+                        <QrCode
+                          className="text-muted-foreground size-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
+                          {selectedUpiProfile.label}
                         </span>
-                        <span className="text-muted-foreground block truncate text-xs">
-                          {profile.upiId}
-                          {profile.id === printing?.defaultUpiQrProfileId ? " · Default" : ""}
+                        <span className="text-muted-foreground max-w-36 truncate text-xs">
+                          {selectedUpiProfile.upiId}
                         </span>
                       </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
-          <BillOption
-            id="billing-print-upi-amount"
-            label="Use exact bill total"
-            icon={<IndianRupee className="size-4" />}
-            status={amountStatus}
-            checked={includeAmountInUpiQr}
-            disabled={!printing || !upiIsReady}
-            onCheckedChange={handleExactAmountChange}
-          />
+                    </SelectTrigger>
+                    <SelectContent
+                      align="start"
+                      className="max-h-64 w-(--radix-select-trigger-width) min-w-0"
+                    >
+                      {orderedUpiProfiles.map((profile) => (
+                        <SelectItem key={profile.id} value={profile.id} className="min-w-0 py-2">
+                          <span className="min-w-0">
+                            <span className="text-foreground block truncate text-sm font-medium">
+                              {profile.label}
+                            </span>
+                            <span className="text-muted-foreground block truncate text-xs">
+                              {profile.upiId}
+                              {profile.id === printing?.defaultUpiQrProfileId ? " · Default" : ""}
+                            </span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            ) : null}
+          </div>
           <BillOption
             id="billing-print-account-summary"
             label="Balance summary"

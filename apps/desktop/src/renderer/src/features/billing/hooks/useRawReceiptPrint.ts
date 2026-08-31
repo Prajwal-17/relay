@@ -132,7 +132,8 @@ export function buildRawReceiptPreviewData(
 export function buildRawReceiptDataFromTransaction(
   transaction: UnifiedTransctionWithItems,
   profile: StoreProfile,
-  printing: PrintingConfig
+  printing: PrintingConfig,
+  overrides: ReceiptPrintOverrides = {}
 ): RawReceiptData {
   const billingDate = new Date(transaction.createdAt ?? transaction.recordedAt ?? "");
   if (Number.isNaN(billingDate.getTime())) {
@@ -164,8 +165,14 @@ export function buildRawReceiptDataFromTransaction(
     lineItems: normalizeLineItems(transaction.items)
   };
 
-  return buildRawReceiptData(session, profile, printing);
+  return buildRawReceiptData(session, profile, printing, overrides);
 }
+
+type SavedReceiptPrintRequest = {
+  id: string;
+  type: TransactionType;
+  overrides?: ReceiptPrintOverrides;
+};
 
 const useRawReceiptPrint = () => {
   const prepareReceipt = useCallback(async (tabId: string, options: PrepareReceiptOptions = {}) => {
@@ -205,7 +212,7 @@ const useRawReceiptPrint = () => {
   );
 
   const prepareSavedReceipt = useCallback(
-    async ({ id, type }: { id: string; type: TransactionType }) => {
+    async ({ id, type, overrides }: SavedReceiptPrintRequest) => {
       const [transaction, profile, preferences] = await Promise.all([
         apiClient.get<UnifiedTransctionWithItems>(`/api/${type}s/${id}`),
         apiClient.get<StoreProfile>("/api/store-profile"),
@@ -215,7 +222,8 @@ const useRawReceiptPrint = () => {
       const receipt = buildRawReceiptDataFromTransaction(
         transaction,
         profile,
-        preferences.config.printing
+        preferences.config.printing,
+        overrides
       );
       let raster: RasterReceiptSegments | undefined;
       if (preferences.config.printing.defaultPrintMode === "raster") {
@@ -231,7 +239,7 @@ const useRawReceiptPrint = () => {
   );
 
   const printSavedReceipt = useCallback(
-    async (transaction: { id: string; type: TransactionType }) => {
+    async (transaction: SavedReceiptPrintRequest) => {
       const { receipt, raster } = await prepareSavedReceipt(transaction);
       const response = await window.rawPrintApi.printReceipt(receipt, raster);
       if (response.status === "error") throw new Error(response.error.message);

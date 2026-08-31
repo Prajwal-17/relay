@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import { useViewModal } from "@/features/transactions/hooks/useViewModal";
 import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
+import { TransactionPrintDialog } from "@/features/transactions/TransactionPrintDialog";
 import { cn } from "@/lib/utils";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
-import { BATCH_CHECK_ACTION, type DashboardType } from "@shared/types";
+import { BATCH_CHECK_ACTION, type DashboardType, type TransactionType } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
@@ -32,14 +32,12 @@ import {
   FileDown,
   Loader2,
   LockKeyhole,
-  Printer,
   RefreshCcw,
   StickyNote,
   Trash2,
   X
 } from "lucide-react";
 import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { ItemRow } from "./ItemRow";
 
@@ -71,11 +69,15 @@ type TransactionActionsProps = {
   variant: "rail" | "footer";
   isSales: boolean;
   canModify: boolean;
-  isPrinting: boolean;
   pdfLoading: boolean;
   isDuplicating: boolean;
+  printTransaction: {
+    id: string;
+    transactionNo: number;
+    type: TransactionType;
+    totalPaisa: number | null | undefined;
+  } | null;
   onEdit: () => void;
-  onPrint: () => void;
   onExportPdf: () => void;
   onDuplicate: () => void;
   onConvertRequest: () => void;
@@ -86,11 +88,10 @@ function TransactionActions({
   variant,
   isSales,
   canModify,
-  isPrinting,
   pdfLoading,
   isDuplicating,
+  printTransaction,
   onEdit,
-  onPrint,
   onExportPdf,
   onDuplicate,
   onConvertRequest,
@@ -121,15 +122,13 @@ function TransactionActions({
         </div>
       )}
 
-      <Button
-        variant="outline"
-        className={cn(isRail && "w-full")}
-        onClick={onPrint}
-        disabled={isPrinting}
-      >
-        {isPrinting ? <Loader2 className="size-4 animate-spin" /> : <Printer className="size-4" />}
-        {isPrinting ? "Printing…" : "Print"}
-      </Button>
+      {printTransaction ? (
+        <TransactionPrintDialog
+          {...printTransaction}
+          trigger="button"
+          triggerClassName={cn(isRail && "w-full")}
+        />
+      ) : null}
 
       <Button
         variant="outline"
@@ -179,7 +178,6 @@ function TransactionActions({
 
 export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id: string }) => {
   const navigate = useNavigate();
-  const { printSavedReceipt } = useRawReceiptPrint();
   const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
 
   const {
@@ -203,7 +201,6 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
 
   const [activeDialog, setActiveDialog] = useState<ConfirmDialog>("idle");
   const [notesExpanded, setNotesExpanded] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
 
   const close = useCallback(() => setIsViewModalOpen(false), [setIsViewModalOpen]);
 
@@ -233,27 +230,6 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type, id });
   }, [duplicateMutation, type, id]);
-
-  const handlePrint = useCallback(async () => {
-    if (!data) return;
-
-    setIsPrinting(true);
-    try {
-      const result = await printSavedReceipt({ id, type: data.type });
-      if (result.fellBack) {
-        toast("Printed using device text because the high-quality receipt could not be prepared", {
-          icon: "⚠️"
-        });
-      } else {
-        toast.success("Print job sent to printer.");
-      }
-    } catch (error) {
-      console.error("Transaction print failed", error);
-      toast.error(error instanceof Error ? error.message : "Print failed.");
-    } finally {
-      setIsPrinting(false);
-    }
-  }, [data, id, printSavedReceipt]);
 
   const handleExportPdf = useCallback(async () => {
     const filePath = await exportPdf();
@@ -285,11 +261,17 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
   const sharedActions = {
     isSales,
     canModify,
-    isPrinting,
     pdfLoading,
     isDuplicating: duplicateMutation.isPending,
+    printTransaction: data
+      ? {
+          id,
+          transactionNo: data.transactionNo,
+          type: data.type,
+          totalPaisa: data.grandTotal
+        }
+      : null,
     onEdit: handleEdit,
-    onPrint: handlePrint,
     onExportPdf: handleExportPdf,
     onDuplicate,
     onConvertRequest: () => setActiveDialog("convert"),

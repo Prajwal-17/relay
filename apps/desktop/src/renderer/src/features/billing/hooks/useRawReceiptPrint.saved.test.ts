@@ -132,6 +132,54 @@ describe("saved transaction receipt data", () => {
     });
   });
 
+  it("applies one-time UPI options when printing a saved sale", () => {
+    const alternateProfile = {
+      id: "22222222-2222-4222-8222-222222222222",
+      label: "Counter UPI",
+      upiId: "counter@bank",
+      payeeName: "QuickCart Counter"
+    };
+    const data = buildRawReceiptDataFromTransaction(
+      savedTransaction(),
+      profile,
+      {
+        ...printing,
+        upiQrProfiles: [...printing.upiQrProfiles, alternateProfile]
+      },
+      {
+        includeUpiQr: true,
+        includeAmountInUpiQr: false,
+        upiQrProfileId: alternateProfile.id
+      }
+    );
+
+    expect(data.upi).toEqual({
+      id: "counter@bank",
+      payeeName: "QuickCart Counter",
+      includeAmount: false
+    });
+  });
+
+  it("supports an exact-amount UPI QR when printing a saved estimate", () => {
+    const transaction = savedTransaction();
+    transaction.type = "estimate";
+
+    const data = buildRawReceiptDataFromTransaction(transaction, profile, printing, {
+      includeUpiQr: true,
+      includeAmountInUpiQr: true,
+      upiQrProfileId: printing.defaultUpiQrProfileId
+    });
+
+    expect(data).toMatchObject({
+      transactionType: "estimate",
+      upi: {
+        id: "shop@bank",
+        payeeName: "QuickCart Market",
+        includeAmount: true
+      }
+    });
+  });
+
   it("rejects a saved transaction without a valid persisted date", () => {
     const transaction = savedTransaction();
     transaction.createdAt = undefined;
