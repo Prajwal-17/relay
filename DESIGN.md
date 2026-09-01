@@ -316,7 +316,7 @@ Do not copy a primitive into a feature folder to avoid understanding it. Do not 
 
 ### Shared primitives
 
-- **Buttons:** Generic default actions are charcoal. Primary create and Save & Print actions use charcoal `primary`; the persistent New Estimate shortcut is a berry-accented secondary action. Outline is the standard secondary action. Destructive is used only for irreversible or materially harmful operations. Compact buttons are 32px; default buttons are 36px; 40px is reserved for the primary workflow action. A button label states the outcome, such as “Save & Print,” not a vague “Continue.”
+- **Buttons:** Generic default actions are charcoal. Primary create and Print & Close actions use charcoal `primary`; the persistent New Estimate shortcut is a berry-accented secondary action. Outline is the standard secondary action. Destructive is used only for irreversible or materially harmful operations. Compact buttons are 32px; default buttons are 36px; 40px is reserved for the primary workflow action. A button label states the outcome, such as “Print & Close,” not a vague “Continue.”
 - **Inputs and selects:** Default to 36px with body text. Labels remain visible outside the field; placeholders show format or example, never the only label. Invalid state includes specific inline text and `aria-invalid`, not color alone.
 - **Cards:** Use `CompactCard` for dense application panels. Card padding does not create page layout; the parent owns inter-panel spacing. Avoid nested cards when a divider or section heading is sufficient.
 - **Dialogs:** Header and footer stay visible; the body owns vertical scrolling. Content must fit within the 650px baseline with viewport-safe maximum height. Focus is trapped, Escape closes when safe, and focus returns to the trigger. Destructive confirmations name the object and consequence.
@@ -339,12 +339,12 @@ Billing is the highest-priority interaction surface and follows a fixed hierarch
 3. One compact line-item toolbar; the count-column toggle remains directly visible, not hidden in an overflow menu.
 4. Semantic line-item grid and product search.
 5. Notes and payment information in scrolling content.
-6. Stable 52px summary footer with total and Save & Print.
+6. Stable 52px summary footer with total and Print & Close.
 7. Optional preview/customer panel, open by default and remembered.
 
 The quantity control reads `− quantity +`. Product search supports Arrow Up/Down, Enter to select, Escape to dismiss, and a predictable transition to the next empty row. Its sort/filter bar stays slimmer than a data row, the dropdown expands to an 880px desktop maximum while clamping to the available viewport, and matched text uses `search-highlight`. Search results keep a stable 54px virtualized height with the product name, unit/weight, and MRP on one line; long names truncate only after using the wider available space and retain a native full-name title fallback. Unit/weight uses the teal `unit-tag-*` family; MRP uses the warm `mrp-tag-*` family. Both are 24px high with 14px strong text and the control radius. The dropdown uses `hover` and `selected` distinctly, and its selection marker appears only on the selected row.
 
-Sale and estimate labels are persistent compact accent identities. Primary create and Save & Print actions use charcoal; the transaction type remains clear through labels, icons, dots, and underlines. General configuration actions remain charcoal. “Save PDF” on an unsaved bill must explain that the bill must first be saved; it must never fail silently. Sync feedback uses explicit saving, saved, and error language without changing the footer’s geometry.
+Sale and estimate labels are persistent compact accent identities. Primary create and Print & Close actions use charcoal; the transaction type remains clear through labels, icons, dots, and underlines. General configuration actions remain charcoal. “Export PDF” on an unsaved bill must explain that the bill must first be synced; it must never fail silently. Sync feedback uses explicit saving, saved, and error language without changing the footer’s geometry.
 
 ### Feature compositions and states
 

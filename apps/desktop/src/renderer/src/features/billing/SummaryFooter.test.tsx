@@ -19,6 +19,8 @@ const mocks = vi.hoisted(() => ({
   printReceipt: vi.fn(),
   fetchSummary: vi.fn(),
   buildSettlement: vi.fn(),
+  removeTab: vi.fn(),
+  billingTabs: [] as Array<{ id: string; routePath: string }>,
   toastError: vi.fn(),
   toastSuccess: vi.fn(),
   toastWarning: vi.fn(),
@@ -53,8 +55,16 @@ vi.mock("@/features/billing/hooks/useTransaction", () => ({
 }));
 
 vi.mock("@/features/billing/store/billingTabs.store", () => ({
-  useBillingTabsStore: (selector: (state: { activeTabId: string }) => unknown) =>
-    selector({ activeTabId: "tab-1" })
+  useBillingTabsStore: Object.assign(
+    (selector: (state: { activeTabId: string }) => unknown) => selector({ activeTabId: "tab-1" }),
+    {
+      getState: () => ({ activeTabId: "tab-1", tabs: mocks.billingTabs })
+    }
+  )
+}));
+
+vi.mock("@/features/billing/store/billingCoordinator", () => ({
+  billingCoordinator: { removeTab: mocks.removeTab }
 }));
 
 vi.mock("@/features/billing/store/billingSession.store", () => ({
@@ -101,7 +111,7 @@ function deferred<T>() {
 
 afterEach(cleanup);
 
-describe("Save & Print RAW workflow", () => {
+describe("Print & Close RAW workflow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     Object.assign(mocks.billingSession, {
@@ -120,6 +130,8 @@ describe("Save & Print RAW workflow", () => {
       accountSummaryStartedAt: new Date("2026-08-19T09:00:00.000Z").getTime()
     });
     mocks.flushSync.mockResolvedValue(undefined);
+    mocks.removeTab.mockReturnValue(null);
+    mocks.billingTabs.length = 0;
     mocks.printReceipt.mockResolvedValue({
       bytesWritten: 512,
       modeUsed: "raster",
@@ -146,7 +158,7 @@ describe("Save & Print RAW workflow", () => {
     mocks.printReceipt.mockReturnValue(print.promise);
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
 
     expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
     expect(mocks.printReceipt).not.toHaveBeenCalled();
@@ -166,14 +178,27 @@ describe("Save & Print RAW workflow", () => {
     await act(async () =>
       print.resolve({ bytesWritten: 512, modeUsed: "raster", fellBack: false })
     );
+    await waitFor(() => expect(mocks.removeTab).toHaveBeenCalledWith("tab-1"));
     await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales"));
+  });
+
+  it("closes only the printed tab and activates the next billing tab", async () => {
+    mocks.removeTab.mockReturnValue("tab-2");
+    mocks.billingTabs.push({ id: "tab-2", routePath: "/billing/sales/sale-2/edit" });
+
+    render(<SummaryFooter />);
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
+
+    await waitFor(() => expect(mocks.removeTab).toHaveBeenCalledWith("tab-1"));
+    expect(mocks.navigate).toHaveBeenCalledWith("/billing/sales/sale-2/edit");
+    expect(mocks.navigate).not.toHaveBeenCalledWith("/dashboard/sales");
   });
 
   it("prints the settlement derived from the customer account", async () => {
     mocks.billingSession.printOptions.includeAccountSummary = true;
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
 
     await waitFor(() => expect(mocks.fetchSummary).toHaveBeenCalledWith("customer-1"));
     expect(mocks.buildSettlement).toHaveBeenCalledWith(mocks.billingSession, {
@@ -193,7 +218,7 @@ describe("Save & Print RAW workflow", () => {
     mocks.fetchSummary.mockRejectedValue(new Error("Customer balance could not be loaded."));
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
 
     await waitFor(() =>
       expect(mocks.toastError).toHaveBeenCalledWith("Customer balance could not be loaded.")
@@ -206,7 +231,7 @@ describe("Save & Print RAW workflow", () => {
     mocks.printReceipt.mockRejectedValue(new Error("The printer is disconnected."));
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
 
     await waitFor(() =>
       expect(mocks.toastError).toHaveBeenCalledWith("The printer is disconnected.")
@@ -222,7 +247,7 @@ describe("Save & Print RAW workflow", () => {
     });
 
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save & Print" }));
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
 
     await waitFor(() =>
       expect(mocks.toastWarning).toHaveBeenCalledWith(
@@ -235,13 +260,25 @@ describe("Save & Print RAW workflow", () => {
 
   it("exports with the synchronized billing id even before the route updates", async () => {
     render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Save PDF" }));
+    fireEvent.click(screen.getByRole("button", { name: "Export PDF" }));
 
     expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
     await waitFor(() =>
       expect(window.exportApi.exportAsPdf).toHaveBeenCalledWith("sale-1", "sale")
     );
     expect(mocks.toastSuccess).toHaveBeenCalled();
-    expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
+    expect(mocks.navigate).not.toHaveBeenCalled();
+  });
+
+  it("syncs and closes only the active tab from Close Tab", async () => {
+    mocks.removeTab.mockReturnValue("tab-2");
+    mocks.billingTabs.push({ id: "tab-2", routePath: "/billing/estimates/estimate-2/edit" });
+
+    render(<SummaryFooter />);
+    fireEvent.click(screen.getByRole("button", { name: "Close Tab" }));
+
+    expect(mocks.flushSync).toHaveBeenCalledWith("tab-1");
+    await waitFor(() => expect(mocks.removeTab).toHaveBeenCalledWith("tab-1"));
+    expect(mocks.navigate).toHaveBeenCalledWith("/billing/estimates/estimate-2/edit");
   });
 });
