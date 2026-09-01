@@ -123,7 +123,7 @@ describe("billing receipt QR choices", () => {
     expect(accountList.closest("[data-upi-account-picker-inline]")).toBeInTheDocument();
     expect(accountList.closest('[data-slot="popover-content"]')).toBeNull();
     expect(screen.queryByPlaceholderText(/search/i)).not.toBeInTheDocument();
-    const longProfile = preferences.printing.upiQrProfiles[2];
+    const longProfile = preferences.printing.upiQrProfiles[2]!;
     const longAccount = screen.getByRole("option", {
       name: /Very long billing counter name that must wrap inside the account list/i
     });
