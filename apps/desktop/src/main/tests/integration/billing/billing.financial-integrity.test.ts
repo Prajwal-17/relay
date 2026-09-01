@@ -248,7 +248,7 @@ describe("billing financial-integrity API integration", () => {
     expect(move.status).toBe(200);
     expect(db.select().from(sales).where(eq(sales.id, created.billingId!)).get()).toMatchObject({
       customerId: customerB.id,
-      grandTotal: 26_233,
+      grandTotal: 26_200,
       totalQuantity: 2125
     });
     expect(
@@ -256,7 +256,7 @@ describe("billing financial-integrity API integration", () => {
     ).toEqual([
       expect.objectContaining({
         customerId: customerB.id,
-        amountDue: 26_233
+        amountDue: 26_200
       })
     ]);
     expect(
@@ -264,7 +264,7 @@ describe("billing financial-integrity API integration", () => {
     ).toBe(0);
     expect(
       db.select().from(customers).where(eq(customers.id, customerB.id)).get()?.outstandingBalance
-    ).toBe(26_233);
+    ).toBe(26_200);
     expect(
       db.select().from(products).where(eq(products.id, product.id)).get()?.totalQuantitySold
     ).toBe(2125);

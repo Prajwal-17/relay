@@ -61,6 +61,19 @@ function TestQueryProvider({ children }: { children: ReactNode }) {
 }
 
 beforeEach(() => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    }
+  );
+  Object.defineProperty(Element.prototype, "scrollIntoView", {
+    configurable: true,
+    value: vi.fn()
+  });
+
   useAppPreferencesMock.mockReturnValue({
     config: { printing },
     defaults: undefined,
@@ -90,6 +103,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("PrintingSection categories", () => {
@@ -136,6 +150,12 @@ describe("PrintingSection categories", () => {
     expect(defaultAccount).not.toHaveTextContent("shop@bank");
     expect(defaultAccount).not.toHaveTextContent("QuickCart Store");
     expect(screen.getAllByText("shop@bank · QuickCart Store")[0]).toBeVisible();
+    await user.click(defaultAccount);
+    const defaultAccountList = screen.getByRole("listbox");
+    expect(within(defaultAccountList).getByText("Primary UPI")).toBeVisible();
+    expect(within(defaultAccountList).queryByText("shop@bank")).not.toBeInTheDocument();
+    expect(within(defaultAccountList).queryByText("QuickCart Store")).not.toBeInTheDocument();
+    await user.click(defaultAccount);
     expect(screen.queryByTestId("upi-open-amount-qr")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Add UPI account" }));
     expect(screen.getByRole("dialog", { name: "Add UPI account" })).toBeVisible();

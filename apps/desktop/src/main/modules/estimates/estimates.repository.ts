@@ -10,6 +10,7 @@ import {
   type UpdateQtyAction
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/milliUnits";
+import { roundPaisaToNearestRupee } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import type * as schema from "../../db/schema";
 import { customers, estimateItems, estimates, products, saleItems, sales } from "../../db/schema";
@@ -392,7 +393,7 @@ const updateEstimateTotals = async (tx: any, estimateId: string) => {
 
   tx.update(estimates)
     .set({
-      grandTotal: totals?.grandTotal ?? 0,
+      grandTotal: roundPaisaToNearestRupee(totals?.grandTotal ?? 0),
       totalQuantity: totals?.totalQuantity ?? 0
     })
     .where(eq(estimates.id, estimateId))

@@ -9,6 +9,7 @@ import {
   type UpdateQtyAction
 } from "../../../shared/types";
 import { fromMilliUnits, toMilliUnits } from "../../../shared/utils/milliUnits";
+import { roundPaisaToNearestRupee } from "../../../shared/utils/utils";
 import { db } from "../../db/db";
 import type * as schema from "../../db/schema";
 import { customers, products, saleItems, sales } from "../../db/schema";
@@ -364,7 +365,7 @@ const updateSaleTotals = (tx: Tx, saleId: string) => {
     .where(eq(saleItems.saleId, saleId))
     .get();
 
-  const grandTotal = totals?.grandTotal ?? 0;
+  const grandTotal = roundPaisaToNearestRupee(totals?.grandTotal ?? 0);
 
   tx.update(sales)
     .set({

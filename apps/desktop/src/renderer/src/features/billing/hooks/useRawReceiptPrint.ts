@@ -20,7 +20,7 @@ import type {
 import { BILLSTATUS } from "@shared/types";
 import { buildReceiptAddressLines, calculateThermalSavings } from "@shared/utils/thermalReceipt";
 import { resolveUpiQrProfile } from "@shared/utils/upiQrProfiles";
-import { rupeesToPaisa } from "@shared/utils/utils";
+import { roundPaisaToNearestRupee, rupeesToPaisa } from "@shared/utils/utils";
 import { useCallback } from "react";
 
 type ReceiptBuildMode = "print" | "preview";
@@ -74,7 +74,8 @@ function createRawReceiptData(
     totalPaisa: item.totalPrice,
     mrpPaisa: item.mrp ?? undefined
   }));
-  const totalPaisa = items.reduce((sum, item) => sum + item.totalPaisa, 0);
+  const subtotalPaisa = items.reduce((sum, item) => sum + item.totalPaisa, 0);
+  const totalPaisa = roundPaisaToNearestRupee(subtotalPaisa);
   const savingsPaisa = calculateThermalSavings(items);
 
   return {
@@ -90,7 +91,7 @@ function createRawReceiptData(
     customerName: printing.showCustomerName ? session.customerName.trim() || "Walk-in" : "",
     dateTime: session.billingDate.toISOString(),
     items,
-    subtotalPaisa: totalPaisa,
+    subtotalPaisa,
     totalPaisa,
     savingsPaisa:
       printing.showSavings && savingsPaisa > 0 && savingsPaisa >= printing.savingsThresholdPaisa

@@ -1,5 +1,14 @@
 # Changelog
 
+## v4.4.2 - 01 Sep 2026
+
+Patch release correcting billing totals and simplifying default UPI account selection.
+
+### Fixed
+
+- Round payable totals consistently across billing, receipts, QR payments, PDFs, sales, and estimates while preserving exact subtotals
+- Show only account names in the default UPI account dropdown in settings
+
 ## v4.4.1 - 01 Sep 2026
 
 Patch release focused on faster billing, clearer printing controls, and a more reliable multi-tab workspace.

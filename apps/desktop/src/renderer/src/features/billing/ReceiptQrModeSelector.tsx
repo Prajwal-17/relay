@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { formatRupee } from "@shared/utils/utils";
+import { formatRupee, roundPaisaToNearestRupee } from "@shared/utils/utils";
 import { Check, LockKeyhole, PenLine, QrCode, ReceiptText } from "lucide-react";
 import { useId, type ReactNode } from "react";
 
@@ -124,7 +124,9 @@ export function ReceiptQrModeSelector({
 }: ReceiptQrModeSelectorProps) {
   const legendId = useId();
   const formattedTotal =
-    totalPaisa === null || totalPaisa === undefined ? null : formatRupee(totalPaisa);
+    totalPaisa === null || totalPaisa === undefined
+      ? null
+      : formatRupee(roundPaisaToNearestRupee(totalPaisa));
 
   return (
     <fieldset className="min-w-0">

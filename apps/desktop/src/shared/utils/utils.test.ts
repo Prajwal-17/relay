@@ -5,6 +5,7 @@ import {
   formatRupee,
   paisaToRupees,
   paisaToRupeeString,
+  roundPaisaToNearestRupee,
   rupeesToPaisa
 } from "../utils/utils";
 
@@ -109,6 +110,27 @@ describe("rupeesToPaisa", () => {
 
   it("rejects a numeric string instead of coercing it to money", () => {
     expect(() => rupeesToPaisa("54.99" as unknown as number)).toThrow("rupeesToPaisa");
+  });
+});
+
+describe("roundPaisaToNearestRupee", () => {
+  it("rounds payable totals to the nearest whole rupee", () => {
+    expect(roundPaisaToNearestRupee(15_234)).toBe(15_200);
+    expect(roundPaisaToNearestRupee(15_249)).toBe(15_200);
+    expect(roundPaisaToNearestRupee(15_250)).toBe(15_300);
+    expect(roundPaisaToNearestRupee(15_299)).toBe(15_300);
+  });
+
+  it("keeps whole-rupee and zero totals unchanged", () => {
+    expect(roundPaisaToNearestRupee(15_200)).toBe(15_200);
+    expect(roundPaisaToNearestRupee(0)).toBe(0);
+  });
+
+  it("rejects non-finite values", () => {
+    expect(() => roundPaisaToNearestRupee(Number.NaN)).toThrow(
+      "roundPaisaToNearestRupee"
+    );
+    expect(() => roundPaisaToNearestRupee(Infinity)).toThrow("roundPaisaToNearestRupee");
   });
 });
 

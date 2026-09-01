@@ -2,8 +2,8 @@ import { ErrorState } from "@/components/app-ui/ErrorState";
 import { ApiError, apiClient } from "@/lib/apiClient";
 import { type StoreProfile, type UnifiedTransctionWithItems } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { formatINR, formatRupee, paisaToRupees } from "@shared/utils/utils";
 import { fromMilliUnits } from "@shared/utils/milliUnits";
+import { formatRupee, roundPaisaToNearestRupee } from "@shared/utils/utils";
 import { useQuery } from "@tanstack/react-query";
 import { FileWarning, LoaderCircle } from "lucide-react";
 import { useParams, useSearchParams } from "react-router-dom";
@@ -145,8 +145,7 @@ export default function PdfInvoicePage() {
 
   const totalAmount = transaction.items.reduce((sum, item) => sum + (item.totalPrice || 0), 0);
   const subtotal = formatRupee(totalAmount);
-  const temp = Math.round(paisaToRupees(totalAmount));
-  const grandTotal = formatINR.format(temp);
+  const grandTotal = formatRupee(roundPaisaToNearestRupee(totalAmount));
 
   return (
     <div

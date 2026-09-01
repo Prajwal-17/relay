@@ -1,11 +1,14 @@
 import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { apiClient } from "@/lib/apiClient";
 import type { LedgerSummary, RawReceiptAccountSettlement } from "@shared/types";
+import { roundPaisaToNearestRupee } from "@shared/utils/utils";
 
 export function getBillingCurrentBillPaisa(session: BillingSessionData): number {
-  return session.lineItems.reduce(
-    (total, item) => total + (!item.isDeleted && item.totalPrice > 0 ? item.totalPrice : 0),
-    0
+  return roundPaisaToNearestRupee(
+    session.lineItems.reduce(
+      (total, item) => total + (!item.isDeleted && item.totalPrice > 0 ? item.totalPrice : 0),
+      0
+    )
   );
 }
 

@@ -188,6 +188,7 @@ export function UpiQrProfilesManager({
                   defaultProfileId={printing.defaultUpiQrProfileId}
                   disabled={disabled}
                   compact
+                  showListDetails={false}
                   onProfileChange={(profileId) => onUpdate({ defaultUpiQrProfileId: profileId })}
                 />
               </div>

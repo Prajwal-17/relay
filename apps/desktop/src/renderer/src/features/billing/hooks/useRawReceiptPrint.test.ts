@@ -90,7 +90,7 @@ describe("RAW receipt data", () => {
       transactionNo: 42,
       customerName: "Anita",
       subtotalPaisa: 1563,
-      totalPaisa: 1563,
+      totalPaisa: 1600,
       extraFeedLines: 7,
       cutMode: "full",
       upi: {
