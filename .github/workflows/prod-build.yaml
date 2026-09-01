@@ -85,7 +85,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           tag_name: v${{ steps.package-version.outputs.current-version }}
-          release_name: Release v${{ steps.package-version.outputs.current-version }}
+          release_name: v${{ steps.package-version.outputs.current-version }}
           body: Windows + Linux builds
           draft: false
           prerelease: false
