@@ -1,5 +1,5 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { UpiAccountPicker } from "@/components/app-ui/UpiAccountPicker";
 import {
   ReceiptQrModeSelector,
   type ReceiptQrMode
@@ -16,7 +16,7 @@ import {
   resolveUpiQrProfile
 } from "@shared/utils/upiQrProfiles";
 import { formatRupee } from "@shared/utils/utils";
-import { BadgeIndianRupee, QrCode } from "lucide-react";
+import { BadgeIndianRupee } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import {
   buildBillingAccountSettlement,
@@ -195,8 +195,8 @@ export function BillingPrintOptions() {
   };
 
   return (
-    <section aria-label="Bill options">
-      <fieldset>
+    <section aria-label="Bill options" className="min-w-0">
+      <fieldset className="min-w-0">
         <legend className="sr-only">Bill options</legend>
 
         <div className="divide-border divide-y">
@@ -217,7 +217,7 @@ export function BillingPrintOptions() {
               </p>
             ) : null}
             {includeUpiQr && selectedUpiProfile ? (
-              <div className="border-border rounded-(--radius-panel) border p-2.5">
+              <div className="border-border min-w-0 rounded-(--radius-panel) border p-2.5">
                 <div className="mb-1.5 flex items-center justify-between gap-3">
                   <span
                     id="billing-upi-profile-label"
@@ -231,65 +231,16 @@ export function BillingPrintOptions() {
                     </span>
                   ) : null}
                 </div>
-                {orderedUpiProfiles.length === 1 ? (
-                  <div
-                    aria-labelledby="billing-upi-profile-label"
-                    className="bg-muted flex h-10 min-w-0 items-center gap-2 rounded-(--radius-control) px-2.5"
-                  >
-                    <QrCode className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-                    <span
-                      className="text-foreground min-w-0 flex-1 truncate text-sm font-medium"
-                      title={selectedUpiProfile.label}
-                    >
-                      {selectedUpiProfile.label}
-                    </span>
-                    <span
-                      className="text-muted-foreground max-w-36 truncate text-xs"
-                      title={selectedUpiProfile.upiId}
-                    >
-                      {selectedUpiProfile.upiId}
-                    </span>
-                  </div>
-                ) : (
-                  <Select value={selectedUpiProfile.id} onValueChange={handleUpiProfileChange}>
-                    <SelectTrigger
-                      id="billing-upi-profile"
-                      aria-labelledby="billing-upi-profile-label"
-                      className="h-10 w-full min-w-0 px-2.5 text-left"
-                    >
-                      <span className="flex min-w-0 flex-1 items-center gap-2">
-                        <QrCode
-                          className="text-muted-foreground size-4 shrink-0"
-                          aria-hidden="true"
-                        />
-                        <span className="text-foreground min-w-0 flex-1 truncate text-sm font-medium">
-                          {selectedUpiProfile.label}
-                        </span>
-                        <span className="text-muted-foreground max-w-36 truncate text-xs">
-                          {selectedUpiProfile.upiId}
-                        </span>
-                      </span>
-                    </SelectTrigger>
-                    <SelectContent
-                      align="start"
-                      className="max-h-64 w-(--radix-select-trigger-width) min-w-0"
-                    >
-                      {orderedUpiProfiles.map((profile) => (
-                        <SelectItem key={profile.id} value={profile.id} className="min-w-0 py-2">
-                          <span className="min-w-0">
-                            <span className="text-foreground block truncate text-sm font-medium">
-                              {profile.label}
-                            </span>
-                            <span className="text-muted-foreground block truncate text-xs">
-                              {profile.upiId}
-                              {profile.id === printing?.defaultUpiQrProfileId ? " · Default" : ""}
-                            </span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <UpiAccountPicker
+                  id="billing-upi-profile"
+                  aria-labelledby="billing-upi-profile-label"
+                  profiles={orderedUpiProfiles}
+                  selectedProfileId={selectedUpiProfile.id}
+                  defaultProfileId={printing?.defaultUpiQrProfileId}
+                  onProfileChange={handleUpiProfileChange}
+                  showListDetails={false}
+                  variant="inline"
+                />
               </div>
             ) : null}
           </div>

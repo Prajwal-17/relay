@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const upiQrProfileSchema = z.object({
   id: z.string().uuid("UPI account ID is invalid"),
-  label: z.string().trim().min(1, "Account name is required").max(40),
+  label: z.string().trim().min(1, "Name is required").max(60, "Name must be 60 characters or less"),
   upiId: z
     .string()
     .trim()

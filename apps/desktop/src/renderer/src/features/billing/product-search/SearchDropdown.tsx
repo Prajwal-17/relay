@@ -751,12 +751,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 </TooltipTrigger>
                                 <TooltipContent side="right" className="text-xs leading-relaxed">
                                   <p>
-                                    Created:{" "}
-                                    {product.createdAt ? formatDateStr(product.createdAt) : "—"}
-                                  </p>
-                                  <p>
                                     Updated:{" "}
                                     {product.updatedAt ? formatDateStr(product.updatedAt) : "—"}
+                                  </p>
+                                  <p>
+                                    Created:{" "}
+                                    {product.createdAt ? formatDateStr(product.createdAt) : "—"}
                                   </p>
                                 </TooltipContent>
                               </Tooltip>

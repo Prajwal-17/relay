@@ -25,11 +25,13 @@ export function createMainWindow({
   store
 }: MainWindowOptions): MainWindowHandle {
   const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
+  const windowTitle = isDevBuild ? "QuickCart — Development" : "QuickCart";
   const { width: workAreaWidth, height: workAreaHeight } = screen.getPrimaryDisplay().workAreaSize;
   const contentWidth = maximizeOnReady ? Math.min(1280, Math.max(1024, workAreaWidth - 24)) : 1280;
   const contentHeight = maximizeOnReady ? Math.min(650, Math.max(600, workAreaHeight - 72)) : 650;
 
   const window = new BrowserWindow({
+    title: windowTitle,
     show: false,
     width: contentWidth,
     height: contentHeight,
@@ -48,6 +50,12 @@ export function createMainWindow({
   });
 
   const web = window.webContents; // window.webContents - rendering and controlling webpage
+
+  // Keep the environment marker when the renderer document title is applied after loading.
+  web.on("page-title-updated", (event) => {
+    event.preventDefault();
+    window.setTitle(windowTitle);
+  });
 
   // prevents zoom resets on change in window focus, close, open
   if (store) {

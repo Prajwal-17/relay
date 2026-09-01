@@ -158,9 +158,9 @@ export const BillingSection = () => {
             </PopoverTrigger>
             <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
               <Command>
-                <CommandInput placeholder="Search customers…" className="h-9 text-sm" />
-                <CommandList>
-                  <CommandEmpty className="py-4 text-center text-sm">
+                <CommandInput placeholder="Search customers…" className="h-8 text-xs" />
+                <CommandList className="max-h-48">
+                  <CommandEmpty className="py-4 text-center text-xs">
                     No customer found.
                   </CommandEmpty>
                   <CommandGroup>
@@ -169,7 +169,7 @@ export const BillingSection = () => {
                         key={customer.id}
                         value={customer.name}
                         onSelect={() => handleCustomerSelect(customer.id)}
-                        className="text-sm"
+                        className="text-xs"
                       >
                         <Check
                           className={cn(

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,24 +17,14 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import type { CustomerTxn } from "@/features/customers/hooks/useCustomerTransactions";
 import type { MutationVariables } from "@/features/customers/hooks/useCustomerTxnMutations";
 import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { useViewModalStore } from "@/features/transactions/store/viewModal.store";
+import { TransactionPrintDialog } from "@/features/transactions/TransactionPrintDialog";
 import { TRANSACTION_TYPE, type TransactionType } from "@shared/types";
 import type { UseMutationResult } from "@tanstack/react-query";
-import {
-  Copy,
-  Edit,
-  Eye,
-  FileDown,
-  Loader2,
-  MoreVertical,
-  Printer,
-  RefreshCcw,
-  Trash2
-} from "lucide-react";
+import { Copy, Edit, Eye, FileDown, Loader2, MoreVertical, RefreshCcw, Trash2 } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -55,11 +45,9 @@ function TxnRowActionsInner({
   duplicateMutation
 }: TxnRowActionsProps) {
   const navigate = useNavigate();
-  const { printSavedReceipt } = useRawReceiptPrint();
   const setIsViewModalOpen = useViewModalStore((state) => state.setIsViewModalOpen);
   const setTransactionId = useViewModalStore((state) => state.setTransactionId);
   const [activeDialog, setActiveDialog] = useState<"delete" | "convert" | "idle">("idle");
-  const [isPrinting, setIsPrinting] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const canModify = type !== TRANSACTION_TYPE.SALE || txn.canModify !== false;
 
@@ -84,25 +72,6 @@ function TxnRowActionsInner({
   const onDuplicate = useCallback(() => {
     duplicateMutation.mutate({ type, id: txn.id });
   }, [duplicateMutation, type, txn.id]);
-
-  const handlePrint = useCallback(async () => {
-    setIsPrinting(true);
-    try {
-      const result = await printSavedReceipt({ id: txn.id, type });
-      if (result.fellBack) {
-        toast("Printed using device text because the high-quality receipt could not be prepared", {
-          icon: "⚠️"
-        });
-      } else {
-        toast.success("Print job sent to printer.");
-      }
-    } catch (error) {
-      console.error("Transaction print failed", error);
-      toast.error(error instanceof Error ? error.message : "Print failed.");
-    } finally {
-      setIsPrinting(false);
-    }
-  }, [printSavedReceipt, txn.id, type]);
 
   const handleSavePdf = useCallback(async () => {
     setPdfLoading(true);
@@ -157,26 +126,14 @@ function TxnRowActionsInner({
         </Tooltip>
       )}
 
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            type="button"
-            onClick={() => void handlePrint()}
-            aria-label={`Print ${type} ${txn.transactionNo}`}
-            variant="ghost"
-            size="icon-sm"
-            disabled={isPrinting}
-            className="text-foreground hover:bg-hover hover:text-foreground size-7 p-1.5"
-          >
-            {isPrinting ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Printer className="size-4" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{isPrinting ? "Printing…" : "Print"}</TooltipContent>
-      </Tooltip>
+      <TransactionPrintDialog
+        id={txn.id}
+        transactionNo={txn.transactionNo}
+        type={type}
+        totalPaisa={txn.grandTotal}
+        triggerAriaLabel={`Print ${type} ${txn.transactionNo}`}
+        triggerClassName="size-7 p-1.5"
+      />
 
       {canModify && (
         <Tooltip>

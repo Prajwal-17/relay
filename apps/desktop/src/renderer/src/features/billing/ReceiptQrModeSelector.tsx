@@ -36,7 +36,12 @@ function ModeCard({
   onSelect
 }: ModeCardProps) {
   return (
-    <label className={cn("block", disabled ? "cursor-not-allowed" : "cursor-pointer")}>
+    <label
+      className={cn(
+        "group relative block min-w-0",
+        disabled ? "cursor-not-allowed" : "cursor-pointer"
+      )}
+    >
       <input
         type="radio"
         name={name}
@@ -44,19 +49,21 @@ function ModeCard({
         disabled={disabled}
         aria-label={`${label}: ${value}`}
         onChange={onSelect}
-        className="peer sr-only"
+        className="peer absolute top-1/2 left-1/2 m-0 size-px -translate-x-1/2 -translate-y-1/2 cursor-pointer appearance-none opacity-0 disabled:cursor-not-allowed"
       />
       <span
         className={cn(
-          "border-border peer-focus-visible:ring-ring relative flex flex-col items-center justify-center gap-1.5 rounded-(--radius-panel) border px-2 text-center transition-colors peer-focus-visible:ring-2 peer-disabled:opacity-45",
+          "border-border peer-focus-visible:ring-ring relative flex w-full min-w-0 flex-col items-center justify-center gap-1.5 rounded-(--radius-panel) border px-2 text-center transition-colors peer-focus-visible:ring-2 peer-disabled:opacity-45",
           density === "compact" ? "min-h-24 py-2" : "min-h-32 py-3",
-          !disabled && "hover:bg-hover",
-          active && "border-primary bg-selected hover:bg-selected"
+          !disabled && "group-hover:bg-hover",
+          active && "border-primary bg-selected group-hover:bg-selected"
         )}
       >
         {illustration}
-        <span className="text-foreground text-sm font-semibold">{label}</span>
-        <span className="text-muted-foreground text-xs leading-4 tabular-nums">{value}</span>
+        <span className="text-foreground max-w-full truncate text-sm font-semibold">{label}</span>
+        <span className="text-muted-foreground max-w-full truncate text-xs leading-4 tabular-nums">
+          {value}
+        </span>
         {active ? (
           <span className="bg-primary text-primary-foreground absolute top-1.5 right-1.5 flex size-4 items-center justify-center rounded-full">
             <Check className="size-3" aria-hidden="true" />
@@ -120,11 +127,11 @@ export function ReceiptQrModeSelector({
     totalPaisa === null || totalPaisa === undefined ? null : formatRupee(totalPaisa);
 
   return (
-    <fieldset>
+    <fieldset className="min-w-0">
       <legend id={legendId} className="text-foreground mb-2 text-sm font-semibold">
         Add a payment QR?
       </legend>
-      <div className="grid grid-cols-3 gap-2" aria-labelledby={legendId}>
+      <div className="grid min-w-0 grid-cols-3 gap-2" aria-labelledby={legendId}>
         <ModeCard
           active={mode === "receipt"}
           illustration={<ReceiptIllustration mode="receipt" density={density} />}
