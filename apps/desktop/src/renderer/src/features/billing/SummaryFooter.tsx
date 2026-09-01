@@ -5,12 +5,13 @@ import {
 } from "@/features/billing/billingAccountSettlement";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
+import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { flushSync } from "@/features/billing/syncWorker";
 import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
 import { TRANSACTION_TYPE } from "@shared/types";
-import { FileText, Loader2, Printer, Save } from "lucide-react";
+import { FileText, Loader2, Printer, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -31,7 +32,7 @@ export const SummaryFooter = () => {
   const { subtotal, grandTotal } = useTransaction();
   const { printReceipt } = useRawReceiptPrint();
 
-  type LoadingAction = "print" | "exit" | "pdf" | null;
+  type LoadingAction = "print" | "close" | "pdf" | null;
   const [loadingAction, setLoadingAction] = useState<LoadingAction>(null);
 
   const waitForSync = useCallback(async (): Promise<boolean> => {
@@ -41,7 +42,7 @@ export const SummaryFooter = () => {
       return true;
     } catch (error) {
       console.error("Sync flush failed:", error);
-      toast.error("Failed to save changes. Please try again.");
+      toast.error("Failed to sync changes. Please try again.");
       return false;
     }
   }, [activeTabId]);
@@ -54,7 +55,24 @@ export const SummaryFooter = () => {
     return session;
   }, [activeTabId]);
 
-  const handleSaveAndPrint = useCallback(async () => {
+  const closeTabAndNavigate = useCallback(
+    (tabId: string) => {
+      const newActiveId = billingCoordinator.removeTab(tabId);
+      const nextTab = newActiveId
+        ? useBillingTabsStore.getState().tabs.find((tab) => tab.id === newActiveId)
+        : undefined;
+
+      if (nextTab) {
+        navigate(nextTab.routePath);
+        return;
+      }
+
+      navigate(`/dashboard/${type}`);
+    },
+    [navigate, type]
+  );
+
+  const handlePrintAndClose = useCallback(async () => {
     setLoadingAction("print");
     try {
       const synced = await waitForSync();
@@ -82,29 +100,30 @@ export const SummaryFooter = () => {
         accountSettlement
       });
       warnIfRasterFellBack(result.fellBack);
-
-      navigate(`/dashboard/${type}`);
+      closeTabAndNavigate(activeTabId);
     } catch (error) {
       console.error("Print failed", error);
       toast.error(error instanceof Error ? error.message : "Print failed.");
     } finally {
       setLoadingAction(null);
     }
-  }, [activeTabId, navigate, printReceipt, readSynchronizedSession, type, waitForSync]);
-  const handleSaveAndExit = useCallback(async () => {
-    setLoadingAction("exit");
+  }, [activeTabId, closeTabAndNavigate, printReceipt, readSynchronizedSession, waitForSync]);
+  const handleCloseTab = useCallback(async () => {
+    const tabId = activeTabId;
+    if (!tabId) return;
+
+    setLoadingAction("close");
     try {
       const synced = await waitForSync();
       if (!synced) return;
-      toast.success("Saved Successfully");
-      navigate(`/dashboard/${type}`);
+      closeTabAndNavigate(tabId);
     } catch (error) {
-      console.error("Save & Exit failed", error);
-      toast.error("Failed to save. Please try again.");
+      console.error("Close tab failed", error);
+      toast.error("Changes could not be synced. Please try again.");
     } finally {
       setLoadingAction(null);
     }
-  }, [waitForSync, navigate, type]);
+  }, [activeTabId, closeTabAndNavigate, waitForSync]);
 
   const handleExportPdf = useCallback(async () => {
     if (!activeTabId || !type) {
@@ -117,12 +136,11 @@ export const SummaryFooter = () => {
       if (!synced) return;
       const session = readSynchronizedSession();
       if (!session.billingId) {
-        throw new Error("Save this bill before exporting a PDF.");
+        throw new Error("This bill must finish syncing before it can be exported.");
       }
       const response = await window.exportApi.exportAsPdf(session.billingId, session.billingType);
       if (response && response.status === "success") {
         showPdfExportSuccessToast(response.data);
-        navigate(`/dashboard/${type}`);
       } else {
         toast.error(response?.error?.message || "Failed to generate PDF");
       }
@@ -132,7 +150,7 @@ export const SummaryFooter = () => {
     } finally {
       setLoadingAction(null);
     }
-  }, [activeTabId, type, waitForSync, readSynchronizedSession, navigate]);
+  }, [activeTabId, type, waitForSync, readSynchronizedSession]);
 
   if (!type) {
     return <Navigate to="/not-found" />;
@@ -157,26 +175,26 @@ export const SummaryFooter = () => {
       <Button
         size="lg"
         disabled={loadingAction !== null}
-        onClick={handleSaveAndPrint}
+        onClick={handlePrintAndClose}
         className="bg-primary hover:bg-primary-hover text-primary-foreground min-w-36"
       >
         {loadingAction === "print" ? <Loader2 className="animate-spin" /> : <Printer />}
-        {loadingAction === "print" ? "Printing…" : "Save & Print"}
+        {loadingAction === "print" ? "Printing…" : "Print & Close"}
       </Button>
 
-      <Button variant="outline" disabled={loadingAction !== null} onClick={handleSaveAndExit}>
-        {loadingAction === "exit" ? <Loader2 className="animate-spin" /> : <Save />}
-        {loadingAction === "exit" ? "Saving..." : "Save & Exit"}
+      <Button variant="outline" disabled={loadingAction !== null} onClick={handleCloseTab}>
+        {loadingAction === "close" ? <Loader2 className="animate-spin" /> : <X />}
+        {loadingAction === "close" ? "Closing…" : "Close Tab"}
       </Button>
 
       <Button
         variant="outline"
         disabled={loadingAction !== null}
         onClick={handleExportPdf}
-        title={!id ? "Save the bill and export it as PDF" : "Save as PDF"}
+        title={!id ? "Sync the bill and export it as PDF" : "Export PDF"}
       >
         {loadingAction === "pdf" ? <Loader2 className="animate-spin" /> : <FileText />}
-        {loadingAction === "pdf" ? "Saving..." : "Save PDF"}
+        {loadingAction === "pdf" ? "Exporting…" : "Export PDF"}
       </Button>
     </footer>
   );

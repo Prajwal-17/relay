@@ -38,16 +38,28 @@ function ScanCode({
           className="size-full"
         />
       </div>
-      <dl className="divide-border divide-y text-xs">
-        <div className="flex min-h-7 items-center justify-between gap-3">
+      <dl className="divide-border min-w-0 divide-y text-xs">
+        <div className="grid min-h-7 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-1">
           <dt className="text-muted-foreground">UPI ID</dt>
-          <dd className="text-foreground max-w-44 truncate font-medium" title={profile.upiId}>
+          <dd
+            className="text-foreground min-w-0 text-right font-medium break-all"
+            title={profile.upiId}
+          >
             {profile.upiId}
           </dd>
         </div>
-        <div className="flex min-h-7 items-center justify-between gap-3">
+        <div className="grid min-h-7 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-1">
+          <dt className="text-muted-foreground">Payee</dt>
+          <dd
+            className="text-foreground min-w-0 text-right font-medium [overflow-wrap:anywhere]"
+            title={profile.payeeName}
+          >
+            {profile.payeeName}
+          </dd>
+        </div>
+        <div className="grid min-h-7 min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-3 py-1">
           <dt className="text-muted-foreground">Amount</dt>
-          <dd className="text-foreground font-medium">{amountLabel}</dd>
+          <dd className="text-foreground min-w-0 text-right font-medium">{amountLabel}</dd>
         </div>
       </dl>
     </div>

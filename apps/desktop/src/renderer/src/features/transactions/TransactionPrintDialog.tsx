@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { UpiAccountPicker } from "@/components/app-ui/UpiAccountPicker";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +9,6 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import {
@@ -24,7 +24,7 @@ import {
   resolveUpiQrProfile
 } from "@shared/utils/upiQrProfiles";
 import { formatRupee } from "@shared/utils/utils";
-import { Loader2, Printer, QrCode } from "lucide-react";
+import { Loader2, Printer } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -35,6 +35,7 @@ type TransactionPrintDialogProps = {
   totalPaisa: number | null | undefined;
   trigger?: "icon" | "button";
   triggerClassName?: string;
+  triggerAriaLabel?: string;
 };
 
 export function TransactionPrintDialog({
@@ -43,7 +44,8 @@ export function TransactionPrintDialog({
   type,
   totalPaisa,
   trigger = "icon",
-  triggerClassName
+  triggerClassName,
+  triggerAriaLabel
 }: TransactionPrintDialogProps) {
   const { printSavedReceipt } = useRawReceiptPrint();
   const { config, defaults } = useAppPreferences();
@@ -148,9 +150,12 @@ export function TransactionPrintDialog({
             <DialogTrigger asChild>
               <button
                 type="button"
-                aria-label={`Print transaction ${transactionNo}`}
+                aria-label={triggerAriaLabel ?? `Print transaction ${transactionNo}`}
                 disabled={isPrinting}
-                className="hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-50"
+                className={cn(
+                  "hover:bg-hover hover:text-foreground text-foreground cursor-pointer rounded-md p-1.5 disabled:cursor-not-allowed disabled:opacity-50",
+                  triggerClassName
+                )}
               >
                 {isPrinting ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -222,67 +227,14 @@ export function TransactionPrintDialog({
                   </span>
                 ) : null}
               </div>
-              {orderedProfiles.length === 1 ? (
-                <div
-                  aria-labelledby={profileLabelId}
-                  className="bg-muted flex h-10 min-w-0 items-center gap-2 rounded-(--radius-control) px-2.5"
-                >
-                  <QrCode className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-                  <span
-                    className="text-foreground min-w-0 flex-1 truncate text-sm font-medium"
-                    title={selectedProfile.label}
-                  >
-                    {selectedProfile.label}
-                  </span>
-                  <span
-                    className="text-muted-foreground max-w-40 truncate text-xs"
-                    title={selectedProfile.upiId}
-                  >
-                    {selectedProfile.upiId}
-                  </span>
-                </div>
-              ) : (
-                <Select value={selectedProfile.id} onValueChange={setSelectedProfileId}>
-                  <SelectTrigger
-                    aria-labelledby={profileLabelId}
-                    className="bg-background h-10 w-full min-w-0 px-2.5 text-left"
-                  >
-                    <span className="flex min-w-0 flex-1 items-center gap-2">
-                      <QrCode
-                        className="text-muted-foreground size-4 shrink-0"
-                        aria-hidden="true"
-                      />
-                      <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                        {selectedProfile.label}
-                      </span>
-                      <span
-                        className="text-muted-foreground max-w-40 truncate text-xs"
-                        title={selectedProfile.upiId}
-                      >
-                        {selectedProfile.upiId}
-                      </span>
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent
-                    align="start"
-                    className="max-h-64 w-[var(--radix-select-trigger-width)] min-w-0"
-                  >
-                    {orderedProfiles.map((profile) => (
-                      <SelectItem key={profile.id} value={profile.id} className="min-w-0 py-2">
-                        <span className="min-w-0">
-                          <span className="text-foreground block truncate text-sm font-medium">
-                            {profile.label}
-                          </span>
-                          <span className="text-muted-foreground block truncate text-xs">
-                            {profile.upiId}
-                            {profile.id === defaultProfileId ? " · Default" : ""}
-                          </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <UpiAccountPicker
+                aria-labelledby={profileLabelId}
+                profiles={orderedProfiles}
+                selectedProfileId={selectedProfile.id}
+                defaultProfileId={defaultProfileId}
+                onProfileChange={setSelectedProfileId}
+                showListDetails={false}
+              />
             </section>
           ) : null}
         </div>

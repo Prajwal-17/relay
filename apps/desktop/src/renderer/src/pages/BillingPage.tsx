@@ -160,7 +160,7 @@ const BillingPageContent = () => {
   return (
     <div className="flex h-full flex-col">
       <BillingTabBar />
-      <div className="flex h-0 min-h-0 flex-1 overflow-hidden">
+      <div data-billing-workspace className="flex h-0 min-h-0 flex-1 overflow-clip">
         <div className="bg-background-secondary relative flex min-h-0 min-w-0 flex-1 flex-col">
           <div
             data-billing-scroll-container
@@ -183,7 +183,7 @@ const BillingPageContent = () => {
             <BillingHeader />
             <LineItemsTable />
             <div className="mx-3 mt-2 mb-3 flex justify-end">
-              <div className="border-frame w-full max-w-sm border-l pl-3">
+              <div className="border-frame w-full max-w-sm min-w-0 border-l pl-3">
                 <BillingPrintOptions />
                 <BillingNotes className="mt-3" />
               </div>

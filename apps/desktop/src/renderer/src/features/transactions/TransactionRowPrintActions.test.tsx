@@ -47,9 +47,9 @@ const mocks = vi.hoisted(() => ({
       },
       {
         id: "upi-counter",
-        label: "Counter UPI",
-        upiId: "counter@bank",
-        payeeName: "QuickCart Counter"
+        label: "Counter UPI Account Used for Wholesale and Retail Payments",
+        upiId: "verylongmerchantidentifierforquickcartcounterpayments@bank",
+        payeeName: "QuickCart Wholesale and Retail Counter Payments Private Limited"
       }
     ],
     defaultUpiQrProfileId: "upi-primary",
@@ -153,6 +153,7 @@ afterEach(() => cleanup());
 describe("transaction row print actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    Element.prototype.scrollIntoView = vi.fn();
     mocks.printSavedReceipt.mockResolvedValue({
       bytesWritten: 512,
       modeUsed: "raster",
@@ -346,6 +347,66 @@ describe("transaction row print actions", () => {
     );
   });
 
+  it("selects a long UPI account without search or widening the print dialog", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <TransactionTableRow
+        pathname="sales"
+        transaction={{
+          type: "sale",
+          id: "sale-45",
+          transactionNo: 45,
+          customerId: null,
+          customerName: "Walk-in",
+          notes: null,
+          grandTotal: 12500,
+          totalQuantity: 1000,
+          canModify: true,
+          createdAt: "2026-08-12T10:15:00.000Z"
+        }}
+        search=""
+        deleteMutation={deleteMutation}
+        convertMutation={convertMutation}
+        duplicateMutation={duplicateMutation}
+        setIsViewModalOpen={vi.fn()}
+        setTransactionId={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Print transaction 45" }));
+    await user.click(screen.getByRole("radio", { name: "Exact total: ₹125.00 fixed" }));
+    await user.click(screen.getByRole("combobox", { name: "UPI account" }));
+    expect(screen.queryByPlaceholderText("Search UPI accounts…")).not.toBeInTheDocument();
+
+    const longProfile = mocks.printing.upiQrProfiles[1]!;
+    expect(screen.getByText(longProfile.label)).toHaveClass(
+      "whitespace-normal",
+      "[overflow-wrap:anywhere]"
+    );
+    expect(screen.queryByText(longProfile.upiId)).not.toBeInTheDocument();
+    expect(screen.queryByText(longProfile.payeeName)).not.toBeInTheDocument();
+    await user.click(screen.getByText(longProfile.label));
+    expect(screen.getByRole("combobox", { name: "UPI account" })).toHaveTextContent(
+      longProfile.upiId
+    );
+    expect(screen.getByRole("combobox", { name: "UPI account" })).toHaveTextContent(
+      longProfile.payeeName
+    );
+    await user.click(screen.getByRole("button", { name: "Print ₹125.00 QR" }));
+
+    await waitFor(() =>
+      expect(mocks.printSavedReceipt).toHaveBeenCalledWith({
+        id: "sale-45",
+        type: "sale",
+        overrides: {
+          includeUpiQr: true,
+          includeAmountInUpiQr: true,
+          upiQrProfileId: "upi-counter"
+        }
+      })
+    );
+  });
+
   it("opens the same visual print choices from the transaction detail modal", async () => {
     const user = userEvent.setup();
     renderWithProviders(<TransactionDetailsDialog type="sales" id="sale-55" />);
@@ -392,12 +453,9 @@ describe("transaction row print actions", () => {
     expect(viewButton.parentElement).toHaveClass("gap-0.5");
 
     fireEvent.click(printButton);
-    await waitFor(() =>
-      expect(mocks.printSavedReceipt).toHaveBeenCalledWith({
-        id: "estimate-74",
-        type: "estimate"
-      })
-    );
+    expect(await screen.findByRole("dialog", { name: "Print Estimate #74" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Print ₹250.00 QR" }));
+    await waitFor(() => expect(mocks.printSavedReceipt).toHaveBeenCalled());
 
     await user.click(moreButton);
     expect(await screen.findByRole("menuitem", { name: "Convert to Sale" })).toBeInTheDocument();

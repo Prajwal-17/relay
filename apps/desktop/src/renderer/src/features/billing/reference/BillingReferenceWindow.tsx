@@ -8,7 +8,6 @@ import {
 import { cn } from "@/lib/utils";
 import {
   CloudUpload,
-  FileImage,
   GripVertical,
   LoaderCircle,
   Minus,
@@ -36,6 +35,16 @@ import {
   loadReferenceImageBlob,
   saveReferenceImageBlob
 } from "./referenceImage.storage";
+import {
+  WINDOW_EDGE_GAP,
+  clamp,
+  clampWindowFrame,
+  resizeWindowFrame,
+  type Point,
+  type ResizeDirection,
+  type Size,
+  type WindowFrame
+} from "./referenceWindow.geometry";
 
 const REFERENCE_WINDOW_SIZE_KEY = "quickcart-billing-reference-window-size-v2";
 const MAX_SOURCE_FILE_SIZE = 12 * 1024 * 1024;
@@ -43,17 +52,10 @@ const MAX_IMAGE_EDGE = 1_800;
 const IMAGE_QUALITY = 0.86;
 const DEFAULT_WINDOW_WIDTH = 598;
 const DEFAULT_WINDOW_HEIGHT = 711;
-const MIN_WINDOW_WIDTH = 320;
-const MIN_WINDOW_HEIGHT = 320;
-const WINDOW_EDGE_GAP = 10;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.25;
 const PAN_STEP = 32;
-
-type Point = { x: number; y: number };
-type Size = { width: number; height: number };
-type WindowFrame = Point & Size;
 
 type ProcessedReferenceImage = {
   blob: Blob;
@@ -63,6 +65,7 @@ type ProcessedReferenceImage = {
 
 type WindowInteraction = {
   mode: "move" | "resize";
+  direction?: ResizeDirection;
   startClientX: number;
   startClientY: number;
   startFrame: WindowFrame;
@@ -75,8 +78,63 @@ type ImageInteraction = {
   startPan: Point;
 };
 
-const clamp = (value: number, minimum: number, maximum: number) =>
-  Math.min(maximum, Math.max(minimum, value));
+const RESIZE_HANDLES: Array<{
+  direction: ResizeDirection;
+  label: string;
+  className: string;
+}> = [
+  {
+    direction: "n",
+    label: "top edge",
+    className: "top-0 right-3 left-3 h-1.5 cursor-n-resize"
+  },
+  {
+    direction: "ne",
+    label: "top-right corner",
+    className: "top-0 right-0 size-3 cursor-ne-resize"
+  },
+  {
+    direction: "e",
+    label: "right edge",
+    className: "top-3 right-0 bottom-3 w-1.5 cursor-e-resize"
+  },
+  {
+    direction: "se",
+    label: "bottom-right corner",
+    className: "right-0 bottom-0 size-3 cursor-se-resize"
+  },
+  {
+    direction: "s",
+    label: "bottom edge",
+    className: "right-3 bottom-0 left-3 h-1.5 cursor-s-resize"
+  },
+  {
+    direction: "sw",
+    label: "bottom-left corner",
+    className: "bottom-0 left-0 size-3 cursor-sw-resize"
+  },
+  {
+    direction: "w",
+    label: "left edge",
+    className: "top-3 bottom-3 left-0 w-1.5 cursor-w-resize"
+  },
+  {
+    direction: "nw",
+    label: "top-left corner",
+    className: "top-0 left-0 size-3 cursor-nw-resize"
+  }
+];
+
+const RESIZE_CURSORS: Record<ResizeDirection, string> = {
+  n: "n-resize",
+  ne: "ne-resize",
+  e: "e-resize",
+  se: "se-resize",
+  s: "s-resize",
+  sw: "sw-resize",
+  w: "w-resize",
+  nw: "nw-resize"
+};
 
 const readWindowSize = (): Size => {
   try {
@@ -166,30 +224,6 @@ const getScreenSize = (): Size => ({
   width: window.innerWidth,
   height: window.innerHeight
 });
-
-const clampWindowFrame = (frame: WindowFrame, screen: Size): WindowFrame => {
-  const availableWidth = Math.max(1, screen.width - WINDOW_EDGE_GAP * 2);
-  const availableHeight = Math.max(1, screen.height - WINDOW_EDGE_GAP * 2);
-  const minimumWidth = Math.min(MIN_WINDOW_WIDTH, availableWidth);
-  const minimumHeight = Math.min(MIN_WINDOW_HEIGHT, availableHeight);
-  const width = clamp(frame.width, minimumWidth, availableWidth);
-  const height = clamp(frame.height, minimumHeight, availableHeight);
-
-  return {
-    width,
-    height,
-    x: clamp(
-      frame.x,
-      WINDOW_EDGE_GAP,
-      Math.max(WINDOW_EDGE_GAP, screen.width - width - WINDOW_EDGE_GAP)
-    ),
-    y: clamp(
-      frame.y,
-      WINDOW_EDGE_GAP,
-      Math.max(WINDOW_EDGE_GAP, screen.height - height - WINDOW_EDGE_GAP)
-    )
-  };
-};
 
 const BillingReferenceWindow = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -348,20 +382,10 @@ const BillingReferenceWindow = () => {
         return;
       }
 
-      const rightEdge = interaction.startFrame.x + interaction.startFrame.width;
-      const maximumWidth = Math.max(1, rightEdge - WINDOW_EDGE_GAP);
-      const minimumWidth = Math.min(MIN_WINDOW_WIDTH, maximumWidth);
-      const width = clamp(interaction.startFrame.width - deltaX, minimumWidth, maximumWidth);
-      const maximumHeight = Math.max(1, screen.height - interaction.startFrame.y - WINDOW_EDGE_GAP);
-      const minimumHeight = Math.min(MIN_WINDOW_HEIGHT, maximumHeight);
-      const height = clamp(interaction.startFrame.height + deltaY, minimumHeight, maximumHeight);
-
-      setWindowFrame({
-        x: rightEdge - width,
-        y: interaction.startFrame.y,
-        width,
-        height
-      });
+      if (!interaction.direction) return;
+      setWindowFrame(
+        resizeWindowFrame(interaction.startFrame, interaction.direction, deltaX, deltaY, screen)
+      );
     };
 
     const handleMouseUp = () => {
@@ -584,18 +608,21 @@ const BillingReferenceWindow = () => {
 
   const startWindowInteraction = (
     mode: WindowInteraction["mode"],
-    event: ReactMouseEvent<HTMLElement>
+    event: ReactMouseEvent<HTMLElement>,
+    direction?: ResizeDirection
   ) => {
     if (event.button !== 0) return;
     event.preventDefault();
     windowInteractionRef.current = {
       mode,
+      direction,
       startClientX: event.clientX,
       startClientY: event.clientY,
       startFrame: windowFrame
     };
     document.body.style.userSelect = "none";
-    document.body.style.cursor = mode === "move" ? "move" : "nesw-resize";
+    document.body.style.cursor =
+      mode === "move" ? "move" : direction ? RESIZE_CURSORS[direction] : "";
   };
 
   const handleHeaderMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -603,26 +630,25 @@ const BillingReferenceWindow = () => {
     startWindowInteraction("move", event);
   };
 
-  const handleResizeKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+  const handleResizeKeyDown = (
+    direction: ResizeDirection,
+    event: KeyboardEvent<HTMLButtonElement>
+  ) => {
     if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
-    event.preventDefault();
     const step = event.shiftKey ? 32 : 12;
+    const deltaX = event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0;
+    const deltaY = event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0;
+    const changesWidth = deltaX !== 0 && (direction.includes("e") || direction.includes("w"));
+    const changesHeight = deltaY !== 0 && (direction.includes("n") || direction.includes("s"));
+    if (!changesWidth && !changesHeight) return;
+
+    event.preventDefault();
     const screen = getScreenSize();
 
     setWindowFrame((current) => {
-      let next = current;
-      if (event.key === "ArrowLeft") {
-        next = { ...current, x: current.x - step, width: current.width + step };
-      } else if (event.key === "ArrowRight") {
-        next = { ...current, x: current.x + step, width: current.width - step };
-      } else if (event.key === "ArrowUp") {
-        next = { ...current, height: current.height - step };
-      } else if (event.key === "ArrowDown") {
-        next = { ...current, height: current.height + step };
-      }
-      const clampedFrame = clampWindowFrame(next, screen);
-      saveWindowSize(clampedFrame);
-      return clampedFrame;
+      const resizedFrame = resizeWindowFrame(current, direction, deltaX, deltaY, screen);
+      saveWindowSize(resizedFrame);
+      return resizedFrame;
     });
   };
 
@@ -754,13 +780,11 @@ const BillingReferenceWindow = () => {
           }}
         >
           <div
+            data-billing-reference-header
             onMouseDown={handleHeaderMouseDown}
-            className="bg-card border-b-frame flex h-10 shrink-0 cursor-move items-center gap-2 border-b px-2 active:cursor-grabbing"
+            className="bg-card border-b-frame flex h-8 shrink-0 cursor-move items-center gap-1 border-b px-1.5 active:cursor-grabbing"
           >
-            <GripVertical className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
-            <span className="bg-counter-accent-soft text-counter-accent-foreground flex size-6 shrink-0 items-center justify-center rounded-(--radius-control)">
-              <FileImage className="size-3.5" />
-            </span>
+            <GripVertical className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
             <div className="text-foreground min-w-0 flex-1 truncate text-xs font-semibold">
               {referenceImage?.fileName ?? "No image selected"}
             </div>
@@ -774,6 +798,7 @@ const BillingReferenceWindow = () => {
                     size="icon-sm"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isProcessing}
+                    className="size-7"
                     aria-label={
                       referenceImage ? "Replace reference image" : "Choose reference image"
                     }
@@ -793,6 +818,7 @@ const BillingReferenceWindow = () => {
                       type="button"
                       variant="ghost"
                       size="icon-sm"
+                      className="size-7"
                       onClick={handleRemove}
                       aria-label="Remove reference image"
                     >
@@ -809,6 +835,7 @@ const BillingReferenceWindow = () => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    className="size-7"
                     onClick={() => setOpen(false)}
                     aria-label="Close reference image"
                   >
@@ -867,18 +894,19 @@ const BillingReferenceWindow = () => {
                   />
                 )}
 
-                <div className="bg-card/95 border-frame pointer-events-none absolute bottom-2 left-2 rounded-(--radius-control) border px-2 py-1 text-xs shadow-xs">
+                <div className="bg-card/95 border-frame pointer-events-none absolute bottom-1 left-1 rounded-(--radius-control) border px-1.5 py-0.5 text-xs shadow-xs">
                   <span className="text-foreground font-medium">Scroll</span>
                   <span className="text-muted-foreground"> to zoom · </span>
                   <span className="text-foreground font-medium">drag</span>
                   <span className="text-muted-foreground"> to move</span>
                 </div>
 
-                <div className="bg-card border-frame absolute right-2 bottom-2 flex h-8 items-center rounded-(--radius-control) border shadow-xs">
+                <div className="bg-card border-frame absolute right-1 bottom-1 flex h-7 items-center rounded-(--radius-control) border shadow-xs">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    className="size-7"
                     onClick={(event) => {
                       event.stopPropagation();
                       applyZoom(zoom - ZOOM_STEP);
@@ -894,7 +922,7 @@ const BillingReferenceWindow = () => {
                       event.stopPropagation();
                       resetImageView();
                     }}
-                    className="text-foreground hover:bg-hover h-full min-w-12 border-x px-1 text-xs font-semibold tabular-nums"
+                    className="text-foreground hover:bg-hover h-full min-w-10 border-x px-1 text-xs font-semibold tabular-nums"
                     aria-label="Reset image zoom"
                     title="Reset zoom and position"
                   >
@@ -904,6 +932,7 @@ const BillingReferenceWindow = () => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    className="size-7"
                     onClick={(event) => {
                       event.stopPropagation();
                       applyZoom(zoom + ZOOM_STEP);
@@ -917,6 +946,7 @@ const BillingReferenceWindow = () => {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
+                    className="size-7"
                     onClick={(event) => {
                       event.stopPropagation();
                       resetImageView();
@@ -929,7 +959,10 @@ const BillingReferenceWindow = () => {
                 </div>
               </div>
 
-              <div className="bg-card border-t-frame text-muted-foreground flex h-8 shrink-0 items-center justify-between gap-3 border-t pr-2 pl-7 text-xs">
+              <div
+                data-billing-reference-footer
+                className="bg-card border-t-frame text-muted-foreground flex h-6 shrink-0 items-center justify-between gap-3 border-t px-2 text-xs"
+              >
                 <span className="truncate tabular-nums">
                   {referenceImage.width} × {referenceImage.height}
                 </span>
@@ -942,25 +975,25 @@ const BillingReferenceWindow = () => {
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
               className={cn(
-                "bg-background-secondary focus-visible:ring-ring border-frame m-2 flex min-h-0 flex-1 flex-col items-center justify-center rounded-(--radius-panel) border-2 border-dashed px-6 text-center outline-none focus-visible:ring-2",
+                "bg-background-secondary focus-visible:ring-ring border-frame m-1.5 flex min-h-0 flex-1 flex-col items-center justify-center rounded-(--radius-panel) border-2 border-dashed px-4 text-center outline-none focus-visible:ring-2",
                 isProcessing && "cursor-wait opacity-70"
               )}
             >
-              <span className="bg-counter-accent-soft text-counter-accent-foreground flex size-11 items-center justify-center rounded-full">
+              <span className="bg-counter-accent-soft text-counter-accent-foreground flex size-9 items-center justify-center rounded-full">
                 {isProcessing ? (
-                  <Upload className="size-5 animate-pulse" />
+                  <Upload className="size-4 animate-pulse" />
                 ) : (
-                  <CloudUpload className="size-5" />
+                  <CloudUpload className="size-4" />
                 )}
               </span>
-              <span className="text-foreground mt-3 text-sm font-semibold">
+              <span className="text-foreground mt-2 text-sm font-semibold">
                 {isProcessing ? "Preparing image…" : "Upload item list"}
               </span>
-              <span className="text-muted-foreground mt-1 max-w-60 text-xs leading-4">
+              <span className="text-muted-foreground mt-0.5 max-w-60 text-xs leading-4">
                 Drop or paste an image, or click to browse.
               </span>
               {!isProcessing && (
-                <span className="text-muted-foreground mt-2 text-xs">
+                <span className="text-muted-foreground mt-1 text-xs">
                   Most image types · Max 12 MB
                 </span>
               )}
@@ -979,14 +1012,20 @@ const BillingReferenceWindow = () => {
             }}
           />
 
-          <button
-            type="button"
-            onMouseDown={(event) => startWindowInteraction("resize", event)}
-            onKeyDown={handleResizeKeyDown}
-            className="focus-visible:ring-ring absolute bottom-0 left-0 z-10 size-3 cursor-nesw-resize border-0 bg-transparent p-0 outline-none focus-visible:ring-2"
-            aria-label="Resize reference image window"
-            title="Drag to resize. Arrow keys also resize."
-          />
+          {RESIZE_HANDLES.map(({ direction, label, className }) => (
+            <button
+              key={direction}
+              type="button"
+              onMouseDown={(event) => startWindowInteraction("resize", event, direction)}
+              onKeyDown={(event) => handleResizeKeyDown(direction, event)}
+              className={cn(
+                "focus-visible:ring-ring absolute z-20 border-0 bg-transparent p-0 outline-none focus-visible:ring-2",
+                className
+              )}
+              aria-label={`Resize item list from ${label}`}
+              title={`Drag the ${label} to resize`}
+            />
+          ))}
         </div>
       )}
     </>,

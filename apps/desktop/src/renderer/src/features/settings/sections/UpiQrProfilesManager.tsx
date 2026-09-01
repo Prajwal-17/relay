@@ -8,6 +8,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { UpiAccountPicker } from "@/components/app-ui/UpiAccountPicker";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -98,7 +99,7 @@ export function UpiQrProfilesManager({
         (profile) => profile.label.toLocaleLowerCase() === candidate.label.toLocaleLowerCase()
       )
     ) {
-      nextErrors.label = "Use a unique account name";
+      nextErrors.label = "Use a different name";
     }
     if (
       otherProfiles.some(
@@ -148,10 +149,10 @@ export function UpiQrProfilesManager({
   return (
     <>
       <div>
-        <div className="flex min-h-12 items-center justify-between gap-3 py-2">
-          <span className="min-w-0">
+        <div className="flex min-h-10 items-center justify-between gap-3 py-1.5">
+          <span className="flex min-w-0 items-baseline gap-2">
             <span className="text-foreground block text-sm font-semibold">UPI accounts</span>
-            <span className="text-muted-foreground block text-xs">
+            <span className="text-muted-foreground shrink-0 text-xs">
               {printing.upiQrProfiles.length}{" "}
               {printing.upiQrProfiles.length === 1 ? "account" : "accounts"}
             </span>
@@ -160,57 +161,74 @@ export function UpiQrProfilesManager({
             type="button"
             variant="outline"
             size="sm"
+            aria-label="Add UPI account"
             disabled={disabled}
             onClick={(event) => openEditor(undefined, event.currentTarget)}
           >
             <Plus />
-            Add UPI account
+            Add account
           </Button>
         </div>
 
-        <div className="border-border border-t">
+        <div>
           {printing.upiQrProfiles.length > 0 ? (
-            <div className="bg-muted text-muted-foreground grid h-8 grid-cols-[minmax(0,1fr)_5.5rem_8rem_4rem] items-center gap-2 px-2 text-xs font-semibold">
-              <span>UPI account</span>
-              <span className="text-center">Default</span>
-              <span>QR check</span>
-              <span className="sr-only">Actions</span>
+            <div className="flex min-w-0 items-center gap-3 py-1.5">
+              <span
+                id="settings-default-upi-label"
+                className="text-foreground shrink-0 text-xs font-medium"
+              >
+                Default account
+              </span>
+              <div className="min-w-0 flex-1">
+                <UpiAccountPicker
+                  id="settings-default-upi"
+                  aria-labelledby="settings-default-upi-label"
+                  profiles={printing.upiQrProfiles}
+                  selectedProfileId={printing.defaultUpiQrProfileId}
+                  defaultProfileId={printing.defaultUpiQrProfileId}
+                  disabled={disabled}
+                  compact
+                  onProfileChange={(profileId) => onUpdate({ defaultUpiQrProfileId: profileId })}
+                />
+              </div>
             </div>
           ) : null}
           <div
-            className="divide-border max-h-80 divide-y overflow-y-auto"
+            className="max-h-80 overflow-y-auto py-1"
             role="list"
             aria-label="Saved UPI accounts"
           >
             {printing.upiQrProfiles.length === 0 ? (
-              <div className="text-muted-foreground flex min-h-20 items-center gap-3 px-2 py-3 text-sm">
-                <span className="bg-muted flex size-9 shrink-0 items-center justify-center rounded-(--radius-control)">
+              <div className="text-muted-foreground flex min-h-12 items-center gap-2 px-2 py-2 text-xs">
+                <span className="bg-muted flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)">
                   <QrCode className="size-4" aria-hidden="true" />
                 </span>
                 <span>No UPI accounts saved</span>
               </div>
             ) : (
-              printing.upiQrProfiles.map((profile) => {
-                const isDefault = profile.id === printing.defaultUpiQrProfileId;
-                return (
+              <div className="space-y-0.5">
+                {printing.upiQrProfiles.map((profile) => (
                   <div
                     key={profile.id}
-                    className="hover:bg-hover grid min-h-14 min-w-0 grid-cols-[minmax(0,1fr)_5.5rem_8rem_4rem] items-center gap-2 px-2 py-1.5"
+                    className="hover:bg-hover grid min-h-11 min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 overflow-hidden rounded-(--radius-control) px-2 py-1"
                     data-testid={"upi-profile-" + profile.id}
                   >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span className="bg-muted text-muted-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control)">
+                    <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+                      <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-(--radius-control)">
                         <QrCode className="size-4" aria-hidden="true" />
                       </span>
-                      <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden">
                         <span
-                          className="text-foreground block truncate text-sm font-semibold"
+                          className="text-foreground max-w-[38%] min-w-0 shrink-0 truncate text-sm font-semibold"
                           title={profile.label}
                         >
                           {profile.label}
                         </span>
+                        <span className="text-muted-foreground shrink-0" aria-hidden="true">
+                          ·
+                        </span>
                         <span
-                          className="text-muted-foreground block truncate text-xs"
+                          className="text-muted-foreground min-w-0 truncate text-xs"
                           title={profile.upiId + " · " + profile.payeeName}
                         >
                           {profile.upiId} · {profile.payeeName}
@@ -218,39 +236,23 @@ export function UpiQrProfilesManager({
                       </span>
                     </span>
 
-                    <label
-                      className="focus-within:ring-ring flex size-8 cursor-pointer items-center justify-center justify-self-center rounded-(--radius-control) focus-within:ring-2"
-                      title={"Use " + profile.label + " as default account"}
-                    >
-                      <input
-                        type="radio"
-                        name="default-upi-profile"
-                        value={profile.id}
-                        checked={isDefault}
+                    <span className="flex shrink-0 items-center justify-end gap-0.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 shrink-0 justify-start gap-1.5 px-2 text-xs"
+                        aria-label={"Test " + profile.label + " QR"}
                         disabled={disabled}
-                        aria-label={"Use " + profile.label + " as default account"}
-                        onChange={() => onUpdate({ defaultUpiQrProfileId: profile.id })}
-                        className="accent-primary size-4"
-                      />
-                    </label>
+                        onClick={(event) => {
+                          scanReturnFocusRef.current = event.currentTarget;
+                          setProfileToPreview(profile);
+                        }}
+                      >
+                        <ScanLine />
+                        Test QR
+                      </Button>
 
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="justify-start px-2"
-                      aria-label={"Test " + profile.label + " QR"}
-                      disabled={disabled}
-                      onClick={(event) => {
-                        scanReturnFocusRef.current = event.currentTarget;
-                        setProfileToPreview(profile);
-                      }}
-                    >
-                      <ScanLine />
-                      Test QR
-                    </Button>
-
-                    <span className="flex items-center justify-end">
                       <Button
                         type="button"
                         variant="ghost"
@@ -275,8 +277,8 @@ export function UpiQrProfilesManager({
                       </Button>
                     </span>
                   </div>
-                );
-              })
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -289,16 +291,16 @@ export function UpiQrProfilesManager({
         }}
       >
         <DialogContent
-          className="sm:max-w-sm"
+          className="min-w-0 sm:max-w-sm"
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             scanReturnFocusRef.current?.focus();
           }}
         >
-          <DialogHeader>
+          <DialogHeader className="min-w-0 pr-6">
             <DialogTitle>Test UPI QR</DialogTitle>
             <DialogDescription
-              className="truncate"
+              className="line-clamp-2 min-w-0 [overflow-wrap:anywhere]"
               title={
                 profileToPreview
                   ? profileToPreview.label + " · " + profileToPreview.upiId
@@ -323,7 +325,8 @@ export function UpiQrProfilesManager({
           <DialogHeader>
             <DialogTitle>{editingProfile ? "Edit UPI account" : "Add UPI account"}</DialogTitle>
             <DialogDescription>
-              This name identifies the account in Settings and Billing.
+              Give this account a simple name, like Main counter. Payee name is shown in the payment
+              app.
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={saveProfile}>
@@ -331,8 +334,8 @@ export function UpiQrProfilesManager({
               [
                 {
                   field: "label",
-                  label: "Account name",
-                  placeholder: "Main account",
+                  label: "Name",
+                  placeholder: "Main counter",
                   autoFocus: true
                 },
                 {
@@ -390,9 +393,11 @@ export function UpiQrProfilesManager({
         }}
       >
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete {profileToDelete?.label}?</AlertDialogTitle>
-            <AlertDialogDescription>
+          <AlertDialogHeader className="min-w-0">
+            <AlertDialogTitle className="[overflow-wrap:anywhere]">
+              Delete {profileToDelete?.label}?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="[overflow-wrap:anywhere]">
               {profileToDelete?.id === printing.defaultUpiQrProfileId &&
               printing.upiQrProfiles.length > 1
                 ? printing.upiQrProfiles.find((profile) => profile.id !== profileToDelete.id)

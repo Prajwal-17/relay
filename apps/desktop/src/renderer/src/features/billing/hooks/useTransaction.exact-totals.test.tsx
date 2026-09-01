@@ -117,6 +117,8 @@ describe("one exact billing total path", () => {
   it("excludes deleted and incomplete rows from both amount and quantity", () => {
     initializeExactLine();
     const store = useBillingSessionStore.getState();
+    store.addEmptyLineItem(tabId, "button");
+    store.addEmptyLineItem(tabId, "button");
     const session = useBillingSessionStore.getState().sessions[tabId]!;
     const deletedRow = session.lineItems[1]!;
     const incompleteRow = session.lineItems[2]!;

@@ -3,7 +3,7 @@
 import "@testing-library/jest-dom/vitest";
 import type { PrintingConfig } from "@shared/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -131,10 +131,18 @@ describe("PrintingSection categories", () => {
     await user.click(screen.getByRole("tab", { name: "UPI QR" }));
     expect(screen.getByRole("heading", { name: "UPI QR" })).toBeVisible();
     expect(screen.getByText("UPI accounts")).toBeVisible();
-    expect(screen.getByRole("radio", { name: "Use Primary UPI as default account" })).toBeChecked();
-    expect(screen.getByText("shop@bank · QuickCart Store")).toBeVisible();
+    const defaultAccount = screen.getByRole("combobox", { name: "Default account" });
+    expect(defaultAccount).toHaveTextContent("Primary UPI");
+    expect(defaultAccount).not.toHaveTextContent("shop@bank");
+    expect(defaultAccount).not.toHaveTextContent("QuickCart Store");
+    expect(screen.getAllByText("shop@bank · QuickCart Store")[0]).toBeVisible();
     expect(screen.queryByTestId("upi-open-amount-qr")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add UPI account" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Add UPI account" }));
+    expect(screen.getByRole("dialog", { name: "Add UPI account" })).toBeVisible();
+    expect(screen.getByLabelText("Name")).toBeVisible();
+    expect(screen.queryByLabelText("Account label")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Account name")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
     await user.click(screen.getByRole("button", { name: "Test Primary UPI QR" }));
     expect(screen.getByRole("dialog", { name: "Test UPI QR" })).toBeVisible();
     expect(screen.getByTestId("upi-open-amount-qr")).toBeInTheDocument();
@@ -160,6 +168,34 @@ describe("PrintingSection categories", () => {
     expect(screen.getByRole("switch", { name: "Print UPI QR on sales" })).toBeDisabled();
     expect(screen.getByRole("switch", { name: "Print UPI QR on estimates" })).toBeDisabled();
     expect(screen.getByRole("switch", { name: "Include exact bill amount" })).toBeDisabled();
+  });
+
+  it("keeps long UPI account details contained in the QR test dialog", async () => {
+    const user = userEvent.setup();
+    const longProfile = {
+      ...printing.upiQrProfiles[0]!,
+      label: "MainCounterAccountUsedForEverySaleReceipt",
+      upiId: `${"longmerchantidentifier".repeat(4)}@bank`,
+      payeeName: "QuickCart Supermarket Wholesale and Retail Counter Name Used for UPI Payments"
+    };
+    useAppPreferencesMock.mockReturnValue({
+      ...useAppPreferencesMock(),
+      config: {
+        printing: {
+          ...printing,
+          upiQrProfiles: [longProfile]
+        }
+      }
+    });
+    render(<PrintingSection />, { wrapper: TestQueryProvider });
+
+    await user.click(screen.getByRole("tab", { name: "UPI QR" }));
+    await user.click(screen.getByRole("button", { name: `Test ${longProfile.label} QR` }));
+
+    const dialog = screen.getByRole("dialog", { name: "Test UPI QR" });
+    expect(within(dialog).getByText(longProfile.upiId)).toBeVisible();
+    expect(within(dialog).getByText(longProfile.payeeName)).toBeVisible();
+    expect(within(dialog).getByText(longProfile.upiId)).toHaveClass("break-all");
   });
 
   it("updates the default quality and describes device text mode", async () => {

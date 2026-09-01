@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
-import { cn } from "@/lib/utils";
-import type { LineItem } from "@/features/billing/store/billingSession.types";
-import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useSearchDropdownStore } from "@/features/billing/product-search/searchDropdown.store";
-import { getCheckStatusColor, updateCheckedQuantity } from "@/utils/renderer.utils";
+import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import type { LineItem } from "@/features/billing/store/billingSession.types";
 import { processSyncQueue } from "@/features/billing/syncWorker";
+import { cn } from "@/lib/utils";
+import { getCheckStatusColor, updateCheckedQuantity } from "@/utils/renderer.utils";
 import type { DraggableAttributes, DraggableSyntheticListeners } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -178,7 +178,6 @@ const LineItemRow = memo(
                 setActiveRowId(item.rowId);
                 setIsDropdownOpen(true);
               }}
-              placeholder="Search products"
             />
 
             {isDropdownOpen && activeRowId === item.rowId && (

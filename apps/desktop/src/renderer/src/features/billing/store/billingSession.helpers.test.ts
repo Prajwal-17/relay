@@ -55,13 +55,11 @@ describe("billing exact calculation helpers", () => {
 });
 
 describe("billing sparse position helpers", () => {
-  it("creates the canonical five-row session with unique increasing sparse positions", () => {
+  it("creates a new session with one empty line item", () => {
     const session = createInitialSession();
-    expect(session.lineItems).toHaveLength(5);
-    expect(session.lineItems.map((item) => item.position)).toEqual(
-      Array.from({ length: 5 }, (_, index) => index * POSITION_GAP)
-    );
-    expect(new Set(session.lineItems.map((item) => item.rowId)).size).toBe(5);
+    expect(session.lineItems).toHaveLength(1);
+    expect(session.lineItems[0]).toMatchObject({ position: 0, productSnapshot: "" });
+    expect(session.lineItems[0]?.rowId).toBeTruthy();
   });
 
   it("appends after the greatest position and computes integer midpoints", () => {
