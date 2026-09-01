@@ -254,7 +254,7 @@ The shared density contract is:
 | Default / compact / workflow control |                           36px / 32px / 40px |
 | Billing and standard table row       |                                         42px |
 | Product list row                     |                                         60px |
-| Billing product search result        |                                         54px |
+| Billing product search result        |                                         48px |
 | Page and panel inset                 |                                         12px |
 | Common / section gap                 |                                   8px / 12px |
 
@@ -267,7 +267,7 @@ Use CSS Grid for aligned data and forms, Flexbox for one-dimensional command bar
 Virtualized dimensions are part of the layout contract and must change with the visible row CSS:
 
 - Product page rows: 60px.
-- Billing product search rows: 54px.
+- Billing product search rows: 48px.
 - Customer rows: 44px.
 - Sales and estimate transaction rows: 48px.
 - Sales and estimate grouping dividers: 32px; bill rows remain 48px.
@@ -342,7 +342,7 @@ Billing is the highest-priority interaction surface and follows a fixed hierarch
 6. Stable 52px summary footer with total and Print & Close.
 7. Optional preview/customer panel, open by default and remembered.
 
-The quantity control reads `− quantity +`. Product search supports Arrow Up/Down, Enter to select, Escape to dismiss, and a predictable transition to the next empty row. Its sort/filter bar stays slimmer than a data row, the dropdown expands to an 880px desktop maximum while clamping to the available viewport, and matched text uses `search-highlight`. Search results keep a stable 54px virtualized height with the product name, unit/weight, and MRP on one line; long names truncate only after using the wider available space and retain a native full-name title fallback. Unit/weight uses the teal `unit-tag-*` family; MRP uses the warm `mrp-tag-*` family. Both are 24px high with 14px strong text and the control radius. The dropdown uses `hover` and `selected` distinctly, and its selection marker appears only on the selected row.
+The quantity control reads `− quantity +`. Product search supports Arrow Up/Down, Enter to select, Escape to dismiss, and a predictable transition to the next empty row. Its sort/filter bar stays slimmer than a data row, the dropdown expands to an 880px desktop maximum while clamping to the available viewport, and matched text uses `search-highlight`. Search results keep a stable 48px virtualized height with the product name, unit/weight, and MRP on one line; long names truncate only after using the wider available space and retain a native full-name title fallback. Unit/weight uses the teal `unit-tag-*` family; MRP uses the warm `mrp-tag-*` family. Both are 24px high with 14px strong text and the control radius. The dropdown uses `hover` and `selected` distinctly, and its selection marker appears only on the selected row.
 
 Sale and estimate labels are persistent compact accent identities. Primary create and Print & Close actions use charcoal; the transaction type remains clear through labels, icons, dots, and underlines. General configuration actions remain charcoal. “Export PDF” on an unsaved bill must explain that the bill must first be synced; it must never fail silently. Sync feedback uses explicit saving, saved, and error language without changing the footer’s geometry.
 

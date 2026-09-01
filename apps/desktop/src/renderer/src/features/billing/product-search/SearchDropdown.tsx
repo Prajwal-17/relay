@@ -24,7 +24,7 @@ import { ArrowDown, ArrowUp, Edit, Eye, Info, ListFilter, PackagePlus, Search } 
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const SEARCH_DROPDOWN_MAX_HEIGHT = 440;
+const SEARCH_DROPDOWN_MAX_HEIGHT = 396;
 const SEARCH_DROPDOWN_MAX_WIDTH = 820;
 const SEARCH_DROPDOWN_COMPACT_MAX_WIDTH = 680;
 const KEYBOARD_SCROLL_AHEAD = 2;
@@ -538,7 +538,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               primaryAction={{ label: "Try again", onClick: () => void refetch() }}
             />
           ) : searchResults.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center px-5 py-8 text-center">
+            <div className="text-muted-foreground flex flex-col items-center px-3 py-8 text-center">
               <div className="bg-secondary mb-3 flex size-10 items-center justify-center rounded-(--radius-control)">
                 <Search className="size-5" />
               </div>
@@ -553,7 +553,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
             </div>
           ) : (
             <>
-              <div className="border-border bg-background flex h-8 shrink-0 items-center gap-2 border-b px-3">
+              <div className="border-border bg-background flex h-7 shrink-0 items-center gap-1.5 border-b px-1.5">
                 <div className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold">
                   <ListFilter className="h-3.5 w-3.5" />
                   Sort by
@@ -573,7 +573,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                         <TooltipTrigger asChild>
                           <button
                             onClick={() => toggleSort(field)}
-                            className={`inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-(--radius-control) px-2.5 text-xs font-semibold transition-colors ${
+                            className={`inline-flex h-7 cursor-pointer items-center gap-1 rounded-(--radius-control) px-2 text-xs font-semibold transition-colors ${
                               isActive
                                 ? "bg-foreground text-background"
                                 : "text-muted-foreground hover:bg-hover hover:text-foreground"
@@ -597,7 +597,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                 </div>
               </div>
 
-              <div ref={parentRef} className="scrollbar-thick flex-1 overflow-y-auto px-1">
+              <div ref={parentRef} className="scrollbar-thick flex-1 overflow-y-auto px-0.5">
                 <div
                   className="relative w-full"
                   style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
@@ -626,7 +626,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            className={`group relative flex items-center gap-2.5 rounded-(--radius-control) px-3 transition-colors duration-150 hover:cursor-pointer ${
+                            className={`group relative flex items-center gap-1.5 rounded-(--radius-control) px-1 transition-colors duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
                                 ? "bg-selected text-foreground hover:bg-selected"
                                 : "hover:bg-hover hover:text-foreground"
@@ -649,13 +649,13 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                             <ProductImage
                               src={product.imageUrl ? getProductImageUrl(product.imageUrl) : null}
                               alt={product.name || "Product"}
-                              className="border-border bg-card size-10 shrink-0 border"
+                              className="border-border bg-card size-9 shrink-0 border"
                             />
 
                             <div className="min-w-0 flex-1">
-                              <div className="flex min-w-0 items-center gap-2">
+                              <div className="flex min-w-0 items-center gap-1">
                                 <h4
-                                  className="text-foreground min-w-0 truncate text-lg font-semibold"
+                                  className="text-foreground min-w-0 truncate text-base font-semibold"
                                   title={product.name}
                                 >
                                   <HighlightedText text={product.name} query={itemQuery} />
@@ -663,7 +663,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 {showWeight && (
                                   <Badge
                                     variant="outline"
-                                    className="border-unit-tag-border bg-unit-tag-bg text-unit-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold shadow-none"
+                                    className="border-unit-tag-border bg-unit-tag-bg text-unit-tag-text h-6 shrink-0 rounded-(--radius-control) px-1.5 py-0 text-sm leading-none font-semibold shadow-none"
                                   >
                                     {product.weight}
                                     {product.unit}
@@ -672,7 +672,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                 {product.mrp && (
                                   <Badge
                                     variant="outline"
-                                    className="border-mrp-tag-border bg-mrp-tag-bg text-mrp-tag-text h-6 shrink-0 rounded-(--radius-control) px-2 py-0 text-sm leading-none font-semibold tabular-nums shadow-none"
+                                    className="border-mrp-tag-border bg-mrp-tag-bg text-mrp-tag-text h-6 shrink-0 rounded-(--radius-control) px-1.5 py-0 text-sm leading-none font-semibold tabular-nums shadow-none"
                                   >
                                     MRP ₹{paisaToRupeeString(product.mrp)}
                                   </Badge>
@@ -680,12 +680,12 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                               </div>
                             </div>
 
-                            <div className="text-foreground shrink-0 text-right text-xl font-bold tabular-nums">
+                            <div className="text-foreground shrink-0 text-right text-lg font-bold tabular-nums">
                               ₹ {paisaToRupeeString(product.price)}
                             </div>
 
                             <div
-                              className="flex shrink-0 items-center gap-1.5"
+                              className="flex shrink-0 items-center gap-1"
                               onMouseEnter={() => setHoveredIndex(null)}
                               onMouseLeave={() => setHoveredIndex(virtualRow.index)}
                             >
@@ -768,7 +768,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   </div>
                 </div>
                 {isFetchNextPageError && (
-                  <div className="border-border flex items-center justify-between border-t px-3 py-2 text-xs">
+                  <div className="border-border flex items-center justify-between border-t px-2 py-2 text-xs">
                     <span className="text-muted-foreground">
                       More products could not be loaded.
                     </span>
@@ -778,7 +778,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                   </div>
                 )}
                 {!hasNextPage && searchResults.length > 0 && (
-                  <div className="text-muted-foreground py-3 text-center text-xs">
+                  <div className="text-muted-foreground py-2 text-center text-xs">
                     End of results
                   </div>
                 )}

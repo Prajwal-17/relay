@@ -17,7 +17,7 @@ export const PRODUCTSEARCH_TYPE = {
   BILLINGPAGE: "billing-page"
 } as const;
 
-export const BILLING_PRODUCT_SEARCH_ROW_HEIGHT = 54;
+export const BILLING_PRODUCT_SEARCH_ROW_HEIGHT = 48;
 
 type ProductSearchType = (typeof PRODUCTSEARCH_TYPE)[keyof typeof PRODUCTSEARCH_TYPE];
 
