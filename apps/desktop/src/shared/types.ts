@@ -776,6 +776,7 @@ export type MonochromeRasterData = {
 
 export type RasterReceiptSegments = {
   body: MonochromeRasterData;
+  qr?: MonochromeRasterData;
   afterQr?: MonochromeRasterData;
 };
 

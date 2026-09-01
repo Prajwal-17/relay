@@ -224,18 +224,26 @@ describe("ESC/POS receipt builder", () => {
     expect(text).toContain("Rs.7000");
   });
 
-  it("prints a native size-6, error-correction-M QR only when UPI is configured", () => {
+  it("prints a fresh QR raster without using the printer's stored-symbol commands", () => {
     const withoutQr = buildEscPosReceipt(receipt());
     const withQr = buildEscPosReceipt(
       receipt({
         upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
-      })
+      }),
+      raster(0x55)
     );
 
     expect(withoutQr.includes(Buffer.from([GS, 0x28, 0x6b]))).toBe(false);
-    expect(withQr.includes(Buffer.from([GS, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x06]))).toBe(true);
-    expect(withQr.includes(Buffer.from([GS, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x45, 0x31]))).toBe(true);
+    expect(withQr.includes(Buffer.from([GS, 0x28, 0x6b]))).toBe(false);
+    expect(withQr.includes(Buffer.alloc(72, 0x55))).toBe(true);
     expect(withQr.toString("ascii")).toContain("Scan to pay\nQuickCart Market");
+    expect(() =>
+      buildEscPosReceipt(
+        receipt({
+          upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+        })
+      )
+    ).toThrow("A freshly generated payment QR raster is required.");
   });
 
   it("includes or omits the exact two-decimal UPI amount", () => {
@@ -357,21 +365,23 @@ describe("hybrid GS v 0 jobs", () => {
     expect(occurrences(payload, Buffer.from([GS, 0x56, 0x01]))).toBe(1);
   });
 
-  it("places native QR commands between body and after-QR raster segments", () => {
+  it("places the fresh QR raster between body and after-QR raster segments", () => {
     const withUpi = receipt({
       upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
     });
     const payload = buildEscPosRasterReceipt(withUpi, {
       body: raster(0x11),
+      qr: raster(0x55),
       afterQr: raster(0x22)
     });
-    const bodyIndex = payload.indexOf(rasterHeader);
-    const qrIndex = payload.indexOf(qrCommand);
-    const afterQrIndex = payload.indexOf(rasterHeader, bodyIndex + rasterHeader.length);
+    const bodyIndex = payload.indexOf(Buffer.alloc(72, 0x11));
+    const qrIndex = payload.indexOf(Buffer.alloc(72, 0x55));
+    const afterQrIndex = payload.indexOf(Buffer.alloc(72, 0x22));
 
     expect(bodyIndex).toBeGreaterThanOrEqual(0);
     expect(qrIndex).toBeGreaterThan(bodyIndex);
     expect(afterQrIndex).toBeGreaterThan(qrIndex);
+    expect(payload.includes(qrCommand)).toBe(false);
     expect(occurrences(payload, Buffer.from([ESC, 0x64, 0x04]))).toBe(1);
     expect(occurrences(payload, Buffer.from([GS, 0x56, 0x01]))).toBe(1);
   });

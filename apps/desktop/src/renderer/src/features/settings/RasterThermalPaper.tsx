@@ -15,7 +15,7 @@ import { Check, Scissors } from "lucide-react";
 
 export const RASTER_PAPER_WIDTH = 576;
 
-type RasterReceiptSegment = "preview" | "body" | "after-qr";
+type RasterReceiptSegment = "preview" | "body" | "qr" | "after-qr";
 
 const paperStyle = {
   width: RASTER_PAPER_WIDTH,
@@ -311,6 +311,27 @@ function RasterAfterQr({
   );
 }
 
+function RasterQr({ value, printable = false }: { value: string; printable?: boolean }) {
+  return (
+    <div
+      className="flex justify-center bg-white pt-1"
+      data-qr-value={value}
+      {...(printable ? { "data-raster-segment": "qr" } : { "data-preview-only-qr": true })}
+    >
+      <QRCodeSVG
+        value={value}
+        level="M"
+        boostLevel={false}
+        marginSize={4}
+        size={174}
+        bgColor="#ffffff"
+        fgColor="#000000"
+        title={printable ? "UPI payment QR" : "UPI payment QR preview"}
+      />
+    </div>
+  );
+}
+
 export function RasterReceiptPaper({
   receipt,
   segment = "preview",
@@ -331,7 +352,7 @@ export function RasterReceiptPaper({
       role="group"
       aria-label={`80 millimetre ${receipt.transactionType} raster receipt`}
     >
-      {segment !== "after-qr" ? (
+      {segment === "preview" || segment === "body" ? (
         <RasterReceiptBody
           receipt={receipt}
           includeFooter={includeFooterInBody}
@@ -340,21 +361,11 @@ export function RasterReceiptPaper({
       ) : null}
       {segment === "preview" && upiUri ? (
         <>
-          <div className="flex justify-center bg-white pt-1" data-preview-only-qr>
-            <QRCodeSVG
-              value={upiUri}
-              level="M"
-              boostLevel={false}
-              marginSize={4}
-              size={174}
-              bgColor="#ffffff"
-              fgColor="#000000"
-              title="UPI payment QR preview"
-            />
-          </div>
+          <RasterQr value={upiUri} />
           <RasterAfterQr receipt={receipt} includeFooter={!omitFooter} />
         </>
       ) : null}
+      {segment === "qr" && upiUri ? <RasterQr value={upiUri} printable /> : null}
       {segment === "after-qr" ? (
         <RasterAfterQr receipt={receipt} includeFooter={!omitFooter} />
       ) : null}

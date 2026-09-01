@@ -208,7 +208,7 @@ describe("canonical raster thermal papers", () => {
     expect(screen.getByTestId("raster-account-settlement")).not.toHaveTextContent("Payment (-)");
   });
 
-  it("shows a native-looking QR preview but excludes it from captured body and after-QR segments", () => {
+  it("renders a fresh QR raster between the captured receipt body and after-QR segments", () => {
     const preview = render(<RasterReceiptPaper receipt={receipt} />);
     expect(screen.getByTitle("UPI payment QR preview")).toBeInTheDocument();
     const previewQr = preview.container.querySelector("[data-preview-only-qr]");
@@ -228,6 +228,29 @@ describe("canonical raster thermal papers", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByTestId("raster-receipt-before-qr-gap")).toHaveClass("h-8");
     body.unmount();
+
+    const qr = render(<RasterReceiptPaper receipt={receipt} segment="qr" />);
+    const qrSegment = qr.container.querySelector('[data-raster-segment="qr"]');
+    expect(qrSegment).toBeInTheDocument();
+    expect(qrSegment).toHaveAttribute(
+      "data-qr-value",
+      "upi://pay?pa=shop%40bank&pn=QuickCart%20Market&cu=INR&tr=1048&tn=Invoice%20no%201048&am=1234567.89"
+    );
+    expect(screen.getByTitle("UPI payment QR")).toBeInTheDocument();
+    expect(qr.container.querySelector('[data-raster-segment="body"]')).not.toBeInTheDocument();
+    qr.unmount();
+
+    const openQr = render(
+      <RasterReceiptPaper
+        receipt={{ ...receipt, upi: { ...receipt.upi!, includeAmount: false } }}
+        segment="qr"
+      />
+    );
+    expect(openQr.container.querySelector('[data-raster-segment="qr"]')).not.toHaveAttribute(
+      "data-qr-value",
+      expect.stringContaining("&am=")
+    );
+    openQr.unmount();
 
     const afterQr = render(<RasterReceiptPaper receipt={receipt} segment="after-qr" />);
     expect(afterQr.container.querySelector("[data-preview-only-qr] svg")).not.toBeInTheDocument();

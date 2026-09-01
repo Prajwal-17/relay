@@ -33,33 +33,6 @@ export const escPosCommands = {
   // print a new line
   lineFeed: bytes(0x0a),
 
-  // use qr model 2
-  qrModel2: bytes(GS, 0x28, 0x6b, 0x04, 0x00, 0x31, 0x41, 0x32, 0x00),
-
-  // use qr dot size 6
-  qrDotSize6: bytes(GS, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x43, 0x06),
-
-  // use medium qr error correction
-  qrErrorCorrectionMedium: bytes(GS, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x45, 0x31),
-
-  // store qr content in printer memory
-  storeQrData(dataLength: number): Buffer {
-    const commandLength = dataLength + 3;
-    return bytes(
-      GS,
-      0x28,
-      0x6b,
-      commandLength & 0xff,
-      (commandLength >> 8) & 0xff,
-      0x31,
-      0x50,
-      0x30
-    );
-  },
-
-  // print the stored qr code
-  printQr: bytes(GS, 0x28, 0x6b, 0x03, 0x00, 0x31, 0x51, 0x30),
-
   // print a one bit raster image
   gsV0RasterHeader(widthBytes: number, height: number): Buffer {
     if (
