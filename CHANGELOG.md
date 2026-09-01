@@ -1,5 +1,24 @@
 # Changelog
 
+## v4.4.1 - 01 Sep 2026
+
+Patch release focused on faster billing, clearer printing controls, and a more reliable multi-tab workspace.
+
+### Improvements
+
+- Add a shared UPI account picker across billing, transaction printing, and settings
+- Improve QR payment choices, saved-account management, print actions, and long account-name handling
+- Make the billing item-reference window resizable from every edge and corner
+- Start new bills with one empty line and tighten line-item and product-search controls
+- Rename billing footer actions to match autosave behavior: Print & Close, Close Tab, and Export PDF
+
+### Fixed
+
+- Close only the completed billing tab after printing and activate the next open tab
+- Keep PDF export in the current billing tab
+- Prevent extra billing workspace whitespace and outer-page scrolling
+- Keep long UPI IDs, payee names, and account labels within their available controls and dialogs
+
 ## v4.4.0 - 29 Aug 2026
 
 Major release with customer accounting, billing updates, printing, and UI improvements.
