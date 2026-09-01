@@ -82,7 +82,3 @@ copy cannot conflict with local development.
 - [Desktop development and operations](apps/desktop/README.md)
 - [UI and design-system contract](DESIGN.md)
 - [Agent engineering instructions](AGENTS.md)
-
-## License
-
-[MIT](LICENSE)

@@ -127,9 +127,7 @@ describe("roundPaisaToNearestRupee", () => {
   });
 
   it("rejects non-finite values", () => {
-    expect(() => roundPaisaToNearestRupee(Number.NaN)).toThrow(
-      "roundPaisaToNearestRupee"
-    );
+    expect(() => roundPaisaToNearestRupee(Number.NaN)).toThrow("roundPaisaToNearestRupee");
     expect(() => roundPaisaToNearestRupee(Infinity)).toThrow("roundPaisaToNearestRupee");
   });
 });

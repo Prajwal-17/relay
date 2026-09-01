@@ -1,5 +1,19 @@
 # Changelog
 
+## v4.4.3 - 02 Sep 2026
+
+Patch release preventing stale UPI payment QRs and making billing product search more compact on low-resolution screens.
+
+### Improvements
+
+- Reduce the billing product-search dropdown height and virtualized row height so more of the bill remains visible
+- Tighten horizontal padding, metadata spacing, and control gaps throughout billing search results
+
+### Fixed
+
+- Render a fresh UPI QR for every receipt so printers cannot reuse a QR or locked amount from an earlier bill
+- Skip QR output safely when a fresh image cannot be generated instead of risking stale printer-memory content
+
 ## v4.4.2 - 01 Sep 2026
 
 Patch release correcting billing totals and simplifying default UPI account selection.
