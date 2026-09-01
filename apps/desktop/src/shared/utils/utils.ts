@@ -41,6 +41,20 @@ export function rupeesToPaisa(valueInRupees: number): number {
   return Math.round(valueInRupees * 100);
 }
 
+/**
+ * Rounds a paisa amount to the nearest whole rupee while keeping the result in paisa.
+ * @example roundPaisaToNearestRupee(15_234) => 15_200
+ * @example roundPaisaToNearestRupee(15_250) => 15_300
+ */
+export function roundPaisaToNearestRupee(valueInPaisa: number): number {
+  if (typeof valueInPaisa !== "number" || !Number.isFinite(valueInPaisa)) {
+    throw new Error(
+      `roundPaisaToNearestRupee: expected a finite number, got ${typeof valueInPaisa} ${JSON.stringify(valueInPaisa)}`
+    );
+  }
+  return Math.round(valueInPaisa / 100) * 100;
+}
+
 // ------------------------
 // Formatting (displaying)
 // ------------------------

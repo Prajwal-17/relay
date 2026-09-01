@@ -1,7 +1,7 @@
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { filterValidLineItems } from "@/utils/renderer.utils";
-import { formatRupee } from "@shared/utils/utils";
+import { formatRupee, roundPaisaToNearestRupee } from "@shared/utils/utils";
 
 const useTransaction = () => {
   const activeTabId = useBillingTabsStore((state) => state.activeTabId);
@@ -15,7 +15,7 @@ const useTransaction = () => {
   }, 0);
 
   const subtotal = formatRupee(total);
-  const grandTotal = formatRupee(total);
+  const grandTotal = formatRupee(roundPaisaToNearestRupee(total));
 
   const calcTotalQuantity = billableItems.reduce((sum, currentItem) => {
     return sum + (Number(currentItem.quantity) || 0);

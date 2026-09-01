@@ -99,7 +99,7 @@ afterEach(() => {
 });
 
 describe("one exact billing total path", () => {
-  it("uses 15,234 paisa for the row, footer, and receipt without rounding to ₹152.00", () => {
+  it("keeps the exact subtotal and rounds the payable total to the nearest rupee", () => {
     const rowId = initializeExactLine();
     const { result } = renderHook(() => useTransaction());
     const session = useBillingSessionStore.getState().sessions[tabId]!;
@@ -108,10 +108,10 @@ describe("one exact billing total path", () => {
 
     expect.soft(row.totalPrice).toBe(15_234);
     expect.soft(result.current.subtotal).toBe("₹152.34");
-    expect.soft(result.current.grandTotal).toBe("₹152.34");
+    expect.soft(result.current.grandTotal).toBe("₹152.00");
     expect.soft(receipt.items[0]?.totalPaisa).toBe(row.totalPrice);
     expect.soft(receipt.subtotalPaisa).toBe(15_234);
-    expect.soft(receipt.totalPaisa).toBe(15_234);
+    expect.soft(receipt.totalPaisa).toBe(15_200);
   });
 
   it("excludes deleted and incomplete rows from both amount and quantity", () => {
@@ -132,9 +132,9 @@ describe("one exact billing total path", () => {
     const receipt = buildRawReceiptData(currentSession, profile, printing);
 
     expect.soft(result.current.subtotal).toBe("₹152.34");
-    expect.soft(result.current.grandTotal).toBe("₹152.34");
+    expect.soft(result.current.grandTotal).toBe("₹152.00");
     expect.soft(result.current.calcTotalQuantity).toBe(1.234);
     expect.soft(receipt.items).toHaveLength(1);
-    expect.soft(receipt.totalPaisa).toBe(15_234);
+    expect.soft(receipt.totalPaisa).toBe(15_200);
   });
 });

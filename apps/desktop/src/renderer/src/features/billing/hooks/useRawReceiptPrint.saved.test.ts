@@ -98,7 +98,7 @@ describe("saved transaction receipt data", () => {
       customerName: "Anita",
       dateTime: "2026-08-12T10:15:00.000Z",
       subtotalPaisa: 1563,
-      totalPaisa: 1563
+      totalPaisa: 1600
     });
     expect(data.items).toEqual([
       {
