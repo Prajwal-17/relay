@@ -25,7 +25,7 @@ export function createMainWindow({
   store
 }: MainWindowOptions): MainWindowHandle {
   const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
-  const windowTitle = isDevBuild ? "QuickCart — Development" : "QuickCart";
+  const windowTitle = isDevBuild ? "QuickCart-Dev" : "QuickCart";
   const { width: workAreaWidth, height: workAreaHeight } = screen.getPrimaryDisplay().workAreaSize;
   const contentWidth = maximizeOnReady ? Math.min(1280, Math.max(1024, workAreaWidth - 24)) : 1280;
   const contentHeight = maximizeOnReady ? Math.min(650, Math.max(600, workAreaHeight - 72)) : 650;
