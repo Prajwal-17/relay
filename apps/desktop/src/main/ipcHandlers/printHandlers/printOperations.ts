@@ -16,7 +16,11 @@ import {
   buildEscPosReceipt,
   buildEscPosReceiptWithLedger
 } from "./escpos";
-import { validateRasterLedgerSegments, validateRasterReceiptSegments } from "./raster";
+import {
+  getValidatedReceiptQrRaster,
+  validateRasterLedgerSegments,
+  validateRasterReceiptSegments
+} from "./raster";
 import { sendRawToWindowsPrinter, validatePrinterName } from "./windowsRawPrinter";
 
 const STORE_ID = "default";
@@ -233,14 +237,16 @@ export async function printReceipt(
     let fellBack = false;
 
     if (printing.defaultPrintMode === "device-text") {
-      payload = buildEscPosReceipt(authoritativeReceipt);
+      const qrRaster = getValidatedReceiptQrRaster(raster, Boolean(authoritativeReceipt.upi));
+      payload = buildEscPosReceipt(authoritativeReceipt, qrRaster);
     } else {
       try {
         validateRasterReceiptSegments(raster, Boolean(authoritativeReceipt.upi));
         payload = buildEscPosRasterReceipt(authoritativeReceipt, raster);
       } catch (error) {
         console.warn("Raster receipt preparation was rejected; using device text.", error);
-        payload = buildEscPosReceipt(authoritativeReceipt);
+        const qrRaster = getValidatedReceiptQrRaster(raster, Boolean(authoritativeReceipt.upi));
+        payload = buildEscPosReceipt(authoritativeReceipt, qrRaster);
         modeUsed = "device-text";
         fellBack = true;
       }
@@ -306,7 +312,15 @@ export async function printReceiptWithLedger(
     let fellBack = false;
 
     if (printing.defaultPrintMode === "device-text") {
-      payload = buildEscPosReceiptWithLedger(authoritativeReceipt, authoritativeStatement);
+      const qrRaster = getValidatedReceiptQrRaster(
+        receiptRaster,
+        Boolean(authoritativeReceipt.upi)
+      );
+      payload = buildEscPosReceiptWithLedger(
+        authoritativeReceipt,
+        authoritativeStatement,
+        qrRaster
+      );
     } else {
       try {
         validateRasterReceiptSegments(receiptRaster, Boolean(authoritativeReceipt.upi));
@@ -319,7 +333,15 @@ export async function printReceiptWithLedger(
         );
       } catch (error) {
         console.warn("Combined raster preparation was rejected; using device text.", error);
-        payload = buildEscPosReceiptWithLedger(authoritativeReceipt, authoritativeStatement);
+        const qrRaster = getValidatedReceiptQrRaster(
+          receiptRaster,
+          Boolean(authoritativeReceipt.upi)
+        );
+        payload = buildEscPosReceiptWithLedger(
+          authoritativeReceipt,
+          authoritativeStatement,
+          qrRaster
+        );
         modeUsed = "device-text";
         fellBack = true;
       }

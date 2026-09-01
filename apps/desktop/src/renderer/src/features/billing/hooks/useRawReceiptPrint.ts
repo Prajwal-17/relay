@@ -1,12 +1,12 @@
-import { apiClient } from "@/lib/apiClient";
-import { prepareRasterReceipt } from "@/features/settings/thermalRaster";
 import {
   createInitialSession,
   normalizeLineItems
 } from "@/features/billing/store/billingSession.helpers";
-import { filterValidLineItems } from "@/utils/renderer.utils";
-import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
+import type { BillingSessionData } from "@/features/billing/store/billingSession.types";
+import { prepareRasterReceipt } from "@/features/settings/thermalRaster";
+import { apiClient } from "@/lib/apiClient";
+import { filterValidLineItems } from "@/utils/renderer.utils";
 import type {
   AppPreferencesResponse,
   PrintingConfig,
@@ -175,6 +175,26 @@ type SavedReceiptPrintRequest = {
   overrides?: ReceiptPrintOverrides;
 };
 
+async function prepareRequiredReceiptRaster(
+  receipt: RawReceiptData,
+  printing: PrintingConfig,
+  options: { omitFooter?: boolean } = {}
+): Promise<RasterReceiptSegments | undefined> {
+  if (printing.defaultPrintMode !== "raster" && !receipt.upi) return undefined;
+
+  try {
+    return await prepareRasterReceipt(receipt, options);
+  } catch (error) {
+    if (receipt.upi) {
+      throw new Error("The payment QR could not be prepared safely. Nothing was printed.", {
+        cause: error
+      });
+    }
+    console.warn("High-quality receipt preparation failed; device text will be used.", error);
+    return undefined;
+  }
+}
+
 const useRawReceiptPrint = () => {
   const prepareReceipt = useCallback(async (tabId: string, options: PrepareReceiptOptions = {}) => {
     const [profile, preferences] = await Promise.all([
@@ -191,14 +211,9 @@ const useRawReceiptPrint = () => {
       preferences.config.printing,
       options.overrides
     );
-    let raster: RasterReceiptSegments | undefined;
-    if (preferences.config.printing.defaultPrintMode === "raster") {
-      try {
-        raster = await prepareRasterReceipt(receipt, { omitFooter: options.omitFooter });
-      } catch (error) {
-        console.warn("High-quality receipt preparation failed; device text will be used.", error);
-      }
-    }
+    const raster = await prepareRequiredReceiptRaster(receipt, preferences.config.printing, {
+      omitFooter: options.omitFooter
+    });
     return { receipt, raster };
   }, []);
 
@@ -226,14 +241,7 @@ const useRawReceiptPrint = () => {
         preferences.config.printing,
         overrides
       );
-      let raster: RasterReceiptSegments | undefined;
-      if (preferences.config.printing.defaultPrintMode === "raster") {
-        try {
-          raster = await prepareRasterReceipt(receipt);
-        } catch (error) {
-          console.warn("High-quality receipt preparation failed; device text will be used.", error);
-        }
-      }
+      const raster = await prepareRequiredReceiptRaster(receipt, preferences.config.printing);
       return { receipt, raster };
     },
     []

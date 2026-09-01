@@ -1,4 +1,5 @@
 import type {
+  MonochromeRasterData,
   RasterLedgerSegments,
   RasterReceiptSegments,
   RawLedgerStatementData,
@@ -44,21 +45,6 @@ function accountLine(label: string, paisa: number) {
   return fit(label, 30) + fit(receiptMoney(paisa), 18, "right");
 }
 
-function buildNativeQrCode(payload: string): Buffer {
-  const data = ascii(payload.trim());
-  if (data.length === 0 || data.length > 7_089) {
-    throw new Error("QR data must contain between 1 and 7,089 ASCII bytes.");
-  }
-  return Buffer.concat([
-    escPosCommands.qrModel2,
-    escPosCommands.qrDotSize6,
-    escPosCommands.qrErrorCorrectionMedium,
-    escPosCommands.storeQrData(data.length),
-    data,
-    escPosCommands.printQr
-  ]);
-}
-
 function paperFinish(extraFeedLines: number, cutMode: ReceiptCutMode): Buffer {
   const chunks: Buffer[] = [];
   if (extraFeedLines > 0) chunks.push(escPosCommands.feedLines(extraFeedLines));
@@ -71,7 +57,10 @@ function paperFinish(extraFeedLines: number, cutMode: ReceiptCutMode): Buffer {
 const documentLabel = receiptDocumentLabel;
 export const buildUpiUri = buildThermalUpiUri;
 
-export function buildEscPosReceipt(receipt: RawReceiptData): Buffer {
+export function buildEscPosReceipt(
+  receipt: RawReceiptData,
+  qrRaster?: MonochromeRasterData
+): Buffer {
   const chunks: Buffer[] = [
     escPosCommands.reset,
     escPosCommands.alignCenter,
@@ -151,12 +140,12 @@ export function buildEscPosReceipt(receipt: RawReceiptData): Buffer {
       : [])
   );
 
-  const upiUri = buildUpiUri(receipt);
-  if (upiUri) {
+  if (receipt.upi) {
+    if (!qrRaster) throw new Error("A freshly generated payment QR raster is required.");
     chunks.push(
       line(),
       escPosCommands.alignCenter,
-      buildNativeQrCode(upiUri),
+      buildGsV0Raster(qrRaster),
       line(),
       line("Scan to pay"),
       ...wrapText(receipt.upi?.payeeName ?? "", LINE_WIDTH).map((payeeLine) => line(payeeLine)),
@@ -232,14 +221,18 @@ export function buildEscPosLedgerStatement(statement: RawLedgerStatementData): B
 
 export function buildEscPosReceiptWithLedger(
   receipt: RawReceiptData,
-  statement: RawLedgerStatementData
+  statement: RawLedgerStatementData,
+  qrRaster?: MonochromeRasterData
 ): Buffer {
-  const receiptPart = buildEscPosReceipt({
-    ...receipt,
-    footerMessage: undefined,
-    extraFeedLines: 0,
-    cutMode: "none"
-  });
+  const receiptPart = buildEscPosReceipt(
+    {
+      ...receipt,
+      footerMessage: undefined,
+      extraFeedLines: 0,
+      cutMode: "none"
+    },
+    qrRaster
+  );
   const ledgerPart = buildEscPosLedgerStatement({
     ...statement,
     storeName: "",
@@ -250,25 +243,15 @@ export function buildEscPosReceiptWithLedger(
   return Buffer.concat([receiptPart, ledgerPart]);
 }
 
-function nativeQrSection(receipt: RawReceiptData): Buffer {
-  const upiUri = buildUpiUri(receipt);
-  if (!upiUri) return Buffer.alloc(0);
-  return Buffer.concat([
-    escPosCommands.alignCenter,
-    buildNativeQrCode(upiUri),
-    escPosCommands.alignLeft
-  ]);
-}
-
 export function buildEscPosRasterReceipt(
   receipt: RawReceiptData,
   raster: RasterReceiptSegments
 ): Buffer {
   const chunks = [escPosCommands.reset, buildGsV0Raster(raster.body)];
-  const upiUri = buildUpiUri(receipt);
-  if (upiUri) {
+  if (receipt.upi) {
+    if (!raster.qr) throw new Error("A freshly generated payment QR raster is required.");
     if (!raster.afterQr) throw new Error("The receipt raster after-QR segment is required.");
-    chunks.push(nativeQrSection(receipt), buildGsV0Raster(raster.afterQr));
+    chunks.push(buildGsV0Raster(raster.qr), buildGsV0Raster(raster.afterQr));
   }
   chunks.push(paperFinish(receipt.extraFeedLines, receipt.cutMode));
   return Buffer.concat(chunks);
@@ -292,12 +275,14 @@ export function buildEscPosRasterReceiptWithLedger(
   ledgerRaster: RasterLedgerSegments
 ): Buffer {
   const chunks = [escPosCommands.reset, buildGsV0Raster(receiptRaster.body)];
-  const upiUri = buildUpiUri(receipt);
-  if (upiUri) {
+  if (receipt.upi) {
+    if (!receiptRaster.qr) {
+      throw new Error("A freshly generated payment QR raster is required.");
+    }
     if (!receiptRaster.afterQr) {
       throw new Error("The receipt raster after-QR segment is required.");
     }
-    chunks.push(nativeQrSection(receipt), buildGsV0Raster(receiptRaster.afterQr));
+    chunks.push(buildGsV0Raster(receiptRaster.qr), buildGsV0Raster(receiptRaster.afterQr));
   }
   chunks.push(
     buildGsV0Raster(ledgerRaster.body),

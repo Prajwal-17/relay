@@ -143,6 +143,15 @@ export async function prepareRasterReceipt(
   const body = await captureRaster(
     <RasterReceiptPaper receipt={receipt} segment="body" omitFooter={options.omitFooter ?? false} />
   );
+  const qr = receipt.upi
+    ? await captureRaster(
+        <RasterReceiptPaper
+          receipt={receipt}
+          segment="qr"
+          omitFooter={options.omitFooter ?? false}
+        />
+      )
+    : undefined;
   const afterQr = receipt.upi
     ? await captureRaster(
         <RasterReceiptPaper
@@ -152,7 +161,7 @@ export async function prepareRasterReceipt(
         />
       )
     : undefined;
-  return { body, afterQr };
+  return { body, qr, afterQr };
 }
 
 export async function prepareRasterLedger(

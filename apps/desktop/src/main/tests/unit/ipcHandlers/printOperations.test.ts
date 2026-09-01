@@ -111,6 +111,14 @@ function raster(fill = 0x11) {
   };
 }
 
+function receiptRaster() {
+  return {
+    body: raster(0x11).body,
+    qr: raster(0x55).body,
+    afterQr: raster(0x22).body
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.sendRaw.mockResolvedValue(512);
@@ -152,6 +160,41 @@ describe("authoritative RAW print operations", () => {
     const payload = mocks.sendRaw.mock.calls[0]![1] as Buffer;
     expect(payload.includes(Buffer.from([0x1d, 0x76, 0x30, 0x00]))).toBe(false);
     expect(payload.toString("ascii")).toContain("Invoice no: 42");
+  });
+
+  it("uses a fresh QR raster in device-text mode and never emits stored-symbol commands", async () => {
+    mocks.getPreferences.mockResolvedValue({
+      config: { printing: printing({ defaultPrintMode: "device-text" }) }
+    });
+    const upiReceipt = {
+      ...receipt(),
+      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+    };
+
+    const result = await printReceipt(upiReceipt, receiptRaster());
+
+    expect(result).toMatchObject({
+      status: "success",
+      data: { modeUsed: "device-text", fellBack: false }
+    });
+    const payload = mocks.sendRaw.mock.calls[0]![1] as Buffer;
+    expect(payload.includes(Buffer.alloc(72, 0x55))).toBe(true);
+    expect(payload.includes(Buffer.from([0x1d, 0x28, 0x6b]))).toBe(false);
+  });
+
+  it("blocks a UPI receipt before transport when its fresh QR raster is unavailable", async () => {
+    const upiReceipt = {
+      ...receipt(),
+      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: false }
+    };
+
+    const result = await printReceipt(upiReceipt, raster());
+
+    expect(result).toEqual({
+      status: "error",
+      error: { message: "A freshly generated payment QR raster is required." }
+    });
+    expect(mocks.sendRaw).not.toHaveBeenCalled();
   });
 
   it("rejects checked quantities outside the item quantity before transport", async () => {

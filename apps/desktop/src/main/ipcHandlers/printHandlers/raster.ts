@@ -51,17 +51,35 @@ export function validateMonochromeRasterData(
 
 export function validateRasterReceiptSegments(
   raster: unknown,
-  requiresAfterQr: boolean
+  requiresQr: boolean
 ): asserts raster is RasterReceiptSegments {
   if (!raster || typeof raster !== "object") {
     throw new Error("Receipt raster data is required.");
   }
   const value = raster as Partial<RasterReceiptSegments>;
   validateMonochromeRasterData(value.body);
-  if (requiresAfterQr && !value.afterQr) {
+  if (requiresQr && !value.qr) {
+    throw new Error("A freshly generated payment QR raster is required.");
+  }
+  if (requiresQr && !value.afterQr) {
     throw new Error("The receipt raster after-QR segment is required.");
   }
+  if (value.qr !== undefined) validateMonochromeRasterData(value.qr);
   if (value.afterQr !== undefined) validateMonochromeRasterData(value.afterQr);
+}
+
+export function getValidatedReceiptQrRaster(
+  raster: unknown,
+  requiresQr: boolean
+): MonochromeRasterData | undefined {
+  if (!requiresQr) return undefined;
+  if (!raster || typeof raster !== "object") {
+    throw new Error("A freshly generated payment QR raster is required.");
+  }
+  const qr = (raster as Partial<RasterReceiptSegments>).qr;
+  if (!qr) throw new Error("A freshly generated payment QR raster is required.");
+  validateMonochromeRasterData(qr);
+  return qr;
 }
 
 export function validateRasterLedgerSegments(
