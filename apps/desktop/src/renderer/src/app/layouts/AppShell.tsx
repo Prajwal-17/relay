@@ -88,7 +88,9 @@ const AppShell = () => {
           </header>
         )}
 
-        <section className="min-h-0 flex-1 overflow-y-auto">
+        <section
+          className={cn("min-h-0 flex-1", isBillingPage ? "overflow-clip" : "overflow-y-auto")}
+        >
           <Outlet />
         </section>
       </main>

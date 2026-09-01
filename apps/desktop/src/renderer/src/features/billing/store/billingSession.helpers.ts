@@ -58,7 +58,7 @@ export const createInitialSession = (): BillingSessionData => {
       includeAccountSummary: false,
       accountSummaryStartedAt: Date.now()
     },
-    lineItems: Array.from({ length: 5 }, (_, i) => createInitialLineItem(i * POSITION_GAP))
+    lineItems: [createInitialLineItem()]
   };
 };
 

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { test, expect } from "../fixtures/app.fixture";
+import { createApiTransaction } from "../fixtures/test-data";
 import {
   billingRow,
   openBillingRoute,
@@ -53,6 +54,57 @@ test.describe("critical billing viewport and reference smoke", () => {
       await expect(app.page.getByRole("button", { name: "Save & Exit" })).toBeVisible();
       await app.page.getByRole("button", { name: "Save & Exit" }).click({ trial: true });
     }
+  });
+
+  test("selecting a UPI QR option on a long bill keeps the workspace anchored", async ({ app }) => {
+    const upiProfileId = "11111111-1111-4111-8111-111111111111";
+    await app.api.patch("/api/app-preferences", {
+      printing: {
+        upiQrProfiles: [
+          {
+            id: upiProfileId,
+            label: "Main counter",
+            upiId: "quickcart@bank",
+            payeeName: "QuickCart E2E Store"
+          }
+        ],
+        defaultUpiQrProfileId: upiProfileId
+      }
+    });
+    const transaction = await createApiTransaction(app.api, {
+      type: "sale",
+      customerId: app.seed.defaultCustomer.id,
+      items: Array.from({ length: 15 }, (_, index) => ({
+        name: `Long bill item ${index + 1}`,
+        price: 1000 + index,
+        quantity: 1000
+      }))
+    });
+
+    await app.page.reload();
+    await openBillingRoute(app.page, "sales", transaction.id);
+
+    const billingScroller = app.page.locator("[data-billing-scroll-container]");
+    await billingScroller.evaluate((element) => {
+      element.scrollTop = element.scrollHeight;
+    });
+    const exactTotalOption = app.page.getByText("Exact total", { exact: true });
+    await expect(exactTotalOption).toBeVisible();
+
+    const shellWorkspace = app.page.locator("main > section");
+    const billingWorkspace = app.page.locator("[data-billing-workspace]");
+    await expect(shellWorkspace).toHaveJSProperty("scrollTop", 0);
+    await expect(billingWorkspace).toHaveJSProperty("scrollTop", 0);
+    await exactTotalOption.click();
+
+    await expect(app.page.getByText("Main counter", { exact: true })).toBeVisible();
+    await expect(shellWorkspace).toHaveJSProperty("scrollTop", 0);
+    await expect(billingWorkspace).toHaveJSProperty("scrollTop", 0);
+    const footerBottom = await app.page.locator("footer").evaluate((footer) => {
+      const bounds = footer.getBoundingClientRect();
+      return Math.round(bounds.bottom);
+    });
+    expect(footerBottom).toBe(650);
   });
 
   test("reference image stays tab-local and follows documented restart behavior", async ({

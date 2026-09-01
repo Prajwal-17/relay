@@ -23,23 +23,30 @@ function session() {
   return useBillingSessionStore.getState().sessions[tabId]!;
 }
 
+function addEmptyRows(count: number) {
+  for (let index = 0; index < count; index += 1) {
+    useBillingSessionStore.getState().addEmptyLineItem(tabId, "button");
+  }
+}
+
 beforeEach(() => {
   useBillingSessionStore.setState({ sessions: {} });
   useBillingSessionStore.getState().initSession(tabId);
 });
 
 describe("billing session row state", () => {
-  it("starts with five rows and Add Row appends exactly one without changing totals", () => {
-    expect(session().lineItems).toHaveLength(5);
+  it("starts with one row and Add Row appends exactly one without changing totals", () => {
+    expect(session().lineItems).toHaveLength(1);
     expect(session().lineItems.reduce((total, row) => total + row.totalPrice, 0)).toBe(0);
 
     useBillingSessionStore.getState().addEmptyLineItem(tabId, "button");
-    expect(session().lineItems).toHaveLength(6);
-    expect(session().lineItems.at(-1)?.position).toBe(POSITION_GAP * 5);
+    expect(session().lineItems).toHaveLength(2);
+    expect(session().lineItems.at(-1)?.position).toBe(POSITION_GAP);
     expect(session().lineItems.reduce((total, row) => total + row.totalPrice, 0)).toBe(0);
   });
 
   it("keeps two selections of the same product as separate rows", () => {
+    addEmptyRows(1);
     const selected = product("Separate Duplicate");
     const [first, second] = session().lineItems;
     useBillingSessionStore.getState().addLineItem(tabId, first!.rowId, selected);
@@ -76,6 +83,7 @@ describe("billing session row state", () => {
   });
 
   it("Check All and Uncheck All affect valid live items only", () => {
+    addEmptyRows(2);
     const [liveRow, deletedRow, emptyRow] = session().lineItems;
     useBillingSessionStore.getState().addLineItem(tabId, liveRow!.rowId, product("Live"));
     useBillingSessionStore.getState().addLineItem(tabId, deletedRow!.rowId, product("Deleted"));
@@ -94,6 +102,7 @@ describe("billing session row state", () => {
   });
 
   it("reorders filled rows with unique monotonically increasing positions", () => {
+    addEmptyRows(2);
     const rows = session().lineItems.slice(0, 3);
     rows.forEach((row, index) =>
       useBillingSessionStore
@@ -114,6 +123,7 @@ describe("billing session row state", () => {
   });
 
   it("marks only requested unsaved rows as saving", () => {
+    addEmptyRows(1);
     const rows = session().lineItems.slice(0, 2);
     useBillingSessionStore.getState().addLineItem(tabId, rows[0]!.rowId, product("First"));
     useBillingSessionStore.getState().addLineItem(tabId, rows[1]!.rowId, product("Second"));
