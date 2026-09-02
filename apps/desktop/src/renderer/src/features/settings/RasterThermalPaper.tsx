@@ -14,6 +14,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Scissors } from "lucide-react";
 
 export const RASTER_PAPER_WIDTH = 576;
+const RASTER_UPI_QR_SIZE = 240;
 
 type RasterReceiptSegment = "preview" | "body" | "qr" | "after-qr";
 
@@ -323,7 +324,7 @@ function RasterQr({ value, printable = false }: { value: string; printable?: boo
         level="M"
         boostLevel={false}
         marginSize={4}
-        size={174}
+        size={RASTER_UPI_QR_SIZE}
         bgColor="#ffffff"
         fgColor="#000000"
         title={printable ? "UPI payment QR" : "UPI payment QR preview"}

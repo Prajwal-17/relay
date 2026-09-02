@@ -210,8 +210,9 @@ describe("canonical raster thermal papers", () => {
 
   it("renders a fresh QR raster between the captured receipt body and after-QR segments", () => {
     const preview = render(<RasterReceiptPaper receipt={receipt} />);
-    expect(screen.getByTitle("UPI payment QR preview")).toBeInTheDocument();
     const previewQr = preview.container.querySelector("[data-preview-only-qr]");
+    expect(screen.getByTitle("UPI payment QR preview")).toBeInTheDocument();
+    expect(previewQr?.querySelector("svg")).toHaveAttribute("width", "240");
     const previewSavings = screen.getByTestId("raster-receipt-savings");
     expect(previewQr).toBeInTheDocument();
     expect(previewSavings).toHaveTextContent("*** YOU SAVED Rs.58.50 ***");
@@ -237,6 +238,7 @@ describe("canonical raster thermal papers", () => {
       "upi://pay?pa=shop%40bank&pn=QuickCart%20Market&cu=INR&tr=1048&tn=Invoice%20no%201048&am=1234567.89"
     );
     expect(screen.getByTitle("UPI payment QR")).toBeInTheDocument();
+    expect(qrSegment?.querySelector("svg")).toHaveAttribute("width", "240");
     expect(qr.container.querySelector('[data-raster-segment="body"]')).not.toBeInTheDocument();
     qr.unmount();
 
