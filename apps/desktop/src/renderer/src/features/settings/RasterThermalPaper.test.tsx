@@ -4,11 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { RawLedgerStatementData, RawReceiptData } from "@shared/types";
-import {
-  RASTER_UPI_QR_SIZE,
-  RasterLedgerPaper,
-  RasterReceiptPaper
-} from "./RasterThermalPaper";
+import { RasterLedgerPaper, RasterReceiptPaper } from "./RasterThermalPaper";
 
 const receipt: RawReceiptData = {
   storeName: "QuickCart Market",
@@ -216,10 +212,7 @@ describe("canonical raster thermal papers", () => {
     const preview = render(<RasterReceiptPaper receipt={receipt} />);
     const previewQr = preview.container.querySelector("[data-preview-only-qr]");
     expect(screen.getByTitle("UPI payment QR preview")).toBeInTheDocument();
-    expect(previewQr?.querySelector("svg")).toHaveAttribute(
-      "width",
-      String(RASTER_UPI_QR_SIZE)
-    );
+    expect(previewQr?.querySelector("svg")).toHaveAttribute("width", "240");
     const previewSavings = screen.getByTestId("raster-receipt-savings");
     expect(previewQr).toBeInTheDocument();
     expect(previewSavings).toHaveTextContent("*** YOU SAVED Rs.58.50 ***");
@@ -245,10 +238,7 @@ describe("canonical raster thermal papers", () => {
       "upi://pay?pa=shop%40bank&pn=QuickCart%20Market&cu=INR&tr=1048&tn=Invoice%20no%201048&am=1234567.89"
     );
     expect(screen.getByTitle("UPI payment QR")).toBeInTheDocument();
-    expect(qrSegment?.querySelector("svg")).toHaveAttribute(
-      "width",
-      String(RASTER_UPI_QR_SIZE)
-    );
+    expect(qrSegment?.querySelector("svg")).toHaveAttribute("width", "240");
     expect(qr.container.querySelector('[data-raster-segment="body"]')).not.toBeInTheDocument();
     qr.unmount();
 

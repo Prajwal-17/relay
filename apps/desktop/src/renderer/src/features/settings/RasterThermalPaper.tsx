@@ -14,7 +14,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Check, Scissors } from "lucide-react";
 
 export const RASTER_PAPER_WIDTH = 576;
-export const RASTER_UPI_QR_SIZE = 224;
+const RASTER_UPI_QR_SIZE = 240;
 
 type RasterReceiptSegment = "preview" | "body" | "qr" | "after-qr";
 
