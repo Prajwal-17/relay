@@ -241,7 +241,7 @@ export const ProductEditForm = () => {
                 if (formDataState.pendingImagePreviewUrl) {
                   URL.revokeObjectURL(formDataState.pendingImagePreviewUrl);
                 }
-                setOpenProductDialog();
+                setOpenProductDialog(false);
               }}
               disabled={productMutation.isPending}
               className="h-9 cursor-pointer px-4 text-sm transition-colors disabled:opacity-60"

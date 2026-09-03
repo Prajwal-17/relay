@@ -56,7 +56,7 @@ type ProductsStoreType = {
   setSearchResult: (mode: "append" | "replace", newResult: Product[]) => void;
 
   // product dialog state
-  setOpenProductDialog: () => void;
+  setOpenProductDialog: (open: boolean) => void;
   dialogMode: DialogMode;
   setDialogMode: (mode: DialogMode) => void;
   initialTab: InitialTab;
@@ -187,10 +187,10 @@ export const useProductsStore = create<ProductsStoreType>()(
         ),
 
       openProductDialog: false,
-      setOpenProductDialog: () =>
+      setOpenProductDialog: (open) =>
         set(
-          (state) => ({
-            openProductDialog: !state.openProductDialog
+          () => ({
+            openProductDialog: open
           }),
           false,
           "products/setOpenProductDialog"

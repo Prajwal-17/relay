@@ -8,6 +8,7 @@ import type { CustomerListRow } from "./types";
 
 type CustomerListTableProps = {
   rows: CustomerListRow[];
+  searchQuery: string;
   activeIndex: number;
   hasNextPage: boolean;
   hasFilters: boolean;
@@ -34,6 +35,7 @@ import {
 
 export function CustomerListTable({
   rows,
+  searchQuery,
   activeIndex,
   hasNextPage,
   hasFilters,
@@ -239,7 +241,9 @@ export function CustomerListTable({
                             virtualRow.index === activeIndex ? "opacity-100" : "opacity-0"
                           )}
                         />
-                        <div className="col-span-3 flex min-w-0">{renderNameCell(row)}</div>
+                        <div className="col-span-3 flex min-w-0">
+                          {renderNameCell(row, searchQuery)}
+                        </div>
                         <div className="col-span-1 flex">{renderTypeCell(row)}</div>
                         <div className="col-span-1 flex justify-end">
                           {renderOutstandingCell(row)}

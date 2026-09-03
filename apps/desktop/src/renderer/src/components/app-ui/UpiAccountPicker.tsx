@@ -3,7 +3,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from "@/components/ui
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { UpiQrProfile } from "@shared/types";
-import { Check, ChevronsUpDown, QrCode } from "lucide-react";
+import { Check, ChevronDown, QrCode } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
 type UpiAccountPickerProps = {
@@ -33,7 +33,9 @@ export function UpiAccountPicker({
 }: UpiAccountPickerProps) {
   const [open, setOpen] = useState(false);
   const listId = useId();
+  const inlineRootRef = useRef<HTMLDivElement>(null);
   const inlinePanelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const selectedProfile =
     profiles.find((profile) => profile.id === selectedProfileId) ?? profiles[0];
 
@@ -42,10 +44,34 @@ export function UpiAccountPicker({
     inlinePanelRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [open, variant]);
 
+  useEffect(() => {
+    if (!open || variant !== "inline") return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!inlineRootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, true);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, variant]);
+
   if (!selectedProfile) return null;
 
   const trigger = (
     <Button
+      ref={triggerRef}
       id={id}
       type="button"
       variant="outline"
@@ -100,7 +126,13 @@ export function UpiAccountPicker({
           </span>
         ) : null}
       </span>
-      <ChevronsUpDown className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+      <ChevronDown
+        className={cn(
+          "text-muted-foreground size-4 shrink-0 transition-transform",
+          open && "rotate-180"
+        )}
+        aria-hidden="true"
+      />
     </Button>
   );
 
@@ -169,12 +201,7 @@ export function UpiAccountPicker({
 
   if (variant === "inline") {
     return (
-      <div
-        className="min-w-0"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") setOpen(false);
-        }}
-      >
+      <div ref={inlineRootRef} className="min-w-0">
         {trigger}
         {open ? (
           <div

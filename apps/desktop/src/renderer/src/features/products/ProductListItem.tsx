@@ -63,7 +63,7 @@ export default function ProductListItem({ product }: { product: ProductSearchIte
     setInitialTab(tab);
     setProductId(product.id);
     setFormDataState({});
-    setOpenProductDialog();
+    setOpenProductDialog(true);
   };
 
   return (

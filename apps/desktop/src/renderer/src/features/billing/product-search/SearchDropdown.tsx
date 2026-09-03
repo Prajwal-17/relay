@@ -344,7 +344,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     setFormDataState({});
     setDialogMode("edit");
     setActionType("add");
-    setOpenProductDialog();
+    setOpenProductDialog(true);
   };
   // Reset the highlight for a new search, but preserve it while infinite pages append.
   const searchContextRef = useRef({
@@ -694,6 +694,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="outline"
                                     size="icon-sm"
+                                    aria-label={`View ${product.name}`}
                                     className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -701,7 +702,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       setActionType(ACTION_TYPE.BILLING_PAGE_EDIT);
                                       setDialogMode(DIALOG_MODE.VIEW);
                                       setFormDataState({});
-                                      setOpenProductDialog();
+                                      setOpenProductDialog(true);
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
@@ -718,6 +719,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="outline"
                                     size="icon-sm"
+                                    aria-label={`Edit ${product.name}`}
                                     className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
@@ -725,7 +727,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                       setActionType(ACTION_TYPE.BILLING_PAGE_EDIT);
                                       setDialogMode(DIALOG_MODE.EDIT);
                                       setFormDataState({});
-                                      setOpenProductDialog();
+                                      setOpenProductDialog(true);
                                     }}
                                     onMouseDown={(e) => e.stopPropagation()}
                                   >
@@ -742,6 +744,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                                   <Button
                                     variant="ghost"
                                     size="icon-sm"
+                                    aria-label={`Product information for ${product.name}`}
                                     className="text-muted-foreground hover:text-foreground cursor-pointer"
                                     onClick={(e) => e.stopPropagation()}
                                     onMouseDown={(e) => e.stopPropagation()}

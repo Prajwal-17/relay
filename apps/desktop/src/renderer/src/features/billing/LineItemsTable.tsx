@@ -149,7 +149,7 @@ const LineItemsTable = () => {
     setFormDataState({});
     setDialogMode("edit");
     setActionType("add");
-    setOpenProductDialog();
+    setOpenProductDialog(true);
   };
 
   return (

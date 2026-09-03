@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
@@ -20,12 +21,14 @@ export const colSpans = [
   "col-span-1"
 ] as const;
 
-export function renderNameCell(row: CustomerListRow) {
+export function renderNameCell(row: CustomerListRow, query: string) {
   return (
     <div className="min-w-0">
-      <p className="text-foreground truncate text-sm leading-tight font-semibold">{row.name}</p>
+      <p className="text-foreground truncate text-sm leading-tight font-semibold">
+        <HighlightedText text={row.name} query={query} />
+      </p>
       <p className="text-muted-foreground truncate text-xs leading-tight">
-        {row.contact ?? "No contact"}
+        <HighlightedText text={row.contact ?? "No contact"} query={query} />
       </p>
     </div>
   );

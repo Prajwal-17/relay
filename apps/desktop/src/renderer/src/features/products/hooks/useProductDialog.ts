@@ -193,7 +193,7 @@ export const useProductDialog = () => {
       setProductId(null);
       setFormDataState({});
       setDirtyFields({});
-      setOpenProductDialog();
+      setOpenProductDialog(false);
       toast.success(
         variables.action === ACTION_TYPE.ADD
           ? "Successfully created product"
@@ -286,7 +286,7 @@ export const useProductDialog = () => {
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
-        setOpenProductDialog();
+        setOpenProductDialog(false);
       }
       toast.success("Successfully deleted product");
       setActiveDialog(PRODUCT_OPERATION.IDLE);
@@ -315,7 +315,7 @@ export const useProductDialog = () => {
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
-        setOpenProductDialog();
+        setOpenProductDialog(false);
       }
       toast.success("Successfully deleted product permanently");
       setActiveDialog(PRODUCT_OPERATION.IDLE);
@@ -335,7 +335,7 @@ export const useProductDialog = () => {
       setErrors({});
       setFormDataState({});
       if (openProductDialog) {
-        setOpenProductDialog();
+        setOpenProductDialog(false);
       }
       toast.success("Successfully restored product");
       setActiveDialog(PRODUCT_OPERATION.IDLE);

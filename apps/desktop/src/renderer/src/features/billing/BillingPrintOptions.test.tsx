@@ -110,14 +110,26 @@ describe("billing receipt QR choices", () => {
       includeAmountInUpiQr: true
     });
     expect(screen.getByText("Main counter")).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "UPI account" })).toHaveClass(
+    const accountTrigger = screen.getByRole("combobox", { name: "UPI account" });
+    expect(accountTrigger).toHaveClass(
       "min-w-0",
       "max-w-full",
       "overflow-hidden",
       "whitespace-normal"
     );
     expect(screen.getByText("Main counter")).toHaveClass("whitespace-normal");
-    await user.click(screen.getByRole("combobox", { name: "UPI account" }));
+    await user.click(accountTrigger);
+    expect(accountTrigger).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("group", { name: "Add a payment QR?" }));
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(accountTrigger).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(accountTrigger);
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(accountTrigger).toHaveFocus();
+
+    await user.click(accountTrigger);
     const accountList = screen.getByRole("listbox");
     expect(accountList).toHaveClass("max-h-56");
     expect(accountList.closest("[data-upi-account-picker-inline]")).toBeInTheDocument();

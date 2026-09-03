@@ -168,7 +168,7 @@ describe("PrintingSection categories", () => {
     expect(screen.getByTestId("upi-open-amount-qr")).toBeInTheDocument();
   });
 
-  it("disables automatic QR switches when no account exists", async () => {
+  it("disables UPI default modes when no account exists", async () => {
     const user = userEvent.setup();
     useAppPreferencesMock.mockReturnValue({
       ...useAppPreferencesMock(),
@@ -185,9 +185,41 @@ describe("PrintingSection categories", () => {
     await user.click(screen.getByRole("tab", { name: "UPI QR" }));
 
     expect(screen.getByText("No UPI accounts saved")).toBeVisible();
-    expect(screen.getByRole("switch", { name: "Print UPI QR on sales" })).toBeDisabled();
-    expect(screen.getByRole("switch", { name: "Print UPI QR on estimates" })).toBeDisabled();
-    expect(screen.getByRole("switch", { name: "Include exact bill amount" })).toBeDisabled();
+    const defaultQrMethod = screen.getByRole("combobox", { name: "Default QR method" });
+    expect(defaultQrMethod).toBeEnabled();
+    expect(defaultQrMethod).toHaveTextContent("No QR");
+
+    defaultQrMethod.focus();
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("option", { name: "No QR" })).toBeEnabled();
+    expect(screen.getByRole("option", { name: "Open amount" })).toHaveAttribute(
+      "data-disabled",
+      ""
+    );
+    expect(screen.getByRole("option", { name: "Fixed amount" })).toHaveAttribute(
+      "data-disabled",
+      ""
+    );
+  });
+
+  it("updates one default QR method for new sales and estimates", async () => {
+    const user = userEvent.setup();
+    render(<PrintingSection />, { wrapper: TestQueryProvider });
+
+    await user.click(screen.getByRole("tab", { name: "UPI QR" }));
+    const defaultQrMethod = screen.getByRole("combobox", { name: "Default QR method" });
+    expect(defaultQrMethod).toHaveTextContent("Fixed amount");
+
+    defaultQrMethod.focus();
+    await user.keyboard("{Enter}{ArrowUp}{Enter}");
+
+    expect(updateConfigMock).toHaveBeenCalledWith({
+      printing: {
+        printUpiQrOnSales: true,
+        printUpiQrOnEstimates: true,
+        includeAmountInUpiQr: false
+      }
+    });
   });
 
   it("keeps long UPI account details contained in the QR test dialog", async () => {

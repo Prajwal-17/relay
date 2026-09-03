@@ -93,7 +93,7 @@ export function ProductDialog() {
       URL.revokeObjectURL(formDataState.pendingImagePreviewUrl);
     }
     setInitialTab(INITIAL_TAB.INFO);
-    setOpenProductDialog();
+    setOpenProductDialog(false);
   };
 
   return (
@@ -257,7 +257,9 @@ export function ProductDialog() {
               )}
 
               <Button
+                type="button"
                 variant="ghost"
+                aria-label="Close product dialog"
                 onClick={() => {
                   closeProductDialog();
                 }}
