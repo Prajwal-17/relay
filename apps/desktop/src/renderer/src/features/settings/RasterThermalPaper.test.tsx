@@ -18,14 +18,14 @@ const receipt: RawReceiptData = {
   items: [
     {
       name: "Premium Basmati Rice Extra Long Grain Family Pack That Must Wrap Naturally",
-      quantity: "2.5",
+      quantity: "2.500",
       checkedQty: 1.5,
       unitPricePaisa: 8500,
       totalPaisa: 21250
     },
     {
       name: "Cold Pressed Groundnut Oil",
-      quantity: "1",
+      quantity: "1.000",
       checkedQty: 1,
       unitPricePaisa: 19900,
       totalPaisa: 19900
@@ -80,7 +80,7 @@ describe("canonical raster thermal papers", () => {
     const rows = screen.getAllByTestId("raster-receipt-item-row");
     const receiptHeader = paper.querySelector("header");
     const receiptMain = paper.querySelector("main");
-    const gridTemplateColumns = "32px minmax(0, 1fr) 92px 84px 108px";
+    const gridTemplateColumns = "28px minmax(0, 1fr) 112px 86px 106px";
 
     expect(paper).toHaveStyle({
       width: "576px",
@@ -98,33 +98,41 @@ describe("canonical raster thermal papers", () => {
     expect(receiptMain).toHaveClass("px-1");
     expect(meta).toHaveClass("border-y", "border-dashed", "border-black");
     expect(header).toHaveClass("border-b", "border-dashed", "border-black");
-    expect(header).toHaveStyle({ gridTemplateColumns });
+    expect(header).toHaveStyle({ gridTemplateColumns, columnGap: "8px" });
     for (const heading of Array.from(header.children).slice(2)) {
-      expect(heading).toHaveClass("w-full", "text-right");
+      expect(heading).toHaveClass("justify-self-end", "text-right");
     }
     expect(items).toHaveClass("border-b", "border-dashed", "border-black");
     expect(rows).toHaveLength(receipt.items.length);
     for (const row of rows) {
       expect(row).toHaveClass("py-1", "text-[24px]", "leading-[1.2]", "font-[500]");
-      expect(row).toHaveStyle({ gridTemplateColumns });
-      expect(row.children[1]).toHaveClass("font-[500]");
-      expect(row.children[2]).toHaveClass("font-[500]", "w-full", "text-right");
-      expect(row.children[3]).toHaveClass("font-[500]", "w-full", "text-right");
-      expect(row.children[4]).toHaveClass("font-[500]", "w-full", "text-right");
+      expect(row).toHaveStyle({ gridTemplateColumns, columnGap: "8px" });
+      expect(row.children[1]).toHaveClass("font-[500]", "tracking-[-0.01em]");
+      expect(row.children[2]).toHaveClass("font-[500]", "justify-self-end", "text-right");
+      expect(row.children[3]).toHaveClass("font-[500]", "justify-self-end", "text-right");
+      expect(row.children[4]).toHaveClass("font-[500]", "justify-self-end", "text-right");
     }
 
     expect(paper).toHaveTextContent(receipt.items[0]!.name);
     expect(paper).toHaveTextContent("Rs.12,34,567.89");
     expect(paper).toHaveTextContent("2.5(1.5)");
+    expect(paper).not.toHaveTextContent("2.500");
+    expect(paper).not.toHaveTextContent("1.000");
     expect(paper).toHaveTextContent("Date: Mon,");
     const partiallyChecked = screen.getByLabelText("1.5 of 2.5 checked");
     const fullyChecked = screen.getByLabelText("1 of 1 checked");
-    expect(partiallyChecked.querySelector("svg")).not.toBeInTheDocument();
+    expect(partiallyChecked).toHaveTextContent("(1.5)");
+    expect(partiallyChecked.querySelector("svg")).toBeInTheDocument();
     expect(fullyChecked.querySelector("svg")).toBeInTheDocument();
-    expect(fullyChecked).toHaveClass("items-center", "whitespace-nowrap", "leading-none");
+    expect(fullyChecked).toHaveClass(
+      "inline-flex",
+      "items-center",
+      "justify-end",
+      "whitespace-nowrap"
+    );
   });
 
-  it("trims only whole line-item decimals and keeps totals fixed to two decimals", () => {
+  it("keeps line-item amounts separated and only shows meaningful decimals", () => {
     const wholeTotalReceipt: RawReceiptData = {
       ...receipt,
       subtotalPaisa: 41_900,
@@ -142,9 +150,9 @@ describe("canonical raster thermal papers", () => {
     const summary = screen.getByTestId("raster-receipt-summary");
     const summaryAmounts = Array.from(summary.querySelectorAll("[data-receipt-amount]"));
     expect(summary).toHaveClass("ml-auto", "grid", "min-w-[330px]");
-    expect(summaryAmounts.map((amount) => amount.textContent)).toEqual(["419.00", "Rs.419.00"]);
+    expect(summaryAmounts.map((amount) => amount.textContent)).toEqual(["419", "Rs.419"]);
     expect(summary.children[0]).toHaveTextContent("Subtotal");
-    expect(summary.children[1]).toHaveTextContent("419.00");
+    expect(summary.children[1]).toHaveTextContent("419");
     expect(summary.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument();
     expect(summary.children[2]).toHaveTextContent("TOTAL");
     expect(summary.children[2]).toHaveClass("text-[30px]", "font-[600]");

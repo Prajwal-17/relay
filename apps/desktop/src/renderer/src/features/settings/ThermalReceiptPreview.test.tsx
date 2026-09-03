@@ -3,7 +3,7 @@
 import "@testing-library/jest-dom/vitest";
 import { apiClient } from "@/lib/apiClient";
 import type { PrintingConfig, StoreProfile } from "@shared/types";
-import { thermalItemLines } from "@shared/utils/thermalReceipt";
+import { formatReceiptQuantity, thermalItemLines } from "@shared/utils/thermalReceipt";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -89,6 +89,21 @@ afterEach(() => {
 });
 
 describe("thermal receipt settings preview", () => {
+  it("prints fractional quantities without redundant zeroes", () => {
+    expect(formatReceiptQuantity(".500")).toBe("0.5");
+    expect(formatReceiptQuantity("0.500")).toBe("0.5");
+    expect(formatReceiptQuantity("1.000")).toBe("1");
+    expect(formatReceiptQuantity("1.250")).toBe("1.25");
+    const itemLine = thermalItemLines(1, {
+      name: "Loose item",
+      quantity: ".500",
+      unitPricePaisa: 1000,
+      totalPaisa: 500
+    })[0]!;
+    expect(itemLine).toContain("   0.5");
+    expect(itemLine).not.toContain(".00");
+  });
+
   it("builds sample data with the same visibility and UPI rules as production", () => {
     const sale = buildThermalPreviewReceipt(profile, printing, "sale", "2026-08-10T10:30:00.000Z");
     const estimate = buildThermalPreviewReceipt(
