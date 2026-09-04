@@ -23,6 +23,7 @@ import { UpiQrProfilesManager } from "./UpiQrProfilesManager";
 
 const RESETTABLE_FIELDS_COUNT = 16;
 const inputClass = "text-sm font-medium";
+type DefaultQrMode = "none" | "open" | "fixed";
 
 type TextPrintingField = "footerMessage";
 
@@ -193,6 +194,23 @@ export const PrintingSection = () => {
 
   const updatePrinting = (partial: Partial<PrintingConfig>) => {
     updateConfig({ printing: partial });
+  };
+
+  const defaultQrMode: DefaultQrMode =
+    printing.upiQrProfiles.length === 0 ||
+    (!printing.printUpiQrOnSales && !printing.printUpiQrOnEstimates)
+      ? "none"
+      : printing.includeAmountInUpiQr
+        ? "fixed"
+        : "open";
+
+  const updateDefaultQrMode = (mode: DefaultQrMode) => {
+    const includeQr = mode !== "none";
+    updatePrinting({
+      printUpiQrOnSales: includeQr,
+      printUpiQrOnEstimates: includeQr,
+      includeAmountInUpiQr: mode === "fixed"
+    });
   };
 
   return (
@@ -480,32 +498,29 @@ export const PrintingSection = () => {
                 onUpdate={updatePrinting}
               />
 
-              <ToggleField
-                id="settings-print-upi-sales"
-                label="Print UPI QR on sales"
-                hint="Shows a QR on sales bills."
-                checked={printing.printUpiQrOnSales}
-                disabled={isUpdating || printing.upiQrProfiles.length === 0}
-                onCheckedChange={(printUpiQrOnSales) => updatePrinting({ printUpiQrOnSales })}
-              />
-              <ToggleField
-                id="settings-print-upi-estimates"
-                label="Print UPI QR on estimates"
-                hint="Shows a QR on estimates."
-                checked={printing.printUpiQrOnEstimates}
-                disabled={isUpdating || printing.upiQrProfiles.length === 0}
-                onCheckedChange={(printUpiQrOnEstimates) =>
-                  updatePrinting({ printUpiQrOnEstimates })
-                }
-              />
-              <ToggleField
-                id="settings-print-upi-amount"
-                label="Include exact bill amount"
-                hint="Adds the exact total to the payment request."
-                checked={printing.includeAmountInUpiQr}
-                disabled={isUpdating || printing.upiQrProfiles.length === 0}
-                onCheckedChange={(includeAmountInUpiQr) => updatePrinting({ includeAmountInUpiQr })}
-              />
+              <SettingsField
+                label="Default QR method"
+                hint="Preselected when a new sale or estimate is opened."
+              >
+                <Select
+                  value={defaultQrMode}
+                  onValueChange={(value) => updateDefaultQrMode(value as DefaultQrMode)}
+                  disabled={isUpdating}
+                >
+                  <SelectTrigger id="settings-print-default-qr" aria-label="Default QR method">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No QR</SelectItem>
+                    <SelectItem value="open" disabled={printing.upiQrProfiles.length === 0}>
+                      Open amount
+                    </SelectItem>
+                    <SelectItem value="fixed" disabled={printing.upiQrProfiles.length === 0}>
+                      Fixed amount
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </SettingsField>
             </SettingsGroup>
           </TabsContent>
         </Tabs>

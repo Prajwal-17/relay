@@ -261,7 +261,7 @@ export default function ProductHeader() {
         <Button
           onClick={() => {
             setActionType("add");
-            setOpenProductDialog();
+            setOpenProductDialog(true);
           }}
           className="hover:bg-primary-hover h-9 cursor-pointer gap-1.5 px-3.5 text-sm font-semibold"
         >

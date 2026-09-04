@@ -326,6 +326,7 @@ export function CustomerListView() {
         <CustomerListTable
           key={dataKey}
           rows={rows}
+          searchQuery={debouncedQuery}
           activeIndex={activeIndex}
           hasNextPage={hasNextPage}
           hasFilters={hasFilters}

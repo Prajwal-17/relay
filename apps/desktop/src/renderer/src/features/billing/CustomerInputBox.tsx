@@ -1,3 +1,4 @@
+import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -262,6 +263,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
                   customer={customer}
                   isActive={index === activeIndex}
                   isSelected={customerId === customer.id}
+                  searchQuery={search}
                   onSelect={() => handleSelectCustomer(customer)}
                   onPointerMove={(event) => handlePointerMove(index, event)}
                 />
@@ -311,12 +313,14 @@ function CustomerRow({
   customer,
   isActive,
   isSelected,
+  searchQuery,
   onSelect,
   onPointerMove
 }: {
   customer: Customer;
   isActive: boolean;
   isSelected: boolean;
+  searchQuery: string;
   onSelect: () => void;
   onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => void;
 }) {
@@ -343,7 +347,7 @@ function CustomerRow({
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-1.5">
           <p className="text-foreground min-w-0 truncate text-sm leading-tight font-medium">
-            {customer.name}
+            <HighlightedText text={customer.name} query={searchQuery} />
           </p>
           <Badge
             variant="outline"
@@ -356,7 +360,7 @@ function CustomerRow({
           </Badge>
         </div>
         <p className="text-muted-foreground truncate text-xs leading-tight">
-          {customer.contact ? customer.contact : "No contact"}
+          <HighlightedText text={customer.contact || "No contact"} query={searchQuery} />
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-1.5">

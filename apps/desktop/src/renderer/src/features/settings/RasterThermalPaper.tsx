@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import type { RawLedgerStatementData, RawReceiptData, ReceiptCutMode } from "@shared/types";
 import {
   buildThermalUpiUri,
+  formatReceiptQuantity,
   formatThermalLedgerDate,
   formatThermalLedgerAmount,
   getLedgerPreviousBalance,
@@ -31,22 +32,20 @@ const receiptPaperStyle = {
 } as const;
 
 const receiptItemGridStyle = {
-  gridTemplateColumns: "32px minmax(0, 1fr) 92px 84px 108px"
+  gridTemplateColumns: "28px minmax(0, 1fr) 112px 86px 106px",
+  columnGap: "8px"
 } as const;
 
 function ReceiptAmount({
   paisa,
   prefix = false,
-  fractionDisplay = "fixed",
   className = ""
 }: {
   paisa: number;
   prefix?: boolean;
-  fractionDisplay?: "fixed" | "compact";
   className?: string;
 }) {
-  const formattedAmount =
-    fractionDisplay === "compact" ? paisaToRupeeString(paisa) : formatRupee(paisa).replace("₹", "");
+  const formattedAmount = formatRupee(paisa).replace("₹", "").replace(/\.00$/, "");
   return (
     <span className={cn("shrink-0 whitespace-nowrap tabular-nums", className)} data-receipt-amount>
       {prefix ? "Rs." : ""}
@@ -115,20 +114,21 @@ function RasterAccountSettlement({
 function CheckedQuantity({ item }: { item: RawReceiptData["items"][number] }) {
   const quantity = Number(item.quantity);
   const checkedQuantity = Number(item.checkedQty ?? 0);
-  if (!Number.isFinite(checkedQuantity) || checkedQuantity <= 0) return <>{item.quantity}</>;
+  const formattedQuantity = formatReceiptQuantity(item.quantity);
+  if (!Number.isFinite(checkedQuantity) || checkedQuantity <= 0) {
+    return <span data-receipt-quantity>{formattedQuantity}</span>;
+  }
 
   const partiallyChecked = Number.isFinite(quantity) && checkedQuantity < quantity;
+  const formattedCheckedQuantity = formatReceiptQuantity(checkedQuantity);
   return (
     <span
-      className="inline-flex items-center justify-end gap-x-1 align-middle leading-none whitespace-nowrap tabular-nums"
-      aria-label={`${item.checkedQty} of ${item.quantity} checked`}
+      className="inline-flex items-center justify-end gap-x-1 whitespace-nowrap lining-nums tabular-nums"
+      aria-label={`${formattedCheckedQuantity} of ${formattedQuantity} checked`}
     >
-      <span>{item.quantity}</span>
-      {partiallyChecked ? (
-        <span>({item.checkedQty})</span>
-      ) : (
-        <Check className="size-[18px] shrink-0 self-center" strokeWidth={3} aria-hidden="true" />
-      )}
+      <span data-receipt-quantity>{formattedQuantity}</span>
+      {partiallyChecked ? <span>({formattedCheckedQuantity})</span> : null}
+      <Check className="size-[17px] shrink-0" strokeWidth={4} aria-hidden="true" />
     </span>
   );
 }
@@ -210,9 +210,9 @@ function RasterReceiptBody({
           >
             <span>#</span>
             <span>Item</span>
-            <span className="w-full text-right">Qty</span>
-            <span className="w-full text-right">Rate</span>
-            <span className="w-full text-right">Amt</span>
+            <span className="justify-self-end text-right">Qty</span>
+            <span className="justify-self-end text-right">Rate</span>
+            <span className="justify-self-end text-right">Amt</span>
           </div>
           <div
             className="border-b border-dashed border-black py-1"
@@ -226,19 +226,19 @@ function RasterReceiptBody({
                 data-testid="raster-receipt-item-row"
               >
                 <span className="tabular-nums">{index + 1}.</span>
-                <span className="min-w-0 pr-3 font-[500] break-words">{item.name}</span>
-                <span className="w-full min-w-0 text-right font-[500]">
+                <span className="min-w-0 pr-3 font-[500] tracking-[-0.01em] break-words">
+                  {item.name}
+                </span>
+                <span className="min-w-0 justify-self-end text-right font-[500] lining-nums tabular-nums">
                   <CheckedQuantity item={item} />
                 </span>
                 <ReceiptAmount
                   paisa={item.unitPricePaisa}
-                  fractionDisplay="compact"
-                  className="block w-full text-right font-[500]"
+                  className="justify-self-end text-right font-[500] lining-nums"
                 />
                 <ReceiptAmount
                   paisa={item.totalPaisa}
-                  fractionDisplay="compact"
-                  className="block w-full text-right font-[500]"
+                  className="justify-self-end text-right font-[500] lining-nums"
                 />
               </article>
             ))}

@@ -54,6 +54,7 @@ const BillingPageContent = () => {
     activeTabId ? state.tabs.find((t) => t.id === activeTabId)?.routePath : undefined
   );
 
+  const billingScrollRef = useRef<HTMLDivElement>(null);
   const prevPathname = useRef(pathname);
   const prevActiveRoute = useRef(activeTabRoutePath);
 
@@ -117,6 +118,11 @@ const BillingPageContent = () => {
     initSession(activeTabId);
   }, [activeTabId, initSession]);
 
+  useEffect(() => {
+    if (!activeTabId) return;
+    billingScrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
+  }, [activeTabId]);
+
   const transactionQuery = useLoadTransactionDetails(
     formattedType as TransactionType,
     id,
@@ -163,6 +169,7 @@ const BillingPageContent = () => {
       <div data-billing-workspace className="flex h-0 min-h-0 flex-1 overflow-clip">
         <div className="bg-background-secondary relative flex min-h-0 min-w-0 flex-1 flex-col">
           <div
+            ref={billingScrollRef}
             data-billing-scroll-container
             className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto"
           >

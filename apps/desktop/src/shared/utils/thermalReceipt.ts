@@ -70,6 +70,13 @@ export function fitThermalText(
   return align === "right" ? clipped.padStart(width) : clipped.padEnd(width);
 }
 
+export function formatReceiptQuantity(value: string | number): string {
+  const quantity = Number(value);
+  if (!Number.isFinite(quantity)) return safeThermalText(String(value)).trim();
+
+  return quantity.toFixed(3).replace(/\.?0+$/, "");
+}
+
 export function buildReceiptAddressLines(profile: StoreProfile): string[] {
   const locality = [profile.city, profile.state]
     .map((part) => part.trim())
@@ -85,14 +92,18 @@ export function buildReceiptAddressLines(profile: StoreProfile): string[] {
 export function thermalItemLines(index: number, item: RawReceiptItem): string[] {
   const widths = THERMAL_RECEIPT_ITEM_WIDTHS;
   const nameLines = wrapThermalText(item.name, widths.name);
-  const rate = (item.unitPricePaisa / 100).toFixed(2);
-  const amount = (item.totalPaisa / 100).toFixed(2);
+  const rate = paisaToRupeeString(item.unitPricePaisa);
+  const amount = paisaToRupeeString(item.totalPaisa);
 
   return nameLines.map((name, lineIndex) =>
     [
       fitThermalText(lineIndex === 0 ? `${index}.` : "", widths.index),
       fitThermalText(name, widths.name),
-      fitThermalText(lineIndex === 0 ? item.quantity : "", widths.quantity, "right"),
+      fitThermalText(
+        lineIndex === 0 ? formatReceiptQuantity(item.quantity) : "",
+        widths.quantity,
+        "right"
+      ),
       fitThermalText(lineIndex === 0 ? rate : "", widths.rate, "right"),
       fitThermalText(lineIndex === 0 ? amount : "", widths.amount, "right")
     ].join("")
