@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { getProductImageUrl, ignoredWeight } from "@/constants/renderer.constants";
+import { focusFirstEmptyLineItem } from "@/features/billing/billingFocus";
 import { useSearchDropdownStore } from "@/features/billing/product-search/searchDropdown.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
-import { focusFirstEmptyLineItem } from "@/features/billing/billingFocus";
 import {
   BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
   PRODUCTSEARCH_TYPE,
@@ -21,12 +21,99 @@ import { formatDateStr } from "@shared/utils/dateUtils";
 import { paisaToRupeeString } from "@shared/utils/utils";
 import { ArrowDown, ArrowUp, Edit, Eye, Info, ListFilter, PackagePlus, Search } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent
+} from "react";
 
-const SEARCH_DROPDOWN_MAX_HEIGHT = 396;
-const SEARCH_DROPDOWN_MAX_WIDTH = 820;
-const SEARCH_DROPDOWN_COMPACT_MAX_WIDTH = 680;
+const SEARCH_DROPDOWN_SIZE_STORAGE_KEY = "quickcart-billing-product-search-size-v1";
+const SEARCH_DROPDOWN_DEFAULT_WIDTH = 820;
+const SEARCH_DROPDOWN_DEFAULT_HEIGHT = 396;
+const SEARCH_DROPDOWN_MIN_WIDTH = 480;
+const SEARCH_DROPDOWN_MAX_WIDTH = 1080;
+const SEARCH_DROPDOWN_MIN_HEIGHT = 220;
+const SEARCH_DROPDOWN_MAX_HEIGHT = 640;
+const SEARCH_DROPDOWN_VIEWPORT_INSET = 12;
 const KEYBOARD_SCROLL_AHEAD = 2;
+
+type DropdownSize = { width: number; height: number };
+type DropdownResizeAxis = "width" | "height" | "both";
+type DropdownResizeInteraction = {
+  axis: DropdownResizeAxis;
+  startClientX: number;
+  startClientY: number;
+  startSize: DropdownSize;
+};
+
+const clamp = (value: number, minimum: number, maximum: number) =>
+  Math.min(maximum, Math.max(minimum, value));
+
+const readDropdownSize = (): DropdownSize => {
+  try {
+    const savedSize = window.localStorage.getItem(SEARCH_DROPDOWN_SIZE_STORAGE_KEY);
+    if (!savedSize) {
+      return {
+        width: SEARCH_DROPDOWN_DEFAULT_WIDTH,
+        height: SEARCH_DROPDOWN_DEFAULT_HEIGHT
+      };
+    }
+
+    const parsed = JSON.parse(savedSize) as Partial<DropdownSize>;
+    return {
+      width:
+        typeof parsed.width === "number" && Number.isFinite(parsed.width)
+          ? clamp(parsed.width, SEARCH_DROPDOWN_MIN_WIDTH, SEARCH_DROPDOWN_MAX_WIDTH)
+          : SEARCH_DROPDOWN_DEFAULT_WIDTH,
+      height:
+        typeof parsed.height === "number" && Number.isFinite(parsed.height)
+          ? clamp(parsed.height, SEARCH_DROPDOWN_MIN_HEIGHT, SEARCH_DROPDOWN_MAX_HEIGHT)
+          : SEARCH_DROPDOWN_DEFAULT_HEIGHT
+    };
+  } catch {
+    return {
+      width: SEARCH_DROPDOWN_DEFAULT_WIDTH,
+      height: SEARCH_DROPDOWN_DEFAULT_HEIGHT
+    };
+  }
+};
+
+const saveDropdownSize = ({ width, height }: DropdownSize) => {
+  try {
+    window.localStorage.setItem(
+      SEARCH_DROPDOWN_SIZE_STORAGE_KEY,
+      JSON.stringify({ width: Math.round(width), height: Math.round(height) })
+    );
+  } catch {
+    // Resizing remains available if local storage is unavailable.
+  }
+};
+
+const getDropdownResizeBounds = (element: HTMLElement) => {
+  const elementRect = element.getBoundingClientRect();
+  const billingScrollContainer = element.closest<HTMLElement>("[data-billing-scroll-container]");
+  const scrollViewportRect = billingScrollContainer?.getBoundingClientRect();
+  const visibleBottom =
+    Math.min(scrollViewportRect?.bottom ?? window.innerHeight, window.innerHeight) -
+    SEARCH_DROPDOWN_VIEWPORT_INSET;
+  const availableWidth = Math.max(
+    160,
+    window.innerWidth - SEARCH_DROPDOWN_VIEWPORT_INSET - elementRect.left
+  );
+  const availableHeight = Math.max(120, visibleBottom - elementRect.top);
+  const maxWidth = Math.min(SEARCH_DROPDOWN_MAX_WIDTH, availableWidth);
+  const maxHeight = Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight);
+
+  return {
+    minWidth: Math.min(SEARCH_DROPDOWN_MIN_WIDTH, maxWidth),
+    maxWidth,
+    minHeight: Math.min(SEARCH_DROPDOWN_MIN_HEIGHT, maxHeight),
+    maxHeight
+  };
+};
 
 const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setIsDropdownOpen = useSearchDropdownStore((state) => state.setIsDropdownOpen);
@@ -181,39 +268,99 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   };
 
   const dropdownContainerRef = useRef<HTMLDivElement>(null);
+  const [savedDropdownSize] = useState(readDropdownSize);
+  const preferredDropdownSizeRef = useRef(savedDropdownSize);
+  const resizeInteractionRef = useRef<DropdownResizeInteraction | null>(null);
 
   const [previewStyle, setPreviewStyle] = useState<React.CSSProperties>({ display: "none" });
   const [dropdownLayout, setDropdownLayout] = useState({
-    width: SEARCH_DROPDOWN_MAX_WIDTH,
-    maxHeight: SEARCH_DROPDOWN_MAX_HEIGHT,
+    width: savedDropdownSize.width,
+    height: savedDropdownSize.height,
     left: 0
   });
 
   const updateDropdownLayout = useCallback(() => {
     const element = dropdownContainerRef.current;
-    if (!element) return;
+    if (!element || resizeInteractionRef.current) return;
 
     const anchorRect = dropdownRef.current?.getBoundingClientRect();
     const billingScrollContainer = element.closest<HTMLElement>("[data-billing-scroll-container]");
-    const viewportInset = 12;
     const anchorLeft = anchorRect?.left ?? element.getBoundingClientRect().left;
-    const anchoredVisualLeft = Math.max(anchorLeft, viewportInset);
+    const anchoredVisualLeft = Math.max(anchorLeft, SEARCH_DROPDOWN_VIEWPORT_INSET);
     const availableVisualWidth = Math.max(
       160,
-      window.innerWidth - viewportInset - anchoredVisualLeft
+      window.innerWidth - SEARCH_DROPDOWN_VIEWPORT_INSET - anchoredVisualLeft
     );
-    const maxWidth =
-      window.innerWidth <= 1100 ? SEARCH_DROPDOWN_COMPACT_MAX_WIDTH : SEARCH_DROPDOWN_MAX_WIDTH;
-    const width = Math.min(maxWidth, availableVisualWidth);
-    const scrollViewportHeight = billingScrollContainer?.clientHeight ?? window.innerHeight;
-    const availableHeight = Math.max(180, scrollViewportHeight - viewportInset * 2);
+    const scrollViewportHeight = Math.min(
+      billingScrollContainer?.clientHeight ?? window.innerHeight,
+      window.innerHeight
+    );
+    const availableHeight = Math.max(
+      120,
+      scrollViewportHeight - SEARCH_DROPDOWN_VIEWPORT_INSET * 2
+    );
+    const maxWidth = Math.min(SEARCH_DROPDOWN_MAX_WIDTH, availableVisualWidth);
+    const maxHeight = Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight);
+    const preferredSize = preferredDropdownSizeRef.current;
 
     setDropdownLayout({
-      width,
-      maxHeight: Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight),
+      width: clamp(preferredSize.width, Math.min(SEARCH_DROPDOWN_MIN_WIDTH, maxWidth), maxWidth),
+      height: clamp(
+        preferredSize.height,
+        Math.min(SEARCH_DROPDOWN_MIN_HEIGHT, maxHeight),
+        maxHeight
+      ),
       left: anchoredVisualLeft - anchorLeft
     });
   }, [dropdownRef]);
+
+  const startDropdownResize = (axis: DropdownResizeAxis, event: ReactPointerEvent<HTMLElement>) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    resizeInteractionRef.current = {
+      axis,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startSize: {
+        width: dropdownLayout.width,
+        height: dropdownLayout.height
+      }
+    };
+    document.body.style.userSelect = "none";
+    document.body.style.cursor =
+      axis === "width" ? "ew-resize" : axis === "height" ? "ns-resize" : "nwse-resize";
+  };
+
+  const handleResizeKeyDown = (event: ReactKeyboardEvent<HTMLButtonElement>) => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+    const element = dropdownContainerRef.current;
+    if (!element) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const step = event.shiftKey ? 32 : 12;
+    const bounds = getDropdownResizeBounds(element);
+
+    setDropdownLayout((current) => {
+      const nextSize = {
+        width: clamp(
+          current.width +
+            (event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0),
+          bounds.minWidth,
+          bounds.maxWidth
+        ),
+        height: clamp(
+          current.height + (event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0),
+          bounds.minHeight,
+          bounds.maxHeight
+        )
+      };
+      preferredDropdownSizeRef.current = nextSize;
+      saveDropdownSize(nextSize);
+      return { ...current, ...nextSize };
+    });
+  };
 
   const updatePreviewPosition = useCallback(() => {
     if (!delayedPreviewProduct || !dropdownContainerRef.current) {
@@ -297,6 +444,56 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     return () => window.removeEventListener("resize", updateDropdownLayout);
   }, [updateDropdownLayout]);
 
+  useEffect(() => {
+    const handlePointerMove = (event: PointerEvent) => {
+      const interaction = resizeInteractionRef.current;
+      const element = dropdownContainerRef.current;
+      if (!interaction || !element) return;
+
+      const bounds = getDropdownResizeBounds(element);
+      const changesWidth = interaction.axis === "width" || interaction.axis === "both";
+      const changesHeight = interaction.axis === "height" || interaction.axis === "both";
+      const nextSize = {
+        width: changesWidth
+          ? clamp(
+              interaction.startSize.width + event.clientX - interaction.startClientX,
+              bounds.minWidth,
+              bounds.maxWidth
+            )
+          : interaction.startSize.width,
+        height: changesHeight
+          ? clamp(
+              interaction.startSize.height + event.clientY - interaction.startClientY,
+              bounds.minHeight,
+              bounds.maxHeight
+            )
+          : interaction.startSize.height
+      };
+
+      preferredDropdownSizeRef.current = nextSize;
+      setDropdownLayout((current) => ({ ...current, ...nextSize }));
+    };
+
+    const finishResize = () => {
+      if (!resizeInteractionRef.current) return;
+      resizeInteractionRef.current = null;
+      saveDropdownSize(preferredDropdownSizeRef.current);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", finishResize);
+    window.addEventListener("pointercancel", finishResize);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", finishResize);
+      window.removeEventListener("pointercancel", finishResize);
+      document.body.style.userSelect = "";
+      document.body.style.cursor = "";
+    };
+  }, []);
+
   // The virtualized results settle after the first render, so observe the real dropdown size
   // instead of relying on a one-time measurement that can run too early.
   useEffect(() => {
@@ -306,6 +503,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
     let frame: number | null = null;
     const revealDropdown = () => {
+      if (resizeInteractionRef.current) return;
       if (frame !== null) window.cancelAnimationFrame(frame);
       frame = window.requestAnimationFrame(() => {
         frame = null;
@@ -462,6 +660,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   // arrow keys navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
       const len = searchResults.length;
       if (len === 0) return;
 
@@ -519,7 +718,8 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
           ref={dropdownContainerRef}
           style={{
             width: dropdownLayout.width,
-            maxHeight: dropdownLayout.maxHeight,
+            height: dropdownLayout.height,
+            maxHeight: dropdownLayout.height,
             left: dropdownLayout.left
           }}
           className="bg-background border-frame absolute top-[calc(100%+0.5rem)] z-30 flex flex-col overflow-hidden rounded-(--radius-panel) border shadow-md"
@@ -533,7 +733,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               primaryAction={{ label: "Try again", onClick: () => void refetch() }}
             />
           ) : searchResults.length === 0 ? (
-            <div className="text-muted-foreground flex flex-col items-center px-3 py-8 text-center">
+            <div className="text-muted-foreground flex flex-1 flex-col items-center justify-center px-3 py-8 text-center">
               <div className="bg-secondary mb-3 flex size-10 items-center justify-center rounded-(--radius-control)">
                 <Search className="size-5" />
               </div>
@@ -783,6 +983,31 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
               </div>
             </>
           )}
+
+          <div
+            aria-hidden="true"
+            onPointerDown={(event) => startDropdownResize("width", event)}
+            className="hover:bg-border/60 absolute top-1 right-0 bottom-5 z-40 w-1.5 cursor-ew-resize touch-none transition-colors"
+          />
+          <div
+            aria-hidden="true"
+            onPointerDown={(event) => startDropdownResize("height", event)}
+            className="hover:bg-border/60 absolute right-5 bottom-0 left-1 z-40 h-1.5 cursor-ns-resize touch-none transition-colors"
+          />
+          <button
+            type="button"
+            aria-label="Resize product search results"
+            aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
+            title="Drag to resize. Use arrow keys for precise sizing."
+            onPointerDown={(event) => startDropdownResize("both", event)}
+            onKeyDown={handleResizeKeyDown}
+            className="border-border bg-background hover:bg-hover focus-visible:ring-focus/60 absolute right-0 bottom-0 z-50 flex size-5 cursor-nwse-resize touch-none items-end justify-end rounded-tl-sm border-t border-l p-1 outline-none focus-visible:ring-2"
+          >
+            <span
+              aria-hidden="true"
+              className="border-foreground/60 size-2 border-r-2 border-b-2"
+            />
+          </button>
         </div>
       </div>
     </>
