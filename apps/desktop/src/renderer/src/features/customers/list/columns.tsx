@@ -28,7 +28,12 @@ export function renderNameCell(row: CustomerListRow, query: string) {
 }
 
 export function renderTypeCell(row: CustomerListRow) {
-  return <CustomerTypeBadge customerType={row.customerType} />;
+  return (
+    <CustomerTypeBadge
+      customerType={row.customerType}
+      className="px-2 py-0.5 text-sm font-semibold"
+    />
+  );
 }
 
 export function renderOutstandingCell(row: CustomerListRow) {

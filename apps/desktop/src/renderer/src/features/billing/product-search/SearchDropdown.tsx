@@ -10,7 +10,6 @@ import { useBillingSessionStore } from "@/features/billing/store/billingSession.
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
 import { focusFirstEmptyLineItem } from "@/features/billing/billingFocus";
-import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 import {
   BILLING_PRODUCT_SEARCH_ROW_HEIGHT,
   PRODUCTSEARCH_TYPE,
@@ -41,9 +40,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
   const setDialogMode = useProductsStore((state) => state.setDialogMode);
   const setFormDataState = useProductsStore((state) => state.setFormDataState);
   const setProductId = useProductsStore((state) => state.setProductId);
-
-  const { config } = useAppPreferences();
-  const scale = config?.billing?.searchDropdown?.scale ?? 1;
 
   const {
     dropdownRef,
@@ -208,16 +204,16 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     );
     const maxWidth =
       window.innerWidth <= 1100 ? SEARCH_DROPDOWN_COMPACT_MAX_WIDTH : SEARCH_DROPDOWN_MAX_WIDTH;
-    const width = Math.min(maxWidth, availableVisualWidth / scale);
+    const width = Math.min(maxWidth, availableVisualWidth);
     const scrollViewportHeight = billingScrollContainer?.clientHeight ?? window.innerHeight;
-    const availableHeight = Math.max(180, (scrollViewportHeight - viewportInset * 2) / scale);
+    const availableHeight = Math.max(180, scrollViewportHeight - viewportInset * 2);
 
     setDropdownLayout({
       width,
       maxHeight: Math.min(SEARCH_DROPDOWN_MAX_HEIGHT, availableHeight),
-      left: (anchoredVisualLeft - anchorLeft) / scale
+      left: anchoredVisualLeft - anchorLeft
     });
-  }, [dropdownRef, scale]);
+  }, [dropdownRef]);
 
   const updatePreviewPosition = useCallback(() => {
     if (!delayedPreviewProduct || !dropdownContainerRef.current) {
@@ -248,7 +244,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
         Math.min(window.innerWidth - viewportInset * 2, window.innerHeight - viewportInset * 2)
       );
       const leftSpace = dropdownRect.left - viewportInset - previewGap;
-      const previewSize = Math.min(144 * scale, availableViewportSize, leftSpace);
+      const previewSize = Math.min(144, availableViewportSize, leftSpace);
 
       if (previewSize < 80) {
         setPreviewStyle({ display: "none" });
@@ -275,7 +271,7 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
     } else {
       setPreviewStyle({ display: "none" });
     }
-  }, [delayedPreviewProduct, parentRef, previewIndex, scale]);
+  }, [delayedPreviewProduct, parentRef, previewIndex]);
 
   useEffect(() => {
     updatePreviewPosition();
@@ -522,7 +518,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
         <div
           ref={dropdownContainerRef}
           style={{
-            zoom: scale,
             width: dropdownLayout.width,
             maxHeight: dropdownLayout.maxHeight,
             left: dropdownLayout.left

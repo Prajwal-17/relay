@@ -67,7 +67,10 @@ describe("preferences integration", () => {
     const defaults = await readJson<AppConfig>(response);
 
     expect(response.status).toBe(200);
-    expect(defaults.billing).toEqual({ defaultCustomerId: "", searchDropdown: { scale: 1 } });
+    expect(defaults.billing).toEqual({
+      defaultCustomerId: "",
+      autoAddAccountCustomerSales: true
+    });
     expect(defaults.exports).toMatchObject({
       askBeforeSavingPdf: true,
       defaultExportFormat: "pdf"
@@ -100,19 +103,22 @@ describe("preferences integration", () => {
     expect(getResponse.status).toBe(404);
 
     const patchResponse = await requestJson(app, "PATCH", "/api/app-preferences", {
-      billing: { searchDropdown: { scale: 1.1 } }
+      billing: { autoAddAccountCustomerSales: false }
     });
     expect(patchResponse.status).toBe(404);
     expect(db.select().from(appPreferences).all()).toEqual([]);
   });
 
-  it("normalizes legacy printing preferences on read and update", async () => {
+  it("normalizes legacy preferences on read and update", async () => {
     await onboard();
     const current = db.select().from(appPreferences).get();
     expect(current).toBeDefined();
 
     const legacyConfig = {
-      billing: current!.config.billing,
+      billing: {
+        defaultCustomerId: current!.config.billing.defaultCustomerId,
+        searchDropdown: { scale: 1.25 }
+      },
       exports: current!.config.exports,
       printing: {
         printerName: "Legacy printer",
@@ -125,6 +131,10 @@ describe("preferences integration", () => {
 
     const readResponse = await getJson(app, "/api/app-preferences");
     const normalized = await readJson<PreferencesBody>(readResponse);
+    expect(normalized.config.billing).toEqual({
+      defaultCustomerId: current!.config.billing.defaultCustomerId,
+      autoAddAccountCustomerSales: true
+    });
     expect(normalized.config.printing).toMatchObject({
       printerName: "Legacy printer",
       defaultPrintMode: "raster",
@@ -171,7 +181,7 @@ describe("preferences integration", () => {
     expect(before.config.billing.defaultCustomerId).toBe(customerId);
 
     const response = await requestJson(app, "PATCH", "/api/app-preferences", {
-      billing: { searchDropdown: { scale: 1.25 } },
+      billing: { autoAddAccountCustomerSales: false },
       exports: { askBeforeSavingPdf: false }
     });
     const updated = await readJson<PreferencesBody>(response);
@@ -179,7 +189,7 @@ describe("preferences integration", () => {
     expect(response.status).toBe(200);
     expect(updated.config.billing).toEqual({
       defaultCustomerId: customerId,
-      searchDropdown: { scale: 1.25 }
+      autoAddAccountCustomerSales: false
     });
     expect(updated.config.exports).toEqual({
       ...defaults.exports,
@@ -193,7 +203,7 @@ describe("preferences integration", () => {
   it("resets exports and printing independently and rejects unknown sections", async () => {
     const { customerId } = await onboard();
     await requestJson(app, "PATCH", "/api/app-preferences", {
-      billing: { searchDropdown: { scale: 1.2 } },
+      billing: { autoAddAccountCustomerSales: false },
       exports: {
         askBeforeSavingPdf: false,
         defaultPdfLocation: "/tmp/custom",
@@ -219,7 +229,7 @@ describe("preferences integration", () => {
     expect(exportsReset.config.printing.upiQrProfiles).toEqual([PRIMARY_UPI_PROFILE]);
     expect(exportsReset.config.billing).toEqual({
       defaultCustomerId: customerId,
-      searchDropdown: { scale: 1.2 }
+      autoAddAccountCustomerSales: false
     });
 
     const printingResponse = await requestJson(app, "POST", "/api/app-preferences/reset/printing");
@@ -242,7 +252,7 @@ describe("preferences integration", () => {
     const response = await requestJson(app, "PATCH", "/api/app-preferences", {
       billing: {
         defaultCustomerId: "alternate-customer",
-        searchDropdown: { scale: 0.8 }
+        autoAddAccountCustomerSales: false
       },
       exports: {
         askBeforeSavingPdf: false,
@@ -283,7 +293,7 @@ describe("preferences integration", () => {
     expect(body.config).toEqual({
       billing: {
         defaultCustomerId: "alternate-customer",
-        searchDropdown: { scale: 0.8 }
+        autoAddAccountCustomerSales: false
       },
       exports: {
         askBeforeSavingPdf: false,
@@ -369,9 +379,8 @@ describe("preferences integration", () => {
   });
 
   it.each([
-    ["scale below minimum", { billing: { searchDropdown: { scale: 0.79 } } }],
-    ["scale above maximum", { billing: { searchDropdown: { scale: 1.51 } } }],
     ["empty customer ID", { billing: { defaultCustomerId: "" } }],
+    ["non-boolean automatic accounting flag", { billing: { autoAddAccountCustomerSales: "yes" } }],
     ["non-boolean export flag", { exports: { askBeforeSavingPdf: "yes" } }],
     ["non-object billing", { billing: true }],
     ["non-object exports", { exports: [] }],
@@ -461,18 +470,5 @@ describe("preferences integration", () => {
 
     expect(response.status).toBe(400);
     expect(db.select().from(appPreferences).get()).toEqual(before);
-  });
-
-  it("accepts boundary scale values", async () => {
-    await onboard();
-    for (const scale of [0.8, 1.5]) {
-      const response = await requestJson(app, "PATCH", "/api/app-preferences", {
-        billing: { searchDropdown: { scale } }
-      });
-      expect(response.status).toBe(200);
-      expect((await readJson<PreferencesBody>(response)).config.billing.searchDropdown.scale).toBe(
-        scale
-      );
-    }
   });
 });

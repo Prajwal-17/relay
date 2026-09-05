@@ -642,9 +642,7 @@ export type PrintingConfig = {
 export interface AppConfig {
   billing: {
     defaultCustomerId: string;
-    searchDropdown: {
-      scale: number;
-    };
+    autoAddAccountCustomerSales: boolean;
   };
   exports: {
     askBeforeSavingPdf: boolean;

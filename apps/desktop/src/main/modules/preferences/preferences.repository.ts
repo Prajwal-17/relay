@@ -33,9 +33,10 @@ const updatePreferences = async (storeId: string, config: AppConfig) => {
 };
 
 const createDefaultPreferences = (storeId: string, defaultCustomerId: string, tx: any) => {
+  const defaults = getDefaultConfig();
   const config: AppConfig = {
-    ...getDefaultConfig(),
-    billing: { defaultCustomerId, searchDropdown: { scale: 1 } }
+    ...defaults,
+    billing: { ...defaults.billing, defaultCustomerId }
   };
 
   return tx

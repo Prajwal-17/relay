@@ -9,62 +9,18 @@ import {
   CommandList
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
 import type { Customer } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { SettingsField } from "../SettingsField";
 import { SettingsSection } from "../SettingsSection";
 import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 
 const DESCRIPTION = "Settings for new bills.";
-
-const SCALE_MIN = 80;
-const SCALE_MAX = 150;
-const SCALE_STEP = 5;
-
-const SearchDropdownSizeField = () => {
-  const { config, updateConfig, isUpdating } = useAppPreferences();
-  const scale = config?.billing?.searchDropdown?.scale ?? 1;
-  const [localPercent, setLocalPercent] = useState(() => Math.round(scale * 100));
-
-  useEffect(() => setLocalPercent(Math.round(scale * 100)), [scale]);
-
-  return (
-    <SettingsField
-      label="Product results height"
-      hint="Controls how many product matches are visible without using CSS zoom."
-      defaultValue="100%"
-      onReset={() => {
-        setLocalPercent(100);
-        updateConfig({ billing: { searchDropdown: { scale: 1 } } });
-      }}
-      isResetting={isUpdating}
-    >
-      <div className="flex items-center gap-3">
-        <span className="text-muted-foreground w-10 text-right text-xs tabular-nums">
-          {SCALE_MIN}%
-        </span>
-        <Slider
-          value={[localPercent]}
-          min={SCALE_MIN}
-          max={SCALE_MAX}
-          step={SCALE_STEP}
-          onValueChange={(value) => setLocalPercent(value[0]!)}
-          onValueCommit={(value) =>
-            updateConfig({ billing: { searchDropdown: { scale: value[0]! / 100 } } })
-          }
-          className="flex-1"
-        />
-        <span className="text-muted-foreground w-10 text-xs tabular-nums">{SCALE_MAX}%</span>
-      </div>
-      <div className="mt-1 text-center text-sm font-semibold tabular-nums">{localPercent}%</div>
-    </SettingsField>
-  );
-};
 
 export const BillingSection = () => {
   const { config, isLoading, isError, refetch, isFetching, updateConfig, isUpdating } =
@@ -190,7 +146,22 @@ export const BillingSection = () => {
         )}
       </SettingsField>
 
-      <SearchDropdownSizeField />
+      <SettingsField
+        label="Add account-customer sales automatically"
+        hint="Automatically add sales for Account customers to their account. You can undo this on the bill."
+      >
+        <div className="flex h-9 items-center">
+          <Switch
+            id="settings-auto-add-account-sales"
+            aria-label="Add account-customer sales automatically"
+            checked={config.billing.autoAddAccountCustomerSales}
+            onCheckedChange={(checked) =>
+              updateConfig({ billing: { autoAddAccountCustomerSales: checked } })
+            }
+            disabled={isUpdating}
+          />
+        </div>
+      </SettingsField>
     </SettingsSection>
   );
 };

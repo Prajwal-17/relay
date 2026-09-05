@@ -118,11 +118,7 @@ export const updatePreferencesSchema = z.object({
   billing: z
     .object({
       defaultCustomerId: z.string().min(1, "Customer ID is required").optional(),
-      searchDropdown: z
-        .object({
-          scale: z.number().min(0.8).max(1.5)
-        })
-        .optional()
+      autoAddAccountCustomerSales: z.boolean().optional()
     })
     .optional(),
   exports: z

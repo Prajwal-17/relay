@@ -38,11 +38,7 @@ const updatePreferences = async (storeId: string, partial: UpdatePreferencesPayl
   const mergedConfig: AppConfig = {
     billing: {
       ...normalizedExisting.billing,
-      ...(partial.billing ?? {}),
-      searchDropdown: {
-        ...normalizedExisting.billing.searchDropdown,
-        ...(partial.billing?.searchDropdown ?? {})
-      }
+      ...(partial.billing ?? {})
     },
     exports: {
       ...normalizedExisting.exports,

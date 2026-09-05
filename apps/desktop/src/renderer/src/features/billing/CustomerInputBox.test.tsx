@@ -12,6 +12,7 @@ import { useBillingTabsStore } from "./store/billingTabs.store";
 
 const tabId = "customer-highlight-tab";
 const fixtures = vi.hoisted(() => ({
+  autoAddAccountCustomerSales: true,
   customers: [
     {
       id: "customer-1",
@@ -21,6 +22,17 @@ const fixtures = vi.hoisted(() => ({
       notes: null,
       address: null,
       outstandingBalance: 0,
+      isArchived: false,
+      archivedAt: null
+    },
+    {
+      id: "customer-2",
+      name: "Account Stores",
+      contact: "9123456780",
+      customerType: "account",
+      notes: null,
+      address: null,
+      outstandingBalance: 12000,
       isArchived: false,
       archivedAt: null
     }
@@ -49,8 +61,17 @@ vi.mock("@/features/customers/hooks/useCustomersInfinite", async () => {
 });
 
 vi.mock("@/features/preferences/useAppPreferences", () => ({
-  useAppPreferences: () => ({ config: { billing: { defaultCustomerId: null } } })
+  useAppPreferences: () => ({
+    config: {
+      billing: {
+        defaultCustomerId: null,
+        autoAddAccountCustomerSales: fixtures.autoAddAccountCustomerSales
+      }
+    }
+  })
 }));
+
+vi.mock("@/features/billing/syncWorker", () => ({ processSyncQueue: vi.fn() }));
 
 beforeEach(() => {
   vi.stubGlobal(
@@ -61,6 +82,7 @@ beforeEach(() => {
       disconnect() {}
     }
   );
+  fixtures.autoAddAccountCustomerSales = true;
   useBillingSessionStore.setState({ sessions: {} });
   useBillingTabsStore.setState({
     tabs: [
@@ -81,15 +103,19 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+function renderCustomerInput() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  render(
+    <QueryClientProvider client={queryClient}>
+      <CustomerNameInput />
+    </QueryClientProvider>
+  );
+}
+
 describe("billing customer search", () => {
   it("highlights matches in customer names and contacts", async () => {
     const user = userEvent.setup();
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    render(
-      <QueryClientProvider client={queryClient}>
-        <CustomerNameInput />
-      </QueryClientProvider>
-    );
+    renderCustomerInput();
 
     await user.click(screen.getByRole("combobox", { name: "Select customer" }));
     const input = screen.getByPlaceholderText("Search customer...");
@@ -100,5 +126,15 @@ describe("billing customer search", () => {
     await user.clear(input);
     await user.type(input, "987");
     expect(screen.getByText("987", { selector: "mark" })).toHaveClass("bg-search-highlight");
+  });
+
+  it("automatically enables accounting when an Account customer is selected", async () => {
+    const user = userEvent.setup();
+    renderCustomerInput();
+
+    await user.click(screen.getByRole("combobox", { name: "Select customer" }));
+    await user.click(screen.getByText("Account Stores"));
+
+    expect(useBillingSessionStore.getState().sessions[tabId]?.addToAccounting).toBe(true);
   });
 });

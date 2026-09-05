@@ -35,7 +35,21 @@ import { fromMilliUnits } from "@shared/utils/milliUnits";
 import { formatRupee } from "@shared/utils/utils";
 import type { UseMutationResult } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight, LoaderCircle, Plus, Search, Tags, X } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  IndianRupee,
+  LoaderCircle,
+  Package,
+  Plus,
+  Receipt,
+  Search,
+  Settings2,
+  Tags,
+  X
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TxnRowActions } from "./TxnRowActions";
@@ -59,6 +73,7 @@ const isAmountSort = (value: TxnSortBy) =>
 function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
   const { type, numberLabel, pageNo, pageSize, ...mutations } = opts;
   const rowOffset = (pageNo - 1) * pageSize;
+  const DocumentIcon = type === TRANSACTION_TYPE.SALE ? Receipt : FileText;
 
   return [
     {
@@ -71,7 +86,12 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
     },
     {
       accessorKey: "createdAt",
-      header: "Date",
+      header: () => (
+        <span className="flex items-center gap-1">
+          <CalendarDays aria-hidden="true" className="size-3.5 shrink-0" />
+          Date
+        </span>
+      ),
       cell: ({ row }) => {
         const createdAt = row.original.createdAt;
         const { fullDate, timePart } = createdAt
@@ -92,7 +112,12 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
     },
     {
       accessorKey: "transactionNo",
-      header: numberLabel,
+      header: () => (
+        <span className="flex items-center gap-1">
+          <DocumentIcon aria-hidden="true" className="size-3.5 shrink-0" />
+          {numberLabel}
+        </span>
+      ),
       cell: ({ row }) => (
         <span className="text-foreground text-sm font-semibold tabular-nums">
           # {row.original.transactionNo}
@@ -102,7 +127,12 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
     },
     {
       accessorKey: "totalQuantity",
-      header: "Items",
+      header: () => (
+        <span className="flex items-center justify-end gap-1">
+          <Package aria-hidden="true" className="size-3.5 shrink-0" />
+          Items
+        </span>
+      ),
       cell: ({ row }) => (
         <span className="text-muted-foreground text-sm font-medium tabular-nums">
           {row.original.totalQuantity != null ? fromMilliUnits(row.original.totalQuantity) : "—"}
@@ -112,7 +142,12 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
     },
     {
       accessorKey: "grandTotal",
-      header: "Amount",
+      header: () => (
+        <span className="flex items-center justify-end gap-1">
+          <IndianRupee aria-hidden="true" className="size-3.5 shrink-0" />
+          Amount
+        </span>
+      ),
       cell: ({ row }) => (
         <span className="text-foreground text-sm font-semibold tabular-nums">
           {row.original.grandTotal != null ? formatRupee(row.original.grandTotal) : "—"}
@@ -122,7 +157,12 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
     },
     {
       id: "actions",
-      header: "Actions",
+      header: () => (
+        <span className="flex items-center justify-center gap-1">
+          <Settings2 aria-hidden="true" className="size-3.5 shrink-0" />
+          Actions
+        </span>
+      ),
       enableSorting: false,
       cell: ({ row }) => <TxnRowActions txn={row.original} type={type} {...mutations} />,
       meta: { align: TXN_TABLE_ALIGN.CENTER, width: "w-44" } as TxnTableColMeta
@@ -133,6 +173,7 @@ function buildColumns(opts: ColumnsOptions): ColumnDef<CustomerTxn>[] {
 export function CustomerTxnTable({
   customerId,
   customerName,
+  customerType,
   type,
   numberLabel,
   addLabel,
@@ -140,6 +181,7 @@ export function CustomerTxnTable({
 }: {
   customerId: string;
   customerName: string;
+  customerType: string;
   type: TransactionType;
   numberLabel: string;
   addLabel: string;
@@ -347,7 +389,7 @@ export function CustomerTxnTable({
         <Button
           onClick={() =>
             navigate(addRoute, {
-              state: { prefillCustomer: { id: customerId, name: customerName } }
+              state: { prefillCustomer: { id: customerId, name: customerName, customerType } }
             })
           }
           className="ml-auto cursor-pointer"

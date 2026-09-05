@@ -116,12 +116,9 @@ export function normalizeAppConfig(config: AppConfig | Partial<AppConfig>): AppC
   const defaults = getDefaultConfig();
   return {
     billing: {
-      ...defaults.billing,
-      ...config.billing,
-      searchDropdown: {
-        ...defaults.billing.searchDropdown,
-        ...config.billing?.searchDropdown
-      }
+      defaultCustomerId: config.billing?.defaultCustomerId ?? defaults.billing.defaultCustomerId,
+      autoAddAccountCustomerSales:
+        config.billing?.autoAddAccountCustomerSales ?? defaults.billing.autoAddAccountCustomerSales
     },
     exports: {
       ...defaults.exports,
@@ -133,7 +130,10 @@ export function normalizeAppConfig(config: AppConfig | Partial<AppConfig>): AppC
 
 export function getDefaultConfig(): AppConfig {
   return {
-    billing: { defaultCustomerId: "", searchDropdown: { scale: 1 } },
+    billing: {
+      defaultCustomerId: "",
+      autoAddAccountCustomerSales: true
+    },
     exports: getDefaultExportsConfig(),
     printing: getDefaultPrintingConfig()
   };

@@ -1,6 +1,7 @@
 import { HighlightedText } from "@/components/app-ui/highlighted-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { shouldAutomaticallyAddSaleToAccounting } from "@/features/billing/billingAccounting";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useCustomersInfinite } from "@/features/customers/hooks/useCustomersInfinite";
@@ -10,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store";
 import { processSyncQueue } from "@/features/billing/syncWorker";
-import type { Customer } from "@shared/types";
+import { TRANSACTION_TYPE, type Customer } from "@shared/types";
 import { formatRupee } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronsUpDown, LoaderCircle, Plus, Search, X } from "lucide-react";
@@ -59,6 +60,14 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
 
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const shouldAutoAddCustomer = (customer: Customer) =>
+    shouldAutomaticallyAddSaleToAccounting({
+      billingType: session?.billingType ?? TRANSACTION_TYPE.SALE,
+      customer,
+      defaultCustomerId: config?.billing.defaultCustomerId,
+      enabled: config?.billing.autoAddAccountCustomerSales ?? false
+    });
+
   useEffect(() => {
     if (open) {
       setSearch("");
@@ -86,6 +95,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
     onSuccess: (data) => {
       updatePersistentField(activeTabId, "customerId", data.id);
       updateUiField(activeTabId, "customerName", data.name);
+      updatePersistentField(activeTabId, "addToAccounting", shouldAutoAddCustomer(data));
       setOpen(false);
       if (activeTabId) processSyncQueue(activeTabId);
       toast.success(`Created and selected customer: ${data.name}`);
@@ -99,9 +109,7 @@ export const CustomerNameInput = ({ customerType }: { customerType?: string | nu
   const handleSelectCustomer = (customer: Customer) => {
     updatePersistentField(activeTabId, "customerId", customer.id);
     updateUiField(activeTabId, "customerName", customer.name);
-    if (customer.id === config?.billing.defaultCustomerId || customer.name === "DEFAULT") {
-      updatePersistentField(activeTabId, "addToAccounting", false);
-    }
+    updatePersistentField(activeTabId, "addToAccounting", shouldAutoAddCustomer(customer));
     setOpen(false);
     if (activeTabId) processSyncQueue(activeTabId);
   };

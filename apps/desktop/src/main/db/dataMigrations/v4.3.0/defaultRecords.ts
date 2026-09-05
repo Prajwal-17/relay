@@ -15,12 +15,10 @@ function buildCurrentConfig(
   return {
     billing: {
       ...defaults.billing,
-      ...existing?.billing,
       defaultCustomerId: existing?.billing?.defaultCustomerId || defaultCustomerId,
-      searchDropdown: {
-        ...defaults.billing.searchDropdown,
-        ...existing?.billing?.searchDropdown
-      }
+      autoAddAccountCustomerSales:
+        existing?.billing?.autoAddAccountCustomerSales ??
+        defaults.billing.autoAddAccountCustomerSales
     },
     exports: {
       ...defaults.exports,

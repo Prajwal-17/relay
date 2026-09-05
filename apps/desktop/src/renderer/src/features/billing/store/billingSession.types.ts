@@ -24,6 +24,7 @@ export type LineItem = {
 export type PrefillCustomer = {
   id: string;
   name: string;
+  customerType: string;
 };
 
 export type BillingPrintOptions = {

@@ -1,3 +1,5 @@
+import { shouldAutomaticallyAddSaleToAccounting } from "@/features/billing/billingAccounting";
+import { useAppPreferences } from "@/features/preferences/useAppPreferences";
 import { apiClient } from "@/lib/apiClient";
 import type { PrefillCustomer } from "@/features/billing/store/billingSession.types";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -12,6 +14,10 @@ export const useInitialBillingData = (
   prefillCustomer?: PrefillCustomer | null
 ) => {
   const hydrateSession = useBillingSessionStore((state) => state.hydrateSession);
+  const { config, isError: isPreferencesError } = useAppPreferences();
+  const preferencesReady = Boolean(config) || isPreferencesError;
+  const autoAddAccountCustomerSales = config?.billing.autoAddAccountCustomerSales ?? false;
+  const defaultCustomerId = config?.billing.defaultCustomerId ?? null;
 
   const shouldFetch =
     !id &&
@@ -33,14 +39,29 @@ export const useInitialBillingData = (
 
   // apply prefilled customer (e.g. "Add Sale" from a customer workspace)
   useEffect(() => {
-    if (!activeTabId || !prefillCustomer || id) return;
+    if (!activeTabId || !prefillCustomer || id || !preferencesReady) return;
     const session = useBillingSessionStore.getState().sessions[activeTabId];
     if (!session || session.customerId) return;
     hydrateSession(activeTabId, {
       customerId: prefillCustomer.id,
-      customerName: prefillCustomer.name
+      customerName: prefillCustomer.name,
+      addToAccounting: shouldAutomaticallyAddSaleToAccounting({
+        billingType: formattedType,
+        customer: prefillCustomer,
+        defaultCustomerId,
+        enabled: autoAddAccountCustomerSales
+      })
     });
-  }, [activeTabId, prefillCustomer, id, hydrateSession]);
+  }, [
+    activeTabId,
+    prefillCustomer,
+    id,
+    hydrateSession,
+    preferencesReady,
+    formattedType,
+    defaultCustomerId,
+    autoAddAccountCustomerSales
+  ]);
 
   useEffect(() => {
     if (!activeTabId) return;

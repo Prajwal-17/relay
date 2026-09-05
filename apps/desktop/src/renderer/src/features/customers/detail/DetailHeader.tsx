@@ -65,7 +65,13 @@ export function DetailHeader({
           className="cursor-pointer"
           onClick={() =>
             navigate("/billing/sales/create", {
-              state: { prefillCustomer: { id: customer.id, name: customer.name } }
+              state: {
+                prefillCustomer: {
+                  id: customer.id,
+                  name: customer.name,
+                  customerType: customer.customerType
+                }
+              }
             })
           }
         >
