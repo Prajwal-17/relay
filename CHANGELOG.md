@@ -1,5 +1,27 @@
 # Changelog
 
+## v4.4.6 - 05 Sep 2026
+
+Patch release improving billing safeguards, product price visibility, customer workflows, and thermal ledger printing.
+
+### Features
+
+- Add product price-history summaries, a detailed change table, and selectable trend ranges
+- Automatically add eligible Account customer sales to accounting through a configurable billing preference
+- Warn billers after a short delay when a selling price is below the product purchase price
+- Make the billing product-search dropdown resizable within viewport limits and remember its dimensions
+
+### Improvements
+
+- Standardize customer type badges and contextual icons across customer and transaction screens
+- Enlarge customer ledger raster typography and use more of the available 80 mm paper width
+- Simplify billing print controls by removing account balance summaries from receipts
+
+### Fixed
+
+- Preserve product purchase prices on saved sale and estimate items so under-cost warnings remain accurate while editing
+- Preserve customer types when opening prefilled billing flows
+
 ## v4.4.3 - 02 Sep 2026
 
 Patch release preventing stale UPI payment QRs and making billing product search more compact on low-resolution screens.
