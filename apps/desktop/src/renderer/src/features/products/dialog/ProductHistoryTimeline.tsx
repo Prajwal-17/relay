@@ -1,140 +1,103 @@
+import { ErrorState } from "@/components/app-ui/ErrorState";
 import { useProductHistory } from "@/features/products/hooks/useProductHistory";
 import { useProductsStore } from "@/features/products/products.store";
-import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
-import { formatRupee } from "@shared/utils/utils";
-import { AlertCircle, ArrowRight, Clock, Clock3, Loader2 } from "lucide-react";
-import { motion } from "motion/react";
+import { Clock3, LoaderCircle } from "lucide-react";
+import { useState } from "react";
 
-function DiffRow({
-  label,
-  oldVal,
-  newVal
-}: {
-  label: string;
-  oldVal: number | null;
-  newVal: number | null;
-}) {
-  if (oldVal === null && newVal === null) return null;
-  if (oldVal === newVal) return null;
-
-  return (
-    <div className="flex items-center justify-between py-2">
-      <span className="text-secondary-foreground text-base font-semibold">{label}</span>
-      <div className="flex items-center gap-3 text-base">
-        <span className="text-muted-foreground decoration-muted-foreground/40 text-base font-medium line-through">
-          {oldVal ? formatRupee(oldVal) : "N/A"}
-        </span>
-        <ArrowRight className="text-muted-foreground/30 h-4 w-4" strokeWidth={3} />
-        <span className="text-success text-base font-bold tracking-tight">
-          {newVal ? formatRupee(newVal) : "N/A"}
-        </span>
-      </div>
-    </div>
-  );
-}
+import { ProductHistoryHeader } from "./product-history/ProductHistoryHeader";
+import { ProductPriceChangesTable } from "./product-history/ProductPriceChangesTable";
+import { ProductPriceTrend } from "./product-history/ProductPriceTrend";
+import { PRICE_METRICS } from "./product-history/productHistory.config";
+import { buildPriceChanges, getCurrentValue } from "./product-history/productHistory.utils";
+import type { HistoryView, PriceMetric, TrendRange } from "./product-history/productHistory.types";
 
 export function ProductHistoryTimeline() {
   const productId = useProductsStore((state) => state.productId);
-  const { data, isLoading, error } = useProductHistory(productId);
+  const { data, isLoading, isError, refetch, isFetching } = useProductHistory(productId);
+  const [view, setView] = useState<HistoryView>("changes");
+  const [selectedMetrics, setSelectedMetrics] = useState<PriceMetric[]>([...PRICE_METRICS]);
+  const [range, setRange] = useState<TrendRange>("1y");
 
-  if (!productId) {
-    return null;
-  }
+  const entries = data?.entries ?? [];
+  const changes = buildPriceChanges(entries);
+  const currentPrices = PRICE_METRICS.map((metric) => ({
+    metric,
+    value: getCurrentValue(changes, metric)
+  }));
+
+  const toggleMetric = (metric: PriceMetric) => {
+    setSelectedMetrics((current) =>
+      current.includes(metric)
+        ? current.filter((selectedMetric) => selectedMetric !== metric)
+        : PRICE_METRICS.filter(
+            (availableMetric) => availableMetric === metric || current.includes(availableMetric)
+          )
+    );
+  };
+
+  if (!productId) return null;
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full items-center justify-center p-4">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="text-muted-foreground/50 h-8 w-8 animate-spin" />
-          <p className="text-muted-foreground font-medium">Loading history...</p>
-        </div>
+      <div className="text-muted-foreground flex h-full items-center justify-center gap-2 text-sm">
+        <LoaderCircle className="text-counter-accent size-5 animate-spin" aria-hidden="true" />
+        Loading price history...
       </div>
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
-      <div className="text-destructive flex h-full w-full flex-col items-center justify-center p-8 text-center">
-        <AlertCircle className="mb-4 h-10 w-10 opacity-80" />
-        <p className="text-lg font-semibold">Failed to load version history</p>
-        <p className="text-destructive/80 mt-1 text-sm">Please try again later.</p>
+      <div className="flex h-full items-center justify-center p-4">
+        <ErrorState
+          layout="panel"
+          className="max-w-md"
+          title="Price history could not be loaded"
+          description="Your product information is unchanged. Try loading the history again."
+          primaryAction={{
+            label: "Try again",
+            onClick: () => void refetch(),
+            loading: isFetching
+          }}
+        />
       </div>
     );
   }
 
-  const entries = data?.entries || [];
-
-  if (entries.length === 0) {
+  if (changes.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
-        className="flex h-full w-full flex-col items-center justify-center"
-      >
-        <div className="bg-secondary mb-5 flex h-20 w-20 items-center justify-center rounded-3xl shadow-sm">
-          <Clock className="text-muted-foreground/50 h-8 w-8" />
-        </div>
-        <h3 className="text-foreground mb-2 text-xl font-bold tracking-tight">No Changes Yet</h3>
-        <p className="text-muted-foreground max-w-xs text-center text-[0.95rem]">
-          This product has not been changed or updated yet.
+      <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+        <span className="bg-secondary text-muted-foreground flex size-11 items-center justify-center rounded-(--radius-panel)">
+          <Clock3 className="size-5" aria-hidden="true" />
+        </span>
+        <h3 className="text-foreground mt-3 text-base font-semibold">No price changes yet</h3>
+        <p className="text-muted-foreground mt-1 max-w-sm text-sm">
+          Selling price, purchase price, and MRP changes will appear here.
         </p>
-      </motion.div>
+      </div>
     );
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto">
-      <div className="mx-auto w-full max-w-2xl p-4">
-        <div className="mb-6">
-          <h3 className="text-foreground flex items-center gap-2 text-2xl font-bold tracking-tight">
-            Pricing History
-          </h3>
-        </div>
-
-        <div className="relative">
-          <div className="bg-border/60 absolute top-4 bottom-6 left-2.75 w-0.5 rounded-full" />
-
-          <div className="flex flex-col gap-6">
-            {entries.map((entry, idx) => (
-              <motion.div
-                key={entry.createdAt + idx}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: idx * 0.08, ease: [0.23, 1, 0.32, 1] }}
-                className="group relative flex gap-8"
-              >
-                {/* timeline dot */}
-                <div className="bg-muted-foreground/30 ring-background group-hover:bg-primary z-10 mt-1.25 flex h-6 w-6 shrink-0 items-center justify-center rounded-full shadow-sm ring-4 transition-all duration-300 group-hover:scale-110">
-                  <div className="bg-background group-hover:bg-primary-foreground h-2 w-2 rounded-full transition-colors" />
-                </div>
-
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="text-muted-foreground/80 group-hover:text-muted-foreground mb-3 flex items-center gap-2 text-base font-semibold tracking-normal transition-colors">
-                    <Clock3 className="h-4 w-4" />
-                    {entry.createdAt ? formatDateStrToISTDateTimeStr(entry.createdAt) : "-"}
-                  </div>
-
-                  <div className="bg-card/70 border-border/40 hover:border-border/80 overflow-hidden rounded-(--radius-panel) border transition-colors">
-                    <div className="flex flex-col gap-0 px-3 py-2">
-                      <DiffRow
-                        label="Selling Price"
-                        oldVal={entry.oldPrice}
-                        newVal={entry.newPrice}
-                      />
-                      <DiffRow
-                        label="Purchase Price"
-                        oldVal={entry.oldPurchasePrice}
-                        newVal={entry.newPurchasePrice}
-                      />
-                      <DiffRow label="MRP" oldVal={entry.oldMrp} newVal={entry.newMrp} />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+    <div className="bg-background flex h-full min-h-0 flex-col">
+      <ProductHistoryHeader
+        changeCount={changes.length}
+        currentPrices={currentPrices}
+        view={view}
+        onViewChange={setView}
+      />
+      <div className="min-h-0 flex-1 p-3">
+        {view === "changes" ? (
+          <ProductPriceChangesTable changes={changes} />
+        ) : (
+          <ProductPriceTrend
+            changes={changes}
+            selectedMetrics={selectedMetrics}
+            onMetricToggle={toggleMetric}
+            range={range}
+            onRangeChange={setRange}
+          />
+        )}
       </div>
     </div>
   );
