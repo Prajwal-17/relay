@@ -5,20 +5,10 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-libra
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SummaryFooter } from "./SummaryFooter";
 
-const settlement = {
-  previousBalancePaisa: 500000,
-  currentBillPaisa: 200000,
-  totalDuePaisa: 700000,
-  paymentPaisa: 300000,
-  balancePaisa: 400000
-};
-
 const mocks = vi.hoisted(() => ({
   navigate: vi.fn(),
   flushSync: vi.fn(),
   printReceipt: vi.fn(),
-  fetchSummary: vi.fn(),
-  buildSettlement: vi.fn(),
   removeTab: vi.fn(),
   billingTabs: [] as Array<{ id: string; routePath: string }>,
   toastError: vi.fn(),
@@ -34,20 +24,13 @@ const mocks = vi.hoisted(() => ({
     printOptions: {
       includeUpiQr: null as boolean | null,
       includeAmountInUpiQr: null as boolean | null,
-      selectedUpiQrProfileId: null as string | null,
-      includeAccountSummary: false,
-      accountSummaryStartedAt: new Date("2026-08-19T09:00:00.000Z").getTime()
+      selectedUpiQrProfileId: null as string | null
     }
   }
 }));
 
 vi.mock("@/features/billing/hooks/useRawReceiptPrint", () => ({
   default: () => ({ printReceipt: mocks.printReceipt })
-}));
-
-vi.mock("@/features/billing/billingAccountSettlement", () => ({
-  fetchBillingLedgerSummary: mocks.fetchSummary,
-  buildBillingAccountSettlement: mocks.buildSettlement
 }));
 
 vi.mock("@/features/billing/hooks/useTransaction", () => ({
@@ -125,9 +108,7 @@ describe("Print & Close RAW workflow", () => {
     Object.assign(mocks.billingSession.printOptions, {
       includeUpiQr: null,
       includeAmountInUpiQr: null,
-      selectedUpiQrProfileId: null,
-      includeAccountSummary: false,
-      accountSummaryStartedAt: new Date("2026-08-19T09:00:00.000Z").getTime()
+      selectedUpiQrProfileId: null
     });
     mocks.flushSync.mockResolvedValue(undefined);
     mocks.removeTab.mockReturnValue(null);
@@ -137,8 +118,6 @@ describe("Print & Close RAW workflow", () => {
       modeUsed: "raster",
       fellBack: false
     });
-    mocks.fetchSummary.mockResolvedValue({ currentBalance: 700000 });
-    mocks.buildSettlement.mockReturnValue(settlement);
     Object.defineProperty(window, "exportApi", {
       configurable: true,
       value: {
@@ -169,8 +148,7 @@ describe("Print & Close RAW workflow", () => {
       expect(mocks.printReceipt).toHaveBeenCalledWith("tab-1", {
         includeUpiQr: null,
         includeAmountInUpiQr: null,
-        upiQrProfileId: null,
-        accountSettlement: undefined
+        upiQrProfileId: null
       })
     );
     expect(mocks.navigate).not.toHaveBeenCalled();
@@ -192,39 +170,6 @@ describe("Print & Close RAW workflow", () => {
     await waitFor(() => expect(mocks.removeTab).toHaveBeenCalledWith("tab-1"));
     expect(mocks.navigate).toHaveBeenCalledWith("/billing/sales/sale-2/edit");
     expect(mocks.navigate).not.toHaveBeenCalledWith("/dashboard/sales");
-  });
-
-  it("prints the settlement derived from the customer account", async () => {
-    mocks.billingSession.printOptions.includeAccountSummary = true;
-
-    render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
-
-    await waitFor(() => expect(mocks.fetchSummary).toHaveBeenCalledWith("customer-1"));
-    expect(mocks.buildSettlement).toHaveBeenCalledWith(mocks.billingSession, {
-      currentBalance: 700000
-    });
-    expect(mocks.printReceipt).toHaveBeenCalledWith("tab-1", {
-      includeUpiQr: null,
-      includeAmountInUpiQr: null,
-      upiQrProfileId: null,
-      accountSettlement: settlement
-    });
-    expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
-  });
-
-  it("stays on billing when the customer balance cannot be loaded", async () => {
-    mocks.billingSession.printOptions.includeAccountSummary = true;
-    mocks.fetchSummary.mockRejectedValue(new Error("Customer balance could not be loaded."));
-
-    render(<SummaryFooter />);
-    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
-
-    await waitFor(() =>
-      expect(mocks.toastError).toHaveBeenCalledWith("Customer balance could not be loaded.")
-    );
-    expect(mocks.printReceipt).not.toHaveBeenCalled();
-    expect(mocks.navigate).not.toHaveBeenCalled();
   });
 
   it("stays on billing and shows the printer error when submission fails", async () => {

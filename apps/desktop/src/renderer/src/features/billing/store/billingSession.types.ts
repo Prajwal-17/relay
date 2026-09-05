@@ -32,8 +32,6 @@ export type BillingPrintOptions = {
   includeUpiQr: boolean | null;
   includeAmountInUpiQr: boolean | null;
   selectedUpiQrProfileId: string | null;
-  includeAccountSummary: boolean;
-  accountSummaryStartedAt: number;
 };
 
 export type BillingSessionData = {

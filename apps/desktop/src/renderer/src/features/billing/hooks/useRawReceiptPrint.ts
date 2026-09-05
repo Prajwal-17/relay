@@ -11,7 +11,6 @@ import type {
   AppPreferencesResponse,
   PrintingConfig,
   RasterReceiptSegments,
-  RawReceiptAccountSettlement,
   RawReceiptData,
   StoreProfile,
   TransactionType,
@@ -29,7 +28,6 @@ export type ReceiptPrintOverrides = {
   includeUpiQr?: boolean | null;
   includeAmountInUpiQr?: boolean | null;
   upiQrProfileId?: string | null;
-  accountSettlement?: RawReceiptAccountSettlement;
 };
 
 type PrepareReceiptOptions = {
@@ -107,8 +105,7 @@ function createRawReceiptData(
             payeeName: upiProfile.payeeName,
             includeAmount: overrides.includeAmountInUpiQr ?? printing.includeAmountInUpiQr
           }
-        : undefined,
-    accountSettlement: overrides.accountSettlement
+        : undefined
   };
 }
 
@@ -159,9 +156,7 @@ export function buildRawReceiptDataFromTransaction(
     printOptions: {
       includeUpiQr: null,
       includeAmountInUpiQr: null,
-      selectedUpiQrProfileId: null,
-      includeAccountSummary: false,
-      accountSummaryStartedAt: Date.now()
+      selectedUpiQrProfileId: null
     },
     lineItems: normalizeLineItems(transaction.items)
   };

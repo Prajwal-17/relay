@@ -58,10 +58,6 @@ vi.mock("@/features/preferences/useAppPreferences", () => ({
   useAppPreferences: () => ({ config: preferences, defaults: undefined })
 }));
 
-vi.mock("@/features/customers/hooks/useCustomerLedger", () => ({
-  useCustomerLedgerSummary: () => ({ summary: null })
-}));
-
 beforeEach(() => {
   vi.stubGlobal(
     "ResizeObserver",
@@ -96,6 +92,8 @@ describe("billing receipt QR choices", () => {
   it("maps each illustrated choice to the billing print options", async () => {
     const user = userEvent.setup();
     render(<BillingPrintOptions />);
+
+    expect(screen.queryByRole("checkbox", { name: "Balance summary" })).not.toBeInTheDocument();
 
     const receiptOnlyRadio = screen.getByRole("radio", { name: "No QR: Receipt only" });
     expect(receiptOnlyRadio).toBeChecked();

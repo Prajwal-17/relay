@@ -392,7 +392,7 @@ export function RasterLedgerPaper({
 
   return (
     <div
-      style={paperStyle}
+      style={receiptPaperStyle}
       className="bg-white text-black"
       data-testid="raster-ledger-paper"
       data-raster-segment="body"
@@ -400,32 +400,32 @@ export function RasterLedgerPaper({
       aria-label="80 millimetre customer ledger raster"
     >
       {includeHeader ? (
-        <header className="px-8 pt-7 pb-4 text-center">
-          <h2 className="m-0 text-[29px] leading-[1.12] font-[800] tracking-[-0.015em] break-words uppercase">
+        <header className="px-1 pt-7 pb-4 text-center">
+          <h2 className="m-0 text-[36px] leading-[1.12] font-[700] break-words uppercase">
             {statement.storeName}
           </h2>
           {statement.addressLines.length > 0 ? (
-            <div className="mt-2 text-[19px] leading-[1.28] font-medium">
+            <div className="mt-2 text-[24px] leading-[1.25] font-[400]">
               {statement.addressLines.map((line, index) => (
                 <div key={index}>{line}</div>
               ))}
             </div>
           ) : null}
           {statement.phone ? (
-            <div className="text-[19px] leading-[1.28] font-medium">Phone: {statement.phone}</div>
+            <div className="text-[24px] leading-[1.25] font-[400]">Phone: {statement.phone}</div>
           ) : null}
         </header>
       ) : (
         <div className="h-5" />
       )}
 
-      <main className="mx-8 pb-3">
-        <h3 className="m-0 py-2.5 text-center text-[22px] leading-none font-[800] tracking-[0.04em]">
+      <main className="px-1 pb-3">
+        <h3 className="m-0 py-2.5 text-center text-[26px] leading-none font-[700] tracking-[0.04em]">
           ACCOUNTS
         </h3>
-        <div className="pb-3 text-[19px] leading-[1.3]">
-          <span className="font-[700]">Customer: </span>
-          <span className="font-[700]">{statement.customerName}</span>
+        <div className="pb-4 text-[24px] leading-[1.3] break-words">
+          <span className="font-[600]">Customer: </span>
+          <span>{statement.customerName}</span>
         </div>
 
         <div className="py-1" data-testid="raster-ledger-entries">
@@ -433,19 +433,21 @@ export function RasterLedgerPaper({
             const amount =
               entry.amountPaidPaisa > 0 ? -entry.amountPaidPaisa : entry.amountDuePaisa;
             return (
-              <article key={index} className="py-2 text-[19px] leading-[1.28]">
-                <div className="font-medium tabular-nums">
+              <article key={index} className="py-2.5 text-[24px] leading-[1.25] font-[400]">
+                <div className="text-[22px] font-[500] tabular-nums">
                   {formatThermalLedgerDate(entry.dateTime)}
                 </div>
-                <div className="flex items-baseline justify-between gap-5">
-                  <span className="min-w-0 font-[700] break-words">{entry.particulars}</span>
-                  <span className="shrink-0 font-[750] tabular-nums">
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="min-w-0 pr-2 font-[600] tracking-[-0.01em] break-words">
+                    {entry.particulars}
+                  </span>
+                  <span className="shrink-0 text-right font-[600] whitespace-nowrap tabular-nums">
                     {formatThermalLedgerAmount(amount)}
                   </span>
                 </div>
-                <div className="flex items-baseline justify-between gap-5 tabular-nums">
+                <div className="flex items-baseline justify-between gap-4 text-[22px] tabular-nums">
                   <span>Balance</span>
-                  <span className="shrink-0">
+                  <span className="shrink-0 text-right whitespace-nowrap">
                     {formatThermalLedgerAmount(entry.runningBalancePaisa)}
                   </span>
                 </div>
@@ -453,25 +455,31 @@ export function RasterLedgerPaper({
             );
           })}
         </div>
-        <div className="border-t-2 border-black pt-2 text-[19px] leading-[1.4]">
+        <div className="border-t-2 border-black pt-2 text-[24px] leading-[1.35]">
           {balanceRows.map((row, index) => (
             <div
               key={row.label}
               className={cn(
                 "flex items-baseline justify-between gap-5 tabular-nums",
-                index === balanceRows.length - 1 && "font-[800]"
+                index === balanceRows.length - 1 &&
+                  "mt-1 border-t border-black pt-1 text-[30px] leading-none font-[700]"
               )}
             >
               <span>{row.label}</span>
-              <span className="shrink-0">{formatThermalLedgerAmount(row.amount)}</span>
+              <span className="shrink-0 text-right font-[600] whitespace-nowrap">
+                {formatThermalLedgerAmount(row.amount)}
+              </span>
             </div>
           ))}
         </div>
       </main>
 
-      <div className="px-8">
+      <div className="px-1">
         {includeFooter ? (
-          <ReceiptFooter message={statement.footerMessage} />
+          <ReceiptFooter
+            message={statement.footerMessage}
+            className="text-[24px] leading-[1.3] font-[500]"
+          />
         ) : (
           <div className="h-5" />
         )}

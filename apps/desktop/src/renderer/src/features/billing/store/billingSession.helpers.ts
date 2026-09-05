@@ -54,9 +54,7 @@ export const createInitialSession = (): BillingSessionData => {
     printOptions: {
       includeUpiQr: null,
       includeAmountInUpiQr: null,
-      selectedUpiQrProfileId: null,
-      includeAccountSummary: false,
-      accountSummaryStartedAt: Date.now()
+      selectedUpiQrProfileId: null
     },
     lineItems: [createInitialLineItem()]
   };

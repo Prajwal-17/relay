@@ -1,8 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  buildBillingAccountSettlement,
-  fetchBillingLedgerSummary
-} from "@/features/billing/billingAccountSettlement";
 import useRawReceiptPrint from "@/features/billing/hooks/useRawReceiptPrint";
 import useTransaction from "@/features/billing/hooks/useTransaction";
 import { billingCoordinator } from "@/features/billing/store/billingCoordinator";
@@ -10,7 +6,6 @@ import { useBillingTabsStore } from "@/features/billing/store/billingTabs.store"
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
 import { flushSync } from "@/features/billing/syncWorker";
 import { showPdfExportSuccessToast } from "@/features/transactions/pdfExportToast";
-import { TRANSACTION_TYPE } from "@shared/types";
 import { FileText, Loader2, Printer, X } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
@@ -79,25 +74,10 @@ export const SummaryFooter = () => {
       if (!synced || !activeTabId) return;
 
       const session = readSynchronizedSession();
-      let accountSettlement;
-
-      if (session.printOptions.includeAccountSummary) {
-        if (
-          session.billingType !== TRANSACTION_TYPE.SALE ||
-          !session.customerId ||
-          !session.addToAccounting
-        ) {
-          throw new Error("Choose an account customer and add this sale to their account first.");
-        }
-        const summary = await fetchBillingLedgerSummary(session.customerId);
-        accountSettlement = buildBillingAccountSettlement(session, summary);
-      }
-
       const result = await printReceipt(activeTabId, {
         includeUpiQr: session.printOptions.includeUpiQr,
         includeAmountInUpiQr: session.printOptions.includeAmountInUpiQr,
-        upiQrProfileId: session.printOptions.selectedUpiQrProfileId,
-        accountSettlement
+        upiQrProfileId: session.printOptions.selectedUpiQrProfileId
       });
       warnIfRasterFellBack(result.fellBack);
       closeTabAndNavigate(activeTabId);
