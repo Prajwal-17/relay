@@ -1,6 +1,7 @@
 import { ErrorState } from "@/components/app-ui/ErrorState";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CustomerTypeBadge } from "@/features/customers/CustomerTypeBadge";
 import { useCustomerActions } from "@/features/customers/customerActions";
 import { useCustomerActivity } from "@/features/customers/hooks/useCustomerActivity";
 import { useCustomerLedgerSummary } from "@/features/customers/hooks/useCustomerLedger";
@@ -11,15 +12,19 @@ import type { ActivityKind, Customer } from "@shared/types";
 import { formatDateStr, formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
 import {
+  CalendarDays,
   CircleSlash,
   CreditCard,
   FileClock,
   FileText,
+  MapPin,
+  Phone,
   Plus,
   Receipt,
   Scale,
   ShoppingCart,
   SlidersHorizontal,
+  Tags,
   TrendingUp,
   Wallet,
   type LucideIcon
@@ -48,11 +53,22 @@ const kindIconClass: Record<ActivityKind, string> = {
   opening_balance: "text-olive-accent"
 };
 
-function InfoRow({ label, value }: { label: string; value?: string | null }) {
+function InfoRow({
+  label,
+  value,
+  icon: Icon
+}: {
+  label: string;
+  value?: React.ReactNode;
+  icon: LucideIcon;
+}) {
   return (
     <div className="flex flex-col gap-0.5 py-2">
-      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="text-foreground wrap-break-words text-sm font-medium">{value || "—"}</dd>
+      <dt className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+        <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+        {label}
+      </dt>
+      <dd className="text-foreground wrap-break-words text-base font-medium">{value || "—"}</dd>
     </div>
   );
 }
@@ -152,11 +168,21 @@ export function OverviewTab({ customerId, customer }: { customerId: string; cust
         <div className="min-w-0">
           <SectionCard title="Customer Info">
             <dl className="divide-border/70 divide-y">
-              <InfoRow label="Type" value={customer.customerType} />
-              <InfoRow label="Contact" value={customer.contact} />
-              <InfoRow label="Address" value={customer.address} />
+              <InfoRow
+                label="Type"
+                icon={Tags}
+                value={
+                  <CustomerTypeBadge
+                    customerType={customer.customerType}
+                    className="py-0.5 text-sm"
+                  />
+                }
+              />
+              <InfoRow label="Contact" value={customer.contact} icon={Phone} />
+              <InfoRow label="Address" value={customer.address} icon={MapPin} />
               <InfoRow
                 label="Member Since"
+                icon={CalendarDays}
                 value={customer.createdAt ? formatDateStr(customer.createdAt) : "—"}
               />
             </dl>

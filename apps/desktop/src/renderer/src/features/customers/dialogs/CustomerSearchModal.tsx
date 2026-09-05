@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useCustomersInfinite } from "@/features/customers/hooks/useCustomersInfinite";
@@ -9,17 +8,12 @@ import { formatRupee } from "@shared/utils/utils";
 import { LoaderCircle, Search, Users, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CustomerTypeBadge } from "../CustomerTypeBadge";
 import { getScrollTopForActiveRow, hasPointerMoved, type PointerPosition } from "../listNavigation";
 
 function rowHeight() {
   return 44;
 }
-
-const typeBadgeClass: Record<string, string> = {
-  cash: "bg-hover text-foreground border-border",
-  account: "bg-hover text-foreground border-border",
-  hotel: "bg-hover text-foreground border-border"
-};
 
 export function CustomerSearchModal({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
@@ -270,15 +264,7 @@ function CustomerRow({
           <p className="text-foreground min-w-0 truncate text-sm leading-tight font-medium">
             {customer.name}
           </p>
-          <Badge
-            variant="outline"
-            className={cn(
-              "shrink-0 px-1.5 py-0 text-xs leading-tight font-medium capitalize",
-              typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
-            )}
-          >
-            {customer.customerType}
-          </Badge>
+          <CustomerTypeBadge customerType={customer.customerType} className="leading-tight" />
         </div>
         <p className="text-muted-foreground truncate text-xs leading-tight font-medium">
           {customer.contact ? customer.contact : "No contact"}

@@ -4,7 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { CustomerListRow } from "./types";
-import { renderNameCell } from "./columns";
+import { renderNameCell, renderTypeCell } from "./columns";
 
 const row: CustomerListRow = {
   id: "customer-1",
@@ -31,5 +31,17 @@ describe("customer list name column", () => {
 
     rerender(<div>{renderNameCell(row, "432")}</div>);
     expect(container.querySelector("mark")).toHaveTextContent("432");
+  });
+});
+
+describe("customer list type column", () => {
+  it.each([
+    ["cash", "Cash"],
+    ["account", "Account"],
+    ["hotel", "Hotel"]
+  ])("renders %s as %s", (customerType, label) => {
+    const { getByText } = render(<div>{renderTypeCell({ ...row, customerType })}</div>);
+
+    expect(getByText(label)).toBeInTheDocument();
   });
 });

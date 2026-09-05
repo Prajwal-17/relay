@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { LoaderCircle, Plus, Users } from "lucide-react";
+import {
+  HandCoins,
+  IndianRupee,
+  LoaderCircle,
+  Plus,
+  ShoppingBag,
+  Tags,
+  UserRound,
+  Users,
+  WalletCards
+} from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { useCustomerActions } from "../customerActions";
 import type { CustomerListRow } from "./types";
@@ -99,13 +109,13 @@ export function CustomerListTable({
 
   const colInfo = useMemo(
     () => [
-      { span: "col-span-3", align: "", label: "NAME" },
-      { span: "col-span-1", align: "", label: "TYPE" },
-      { span: "col-span-1", align: "justify-end", label: "BALANCE" },
-      { span: "col-span-2", align: "justify-end", label: "LAST PURCHASE" },
-      { span: "col-span-1", align: "justify-end", label: "AMOUNT" },
-      { span: "col-span-2", align: "justify-end", label: "LAST PAYMENT" },
-      { span: "col-span-1", align: "justify-end", label: "AMOUNT" }
+      { span: "col-span-3", align: "", label: "NAME", icon: UserRound },
+      { span: "col-span-1", align: "", label: "TYPE", icon: Tags },
+      { span: "col-span-1", align: "justify-end", label: "BALANCE", icon: WalletCards },
+      { span: "col-span-2", align: "justify-end", label: "LAST PURCHASE", icon: ShoppingBag },
+      { span: "col-span-1", align: "justify-end", label: "AMOUNT", icon: IndianRupee },
+      { span: "col-span-2", align: "justify-end", label: "LAST PAYMENT", icon: HandCoins },
+      { span: "col-span-1", align: "justify-end", label: "AMOUNT", icon: IndianRupee }
     ],
     []
   );
@@ -115,11 +125,15 @@ export function CustomerListTable({
   return (
     <div className="bg-card border-border flex min-h-0 flex-1 flex-col overflow-hidden rounded-(--radius-panel) border">
       <div className="bg-table-header text-foreground grid h-9 grid-cols-11 items-center gap-2 px-3 text-xs font-semibold tracking-wide uppercase">
-        {colInfo.map((c, i) => (
-          <div key={i} className={cn("flex", c.span, c.align)}>
-            {c.label}
-          </div>
-        ))}
+        {colInfo.map((c, i) => {
+          const Icon = c.icon;
+          return (
+            <div key={i} className={cn("flex items-center gap-1", c.span, c.align)}>
+              <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+              {c.label}
+            </div>
+          );
+        })}
       </div>
 
       <div ref={parentRef} className="relative min-h-0 flex-1 overflow-auto overscroll-contain">

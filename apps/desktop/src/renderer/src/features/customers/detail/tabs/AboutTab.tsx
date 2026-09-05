@@ -9,12 +9,27 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CustomerTypeBadge } from "@/features/customers/CustomerTypeBadge";
 import { useCustomer } from "@/features/customers/hooks/useCustomer";
 import { useUpdateCustomer } from "@/features/customers/hooks/useUpdateCustomer";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
 import { formatDateStrToISTDateTimeStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
-import { Check, Copy, LoaderCircle, Pencil, X } from "lucide-react";
+import {
+  CalendarPlus,
+  Check,
+  Clock3,
+  Copy,
+  Fingerprint,
+  LoaderCircle,
+  Pencil,
+  Phone,
+  Tags,
+  UserRound,
+  WalletCards,
+  X,
+  type LucideIcon
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { SectionCard } from "../SectionCard";
@@ -65,22 +80,35 @@ function addressDirty(c: Customer, f: AddressForm) {
   return dirty;
 }
 
-function DisplayField({ label, value }: { label: string; value?: string | null }) {
+function DisplayField({
+  label,
+  value,
+  icon: Icon
+}: {
+  label: string;
+  value?: React.ReactNode;
+  icon: LucideIcon;
+}) {
   return (
     <div className="flex min-w-0 flex-col gap-1 py-1">
-      <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">{label}</dt>
-      <dd className="text-foreground text-sm font-medium wrap-break-word">{value || "—"}</dd>
+      <dt className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+        <Icon aria-hidden="true" className="size-3.5 shrink-0" />
+        {label}
+      </dt>
+      <dd className="text-foreground text-base font-medium wrap-break-word">{value || "—"}</dd>
     </div>
   );
 }
 
 function FieldShell({
   label,
+  icon: Icon,
   htmlFor,
   error,
   children
 }: {
   label: string;
+  icon: LucideIcon;
   htmlFor?: string;
   error?: string | null;
   children: React.ReactNode;
@@ -89,8 +117,9 @@ function FieldShell({
     <div className="flex flex-col gap-2">
       <Label
         htmlFor={htmlFor}
-        className="text-muted-foreground text-xs font-medium tracking-wide uppercase"
+        className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase"
       >
+        <Icon aria-hidden="true" className="size-3.5 shrink-0" />
         {label}
       </Label>
       {children}
@@ -200,6 +229,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <FieldShell
               label="Name"
+              icon={UserRound}
               htmlFor="about-name"
               error={nameInvalid ? "Name must be at least 3 characters" : null}
             >
@@ -212,6 +242,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
             </FieldShell>
             <FieldShell
               label="Contact"
+              icon={Phone}
               htmlFor="about-contact"
               error={contactInvalid ? "Contact must be 10 digits" : null}
             >
@@ -225,7 +256,7 @@ export function AboutTab({ customerId }: { customerId: string }) {
                 className="tabular-nums"
               />
             </FieldShell>
-            <FieldShell label="Type" htmlFor="about-type">
+            <FieldShell label="Type" icon={Tags} htmlFor="about-type">
               <Select
                 value={basicForm.customerType}
                 onValueChange={(v) => setBasic("customerType", v)}
@@ -243,11 +274,21 @@ export function AboutTab({ customerId }: { customerId: string }) {
           </div>
         ) : (
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-            <DisplayField label="Name" value={customer.name} />
-            <DisplayField label="Contact" value={customer.contact} />
-            <DisplayField label="Type" value={customer.customerType} />
+            <DisplayField label="Name" value={customer.name} icon={UserRound} />
+            <DisplayField label="Contact" value={customer.contact} icon={Phone} />
+            <DisplayField
+              label="Type"
+              value={
+                <CustomerTypeBadge
+                  customerType={customer.customerType}
+                  className="py-0.5 text-sm"
+                />
+              }
+              icon={Tags}
+            />
             <DisplayField
               label="Outstanding"
+              icon={WalletCards}
               value={formatRupee(customer.outstandingBalance ?? 0)}
             />
           </dl>
@@ -276,7 +317,8 @@ export function AboutTab({ customerId }: { customerId: string }) {
         <div className="flex flex-col gap-3">
           <div className="border-border flex items-center justify-between gap-3 border-b pb-3">
             <div className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+              <dt className="text-muted-foreground flex items-center gap-1.5 text-xs font-medium tracking-wide uppercase">
+                <Fingerprint aria-hidden="true" className="size-3.5 shrink-0" />
                 Customer ID
               </dt>
               <dd className="text-foreground font-mono text-base font-medium break-all tabular-nums">
@@ -301,10 +343,12 @@ export function AboutTab({ customerId }: { customerId: string }) {
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             <DisplayField
               label="Created"
+              icon={CalendarPlus}
               value={customer.createdAt ? formatDateStrToISTDateTimeStr(customer.createdAt) : "—"}
             />
             <DisplayField
               label="Last Updated"
+              icon={Clock3}
               value={customer.updatedAt ? formatDateStrToISTDateTimeStr(customer.updatedAt) : "—"}
             />
           </dl>

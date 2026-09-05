@@ -1,15 +1,8 @@
-import { Badge } from "@/components/ui/badge";
 import { HighlightedText } from "@/components/app-ui/highlighted-text";
-import { cn } from "@/lib/utils";
 import { formatDateStr } from "@shared/utils/dateUtils";
 import { formatRupee } from "@shared/utils/utils";
+import { CustomerTypeBadge } from "../CustomerTypeBadge";
 import type { CustomerListRow } from "./types";
-
-const typeBadgeClass: Record<string, string> = {
-  cash: "bg-hover text-foreground border-border",
-  account: "bg-hover text-foreground border-border",
-  hotel: "bg-hover text-foreground border-border"
-};
 
 export const colSpans = [
   "col-span-3",
@@ -35,18 +28,7 @@ export function renderNameCell(row: CustomerListRow, query: string) {
 }
 
 export function renderTypeCell(row: CustomerListRow) {
-  const t = row.customerType;
-  return (
-    <Badge
-      variant="outline"
-      className={cn(
-        "px-1.5 py-0 text-xs font-medium capitalize",
-        typeBadgeClass[t] ?? typeBadgeClass.cash
-      )}
-    >
-      {t}
-    </Badge>
-  );
+  return <CustomerTypeBadge customerType={row.customerType} />;
 }
 
 export function renderOutstandingCell(row: CustomerListRow) {

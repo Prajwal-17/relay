@@ -17,7 +17,17 @@ import {
 } from "@/features/transactions/transactionGrouping";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_TYPE, SortOption, type DashboardType, type SortType } from "@shared/types";
-import { LoaderCircle, ReceiptIndianRupee, X } from "lucide-react";
+import {
+  CalendarDays,
+  FileText,
+  IndianRupee,
+  LoaderCircle,
+  Receipt,
+  ReceiptIndianRupee,
+  Settings2,
+  UserRound,
+  X
+} from "lucide-react";
 import TransactionTableRow from "./TransactionTableRow";
 
 type TransactionTableProps = {
@@ -147,19 +157,28 @@ export const TransactionTable = ({
           role="row"
           className="bg-table-header text-foreground border-frame grid h-8 shrink-0 grid-cols-12 items-center gap-2 border-b px-3 text-xs font-semibold tracking-wide uppercase"
         >
-          <div role="columnheader" className="col-span-2 flex items-center">
+          <div role="columnheader" className="col-span-2 flex items-center gap-1">
+            <CalendarDays aria-hidden="true" className="size-3.5 shrink-0" />
             Date
           </div>
-          <div role="columnheader" className="col-span-3 flex items-center">
+          <div role="columnheader" className="col-span-3 flex items-center gap-1">
+            <UserRound aria-hidden="true" className="size-3.5 shrink-0" />
             Customer
           </div>
-          <div role="columnheader" className="col-span-2 flex items-center">
+          <div role="columnheader" className="col-span-2 flex items-center gap-1">
+            {isSales ? (
+              <Receipt aria-hidden="true" className="size-3.5 shrink-0" />
+            ) : (
+              <FileText aria-hidden="true" className="size-3.5 shrink-0" />
+            )}
             {documentLabel}
           </div>
-          <div role="columnheader" className="col-span-3 flex items-center justify-end">
+          <div role="columnheader" className="col-span-3 flex items-center justify-end gap-1">
+            <IndianRupee aria-hidden="true" className="size-3.5 shrink-0" />
             Amount
           </div>
-          <div role="columnheader" className="col-span-2 flex items-center justify-center">
+          <div role="columnheader" className="col-span-2 flex items-center justify-center gap-1">
+            <Settings2 aria-hidden="true" className="size-3.5 shrink-0" />
             Actions
           </div>
         </div>

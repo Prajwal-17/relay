@@ -22,7 +22,16 @@ import { apiClient } from "@/lib/apiClient";
 import type { Customer, UpdateCustomerPayload } from "@shared/types";
 import { rupeesToPaisa } from "@shared/utils/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LoaderCircle, X } from "lucide-react";
+import {
+  LoaderCircle,
+  MapPin,
+  Phone,
+  Tags,
+  UserRound,
+  WalletCards,
+  X,
+  type LucideIcon
+} from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
 
@@ -66,18 +75,21 @@ function buildPayload(form: FormState, includeOpeningBalance: boolean) {
 
 function FormField({
   label,
+  icon: Icon,
   required,
   error,
   children
 }: {
   label: string;
+  icon: LucideIcon;
   required?: boolean;
   error?: string | null;
   children: ReactNode;
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-foreground text-xs font-semibold">
+      <Label className="text-foreground flex items-center gap-1.5 text-xs font-semibold">
+        <Icon aria-hidden="true" className="text-muted-foreground size-3.5 shrink-0" />
         {label}
         {required && <span className="text-destructive"> *</span>}
       </Label>
@@ -175,6 +187,7 @@ export function CustomerFormDialog({
             <div className="col-span-2">
               <FormField
                 label="Name"
+                icon={UserRound}
                 required
                 error={nameInvalid ? "Name must be at least 3 characters" : null}
               >
@@ -187,7 +200,11 @@ export function CustomerFormDialog({
               </FormField>
             </div>
 
-            <FormField label="Contact" error={contactInvalid ? "Must be 10 digits" : null}>
+            <FormField
+              label="Contact"
+              icon={Phone}
+              error={contactInvalid ? "Must be 10 digits" : null}
+            >
               <Input
                 value={form.contact}
                 onChange={(e) => set("contact", onlyDigits(e.target.value, 10))}
@@ -198,7 +215,7 @@ export function CustomerFormDialog({
               />
             </FormField>
 
-            <FormField label="Type">
+            <FormField label="Type" icon={Tags}>
               <Select value={form.customerType} onValueChange={(v) => set("customerType", v)}>
                 <SelectTrigger className="font-medium">
                   <SelectValue />
@@ -212,7 +229,7 @@ export function CustomerFormDialog({
             </FormField>
 
             {mode === "add" && (
-              <FormField label="Opening balance (₹)">
+              <FormField label="Opening balance (₹)" icon={WalletCards}>
                 <Input
                   inputMode="decimal"
                   min={0}
@@ -226,7 +243,7 @@ export function CustomerFormDialog({
             )}
 
             <div className="col-span-2">
-              <FormField label="Address">
+              <FormField label="Address" icon={MapPin}>
                 <Textarea
                   value={form.address}
                   onChange={(e) => set("address", e.target.value)}

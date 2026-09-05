@@ -1,18 +1,11 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { CUSTOMER_DETAIL_TAB, type CustomerDetailTab } from "@/types/renderer.types";
 import type { Customer } from "@shared/types";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCustomerActions } from "../customerActions";
+import { CustomerTypeBadge } from "../CustomerTypeBadge";
 import { OutstandingBadge } from "./OutstandingBadge";
-
-const typeBadgeClass: Record<string, string> = {
-  cash: "bg-hover text-foreground border-border",
-  account: "bg-hover text-foreground border-border",
-  hotel: "bg-hover text-foreground border-border"
-};
 
 // pinned slim tabs toolbar in customer workspace
 export function DetailHeader({
@@ -51,15 +44,7 @@ export function DetailHeader({
           </button>
         </nav>
 
-        <Badge
-          variant="outline"
-          className={cn(
-            "shrink-0 px-2 py-0.5 text-xs font-medium capitalize",
-            typeBadgeClass[customer.customerType] ?? typeBadgeClass.cash
-          )}
-        >
-          {customer.customerType}
-        </Badge>
+        <CustomerTypeBadge customerType={customer.customerType} className="px-2 py-0.5" />
 
         {activeTab !== CUSTOMER_DETAIL_TAB.ACCOUNTING && (
           <OutstandingBadge
