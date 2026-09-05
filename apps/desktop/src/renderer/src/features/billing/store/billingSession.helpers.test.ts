@@ -93,6 +93,7 @@ describe("billing sparse position helpers", () => {
       POSITION_GAP,
       POSITION_GAP * 3
     ]);
+    expect(hydrated.slice(0, 2).map((item) => item.purchasePrice)).toEqual([5000, 5000]);
     expect(hydrated[2]).toMatchObject({
       productSnapshot: "",
       position: POSITION_GAP * 4

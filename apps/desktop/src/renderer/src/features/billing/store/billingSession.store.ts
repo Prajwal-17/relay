@@ -257,6 +257,7 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
               weight: newItem.weight,
               unit: newItem.unit,
               mrp: newItem.mrp,
+              purchasePrice: newItem.purchasePrice,
               price: newItem.price ? paisaToRupees(newItem.price).toString() : "",
               quantity: oldItemQuantity.toString(),
               totalPrice: 0,
@@ -295,7 +296,8 @@ export const useBillingSessionStore = create<BillingSessionStore>()(
                 name: String(value),
                 weight: null,
                 unit: null,
-                mrp: null
+                mrp: null,
+                purchasePrice: null
               };
               isInventoryItem = false;
             }

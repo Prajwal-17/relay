@@ -75,6 +75,7 @@ describe("estimates endpoint integration tests", () => {
           productSnapshot: product1.productSnapshot,
           mrp: product1.mrp,
           price: product1.price,
+          purchasePrice: product1.purchasePrice,
           weight: product1.weight,
           unit: product1.unit,
           quantity: 7000,
@@ -90,6 +91,7 @@ describe("estimates endpoint integration tests", () => {
           productSnapshot: product2.productSnapshot,
           mrp: product2.mrp,
           price: product2.price,
+          purchasePrice: product2.purchasePrice,
           weight: product2.weight,
           unit: product2.unit,
           quantity: 5000,
@@ -143,6 +145,9 @@ describe("estimates endpoint integration tests", () => {
       totalQuantity: 57000
     });
     expect(createdItems).toHaveLength(3);
+    expect(createdItems.find((item) => item.productId === product1.id)?.purchasePrice).toBe(
+      product1.purchasePrice
+    );
     expect(savedProduct1?.totalQuantitySold).toBe(37000);
     expect(savedProduct2?.totalQuantitySold).toBe(25000);
   });

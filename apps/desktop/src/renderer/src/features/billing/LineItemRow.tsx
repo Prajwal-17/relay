@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useActiveTabId } from "@/features/billing/hooks/useActiveTabId";
 import { useSearchDropdownStore } from "@/features/billing/product-search/searchDropdown.store";
 import { useBillingSessionStore } from "@/features/billing/store/billingSession.store";
@@ -11,8 +12,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { UPDATE_QTY_ACTION } from "@shared/types";
 import { fromMilliUnits, toMilliUnits } from "@shared/utils/milliUnits";
-import { paisaToRupeeString } from "@shared/utils/utils";
-import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2 } from "lucide-react";
+import { formatRupee, paisaToRupeeString, rupeesToPaisa } from "@shared/utils/utils";
+import { Check, GripVertical, IndianRupee, Minus, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { MemoizedProductSearchDropdown } from "./product-search/MemoizedProductSearchDropdown";
@@ -37,6 +38,8 @@ export const BILLING_GRID_CLASS =
 
 export const BILLING_GRID_COUNT_CLASS =
   "grid-cols-[minmax(5.25rem,0.65fr)_minmax(14rem,3fr)_minmax(8.5rem,1.3fr)_minmax(6.5rem,1fr)_minmax(7rem,1.1fr)_minmax(3.5rem,0.55fr)_minmax(4.5rem,0.7fr)_minmax(5rem,0.8fr)] max-[1100px]:grid-cols-[minmax(5.25rem,0.65fr)_minmax(8rem,3fr)_minmax(7rem,1.3fr)_minmax(5rem,1fr)_minmax(5.5rem,1.1fr)_minmax(3.25rem,0.55fr)_minmax(3.5rem,0.7fr)_minmax(4.5rem,0.8fr)]";
+
+export const BELOW_PURCHASE_PRICE_WARNING_DELAY_MS = 600;
 
 const LineItemRow = memo(
   ({ idx, item, isCountColumnVisible, dragHandle, disableDrag }: LineItemRowProps) => {
@@ -64,6 +67,8 @@ const LineItemRow = memo(
     );
 
     const [qtyPresetOpen, setQtyPresetOpen] = useState<number | null>(null);
+    const [showPurchasePriceWarning, setShowPurchasePriceWarning] = useState(false);
+    const [isPriceWarningOpen, setIsPriceWarningOpen] = useState(false);
     const qtyVal = parseFloat(item.quantity || "0");
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const partiallyChecked = item.checkedQty > 0 && item.checkedQty < qtyVal;
@@ -73,6 +78,28 @@ const LineItemRow = memo(
       : partiallyChecked
         ? "bg-line-item-partial-field"
         : "bg-background";
+
+    const purchasePriceWarningId = "purchase-price-warning-" + item.rowId;
+    const purchasePriceWarning =
+      item.purchasePrice === null
+        ? ""
+        : "Below purchase price of " + formatRupee(item.purchasePrice);
+    const enteredPrice = Number(item.price);
+    const isPriceCurrentlyBelowPurchasePrice =
+      item.purchasePrice !== null &&
+      item.price.trim() !== "" &&
+      Number.isFinite(enteredPrice) &&
+      rupeesToPaisa(enteredPrice) < item.purchasePrice;
+    useEffect(() => {
+      setShowPurchasePriceWarning(false);
+      if (!isPriceCurrentlyBelowPurchasePrice) return;
+
+      const timer = window.setTimeout(
+        () => setShowPurchasePriceWarning(true),
+        BELOW_PURCHASE_PRICE_WARNING_DELAY_MS
+      );
+      return () => window.clearTimeout(timer);
+    }, [item.price, item.purchasePrice, isPriceCurrentlyBelowPurchasePrice]);
 
     const [isFlash, setIsFlash] = useState(false);
     const prevTotalRef = useRef(item.totalPrice);
@@ -259,28 +286,62 @@ const LineItemRow = memo(
           </div>
           <div className="min-w-0">
             <div className="relative h-9 w-full">
-              <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
-                <IndianRupee size={14} />
-              </span>
+              {showPurchasePriceWarning ? (
+                <Tooltip open={isPriceWarningOpen}>
+                  <TooltipTrigger asChild>
+                    <span
+                      aria-hidden="true"
+                      title={purchasePriceWarning}
+                      onMouseEnter={() => setIsPriceWarningOpen(true)}
+                      onMouseLeave={() => setIsPriceWarningOpen(false)}
+                      className="bg-warning text-warning-foreground absolute top-1/2 left-2 z-10 flex size-5 -translate-y-1/2 items-center justify-center rounded-md shadow-xs"
+                    >
+                      <TriangleAlert size={13} strokeWidth={2.75} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={6} className="max-w-64">
+                    {purchasePriceWarning}
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <span className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2">
+                  <IndianRupee size={14} />
+                </span>
+              )}
               <input
                 aria-label={`Price row ${idx + 1}`}
                 type="text"
                 value={item.price}
                 placeholder="0"
+                aria-describedby={showPurchasePriceWarning ? purchasePriceWarningId : undefined}
+                data-price-warning={showPurchasePriceWarning ? "below-purchase-price" : undefined}
+                onFocus={() => setIsPriceWarningOpen(true)}
+                onBlur={() => setIsPriceWarningOpen(false)}
                 onChange={(e) => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
                   const val = e.target.value;
                   if (val === "" || /^\d*\.?\d{0,2}$/.test(val)) {
+                    setShowPurchasePriceWarning(false);
                     updateLineItem(tabId, item.rowId, "price", val);
                     processSyncQueue(tabId);
                   }
                 }}
                 className={cn(
-                  "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/60 border-input h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-8 text-right text-sm font-semibold tabular-nums shadow-xs outline-none focus-visible:ring-2 disabled:cursor-not-allowed",
-                  checkedFieldColor
+                  "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/60 border-input h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-sm font-semibold tabular-nums shadow-xs transition-[border-color,box-shadow,background-color,color] duration-150 outline-none focus-visible:ring-2 disabled:cursor-not-allowed",
+                  checkedFieldColor,
+                  showPurchasePriceWarning &&
+                    "border-warning bg-warning/10 text-foreground ring-warning/30 focus-visible:border-warning focus-visible:ring-warning/40 ring-1 focus-visible:ring-2"
                 )}
               />
+              <span
+                id={purchasePriceWarningId}
+                role="status"
+                aria-live="polite"
+                className="sr-only"
+              >
+                {showPurchasePriceWarning ? purchasePriceWarning : ""}
+              </span>
             </div>
           </div>
           <div className="min-w-0">

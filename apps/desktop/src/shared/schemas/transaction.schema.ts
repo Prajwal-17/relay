@@ -13,6 +13,13 @@ export const lineItemSchema = z
     weight: z.string().nullable().default(null),
     unit: z.string().nullable().default(null),
     mrp: safePositiveInteger.nullable().default(null),
+    purchasePrice: z.coerce
+      .number()
+      .int()
+      .nonnegative()
+      .max(Number.MAX_SAFE_INTEGER)
+      .nullable()
+      .optional(),
     price: safePositiveInteger,
     quantity: safePositiveInteger,
     checkedQty: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).default(0),

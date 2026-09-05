@@ -10,6 +10,7 @@ export type LineItem = {
   weight: string | null;
   unit: string | null;
   mrp: number | null;
+  purchasePrice: number | null;
   price: string;
   quantity: string;
   totalPrice: number; // UI-only

@@ -10,7 +10,7 @@ import { useSearchDropdownStore } from "./product-search/searchDropdown.store";
 import { useBillingSessionStore } from "./store/billingSession.store";
 import type { LineItem } from "./store/billingSession.types";
 import { useBillingTabsStore } from "./store/billingTabs.store";
-import LineItemRow from "./LineItemRow";
+import LineItemRow, { BELOW_PURCHASE_PRICE_WARNING_DELAY_MS } from "./LineItemRow";
 
 const scheduleMock = vi.hoisted(() => vi.fn());
 
@@ -127,6 +127,7 @@ describe("catalog product replacement and custom items", () => {
       weight: null,
       unit: null,
       mrp: null,
+      purchasePrice: null,
       price: rowBeforeTyping.price,
       quantity: rowBeforeTyping.quantity,
       totalPrice: rowBeforeTyping.totalPrice,
@@ -155,20 +156,23 @@ describe("catalog product replacement and custom items", () => {
     const revisionBeforeSelection = committed.revision;
 
     useBillingSessionStore.getState().addLineItem(tabId, committed.rowId, replacement);
+    const replacementRow = useBillingSessionStore
+      .getState()
+      .sessions[tabId]!.lineItems.find((item) => item.rowId === committed.rowId)!;
 
-    expect(
-      useBillingSessionStore
-        .getState()
-        .sessions[tabId]!.lineItems.find((item) => item.rowId === committed.rowId)
-    ).toMatchObject({
+    expect(replacementRow).toMatchObject({
       productId: replacement.id,
       name: replacement.name,
       productSnapshot: replacement.productSnapshot,
       weight: replacement.weight,
       unit: replacement.unit,
       mrp: replacement.mrp,
+      purchasePrice: replacement.purchasePrice,
       price: "152.34",
       revision: revisionBeforeSelection + 1
+    });
+    expect(databasePayload(tabId, replacementRow).data.items[0]).toMatchObject({
+      purchasePrice: replacement.purchasePrice
     });
   });
 
@@ -184,5 +188,48 @@ describe("catalog product replacement and custom items", () => {
 
     useBillingTabsStore.getState().setActiveTab("draft-tab-a");
     expect.soft(useSearchDropdownStore.getState().itemQuery).toBe("Tab A half typed");
+  });
+});
+
+describe("below purchase price warning", () => {
+  it("waits for typing to settle before warning and clears immediately when corrected", () => {
+    const tabId = "below-purchase-price";
+    const committed = initializeCommittedTab(tabId, product("Below Cost Product", 6800));
+    const belowCostItem = { ...committed, price: "50" };
+
+    const view = render(
+      <LineItemRow idx={0} item={belowCostItem} isCountColumnVisible={false} disableDrag />
+    );
+    const priceInput = screen.getByRole("textbox", { name: "Price row 1" });
+    expect(priceInput).not.toHaveAttribute("data-price-warning");
+    act(() => vi.advanceTimersByTime(BELOW_PURCHASE_PRICE_WARNING_DELAY_MS - 1));
+    expect(priceInput).not.toHaveAttribute("data-price-warning");
+
+    act(() => vi.advanceTimersByTime(1));
+    expect(priceInput).toHaveAttribute("data-price-warning", "below-purchase-price");
+    expect(screen.getByRole("status")).toHaveTextContent(/Below purchase price of.*58\.00/);
+
+    view.rerender(
+      <LineItemRow
+        idx={0}
+        item={{ ...belowCostItem, price: "58" }}
+        isCountColumnVisible={false}
+        disableDrag
+      />
+    );
+    expect(priceInput).not.toHaveAttribute("data-price-warning");
+  });
+
+  it("does not warn for a custom item without a purchase price", () => {
+    const tabId = "custom-item-price";
+    const committed = initializeCommittedTab(tabId, product("Custom Price Product", 6800));
+    const customItem = { ...committed, productId: null, purchasePrice: null, price: "1" };
+
+    render(<LineItemRow idx={0} item={customItem} isCountColumnVisible={false} disableDrag />);
+    act(() => vi.advanceTimersByTime(BELOW_PURCHASE_PRICE_WARNING_DELAY_MS));
+
+    expect(screen.getByRole("textbox", { name: "Price row 1" })).not.toHaveAttribute(
+      "data-price-warning"
+    );
   });
 });
