@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import quickcartLogo from "@/assets/quickcart.svg";
+import relayAppIcon from "@assets/desktop/app-icon-small.svg";
 import type { DatabaseUpgradeStatus } from "@shared/types";
 import { CircleAlert, FolderOpen, Power, RotateCcw } from "lucide-react";
 import { StrictMode, useEffect, useMemo, useState } from "react";
@@ -46,8 +46,8 @@ export function UpgradeSplash() {
   return (
     <main className="bg-background text-foreground border-borderprimary flex h-screen min-h-0 flex-col overflow-hidden border">
       <header className="border-border bg-card flex h-12 shrink-0 items-center gap-2.5 border-b px-4 text-sm font-semibold tracking-tight">
-        <img src={quickcartLogo} alt="" className="size-7 shrink-0" />
-        <span>QuickCart</span>
+        <img src={relayAppIcon} alt="" className="size-7 shrink-0 rounded-(--radius-control)" />
+        <span>Relay</span>
       </header>
 
       <section
@@ -58,15 +58,15 @@ export function UpgradeSplash() {
           <p className="text-muted-foreground mb-2 text-xs font-semibold">Local database</p>
           <h1 id="upgrade-title" className="text-foreground mb-2 text-lg leading-tight font-bold">
             {isFailed
-              ? "QuickCart could not update."
+              ? "Relay could not update."
               : isFresh
-                ? "Preparing QuickCart."
-                : "Updating QuickCart."}
+                ? "Preparing Relay."
+                : "Updating Relay."}
           </h1>
           <p className="text-muted-foreground max-w-[58ch] text-sm leading-6">
             {isFailed
-              ? "Your original data is still safe. Retry the update, open the backup folder, or quit QuickCart."
-              : "Keep QuickCart open while your records are made ready for this version."}
+              ? "Your original data is still safe. Retry the update, open the backup folder, or quit Relay."
+              : "Keep Relay open while your records are made ready for this version."}
           </p>
         </div>
 

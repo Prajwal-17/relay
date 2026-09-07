@@ -35,9 +35,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            pnpm --filter quickcart run build:win
+            pnpm --filter relay run build:win
           else
-            pnpm --filter quickcart run build:linux
+            pnpm --filter relay run build:linux
           fi
 
       - name: Get package version
@@ -96,8 +96,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/build-windows-latest/QuickCart-${{ steps.package-version.outputs.current-version }}.exe
-          asset_name: QuickCart-${{ steps.package-version.outputs.current-version }}.exe
+          asset_path: ./artifacts/build-windows-latest/Relay-${{ steps.package-version.outputs.current-version }}.exe
+          asset_name: Relay-${{ steps.package-version.outputs.current-version }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable
 
       - name: Upload Linux AppImage
@@ -106,8 +106,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/build-ubuntu-latest/QuickCart-${{ steps.package-version.outputs.current-version }}.AppImage
-          asset_name: QuickCart-${{ steps.package-version.outputs.current-version }}.AppImage
+          asset_path: ./artifacts/build-ubuntu-latest/Relay-${{ steps.package-version.outputs.current-version }}.AppImage
+          asset_name: Relay-${{ steps.package-version.outputs.current-version }}.AppImage
           asset_content_type: application/octet-stream
 
       - name: Upload Linux Debian
@@ -116,8 +116,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/build-ubuntu-latest/QuickCart-${{ steps.package-version.outputs.current-version }}.deb
-          asset_name: QuickCart-${{ steps.package-version.outputs.current-version }}.deb
+          asset_path: ./artifacts/build-ubuntu-latest/Relay-${{ steps.package-version.outputs.current-version }}.deb
+          asset_name: Relay-${{ steps.package-version.outputs.current-version }}.deb
           asset_content_type: application/octet-stream
 
       - name: Upload Windows YML

@@ -107,7 +107,7 @@ export default function PdfInvoicePage() {
         <ErrorState
           layout="page"
           title="Store details could not be loaded"
-          description="QuickCart will not create a PDF with missing shop details. Try again or close this window."
+          description="Relay will not create a PDF with missing shop details. Try again or close this window."
           primaryAction={{
             label: "Try again",
             onClick: () => void refetchProfile(),

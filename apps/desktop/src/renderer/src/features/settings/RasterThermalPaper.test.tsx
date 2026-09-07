@@ -7,7 +7,7 @@ import type { RawLedgerStatementData, RawReceiptData } from "@shared/types";
 import { RasterLedgerPaper, RasterReceiptPaper } from "./RasterThermalPaper";
 
 const receipt: RawReceiptData = {
-  storeName: "QuickCart Market",
+  storeName: "Relay Market",
   addressLines: ["12 Market Road", "Bengaluru 560001"],
   phone: "9999999999",
   gstin: "29ABCDE1234F1Z5",
@@ -37,11 +37,11 @@ const receipt: RawReceiptData = {
   extraFeedLines: 4,
   cutMode: "partial",
   footerMessage: "Thank you. Visit again.",
-  upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+  upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
 };
 
 const statement: RawLedgerStatementData = {
-  storeName: "QuickCart Market",
+  storeName: "Relay Market",
   addressLines: ["12 Market Road"],
   customerName: "Anita",
   generatedAt: "2026-08-10T10:30:00.000Z",
@@ -119,6 +119,7 @@ describe("canonical raster thermal papers", () => {
     expect(paper).not.toHaveTextContent("2.500");
     expect(paper).not.toHaveTextContent("1.000");
     expect(paper).toHaveTextContent("Date: Mon,");
+    expect(paper).not.toHaveTextContent("Powered by Relay");
     const partiallyChecked = screen.getByLabelText("1.5 of 2.5 checked");
     const fullyChecked = screen.getByLabelText("1 of 1 checked");
     expect(partiallyChecked).toHaveTextContent("(1.5)");
@@ -243,7 +244,7 @@ describe("canonical raster thermal papers", () => {
     expect(qrSegment).toBeInTheDocument();
     expect(qrSegment).toHaveAttribute(
       "data-qr-value",
-      "upi://pay?pa=shop%40bank&pn=QuickCart%20Market&cu=INR&tr=1048&tn=Invoice%20no%201048&am=1234567.89"
+      "upi://pay?pa=shop%40bank&pn=Relay%20Market&cu=INR&tr=1048&tn=Invoice%20no%201048&am=1234567.89"
     );
     expect(screen.getByTitle("UPI payment QR")).toBeInTheDocument();
     expect(qrSegment?.querySelector("svg")).toHaveAttribute("width", "240");

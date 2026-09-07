@@ -1,4 +1,4 @@
-import quickcartLogo from "@/assets/quickcart.svg";
+import relayAppIcon from "@assets/desktop/app-icon.svg";
 import { Button } from "@/components/ui/button";
 import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants/renderer.constants";
 import { useOnboardingStore } from "@/features/onboarding/onboarding.store";
@@ -23,9 +23,9 @@ export const WelcomeStep = () => {
         className="flex justify-center"
       >
         <img
-          src={quickcartLogo}
+          src={relayAppIcon}
           alt={`${PRODUCT_NAME} logo`}
-          className="h-16 w-auto rounded-(--radius-panel) object-contain"
+          className="size-16 rounded-(--radius-panel) object-contain"
         />
       </motion.div>
 

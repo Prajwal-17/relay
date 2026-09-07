@@ -1,4 +1,4 @@
-import quickcartLogo from "@/assets/quickcart.svg";
+import relayAppIcon from "@assets/desktop/app-icon.svg";
 import {
   ONBOARDING_FEATURES,
   ONBOARDING_STEPS,
@@ -39,9 +39,9 @@ export const OnboardingFlow = () => {
       <div className="bg-onboarding-panel relative hidden w-[42%] shrink-0 flex-col justify-between overflow-hidden p-8 lg:flex">
         <div className="relative z-10 flex items-center gap-3.5">
           <img
-            src={quickcartLogo}
+            src={relayAppIcon}
             alt={`${PRODUCT_NAME} logo`}
-            className="h-10 w-auto rounded-(--radius-panel) object-contain"
+            className="size-10 rounded-(--radius-panel) object-contain"
           />
           <span className="text-onboarding-text text-xl font-bold tracking-tight">
             {PRODUCT_NAME}
@@ -79,7 +79,7 @@ export const OnboardingFlow = () => {
         </div>
 
         <p className="text-onboarding-text-footer relative z-10 text-sm">
-          © {new Date().getFullYear()} QuickCart · Designed for local businesses
+          © {new Date().getFullYear()} Relay · Designed for local businesses
         </p>
       </div>
 

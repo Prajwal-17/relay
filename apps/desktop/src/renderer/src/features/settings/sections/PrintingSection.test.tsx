@@ -41,7 +41,7 @@ const printing: PrintingConfig = {
       id: "11111111-1111-4111-8111-111111111111",
       label: "Primary UPI",
       upiId: "shop@bank",
-      payeeName: "QuickCart Store"
+      payeeName: "Relay Store"
     }
   ],
   defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
@@ -148,13 +148,13 @@ describe("PrintingSection categories", () => {
     const defaultAccount = screen.getByRole("combobox", { name: "Default account" });
     expect(defaultAccount).toHaveTextContent("Primary UPI");
     expect(defaultAccount).not.toHaveTextContent("shop@bank");
-    expect(defaultAccount).not.toHaveTextContent("QuickCart Store");
-    expect(screen.getAllByText("shop@bank · QuickCart Store")[0]).toBeVisible();
+    expect(defaultAccount).not.toHaveTextContent("Relay Store");
+    expect(screen.getAllByText("shop@bank · Relay Store")[0]).toBeVisible();
     await user.click(defaultAccount);
     const defaultAccountList = screen.getByRole("listbox");
     expect(within(defaultAccountList).getByText("Primary UPI")).toBeVisible();
     expect(within(defaultAccountList).queryByText("shop@bank")).not.toBeInTheDocument();
-    expect(within(defaultAccountList).queryByText("QuickCart Store")).not.toBeInTheDocument();
+    expect(within(defaultAccountList).queryByText("Relay Store")).not.toBeInTheDocument();
     await user.click(defaultAccount);
     expect(screen.queryByTestId("upi-open-amount-qr")).not.toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Add UPI account" }));
@@ -228,7 +228,7 @@ describe("PrintingSection categories", () => {
       ...printing.upiQrProfiles[0]!,
       label: "MainCounterAccountUsedForEverySaleReceipt",
       upiId: `${"longmerchantidentifier".repeat(4)}@bank`,
-      payeeName: "QuickCart Supermarket Wholesale and Retail Counter Name Used for UPI Payments"
+      payeeName: "Relay Supermarket Wholesale and Retail Counter Name Used for UPI Payments"
     };
     useAppPreferencesMock.mockReturnValue({
       ...useAppPreferencesMock(),

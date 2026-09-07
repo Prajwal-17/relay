@@ -1,6 +1,6 @@
-# QuickCart Desktop
+# Relay Desktop
 
-The production application in the QuickCart monorepo. It combines an Electron shell, a React
+The production application in the Relay monorepo. It combines an Electron shell, a React
 renderer, a forked Hono API server, and a local SQLite database into one offline-first desktop
 package.
 
@@ -86,11 +86,12 @@ to `dist/`; Electron build output is written to `out/`.
 
 ## Local data and environment
 
-- Development app name: `QuickCart-Dev`
-- Production app name: `QuickCart`
+- Development app name: `Relay-Dev`
+- Production app name: `Relay`
+- Data directories: `Relay-Dev` and `Relay`
 - Development API port: `4723`
 - Production API port: `4722`
-- Database: `<Electron userData>/pos.db`
+- Database: `<Electron userData>/relay.db`
 - Product images: `<Electron userData>/product-images/`
 
 SQLite runs in WAL mode. Schema and data migrations are applied automatically during startup. The
@@ -101,6 +102,10 @@ The main process loads `.env`, then `.env.<MODE>`, without overriding variables 
 in the environment. Main-process variables use the `M_VITE_` prefix; renderer variables use
 `VITE_`. See `.env.example` for supported project-specific values. Development and production
 data remain isolated.
+
+Relay package names, `com.relay*.app` IDs, user-data directory names, local storage keys, and
+`X-Relay-Api-Token` are used consistently. This is an intentional identity reset; data from the
+previous application identity is not moved automatically.
 
 ## Automatic database upgrades
 
@@ -116,11 +121,11 @@ and Retry resumes from the first unapplied ID. Fresh empty databases skip legacy
 and continue to onboarding; non-empty legacy databases receive the required default store, walk-in
 customer, and preferences.
 
-Before changing a non-empty database, QuickCart uses SQLite's consistent backup API and an atomic
+Before changing a non-empty database, Relay uses SQLite's consistent backup API and an atomic
 temporary-file rename. Only the latest pre-upgrade backup is kept at
-`<Electron userData>/backups/pos-before-upgrade-latest.db`. A small adjacent marker prevents Retry
+`<Electron userData>/backups/relay-before-upgrade-latest.db`. A small adjacent marker prevents Retry
 from replacing that backup with partially upgraded data. Backup, migration, or integrity-check
-failures block the API and main window. QuickCart does not restore automatically; the failure window
+failures block the API and main window. Relay does not restore automatically; the failure window
 provides Retry, Open backup folder, and Quit.
 
 Packaged builds must include the complete `drizzle/` directory through `extraResources`. Keep the
@@ -234,7 +239,7 @@ start its development runtime.
 Every journey creates an existing, absolute temporary `M_VITE_USER_DATA_DIR`, allocates unique API
 and remote-debugging ports, and connects to the development renderer over CDP. The configured API
 port is resolved by the main process and shared with preload, renderer, and the forked server. This
-keeps tests independent of real QuickCart development and production data and allows other
+keeps tests independent of real Relay development and production data and allows other
 development instances to remain open.
 
 The fixture owns and terminates the exact development process group, reconnects after full Electron

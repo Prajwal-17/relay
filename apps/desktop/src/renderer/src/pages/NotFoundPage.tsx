@@ -16,9 +16,7 @@ export default function NotFound() {
           Error 404
         </p>
         <h1 className="text-foreground mt-1 text-lg font-semibold">Page not found</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          This location does not exist in QuickCart.
-        </p>
+        <p className="text-muted-foreground mt-1 text-sm">This location does not exist in Relay.</p>
         <code className="border-border bg-muted text-foreground mt-3 block overflow-hidden rounded-(--radius-control) border px-3 py-2 font-mono text-xs text-ellipsis whitespace-nowrap">
           {pathname}
         </code>

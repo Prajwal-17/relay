@@ -1,6 +1,6 @@
-# QuickCart
+# Relay
 
-QuickCart is an offline-first desktop billing application for retail counters. It manages
+Relay is an offline-first desktop billing application for retail counters. It manages
 sales, estimates, products, customer accounts, payments, receipts, and PDF invoices without
 requiring a remote backend.
 
@@ -17,6 +17,9 @@ requiring a remote backend.
 ```text
 apps/
   desktop/                Electron application and local API
+assets/
+  desktop/                Shared Relay desktop identity assets
+  mobile/                 Shared Relay mobile identity assets
 packages/
   eslint-config/          Shared lint configuration
   typescript-config/      Shared TypeScript configuration
@@ -76,6 +79,10 @@ operations such as printing, file selection, product images, and PDF export.
 
 Development and production use separate application data directories and ports so an installed
 copy cannot conflict with local development.
+
+Relay uses Relay application IDs, package names, data-directory names, local storage keys, API
+token headers, and `relay.db` consistently across development, packaged, and standalone runs.
+Changing from the former identity intentionally starts a new data location.
 
 ## Project documentation
 

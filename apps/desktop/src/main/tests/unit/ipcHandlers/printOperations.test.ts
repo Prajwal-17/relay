@@ -56,7 +56,7 @@ function printing(overrides: Partial<PrintingConfig> = {}): PrintingConfig {
 
 function receipt(): RawReceiptData {
   return {
-    storeName: "QuickCart Market",
+    storeName: "Relay Market",
     addressLines: [],
     transactionType: "sale",
     transactionNo: 42,
@@ -79,7 +79,7 @@ function receipt(): RawReceiptData {
 
 function statement(): RawLedgerStatementData {
   return {
-    storeName: "QuickCart Market",
+    storeName: "Relay Market",
     addressLines: [],
     customerName: "Anita",
     generatedAt: "2026-08-10T10:00:00.000Z",
@@ -168,7 +168,7 @@ describe("authoritative RAW print operations", () => {
     });
     const upiReceipt = {
       ...receipt(),
-      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+      upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
     };
 
     const result = await printReceipt(upiReceipt, receiptRaster());
@@ -185,7 +185,7 @@ describe("authoritative RAW print operations", () => {
   it("blocks a UPI receipt before transport when its fresh QR raster is unavailable", async () => {
     const upiReceipt = {
       ...receipt(),
-      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: false }
+      upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: false }
     };
 
     const result = await printReceipt(upiReceipt, raster());

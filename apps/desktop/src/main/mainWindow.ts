@@ -1,6 +1,7 @@
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, screen } from "electron";
 import { join } from "node:path";
+import { getLinuxAppIconPath } from "./appIcon";
 import { registerZoomController, restoreZoom, type ZoomStore } from "./zoom";
 
 type MainWindowOptions = {
@@ -25,7 +26,7 @@ export function createMainWindow({
   store
 }: MainWindowOptions): MainWindowHandle {
   const initialZoom = store ? (store.get("zoomFactor") as number) : 1;
-  const windowTitle = isDevBuild ? "QuickCart-Dev" : "QuickCart";
+  const windowTitle = isDevBuild ? "Relay-Dev" : "Relay";
   const { width: workAreaWidth, height: workAreaHeight } = screen.getPrimaryDisplay().workAreaSize;
   const contentWidth = maximizeOnReady ? Math.min(1280, Math.max(1024, workAreaWidth - 24)) : 1280;
   const contentHeight = maximizeOnReady ? Math.min(650, Math.max(600, workAreaHeight - 72)) : 650;
@@ -35,6 +36,7 @@ export function createMainWindow({
     show: false,
     width: contentWidth,
     height: contentHeight,
+    icon: getLinuxAppIconPath(),
     minWidth: 1024,
     minHeight: 600,
     useContentSize: true,
@@ -84,7 +86,7 @@ export function createMainWindow({
       resolveReady(window);
     });
     web.once("did-fail-load", (_event, errorCode, errorDescription) => {
-      rejectReady(new Error(`QuickCart could not load (${errorCode}): ${errorDescription}`));
+      rejectReady(new Error(`Relay could not load (${errorCode}): ${errorDescription}`));
     });
   });
 

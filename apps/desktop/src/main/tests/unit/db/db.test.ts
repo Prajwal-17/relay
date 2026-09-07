@@ -22,12 +22,12 @@ describe("database configuration", () => {
   });
 
   it("uses configured database and migration paths", async () => {
-    vi.stubEnv("M_VITE_DATABASE_URL", "/data/quickcart.db");
+    vi.stubEnv("M_VITE_DATABASE_URL", "/data/relay.db");
     vi.stubEnv("M_VITE_MIGRATION_FOLDER", "/app/drizzle");
 
     const { getDatabasePath, getMigrationsFolder } = await loadDatabaseModule();
 
-    expect(getDatabasePath()).toBe("/data/quickcart.db");
+    expect(getDatabasePath()).toBe("/data/relay.db");
     expect(getMigrationsFolder()).toBe("/app/drizzle");
   });
 
@@ -52,7 +52,7 @@ describe("database configuration", () => {
   });
 
   it("coalesces concurrent initialization and reuses the initialized database", async () => {
-    vi.stubEnv("M_VITE_DATABASE_URL", "/data/quickcart.db");
+    vi.stubEnv("M_VITE_DATABASE_URL", "/data/relay.db");
     vi.stubEnv("M_VITE_MIGRATION_FOLDER", "/app/drizzle");
     const database = { marker: "database" };
     coordinateDatabaseUpgradeMock.mockResolvedValue({ db: database });
@@ -66,14 +66,14 @@ describe("database configuration", () => {
     expect(await initDb()).toBe(database);
     expect(coordinateDatabaseUpgradeMock).toHaveBeenCalledOnce();
     expect(coordinateDatabaseUpgradeMock).toHaveBeenCalledWith({
-      databasePath: "/data/quickcart.db",
+      databasePath: "/data/relay.db",
       migrationsFolder: "/app/drizzle",
       onStatus
     });
   });
 
   it("allows initialization to retry after a failed attempt", async () => {
-    vi.stubEnv("M_VITE_DATABASE_URL", "/data/quickcart.db");
+    vi.stubEnv("M_VITE_DATABASE_URL", "/data/relay.db");
     vi.stubEnv("M_VITE_MIGRATION_FOLDER", "/app/drizzle");
     const database = { marker: "database" };
     coordinateDatabaseUpgradeMock

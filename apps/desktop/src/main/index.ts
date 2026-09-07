@@ -13,6 +13,7 @@ import { UpgradeWindowController } from "./upgrade/upgradeWindow";
 import type { ZoomStore } from "./zoom";
 
 const isDevBuild = initMainEnv() === "development";
+const userDataName = isDevBuild ? "Relay-Dev" : "Relay";
 let mainWindow: BrowserWindow | undefined;
 const apiPort = resolveApiPort(process.env.M_VITE_API_PORT, process.env.MODE);
 const apiToken = process.env.M_VITE_API_TOKEN?.trim() || randomUUID();
@@ -21,10 +22,10 @@ let upgradeWindow: UpgradeWindowController | undefined;
 let bootPromise: Promise<void> | undefined;
 let applicationStarted = false;
 
-app.setName(isDevBuild ? "QuickCart-Dev" : "QuickCart");
+app.setName(isDevBuild ? "Relay-Dev" : "Relay");
 
 if (process.platform === "win32") {
-  app.setAppUserModelId(isDevBuild ? "com.quickcart-dev.app" : "com.quickcart.app");
+  app.setAppUserModelId(isDevBuild ? "com.relay-dev.app" : "com.relay.app");
 }
 
 const configuredUserDataDirectory = process.env.M_VITE_USER_DATA_DIR;
@@ -33,15 +34,14 @@ if (configuredUserDataDirectory) {
     throw new Error("M_VITE_USER_DATA_DIR must be an absolute path.");
   }
   if (!fs.existsSync(configuredUserDataDirectory)) {
-    throw new Error("M_VITE_USER_DATA_DIR must exist before QuickCart starts.");
+    throw new Error("M_VITE_USER_DATA_DIR must exist before Relay starts.");
   }
   if (!fs.statSync(configuredUserDataDirectory).isDirectory()) {
     throw new Error("M_VITE_USER_DATA_DIR must point to a directory.");
   }
   app.setPath("userData", configuredUserDataDirectory);
-} else if (isDevBuild) {
-  // Keep normal development data separate from the installed app.
-  app.setPath("userData", resolve(app.getPath("appData"), "QuickCart-Dev"));
+} else {
+  app.setPath("userData", resolve(app.getPath("appData"), userDataName));
 }
 
 process.env.M_VITE_API_PORT = String(apiPort);
@@ -80,7 +80,7 @@ if (!app.requestSingleInstanceLock()) {
     setupIpcHandlers();
 
     // these values are passed to the forked server process.
-    process.env.M_VITE_DATABASE_URL = join(app.getPath("userData"), "pos.db");
+    process.env.M_VITE_DATABASE_URL = join(app.getPath("userData"), "relay.db");
     process.env.M_VITE_IS_PACKAGED = String(app.isPackaged);
     process.env.M_VITE_MIGRATION_FOLDER = app.isPackaged
       ? join(process.resourcesPath, "drizzle")
@@ -117,7 +117,7 @@ function errorMessage(error: unknown): string {
     current = current.cause;
   }
 
-  return message || "QuickCart could not update the local database.";
+  return message || "Relay could not update the local database.";
 }
 
 async function ensureUpgradeWindow(
@@ -202,7 +202,7 @@ async function startApplication(inspection?: UpgradeInspection): Promise<void> {
     const totalSteps = Math.max(inspection?.totalSteps ?? previous.totalSteps, 1);
     upgradeWindow.update({
       state: "starting",
-      label: "Starting QuickCart",
+      label: "Starting Relay",
       currentStep: totalSteps,
       totalSteps,
       backupAvailable: previous.backupAvailable
@@ -218,7 +218,7 @@ async function startApplication(inspection?: UpgradeInspection): Promise<void> {
   upgradeWindow.update({
     ...upgradeWindow.getStatus(),
     state: "complete",
-    label: "QuickCart is ready"
+    label: "Relay is ready"
   });
   upgradeWindow.close();
   upgradeWindow = undefined;

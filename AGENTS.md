@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Instructions for coding agents working in the QuickCart repository.
+Instructions for coding agents working in the Relay repository.
 
 ## Sources of truth
 
@@ -41,15 +41,20 @@ packages/
 TypeScript aliases:
 
 - `@/*` → `apps/desktop/src/renderer/src/*`
+- `@assets/*` → `assets/*`
 - `@shared/*` → `apps/desktop/src/shared/*`
 
 ## Runtime invariants
 
-- Electron configures the development `userData` path before importing modules that call
+- Electron configures the production or development `userData` path before
+  importing modules that call
   `app.getPath()`. Keep those modules lazily imported after path setup.
 - The main process initializes SQLite, then forks `src/main/server.ts`.
 - The renderer calls the local Hono API through `src/renderer/src/lib/apiClient.ts`.
-- Development uses `QuickCart-Dev` and port `4723`; production uses `QuickCart` and port `4722`.
+- Development uses `Relay-Dev` and port `4723`; production uses `Relay` and port `4722`.
+- Use Relay app IDs, package names, user-data paths, API headers, browser-storage keys, and
+  `relay.db` consistently. The identity reset intentionally does not preserve the previous
+  application data location.
 - Renderer routing must use `createHashRouter`; `BrowserRouter` breaks packaged `file://` loads.
 - The preload bridge is for native capabilities only. Do not bypass context isolation or enable
   renderer Node integration.

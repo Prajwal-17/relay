@@ -1,9 +1,10 @@
-appId: com.quickcart-dev.app
-productName: QuickCart-Dev
+appId: com.relay-dev.app
+productName: Relay-Dev
 extraMetadata: # injects properties into package.json
-  name: quickcart-dev
+  name: relay-dev
+  desktopName: relay-dev
 directories:
-  buildResources: build
+  buildResources: ../../assets/desktop
 files:
   - "!**/.vscode/*"
   - "!src/*"
@@ -18,17 +19,22 @@ extraResources:
     to: drizzle/
     filter:
       - "**/*"
+  - from: ../../assets/desktop/icon.png
+    to: relay-icon.png
 win:
-  executableName: QuickCart-Dev
-  icon: build/icon-dev.png
+  executableName: Relay-Dev
+  icon: icon.ico
 nsis:
   artifactName: "${productName}-${version}.${ext}"
   shortcutName: "${productName}"
   uninstallDisplayName: "${productName}"
   createDesktopShortcut: always
+mac:
+  icon: icon.icns
 linux:
-  executableName: quickcart-dev
-  icon: build/icon-dev.png
+  executableName: relay-dev
+  icon: icon.png
+  syncDesktopName: true
   target:
     - AppImage
     - deb

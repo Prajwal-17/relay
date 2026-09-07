@@ -4,7 +4,7 @@ import { buildRawLedgerStatementData, getPrintedLedgerParticulars } from "./useR
 
 const profile: StoreProfile = {
   id: "store-1",
-  storeName: "QuickCart Market",
+  storeName: "Relay Market",
   ownerName: "Owner",
   phone: "9999999999",
   email: "owner@example.com",
@@ -91,7 +91,7 @@ describe("RAW customer ledger data", () => {
     );
 
     expect(statement).toMatchObject({
-      storeName: "QuickCart Market",
+      storeName: "Relay Market",
       addressLines: ["12 Market Road", "Near Clock Tower", "Bengaluru, Karnataka 560001"],
       phone: "9999999999",
       previousBalancePaisa: 0,

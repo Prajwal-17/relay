@@ -16,7 +16,7 @@ describe("renderer error reporting", () => {
     reportRendererError({ source: "window-error", error });
 
     expect(consoleSpy).toHaveBeenCalledTimes(1);
-    expect(consoleSpy).toHaveBeenCalledWith("[QuickCart renderer error]", {
+    expect(consoleSpy).toHaveBeenCalledWith("[Relay renderer error]", {
       source: "react-caught",
       error,
       componentStack: "at Broken",

@@ -26,7 +26,7 @@ export const reportRendererError = ({ source, error, componentStack }: ErrorRepo
     if (reportedPrimitives.size > 100) reportedPrimitives.clear();
   }
 
-  console.error("[QuickCart renderer error]", {
+  console.error("[Relay renderer error]", {
     source,
     error,
     componentStack,

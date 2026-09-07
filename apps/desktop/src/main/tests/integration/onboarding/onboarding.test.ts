@@ -53,7 +53,7 @@ describe("onboarding integration", () => {
 
     expect(response.status).toBe(201);
     expect(body.appInstance).toEqual({ id: "default", os: os.platform() });
-    expect(body.storeProfile).toMatchObject({ id: "default", storeName: "QuickCart Market" });
+    expect(body.storeProfile).toMatchObject({ id: "default", storeName: "Relay Market" });
     expect(body.preferences.config.billing.defaultCustomerId).toBe(body.customerId);
 
     expect(db.select().from(appInstance).all()).toEqual([
@@ -70,7 +70,7 @@ describe("onboarding integration", () => {
 
   it("normalizes trimmed and omitted optional fields", async () => {
     const payload = {
-      storeName: "  QuickCart Market  ",
+      storeName: "  Relay Market  ",
       ownerName: "  Prajwal Reddy  ",
       phone: " 9876543210 ",
       email: " owner@example.com ",
@@ -84,7 +84,7 @@ describe("onboarding integration", () => {
     const response = await requestJson(app, "POST", "/api/onboarding", payload);
     expect(response.status).toBe(201);
     expect(db.select().from(storeProfile).get()).toMatchObject({
-      storeName: "QuickCart Market",
+      storeName: "Relay Market",
       ownerName: "Prajwal Reddy",
       phone: "9876543210",
       email: "owner@example.com",

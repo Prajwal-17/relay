@@ -45,7 +45,7 @@ export type BillingSeed = {
 type OnboardingResult = { customerId: string };
 
 const onboardingPayload = {
-  storeName: "QuickCart E2E Store",
+  storeName: "Relay E2E Store",
   ownerName: "E2E Test Owner",
   phone: "9876543210",
   email: "billing-e2e@example.com",

@@ -76,8 +76,8 @@ export function UpiQrScanPreview({ profile }: { profile: UpiQrProfile }) {
   const baseInput = {
     upiId: profile.upiId,
     payeeName: profile.payeeName,
-    transactionRef: "QUICKCART-TEST",
-    note: "QuickCart QR scan test"
+    transactionRef: "RELAY-TEST",
+    note: "Relay QR scan test"
   };
   const openAmountUri = buildUpiPaymentUri(baseInput);
   const fixedAmountUri = fixedAmountPaisa

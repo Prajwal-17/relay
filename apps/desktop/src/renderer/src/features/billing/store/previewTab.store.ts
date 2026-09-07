@@ -4,7 +4,7 @@ import { devtools } from "zustand/middleware";
 export const PREVIEW_TABS = ["bill", "customer"] as const;
 export type PreviewTab = (typeof PREVIEW_TABS)[number];
 
-const PREVIEW_PANEL_STORAGE_KEY = "quickcart-billing-preview-open-v2";
+const PREVIEW_PANEL_STORAGE_KEY = "relay-billing-preview-open-v2";
 
 const getInitialPanelState = () => {
   if (typeof window === "undefined") return true;

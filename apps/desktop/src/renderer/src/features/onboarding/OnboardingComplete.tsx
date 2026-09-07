@@ -111,7 +111,7 @@ export const OnboardingComplete = () => {
             </>
           ) : (
             <>
-              Start Using QuickCart
+              Start Using Relay
               <ArrowRight className="h-5 w-5 transition-transform duration-200 group-hover:translate-x-1" />
             </>
           )}

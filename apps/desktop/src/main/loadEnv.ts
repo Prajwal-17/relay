@@ -11,7 +11,7 @@ export function initMainEnv() {
       try {
         const pkgPath = path.join(app.getAppPath(), "package.json");
         const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
-        return pkg.name === "quickcart-dev" ? "development" : "production";
+        return pkg.name === "relay-dev" ? "development" : "production";
       } catch {
         return "production";
       }

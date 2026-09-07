@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import type { DatabaseUpgradeStatus } from "../../shared/types";
+import { getLinuxAppIconPath } from "../appIcon";
 
 const CHANNELS = {
   getStatus: "database-upgrade:get-status",
@@ -59,9 +60,10 @@ export class UpgradeWindowController {
       center: true,
       maximizable: false,
       minimizable: true,
+      icon: getLinuxAppIconPath(),
       autoHideMenuBar: true,
       backgroundColor: "#f4f3ef",
-      title: "QuickCart database upgrade",
+      title: "Relay database upgrade",
       webPreferences: {
         preload: this.options.preloadPath,
         sandbox: false,

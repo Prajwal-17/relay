@@ -10,7 +10,7 @@ import {
   waitForTransactionId
 } from "../helpers/billing";
 
-const imageFixture = path.resolve(__dirname, "../../build/icon-dev.png");
+const imageFixture = path.resolve(__dirname, "../../../../assets/desktop/icon.png");
 
 test.describe("critical billing viewport and reference smoke", () => {
   test("supported content viewports and zoom keep real controls actionable", async ({ app }) => {
@@ -64,8 +64,8 @@ test.describe("critical billing viewport and reference smoke", () => {
           {
             id: upiProfileId,
             label: "Main counter",
-            upiId: "quickcart@bank",
-            payeeName: "QuickCart E2E Store"
+            upiId: "relay@bank",
+            payeeName: "Relay E2E Store"
           }
         ],
         defaultUpiQrProfileId: upiProfileId
@@ -122,17 +122,13 @@ test.describe("critical billing viewport and reference smoke", () => {
     const referenceWindow = app.page.locator("[data-billing-reference-window]");
     await expect(referenceWindow).toBeVisible();
     await referenceWindow.locator('input[type="file"]').setInputFiles(imageFixture);
-    await expect(
-      referenceWindow.getByAltText("Handwritten order sheet: icon-dev.png")
-    ).toBeVisible();
+    await expect(referenceWindow.getByAltText("Handwritten order sheet: icon.png")).toBeVisible();
 
     await app.page.getByLabel("New Estimate").click();
     await expect(referenceWindow.getByText("No image selected")).toBeVisible();
     await app.page.getByRole("button", { name: /Sale #/ }).click();
     await expect(app.page).toHaveURL(new RegExp(`#/billing/sales/${saleId}/edit$`));
-    await expect(
-      referenceWindow.getByAltText("Handwritten order sheet: icon-dev.png")
-    ).toBeVisible();
+    await expect(referenceWindow.getByAltText("Handwritten order sheet: icon.png")).toBeVisible();
 
     await app.restart();
     await openBillingRoute(app.page, "sales", saleId);

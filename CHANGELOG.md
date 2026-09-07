@@ -1,5 +1,20 @@
 # Changelog
 
+## v4.4.7 - 07 Sep 2026
+
+Patch release completing the Relay rebrand and packaging cleanup.
+
+### Improvements
+
+- Complete Relay branding throughout the app interface and release metadata
+- Use the charcoal-background, white Relay icon across desktop, mobile, onboarding, and Linux packaging
+- Flatten the shared asset kit into `assets/desktop` and `assets/mobile` and remove obsolete logo files
+- Ensure Linux `.deb` and AppImage installs expose the Relay icon in the launcher and running window
+
+### Fixed
+
+- Remove the app product name from thermal receipts, receipt previews, and PDF invoices
+
 ## v4.4.6 - 05 Sep 2026
 
 Patch release improving billing safeguards, product price visibility, customer workflows, and thermal ledger printing.

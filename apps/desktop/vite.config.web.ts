@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src/renderer/src"),
+      "@assets": path.resolve(__dirname, "../../assets"),
       "@shared": path.resolve(__dirname, "src/shared")
     }
   },
@@ -23,6 +24,11 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, "dist/web"),
     emptyOutDir: true
+  },
+  server: {
+    fs: {
+      allow: [path.resolve(__dirname, "../..")]
+    }
   },
   envDir: __dirname
 });

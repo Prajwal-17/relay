@@ -6,17 +6,17 @@ type BoundaryScope = "root" | "workspace" | "billing" | "pdf";
 
 const copyByScope: Record<BoundaryScope, { title: string; description: string }> = {
   root: {
-    title: "QuickCart could not open",
-    description: "An unexpected startup error occurred. Reload QuickCart to try again."
+    title: "Relay could not open",
+    description: "An unexpected startup error occurred. Reload Relay to try again."
   },
   workspace: {
     title: "This page could not be displayed",
-    description: "The rest of QuickCart is still available. Try this page again or return home."
+    description: "The rest of Relay is still available. Try this page again or return home."
   },
   billing: {
     title: "Billing encountered an unexpected error",
     description:
-      "Unsaved work may be affected. Reload QuickCart to restore billing, or return to the dashboard."
+      "Unsaved work may be affected. Reload Relay to restore billing, or return to the dashboard."
   },
   pdf: {
     title: "The PDF preview could not be displayed",
@@ -51,7 +51,7 @@ export const RouteErrorBoundary = ({ scope }: { scope: BoundaryScope }) => {
         }
         primaryAction={
           scope === "root" || scope === "billing"
-            ? { label: "Reload QuickCart", onClick: () => window.location.reload() }
+            ? { label: "Reload Relay", onClick: () => window.location.reload() }
             : { label: "Try again", onClick: retryRoute }
         }
         secondaryAction={

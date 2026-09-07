@@ -19,6 +19,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/renderer/src/*"],
+      "@assets/*": ["../../assets/*"],
       "@shared/*": ["src/shared/*"]
     },
     /* Bundler mode */

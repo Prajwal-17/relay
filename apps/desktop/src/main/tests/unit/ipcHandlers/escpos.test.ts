@@ -20,7 +20,7 @@ const GS = 0x1d;
 
 function receipt(overrides: Partial<RawReceiptData> = {}): RawReceiptData {
   return {
-    storeName: "QuickCart Market",
+    storeName: "Relay Market",
     addressLines: ["12 Market Road", "Bengaluru 560001"],
     phone: "9999999999",
     gstin: "29ABCDE1234F1Z5",
@@ -47,7 +47,7 @@ function receipt(overrides: Partial<RawReceiptData> = {}): RawReceiptData {
 
 function statement(overrides: Partial<RawLedgerStatementData> = {}): RawLedgerStatementData {
   return {
-    storeName: "QuickCart Market",
+    storeName: "Relay Market",
     addressLines: ["12 Market Road", "Bengaluru 560001"],
     phone: "9999999999",
     customerName: "Anita",
@@ -180,6 +180,13 @@ describe("ESC/POS receipt builder", () => {
     expect(estimateText).not.toContain("GSTIN:");
   });
 
+  it("does not print the Relay product name on the receipt", () => {
+    const text = buildEscPosReceipt(receipt()).toString("ascii");
+
+    expect(text).toContain("Thank you. Visit again.");
+    expect(text).not.toContain("Powered by Relay");
+  });
+
   it("prints the compact account settlement below the bill total", () => {
     const text = buildEscPosReceipt(
       receipt({
@@ -228,7 +235,7 @@ describe("ESC/POS receipt builder", () => {
     const withoutQr = buildEscPosReceipt(receipt());
     const withQr = buildEscPosReceipt(
       receipt({
-        upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+        upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
       }),
       raster(0x55)
     );
@@ -236,11 +243,11 @@ describe("ESC/POS receipt builder", () => {
     expect(withoutQr.includes(Buffer.from([GS, 0x28, 0x6b]))).toBe(false);
     expect(withQr.includes(Buffer.from([GS, 0x28, 0x6b]))).toBe(false);
     expect(withQr.includes(Buffer.alloc(72, 0x55))).toBe(true);
-    expect(withQr.toString("ascii")).toContain("Scan to pay\nQuickCart Market");
+    expect(withQr.toString("ascii")).toContain("Scan to pay\nRelay Market");
     expect(() =>
       buildEscPosReceipt(
         receipt({
-          upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+          upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
         })
       )
     ).toThrow("A freshly generated payment QR raster is required.");
@@ -249,14 +256,14 @@ describe("ESC/POS receipt builder", () => {
   it("includes or omits the exact two-decimal UPI amount", () => {
     const withAmount = receipt({
       totalPaisa: 1563,
-      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+      upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
     });
     const withoutAmount = receipt({
-      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: false }
+      upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: false }
     });
 
     expect(buildUpiUri(withAmount)).toBe(
-      "upi://pay?pa=shop%40bank&pn=QuickCart%20Market&cu=INR&tr=42&tn=Invoice%20no%2042&am=15.63"
+      "upi://pay?pa=shop%40bank&pn=Relay%20Market&cu=INR&tr=42&tn=Invoice%20no%2042&am=15.63"
     );
     expect(buildUpiUri(withoutAmount)).not.toContain("&am=");
   });
@@ -367,7 +374,7 @@ describe("hybrid GS v 0 jobs", () => {
 
   it("places the fresh QR raster between body and after-QR raster segments", () => {
     const withUpi = receipt({
-      upi: { id: "shop@bank", payeeName: "QuickCart Market", includeAmount: true }
+      upi: { id: "shop@bank", payeeName: "Relay Market", includeAmount: true }
     });
     const payload = buildEscPosRasterReceipt(withUpi, {
       body: raster(0x11),

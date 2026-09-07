@@ -19,7 +19,7 @@ import {
 import type { PublicApi } from "../helpers/api";
 
 const onboardingPayload = {
-  storeName: "QuickCart Persistence Store",
+  storeName: "Relay Persistence Store",
   ownerName: "Persistence Owner",
   phone: "9876543210",
   email: "persistence@example.com",
@@ -73,7 +73,7 @@ test.describe("development Electron billing persistence", () => {
     developmentElectron
   }) => {
     const page = developmentElectron.page;
-    await expect(page.getByRole("heading", { name: /Welcome to QuickCart/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Welcome to Relay/ })).toBeVisible();
     await page.getByRole("button", { name: "Get Started" }).click();
     await page.getByLabel(/Store Name/).fill(onboardingPayload.storeName);
     await page.getByRole("button", { name: "Continue" }).click();

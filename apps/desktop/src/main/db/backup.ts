@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const BACKUP_DIRECTORY = "backups";
-const LATEST_BACKUP_NAME = "pos-before-upgrade-latest.db";
+const LATEST_BACKUP_NAME = "relay-before-upgrade-latest.db";
 
 export function getBackupPaths(databasePath: string) {
   const directory = path.join(path.dirname(databasePath), BACKUP_DIRECTORY);

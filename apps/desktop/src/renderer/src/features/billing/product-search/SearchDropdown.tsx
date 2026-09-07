@@ -30,7 +30,7 @@ import {
   type PointerEvent as ReactPointerEvent
 } from "react";
 
-const SEARCH_DROPDOWN_SIZE_STORAGE_KEY = "quickcart-billing-product-search-size-v1";
+const SEARCH_DROPDOWN_SIZE_STORAGE_KEY = "relay-billing-product-search-size-v1";
 const SEARCH_DROPDOWN_DEFAULT_WIDTH = 820;
 const SEARCH_DROPDOWN_DEFAULT_HEIGHT = 396;
 const SEARCH_DROPDOWN_MIN_WIDTH = 480;

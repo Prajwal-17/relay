@@ -43,13 +43,13 @@ const mocks = vi.hoisted(() => ({
         id: "upi-primary",
         label: "Primary UPI",
         upiId: "shop@bank",
-        payeeName: "QuickCart Market"
+        payeeName: "Relay Market"
       },
       {
         id: "upi-counter",
         label: "Counter UPI Account Used for Wholesale and Retail Payments",
-        upiId: "verylongmerchantidentifierforquickcartcounterpayments@bank",
-        payeeName: "QuickCart Wholesale and Retail Counter Payments Private Limited"
+        upiId: "verylongmerchantidentifierforrelaycounterpayments@bank",
+        payeeName: "Relay Wholesale and Retail Counter Payments Private Limited"
       }
     ],
     defaultUpiQrProfileId: "upi-primary",

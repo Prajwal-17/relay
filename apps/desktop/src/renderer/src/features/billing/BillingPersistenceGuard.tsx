@@ -30,7 +30,7 @@ function errorMessage(error: unknown): string {
   if (message.includes("Wait for the initial billing request to finish")) {
     return "Wait for the bill to finish saving.";
   }
-  return "QuickCart couldn't save your changes.";
+  return "Relay couldn't save your changes.";
 }
 
 export function BillingPersistenceGuard({ children }: { children: React.ReactNode }) {

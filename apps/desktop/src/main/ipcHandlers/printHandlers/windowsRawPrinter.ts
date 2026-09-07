@@ -10,12 +10,12 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 
-public static class QuickCartRawPrinter
+public static class RelayRawPrinter
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private class DocInfo
     {
-        [MarshalAs(UnmanagedType.LPWStr)] public string pDocName = "QuickCart Raw Receipt";
+        [MarshalAs(UnmanagedType.LPWStr)] public string pDocName = "Relay Raw Receipt";
         [MarshalAs(UnmanagedType.LPWStr)] public string pOutputFile = null;
         [MarshalAs(UnmanagedType.LPWStr)] public string pDataType = "RAW";
     }
@@ -162,7 +162,7 @@ export async function sendRawToWindowsPrinter(
     throw new Error("The RAW printer payload is empty.");
   }
 
-  const tempPath = join(tmpdir(), `quickcart-raw-print-${randomUUID()}.bin`);
+  const tempPath = join(tmpdir(), `relay-raw-print-${randomUUID()}.bin`);
   try {
     await fs.writeFile(tempPath, payload);
 
@@ -170,7 +170,7 @@ export async function sendRawToWindowsPrinter(
 Add-Type -TypeDefinition @'
 ${RAW_PRINTER_SOURCE}
 '@
-$written = [QuickCartRawPrinter]::Send(${quotePowerShell(normalizedPrinterName)}, ${quotePowerShell(tempPath)})
+$written = [RelayRawPrinter]::Send(${quotePowerShell(normalizedPrinterName)}, ${quotePowerShell(tempPath)})
 Write-Output $written
 `;
 

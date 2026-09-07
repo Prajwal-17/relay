@@ -1,4 +1,4 @@
-# QuickCart Design Documentation
+# Relay Design Documentation
 
 The canonical desktop design system is [DESIGN.md](../DESIGN.md).
 

@@ -1,4 +1,4 @@
-import quickcartLogo from "@/assets/quickcart.svg";
+import relayAppIcon from "@assets/desktop/app-icon-small.svg";
 import { navLinks } from "@/app/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
@@ -30,7 +30,7 @@ export const BillingSidebar = () => {
   });
 
   const storeInitials = useMemo(() => {
-    if (!storeProfile?.storeName) return "QC";
+    if (!storeProfile?.storeName) return "R";
     const words = storeProfile.storeName.trim().split(/\s+/);
     if (words.length === 1) return words[0]!.charAt(0).toUpperCase();
     return (words[0]!.charAt(0) + words[words.length - 1]!.charAt(0)).toUpperCase();
@@ -65,18 +65,18 @@ export const BillingSidebar = () => {
       className="bg-sidebar text-sidebar-foreground border-r-frame flex h-full w-(--sidebar-compact-width) shrink-0 flex-col border-r"
     >
       <header className="border-b-frame flex h-(--app-header-height) shrink-0 items-center justify-center border-b">
-        <IconTooltip label="QuickCart home">
+        <IconTooltip label="Relay home">
           <Link
             to="/"
             draggable={false}
-            aria-label="QuickCart home"
-            className="bg-background border-border focus-visible:ring-ring flex size-8 items-center justify-center rounded-(--radius-control) border p-1.5 outline-none focus-visible:ring-2"
+            aria-label="Relay home"
+            className="focus-visible:ring-ring flex size-8 items-center justify-center rounded-(--radius-control) outline-none focus-visible:ring-2"
           >
             <img
-              src={quickcartLogo}
+              src={relayAppIcon}
               alt=""
               draggable={false}
-              className="h-full w-full object-contain"
+              className="size-full rounded-(--radius-control) object-contain"
             />
           </Link>
         </IconTooltip>

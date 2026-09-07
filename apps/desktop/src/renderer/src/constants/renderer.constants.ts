@@ -20,7 +20,7 @@ import {
   Zap
 } from "lucide-react";
 
-export const PRODUCT_NAME = "QuickCart";
+export { PRODUCT_NAME } from "@shared/constants";
 
 // Onboarding
 export const ONBOARDING_STEPS = 5;

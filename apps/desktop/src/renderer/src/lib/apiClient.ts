@@ -61,14 +61,14 @@ async function request<T>(
     response = await fetch(url, {
       headers: {
         "Content-type": "application/json",
-        ...(API_TOKEN ? { "x-quickcart-api-token": API_TOKEN } : {}),
+        ...(API_TOKEN ? { "x-relay-api-token": API_TOKEN } : {}),
         ...options.headers
       },
       ...options
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") throw error;
-    throw new ApiError("Unable to reach QuickCart. Check your connection and try again.", 0, {
+    throw new ApiError("Unable to reach Relay. Check your connection and try again.", 0, {
       kind: "network",
       cause: error
     });
@@ -91,14 +91,10 @@ async function request<T>(
   try {
     return (await response.json()) as T;
   } catch (error) {
-    throw new ApiError(
-      "QuickCart received an invalid response. Please try again.",
-      response.status,
-      {
-        kind: "malformed-response",
-        cause: error
-      }
-    );
+    throw new ApiError("Relay received an invalid response. Please try again.", response.status, {
+      kind: "malformed-response",
+      cause: error
+    });
   }
 }
 

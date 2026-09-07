@@ -32,6 +32,7 @@ export default defineConfig({
       alias: {
         //"@renderer": resolve("src/renderer/src"),
         "@": path.resolve(__dirname, "src/renderer/src"),
+        "@assets": path.resolve(__dirname, "../../assets"),
         "@shared": path.resolve(__dirname, "src/shared")
       }
     },
@@ -45,7 +46,7 @@ export default defineConfig({
     },
     server: {
       fs: {
-        allow: [".."] // allow parent folders outside of root
+        allow: [path.resolve(__dirname, "../..")] // shared root assets
       }
     },
     plugins: [

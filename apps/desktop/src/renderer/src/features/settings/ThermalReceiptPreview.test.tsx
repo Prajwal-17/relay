@@ -24,7 +24,7 @@ vi.mock("@/lib/apiClient", () => ({
 
 const profile: StoreProfile = {
   id: "store-1",
-  storeName: "QuickCart Test Store",
+  storeName: "Relay Test Store",
   ownerName: "Owner",
   phone: "9876543210",
   email: "owner@example.com",
@@ -58,7 +58,7 @@ const printing: PrintingConfig = {
       id: "11111111-1111-4111-8111-111111111111",
       label: "Primary UPI",
       upiId: "shop@bank",
-      payeeName: "QuickCart Test Store"
+      payeeName: "Relay Test Store"
     },
     {
       id: "22222222-2222-4222-8222-222222222222",
@@ -163,6 +163,7 @@ describe("thermal receipt settings preview", () => {
     expect(paper).toHaveTextContent("Rs.3000");
     expect(paper).toHaveTextContent("BALANCE");
     expect(paper).toHaveTextContent("Rs.4000");
+    expect(paper).not.toHaveTextContent("Powered by Relay");
   });
 
   it("omits the payment row when the customer account has no payment", () => {
@@ -189,6 +190,7 @@ describe("thermal receipt settings preview", () => {
 
     expect(screen.getByTestId("thermal-receipt-with-ledger-paper")).toBeInTheDocument();
     expect(screen.getByText("ACCOUNTS")).toBeInTheDocument();
+    expect(screen.queryByText("Powered by Relay")).not.toBeInTheDocument();
     expect(screen.getAllByText("Thank you. Visit again.")).toHaveLength(1);
     expect(screen.getByTestId("thermal-receipt-feed")).toHaveAttribute(
       "aria-label",

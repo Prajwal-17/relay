@@ -25,7 +25,7 @@ const PRIMARY_UPI_PROFILE = {
   id: "11111111-1111-4111-8111-111111111111",
   label: "Primary UPI",
   upiId: "shop@bank",
-  payeeName: "QuickCart Market"
+  payeeName: "Relay Market"
 };
 
 const SECONDARY_UPI_PROFILE = {
@@ -278,7 +278,7 @@ describe("preferences integration", () => {
             id: "11111111-1111-4111-8111-111111111111",
             label: "Primary UPI",
             upiId: "shop@bank",
-            payeeName: "QuickCart Market"
+            payeeName: "Relay Market"
           }
         ],
         defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
@@ -319,7 +319,7 @@ describe("preferences integration", () => {
             id: "11111111-1111-4111-8111-111111111111",
             label: "Primary UPI",
             upiId: "shop@bank",
-            payeeName: "QuickCart Market"
+            payeeName: "Relay Market"
           }
         ],
         defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",

@@ -26,9 +26,9 @@ export class AppErrorBoundary extends Component<Props, State> {
         <div className="bg-background h-screen w-full">
           <ErrorState
             layout="page"
-            title="QuickCart needs to reload"
+            title="Relay needs to reload"
             description="An unexpected application error occurred. Reload to return to a safe state."
-            primaryAction={{ label: "Reload QuickCart", onClick: () => window.location.reload() }}
+            primaryAction={{ label: "Reload Relay", onClick: () => window.location.reload() }}
           />
         </div>
       );

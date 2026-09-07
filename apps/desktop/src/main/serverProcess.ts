@@ -23,7 +23,7 @@ export function startServerProcess(): Promise<void> {
     });
     child.once("exit", (code) => {
       serverProcess = undefined;
-      reject(new Error(`The local QuickCart server stopped with code ${code}.`));
+      reject(new Error(`The local Relay server stopped with code ${code}.`));
     });
   });
 }

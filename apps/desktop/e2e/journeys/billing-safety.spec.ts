@@ -11,7 +11,7 @@ import { billingRow, openBillingRoute, productInput, quantityInput } from "../he
 import type { PublicApi } from "../helpers/api";
 
 const onboardingPayload = {
-  storeName: "QuickCart Billing Safety",
+  storeName: "Relay Billing Safety",
   ownerName: "Safety Test Owner",
   phone: "9876543210",
   email: "billing-safety@example.com",

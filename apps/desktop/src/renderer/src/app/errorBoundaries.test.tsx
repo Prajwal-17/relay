@@ -26,8 +26,8 @@ describe("renderer crash boundaries", () => {
       </AppErrorBoundary>
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("QuickCart needs to reload");
-    expect(screen.getByRole("button", { name: "Reload QuickCart" })).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent("Relay needs to reload");
+    expect(screen.getByRole("button", { name: "Reload Relay" })).toBeVisible();
   });
 
   it("keeps the shell mounted when a workspace route crashes", async () => {
@@ -37,7 +37,7 @@ describe("renderer crash boundaries", () => {
         path: "/",
         element: (
           <div>
-            <nav>QuickCart navigation</nav>
+            <nav>Relay navigation</nav>
             <Outlet />
           </div>
         ),
@@ -53,7 +53,7 @@ describe("renderer crash boundaries", () => {
 
     render(<RouterProvider router={router} />);
 
-    expect(await screen.findByText("QuickCart navigation")).toBeVisible();
+    expect(await screen.findByText("Relay navigation")).toBeVisible();
     expect(screen.getByRole("alert")).toHaveTextContent("This page could not be displayed");
     expect(screen.getByRole("button", { name: "Try again" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Return home" })).toBeVisible();

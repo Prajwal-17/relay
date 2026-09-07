@@ -4,7 +4,7 @@ import { buildRawReceiptDataFromTransaction } from "./useRawReceiptPrint";
 
 const profile: StoreProfile = {
   id: "default",
-  storeName: "QuickCart Market",
+  storeName: "Relay Market",
   ownerName: "Owner",
   phone: "9999999999",
   email: "owner@example.com",
@@ -38,7 +38,7 @@ const printing: PrintingConfig = {
       id: "11111111-1111-4111-8111-111111111111",
       label: "Primary UPI",
       upiId: "shop@bank",
-      payeeName: "QuickCart Market"
+      payeeName: "Relay Market"
     }
   ],
   defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
@@ -137,7 +137,7 @@ describe("saved transaction receipt data", () => {
       id: "22222222-2222-4222-8222-222222222222",
       label: "Counter UPI",
       upiId: "counter@bank",
-      payeeName: "QuickCart Counter"
+      payeeName: "Relay Counter"
     };
     const data = buildRawReceiptDataFromTransaction(
       savedTransaction(),
@@ -155,7 +155,7 @@ describe("saved transaction receipt data", () => {
 
     expect(data.upi).toEqual({
       id: "counter@bank",
-      payeeName: "QuickCart Counter",
+      payeeName: "Relay Counter",
       includeAmount: false
     });
   });
@@ -174,7 +174,7 @@ describe("saved transaction receipt data", () => {
       transactionType: "estimate",
       upi: {
         id: "shop@bank",
-        payeeName: "QuickCart Market",
+        payeeName: "Relay Market",
         includeAmount: true
       }
     });

@@ -4,7 +4,7 @@ import { upiQrProfileSchema } from "./preferences.schema";
 const PROFILE = {
   id: "11111111-1111-4111-8111-111111111111",
   upiId: "shop@bank",
-  payeeName: "QuickCart Store"
+  payeeName: "Relay Store"
 };
 
 describe("upiQrProfileSchema", () => {

@@ -9,7 +9,7 @@ import { buildRawReceiptData, buildRawReceiptPreviewData } from "./useRawReceipt
 
 const profile: StoreProfile = {
   id: "default",
-  storeName: "QuickCart Market",
+  storeName: "Relay Market",
   ownerName: "Owner",
   phone: "9999999999",
   email: "owner@example.com",
@@ -43,7 +43,7 @@ const printing: PrintingConfig = {
       id: "11111111-1111-4111-8111-111111111111",
       label: "Primary UPI",
       upiId: "shop@bank",
-      payeeName: "QuickCart Market"
+      payeeName: "Relay Market"
     }
   ],
   defaultUpiQrProfileId: "11111111-1111-4111-8111-111111111111",
@@ -82,7 +82,7 @@ describe("RAW receipt data", () => {
     });
 
     expect(data).toMatchObject({
-      storeName: "QuickCart Market",
+      storeName: "Relay Market",
       addressLines: [],
       phone: undefined,
       gstin: "29ABCDE1234F1Z5",
@@ -95,7 +95,7 @@ describe("RAW receipt data", () => {
       cutMode: "full",
       upi: {
         id: "shop@bank",
-        payeeName: "QuickCart Market",
+        payeeName: "Relay Market",
         includeAmount: true
       }
     });

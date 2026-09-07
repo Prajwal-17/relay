@@ -2,7 +2,7 @@ import type { OnboardingPayload } from "../../../modules/onboarding/onboarding.t
 
 export function onboardingPayload(overrides: Partial<OnboardingPayload> = {}): OnboardingPayload {
   return {
-    storeName: "QuickCart Market",
+    storeName: "Relay Market",
     ownerName: "Prajwal Reddy",
     phone: "9876543210",
     email: "owner@example.com",

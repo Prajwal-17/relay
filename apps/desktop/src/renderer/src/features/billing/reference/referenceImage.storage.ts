@@ -1,4 +1,4 @@
-const DATABASE_NAME = "quickcart-billing-reference-images";
+const DATABASE_NAME = "relay-billing-reference-images";
 const DATABASE_VERSION = 1;
 const IMAGE_STORE_NAME = "image-blobs";
 
@@ -43,7 +43,7 @@ const openDatabase = (): Promise<IDBDatabase> => {
 
     request.onblocked = () => {
       databasePromise = null;
-      reject(new Error("Image storage is blocked by another QuickCart window."));
+      reject(new Error("Image storage is blocked by another Relay window."));
     };
   });
 

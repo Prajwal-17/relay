@@ -54,7 +54,7 @@ function request(
   } = {}
 ) {
   const headers = new Headers();
-  if (options.token !== undefined) headers.set("x-quickcart-api-token", options.token);
+  if (options.token !== undefined) headers.set("x-relay-api-token", options.token);
   if (options.origin !== undefined) headers.set("origin", options.origin);
   if (options.json !== undefined) headers.set("content-type", "application/json");
   return serverOptions.fetch(

@@ -41,9 +41,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            pnpm --filter quickcart run build:win:dev
+            pnpm --filter relay run build:win:dev
           else
-            pnpm --filter quickcart run build:linux:dev
+            pnpm --filter relay run build:linux:dev
           fi
 
       - name: Get package version

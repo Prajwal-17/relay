@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-08-09T00:00:00Z",
-  "title": "Design System: QuickCart Desktop",
+  "title": "Design System: Relay Desktop",
   "extensions": {
     "colorMeta": {
       "canvas": {
@@ -290,7 +290,7 @@
   ],
   "narrative": {
     "northStar": "Counter Ledger",
-    "overview": "QuickCart is a compact, keyboard-and-mouse point-of-sale workspace for repeated shop-counter operation. Crisp white working surfaces, a warm neutral canvas, strong charcoal actions, controlled terracotta, teal, berry, and amber accents, and solid borders make the interface feel stable and trustworthy. Density is intentional: common tasks stay visible, financial values are easy to compare, and geometry remains fixed while data changes.",
+    "overview": "Relay is a compact, keyboard-and-mouse point-of-sale workspace for repeated shop-counter operation. Crisp white working surfaces, a warm neutral canvas, strong charcoal actions, controlled terracotta, teal, berry, and amber accents, and solid borders make the interface feel stable and trustworthy. Density is intentional: common tasks stay visible, financial values are easy to compare, and geometry remains fixed while data changes.",
     "keyCharacteristics": [
       "Compact without shrinking text or interaction targets",
       "Neutral working surfaces with solid structural borders",

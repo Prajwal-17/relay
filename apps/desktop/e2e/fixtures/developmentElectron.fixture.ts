@@ -31,11 +31,11 @@ export class DevelopmentElectron {
   private constructor(tempRoot: string) {
     this.tempRoot = tempRoot;
     this.userDataDirectory = path.join(tempRoot, "user-data");
-    this.databasePath = path.join(this.userDataDirectory, "pos.db");
+    this.databasePath = path.join(this.userDataDirectory, "relay.db");
   }
 
   static async create(): Promise<DevelopmentElectron> {
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "quickcart-electron-e2e-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "relay-electron-e2e-"));
     const runtime = new DevelopmentElectron(tempRoot);
     await fs.mkdir(runtime.userDataDirectory, { recursive: true });
     await runtime.start();

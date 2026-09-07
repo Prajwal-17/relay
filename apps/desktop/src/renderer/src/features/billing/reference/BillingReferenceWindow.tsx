@@ -46,7 +46,7 @@ import {
   type WindowFrame
 } from "./referenceWindow.geometry";
 
-const REFERENCE_WINDOW_SIZE_KEY = "quickcart-billing-reference-window-size-v2";
+const REFERENCE_WINDOW_SIZE_KEY = "relay-billing-reference-window-size-v2";
 const MAX_SOURCE_FILE_SIZE = 12 * 1024 * 1024;
 const MAX_IMAGE_EDGE = 1_800;
 const IMAGE_QUALITY = 0.86;

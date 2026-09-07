@@ -62,7 +62,7 @@ app.use(
 
       return allowedOrigins.has(origin) ? origin : null;
     },
-    allowHeaders: ["Content-Type", "X-QuickCart-Api-Token"]
+    allowHeaders: ["Content-Type", "X-Relay-Api-Token"]
   })
 );
 
@@ -75,7 +75,7 @@ function hasValidApiToken(value: string | undefined): boolean {
 
 app.use("/*", async (c, next) => {
   if (c.req.method === "OPTIONS") return next();
-  if (!hasValidApiToken(c.req.header("x-quickcart-api-token"))) {
+  if (!hasValidApiToken(c.req.header("x-relay-api-token"))) {
     return c.json({ error: { message: "Unauthorized" } }, 401);
   }
   await next();
@@ -161,6 +161,6 @@ startServer()
     process.send?.("server-ready");
   })
   .catch((error) => {
-    console.error("Failed to start the QuickCart server", error);
+    console.error("Failed to start the Relay server", error);
     process.exitCode = 1;
   });

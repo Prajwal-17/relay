@@ -1,5 +1,5 @@
 ---
-name: QuickCart Desktop
+name: Relay Desktop
 description: "A compact, keyboard-first billing workspace for fast and dependable shop-counter operation."
 colors:
   canvas: "#f5f5f2"
@@ -177,11 +177,11 @@ components:
     textColor: "{colors.ink}"
 ---
 
-# QuickCart Desktop Design System
+# Relay Desktop Design System
 
 ## Overview
 
-QuickCart is an offline-first point-of-sale application used repeatedly, at speed, on a desktop or shop laptop. Its design north star is **Counter Ledger**: the clarity and trust of a well-kept paper ledger, translated into a compact keyboard-and-mouse workspace. The interface should feel practical, stable, and unmistakably operational—not promotional, touch-first, or decorative.
+Relay is an offline-first point-of-sale application used repeatedly, at speed, on a desktop or shop laptop. Its design north star is **Counter Ledger**: the clarity and trust of a well-kept paper ledger, translated into a compact keyboard-and-mouse workspace. The interface should feel practical, stable, and unmistakably operational—not promotional, touch-first, or decorative.
 
 This file is the canonical design contract for `apps/desktop`. The frontmatter is the normative token layer; the sections below explain how those tokens are applied. Runtime values live in `apps/desktop/src/renderer/src/index.css`. Any intentional token change must update both files in the same change. The machine-readable extension is `.impeccable/design.json`.
 
@@ -194,7 +194,7 @@ The product follows these priorities, in order:
 5. **Compact comfort.** Density comes from a consistent scale, not from shrinking the root font, using CSS zoom, or making targets hard to operate.
 6. **Progressive disclosure.** Frequent controls remain visible; secondary configuration belongs in menus, drawers, or detail views.
 
-QuickCart currently has one supported light visual system. Do not introduce an isolated dark section or a second visual language without a product-level decision and a complete token set.
+Relay currently has one supported light visual system. Do not introduce an isolated dark section or a second visual language without a product-level decision and a complete token set.
 
 ## Colors
 
@@ -287,7 +287,7 @@ Use these route compositions:
 
 ## Elevation & Depth
 
-QuickCart uses borders before shadows. Depth communicates stacking, not importance.
+Relay uses borders before shadows. Depth communicates stacking, not importance.
 
 - **Level 0 — canvas and inline regions:** no shadow.
 - **Level 1 — working panels and compact cards:** standard or frame border; normally no shadow, with `shadow-xs` allowed for a small detached summary.

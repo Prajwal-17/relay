@@ -17,7 +17,7 @@ const SERVER_WAIT_MS = 20_000;
 const PORT_RELEASE_WAIT_MS = 10_000;
 const DEFAULT_VIEWPORT = { width: 1280, height: 650 } as const;
 
-export type QuickCartApp = {
+export type RelayApp = {
   readonly page: Page;
   readonly api: PublicApi;
   readonly seed: BillingSeed;
@@ -31,7 +31,7 @@ export type QuickCartApp = {
 };
 
 type BillingFixtures = {
-  app: QuickCartApp;
+  app: RelayApp;
 };
 
 type HarnessState = {
@@ -51,7 +51,7 @@ export const test = base.extend<BillingFixtures>({
     await assertDevelopmentPortIsFree();
 
     const testRunId = crypto.randomUUID();
-    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "quickcart-billing-e2e-"));
+    const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "relay-billing-e2e-"));
     const appDataRoot = path.join(tempRoot, "app-data");
     await fs.mkdir(appDataRoot, { recursive: true });
 
@@ -71,7 +71,7 @@ export const test = base.extend<BillingFixtures>({
     let seed!: BillingSeed;
     let actualUserDataPath = "";
     const launch = async (): Promise<Page> => {
-      if (state.electronApp) throw new Error("QuickCart Electron is already running.");
+      if (state.electronApp) throw new Error("Relay Electron is already running.");
       state.intentionalClose = false;
       await waitForServerState(false, PORT_RELEASE_WAIT_MS);
 
@@ -134,7 +134,7 @@ export const test = base.extend<BillingFixtures>({
     };
 
     const startTrace = async (): Promise<void> => {
-      if (!state.electronApp) throw new Error("QuickCart Electron is not running.");
+      if (!state.electronApp) throw new Error("Relay Electron is not running.");
       const tracePath = path.join(tempRoot, `trace-launch-${state.launchNumber}.zip`);
       await state.electronApp.context().tracing.start({
         screenshots: true,
@@ -174,7 +174,7 @@ export const test = base.extend<BillingFixtures>({
     const relaunch = async (): Promise<Page> => {
       const page = await launch();
       await page.reload();
-      await expect(page.getByAltText("QuickCart logo")).toBeVisible();
+      await expect(page.getByAltText("Relay logo")).toBeVisible();
       await startTrace();
       return page;
     };
@@ -185,7 +185,7 @@ export const test = base.extend<BillingFixtures>({
     };
     const resize = async (width: number, height: number): Promise<void> => {
       if (!state.electronApp || !state.page) {
-        throw new Error("QuickCart Electron is not running.");
+        throw new Error("Relay Electron is not running.");
       }
       await resizeElectronContent(state.electronApp, state.page, { width, height });
     };
@@ -196,12 +196,12 @@ export const test = base.extend<BillingFixtures>({
       const page = await launch();
       seed = await seedBillingData(api, testRunId);
       await page.reload();
-      await expect(page.getByAltText("QuickCart logo")).toBeVisible();
+      await expect(page.getByAltText("Relay logo")).toBeVisible();
       await startTrace();
 
       const app = {
         get page() {
-          if (!state.page) throw new Error("QuickCart Electron is not running.");
+          if (!state.page) throw new Error("Relay Electron is not running.");
           return state.page;
         },
         get api() {
@@ -217,13 +217,13 @@ export const test = base.extend<BillingFixtures>({
           return actualUserDataPath;
         },
         get databasePath() {
-          return path.join(actualUserDataPath, "pos.db");
+          return path.join(actualUserDataPath, "relay.db");
         },
         restart,
         close,
         relaunch,
         resize
-      } satisfies QuickCartApp;
+      } satisfies RelayApp;
 
       await fixtureUse(app);
     } catch (error) {
@@ -322,7 +322,7 @@ async function assertBuiltApplication(): Promise<void> {
 async function assertDevelopmentPortIsFree(): Promise<void> {
   if (await serverResponds()) {
     throw new Error(
-      "Port 4723 already has a QuickCart-compatible server. Refusing to seed or touch it; close the development app before running E2E."
+      "Port 4723 already has a Relay-compatible server. Refusing to seed or touch it; close the development app before running E2E."
     );
   }
 }
@@ -334,10 +334,10 @@ function assertIsolatedUserData(userDataPath: string, appDataRoot: string): void
   if (
     relative.startsWith("..") ||
     path.isAbsolute(relative) ||
-    path.basename(resolvedUserData) !== "QuickCart-Dev"
+    path.basename(resolvedUserData) !== "Relay-Dev"
   ) {
     throw new Error(
-      `Unsafe Electron userData path "${resolvedUserData}". Expected QuickCart-Dev inside "${resolvedRoot}".`
+      `Unsafe Electron userData path "${resolvedUserData}". Expected Relay-Dev inside "${resolvedRoot}".`
     );
   }
 }
@@ -360,7 +360,7 @@ async function waitForMainWindow(electronApp: ElectronApplication): Promise<Page
   }
   const urls = electronApp.windows().map((candidate) => candidate.url());
   throw new Error(
-    `Timed out waiting for the QuickCart migration handoff. Open windows: ${urls.join(", ")}`
+    `Timed out waiting for the Relay migration handoff. Open windows: ${urls.join(", ")}`
   );
 }
 
@@ -373,7 +373,7 @@ async function resizeElectronContent(
     const window = BrowserWindow.getAllWindows().find(
       (candidate) => !candidate.webContents.getURL().includes("upgrade.html")
     );
-    if (!window) throw new Error("QuickCart main BrowserWindow is unavailable.");
+    if (!window) throw new Error("Relay main BrowserWindow is unavailable.");
     window.setFullScreen(false);
     window.unmaximize();
     window.webContents.setZoomFactor(1);
@@ -410,8 +410,8 @@ async function waitForServerState(shouldRespond: boolean, timeoutMs: number): Pr
   }
   throw new Error(
     shouldRespond
-      ? "Timed out waiting for the QuickCart Hono server on port 4723."
-      : "Timed out waiting for QuickCart to release development port 4723."
+      ? "Timed out waiting for the Relay Hono server on port 4723."
+      : "Timed out waiting for Relay to release development port 4723."
   );
 }
 
@@ -518,11 +518,11 @@ async function retainFailureArtifacts(options: {
     seed
   });
 
-  const databaseSource = userDataPath ? path.join(userDataPath, "pos.db") : null;
+  const databaseSource = userDataPath ? path.join(userDataPath, "relay.db") : null;
   if (databaseSource && (await fileExists(databaseSource))) {
-    const databaseCopy = testInfo.outputPath("pos.db");
+    const databaseCopy = testInfo.outputPath("relay.db");
     await fs.copyFile(databaseSource, databaseCopy);
-    artifacts.push(["isolated-pos.db", databaseCopy, "application/x-sqlite3"]);
+    artifacts.push(["isolated-relay.db", databaseCopy, "application/x-sqlite3"]);
   }
 
   for (const [index, traceSource] of tracePaths.entries()) {

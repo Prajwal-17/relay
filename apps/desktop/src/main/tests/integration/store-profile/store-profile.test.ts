@@ -63,7 +63,7 @@ describe("store profile integration", () => {
     expect(response.status).toBe(200);
     expect(await readJson<Record<string, unknown>>(response)).toMatchObject({
       id: "default",
-      storeName: "QuickCart Market",
+      storeName: "Relay Market",
       ownerName: "Prajwal Reddy",
       phone: "9876543210",
       email: "owner@example.com",
@@ -81,7 +81,7 @@ describe("store profile integration", () => {
     await onboard();
 
     const response = await requestJson(app, "PATCH", "/api/store-profile", {
-      storeName: "QuickCart Supermarket",
+      storeName: "Relay Supermarket",
       addressLine2: "First Floor",
       gstin: "29ABCDE1234F1Z5"
     });
@@ -90,7 +90,7 @@ describe("store profile integration", () => {
     expect(response.status).toBe(200);
     expect(updated).toMatchObject({
       id: "default",
-      storeName: "QuickCart Supermarket",
+      storeName: "Relay Supermarket",
       ownerName: "Prajwal Reddy",
       addressLine2: "First Floor",
       gstin: "29ABCDE1234F1Z5"

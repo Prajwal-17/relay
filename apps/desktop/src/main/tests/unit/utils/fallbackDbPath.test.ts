@@ -22,27 +22,25 @@ describe("getFallbackDbPath", () => {
     vi.stubEnv("MODE", "");
     vi.stubEnv("NODE_ENV", "");
 
-    expect(getFallbackDbPath()).toBe(
-      path.join("/home/tester", ".config", "QuickCart-Dev", "pos.db")
-    );
+    expect(getFallbackDbPath()).toBe(path.join("/home/tester", ".config", "Relay-Dev", "relay.db"));
   });
 
   it("uses the production application directory outside development", () => {
     Object.defineProperty(process, "platform", { configurable: true, value: "linux" });
     vi.stubEnv("MODE", "production");
 
-    expect(getFallbackDbPath()).toBe(path.join("/home/tester", ".config", "QuickCart", "pos.db"));
+    expect(getFallbackDbPath()).toBe(path.join("/home/tester", ".config", "Relay", "relay.db"));
   });
 
   it("uses APPDATA on Windows and falls back to the roaming profile", () => {
     Object.defineProperty(process, "platform", { configurable: true, value: "win32" });
     vi.stubEnv("MODE", "production");
     vi.stubEnv("APPDATA", "/profile/appdata");
-    expect(getFallbackDbPath()).toBe(path.join("/profile/appdata", "QuickCart", "pos.db"));
+    expect(getFallbackDbPath()).toBe(path.join("/profile/appdata", "Relay", "relay.db"));
 
     vi.stubEnv("APPDATA", "");
     expect(getFallbackDbPath()).toBe(
-      path.join("/home/tester", "AppData", "Roaming", "QuickCart", "pos.db")
+      path.join("/home/tester", "AppData", "Roaming", "Relay", "relay.db")
     );
   });
 });

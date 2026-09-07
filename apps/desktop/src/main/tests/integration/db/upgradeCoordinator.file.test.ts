@@ -20,9 +20,9 @@ afterEach(() => {
 
 describe("file-backed database upgrade", () => {
   it("migrates a blank file once and preserves data on the next startup", async () => {
-    const directory = mkdtempSync(path.join(tmpdir(), "quickcart-migration-test-"));
+    const directory = mkdtempSync(path.join(tmpdir(), "relay-migration-test-"));
     temporaryDirectories.push(directory);
-    const databasePath = path.join(directory, "pos.db");
+    const databasePath = path.join(directory, "relay.db");
     const migrationsFolder = path.resolve(process.cwd(), "drizzle");
 
     const first = await coordinateDatabaseUpgrade({ databasePath, migrationsFolder });
@@ -65,9 +65,9 @@ describe("file-backed database upgrade", () => {
   });
 
   it("applies 0031 to databases that recorded the original 0030 without creation tokens", async () => {
-    const directory = mkdtempSync(path.join(tmpdir(), "quickcart-creation-token-repair-test-"));
+    const directory = mkdtempSync(path.join(tmpdir(), "relay-creation-token-repair-test-"));
     temporaryDirectories.push(directory);
-    const databasePath = path.join(directory, "pos.db");
+    const databasePath = path.join(directory, "relay.db");
     const migrationsFolder = path.resolve(process.cwd(), "drizzle");
 
     const historical = await coordinateDatabaseUpgrade({ databasePath, migrationsFolder });
@@ -172,9 +172,9 @@ describe("file-backed database upgrade", () => {
   });
 
   it("adopts 0031 when the edited 0030 already added the creation-token schema", async () => {
-    const directory = mkdtempSync(path.join(tmpdir(), "quickcart-creation-token-adopt-test-"));
+    const directory = mkdtempSync(path.join(tmpdir(), "relay-creation-token-adopt-test-"));
     temporaryDirectories.push(directory);
-    const databasePath = path.join(directory, "pos.db");
+    const databasePath = path.join(directory, "relay.db");
     const migrationsFolder = path.resolve(process.cwd(), "drizzle");
 
     const historical = await coordinateDatabaseUpgrade({ databasePath, migrationsFolder });

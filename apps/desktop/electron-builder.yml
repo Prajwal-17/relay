@@ -1,9 +1,10 @@
-appId: com.quickcart.app
-productName: QuickCart
+appId: com.relay.app
+productName: Relay
 extraMetadata: # injects properties into package.json
-  name: quickcart
+  name: relay
+  desktopName: relay
 directories:
-  buildResources: build
+  buildResources: ../../assets/desktop
 files:
   - "!**/.vscode/*"
   - "!src/*"
@@ -18,9 +19,11 @@ extraResources:
     to: drizzle/
     filter:
       - "**/*"
+  - from: ../../assets/desktop/icon.png
+    to: relay-icon.png
 win:
-  executableName: QuickCart
-  icon: build/icon.png
+  executableName: Relay
+  icon: icon.ico
 nsis:
   oneClick: true
   perMachine: false
@@ -29,19 +32,21 @@ nsis:
   shortcutName: "${productName}"
   uninstallDisplayName: "${productName}"
   createDesktopShortcut: always
-# mac:
-#   entitlementsInherit: build/entitlements.mac.plist
-#   extendInfo:
-#     - NSCameraUsageDescription: Application requests access to the device's camera.
-#     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-#     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-#     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
-#   notarize: false
+mac:
+  icon: icon.icns
+  # entitlementsInherit: build/entitlements.mac.plist
+  # extendInfo:
+  #   - NSCameraUsageDescription: Application requests access to the device's camera.
+  #   - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+  #   - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+  #   - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  # notarize: false
 # dmg:
 #   artifactName: "${productName}-${version}.${ext}"
 linux:
-  executableName: quickcart
-  icon: build/icon.png
+  executableName: relay
+  icon: icon.png
+  syncDesktopName: true
   target:
     - AppImage
     - deb

@@ -32,19 +32,19 @@ const preferences = vi.hoisted(() => ({
         id: "upi-primary",
         label: "Main counter",
         upiId: "shop@bank",
-        payeeName: "QuickCart"
+        payeeName: "Relay"
       },
       {
         id: "upi-secondary",
         label: "Warehouse counter",
         upiId: "warehouse@bank",
-        payeeName: "QuickCart Warehouse"
+        payeeName: "Relay Warehouse"
       },
       {
         id: "upi-long-name",
         label: "Very long billing counter name that must wrap inside the account list",
         upiId: "very-long-upi-account-identifier@bank",
-        payeeName: "QuickCart wholesale and distribution counter"
+        payeeName: "Relay wholesale and distribution counter"
       }
     ],
     defaultUpiQrProfileId: "upi-primary",

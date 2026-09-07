@@ -1,4 +1,4 @@
-import quickcartLogo from "@/assets/quickcart.svg";
+import relayAppIcon from "@assets/desktop/app-icon-small.svg";
 import { navLinks } from "@/app/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 const MIN_SIDEBAR_WIDTH = 216;
 const MAX_SIDEBAR_WIDTH = 280;
 const DEFAULT_SIDEBAR_WIDTH = 232;
-const SIDEBAR_WIDTH_STORAGE_KEY = "quickcart-sidebar-width";
+const SIDEBAR_WIDTH_STORAGE_KEY = "relay-sidebar-width";
 
 const mainLinks = navLinks.filter((item) => item.href !== "/settings");
 const systemLinks = navLinks.filter((item) => item.href === "/settings");
@@ -266,16 +266,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             }}
             className="flex items-center gap-2"
           >
-            <div className="bg-background border-border flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) border p-1.5">
-              <img
-                src={quickcartLogo}
-                alt="QuickCart logo"
-                draggable={false}
-                className="h-full w-full object-contain"
-              />
-            </div>
+            <img
+              src={relayAppIcon}
+              alt="Relay logo"
+              draggable={false}
+              className="size-8 shrink-0 rounded-(--radius-control) object-contain"
+            />
             <div className="min-w-0">
-              <span className="block truncate text-base font-semibold">QuickCart</span>
+              <span className="block truncate text-base font-semibold">Relay</span>
               <span className="text-muted-foreground block truncate text-xs">
                 Counter workspace
               </span>
@@ -344,7 +342,7 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
             className="hover:bg-sidebar-accent flex h-11 items-center gap-2 rounded-(--radius-control) px-2 transition-colors duration-150"
           >
             <div className="bg-selected text-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control) text-xs font-semibold">
-              {storeInitials || "QC"}
+              {storeInitials || "R"}
             </div>
             <div className="min-w-0">
               <span className="text-navigation block truncate font-semibold">
