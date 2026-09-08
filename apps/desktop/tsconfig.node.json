@@ -1,6 +1,6 @@
 // tsconfig for the electron app
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@relay/typescript-config/base.json",
   "include": ["electron.vite.config.*", "src/main/**/*", "src/preload/**/*", "src/shared/**/*"],
   // Tests are checked by tsconfig.test.json.
   "exclude": ["src/main/tests/**/*"],

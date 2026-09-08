@@ -1,5 +1,8 @@
 # Relay
 
+Workspace packages use the `@relay` scope: `@relay/workspace`, `@relay/desktop`,
+`@relay/eslint-config` and `@relay/typescript-config`. Native app identities remain Relay / Relay-Dev.
+
 Relay is an offline-first desktop billing application for retail counters. It manages
 sales, estimates, products, customer accounts, payments, receipts, and PDF invoices without
 requiring a remote backend.

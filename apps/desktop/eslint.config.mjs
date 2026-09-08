@@ -1,4 +1,4 @@
-import { config as reactInternalConfig } from "@repo/eslint-config/react-internal";
+import { config as reactInternalConfig } from "@relay/eslint-config/react-internal";
 import eslintPluginReactRefresh from "eslint-plugin-react-refresh";
 
 export default [

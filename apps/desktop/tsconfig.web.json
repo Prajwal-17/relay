@@ -1,6 +1,6 @@
 // tsconfig for the vite+react app
 {
-  "extends": "@repo/typescript-config/react-library.json",
+  "extends": "@relay/typescript-config/react-library.json",
   "include": [
     "src/renderer/src/vite-env.d.ts",
     "src/renderer/src/**/*",

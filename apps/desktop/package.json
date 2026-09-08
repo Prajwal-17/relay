@@ -1,5 +1,5 @@
 {
-  "name": "relay",
+  "name": "@relay/desktop",
   "productName": "Relay",
   "version": "4.4.7",
   "description": "A billing software for creating and managing invoices and customer accounts.",
@@ -104,8 +104,8 @@
     "@electron/rebuild": "^4.0.1",
     "@faker-js/faker": "^9.9.0",
     "@playwright/test": "1.61.1",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@relay/eslint-config": "workspace:*",
+    "@relay/typescript-config": "workspace:*",
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/eslint-plugin-query": "^5.91.0",
     "@tanstack/react-query-devtools": "^5.90.2",
