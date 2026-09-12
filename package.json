@@ -24,13 +24,5 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=18"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "electron",
-      "esbuild",
-      "better-sqlite3",
-      "@electron/rebuild"
-    ]
   }
 }

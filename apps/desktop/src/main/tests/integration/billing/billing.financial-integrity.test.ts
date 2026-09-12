@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { SyncResponse } from "../../../../shared/types";
+import { roundPaisaToNearestRupee } from "../../../../shared/utils/utils";
 import { customerLedger, customers, products, saleItems, sales } from "../../../db/schema";
 import { salesController } from "../../../modules/sales/sales.controller";
 import {
@@ -58,9 +59,8 @@ describe("billing financial-integrity API integration", () => {
         position: index * 65_536
       });
     });
-    const expectedTotal = items.reduce(
-      (sum, item) => sum + Math.round((item.price * item.quantity) / 1000),
-      0
+    const expectedTotal = roundPaisaToNearestRupee(
+      items.reduce((sum, item) => sum + Math.round((item.price * item.quantity) / 1000), 0)
     );
     const expectedQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
 

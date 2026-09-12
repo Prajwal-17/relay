@@ -6,6 +6,7 @@ import { filterEstimatesParamsSchema } from "./estimates.schema";
 import { estimatesService } from "./estimates.service";
 
 export const estimatesController = new Hono();
+const estimateItemIdSchema = idSchema.extend(itemIdSchema.shape);
 
 // get next Estimate No
 estimatesController.get("/next-number", async (c) => {
@@ -60,12 +61,12 @@ estimatesController.post("/:id/convert", validateRequest("param", idSchema), asy
 // update checked-qty of an estimate item - action "inc", "dec", "set"
 estimatesController.post(
   "/:id/items/:itemId/checked-qty",
-  validateRequest("param", itemIdSchema),
+  validateRequest("param", estimateItemIdSchema),
   validateRequest("json", actionSchema),
   async (c) => {
-    const { itemId } = c.req.valid("param");
+    const { id, itemId } = c.req.valid("param");
     const { action } = c.req.valid("json");
-    await estimatesService.updateCheckedQtyService(itemId, action);
+    await estimatesService.updateCheckedQtyService(id, itemId, action);
     return c.body(null, 204);
   }
 );

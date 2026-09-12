@@ -123,10 +123,12 @@ describe("file-backed database upgrade", () => {
       DROP INDEX estimates_creation_token_unique;
       ALTER TABLE sales DROP COLUMN creation_token;
       ALTER TABLE estimates DROP COLUMN creation_token;
+      ALTER TABLE estimates DROP COLUMN is_deleted;
     `);
     historical.sqlite.exec(`
       DELETE FROM __drizzle_migrations
-      WHERE created_at = (SELECT MAX(created_at) FROM __drizzle_migrations);
+      WHERE created_at IN
+        (SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 2);
     `);
     historical.sqlite.close();
 
@@ -140,6 +142,12 @@ describe("file-backed database upgrade", () => {
     });
     expect(columnNames(repaired.sqlite, "sales")).toContain("creation_token");
     expect(columnNames(repaired.sqlite, "estimates")).toContain("creation_token");
+    expect(columnNames(repaired.sqlite, "estimates")).toContain("is_deleted");
+    expect(
+      repaired.sqlite
+        .prepare("SELECT is_deleted FROM estimates WHERE id = ?")
+        .get("historical-estimate")
+    ).toEqual({ is_deleted: 0 });
     expect(
       repaired.sqlite.prepare("SELECT id FROM sales WHERE id = ?").get("historical-sale")
     ).toEqual({ id: "historical-sale" });
@@ -188,8 +196,10 @@ describe("file-backed database upgrade", () => {
       )
       .run("edited-0030-sale", "preserved-token", 1, "edited-0030-customer");
     historical.sqlite.exec(`
+      ALTER TABLE estimates DROP COLUMN is_deleted;
       DELETE FROM __drizzle_migrations
-      WHERE created_at = (SELECT MAX(created_at) FROM __drizzle_migrations);
+      WHERE created_at IN
+        (SELECT created_at FROM __drizzle_migrations ORDER BY created_at DESC LIMIT 2);
     `);
     historical.sqlite.close();
 
@@ -201,6 +211,7 @@ describe("file-backed database upgrade", () => {
       adoptPendingSchemaMigration: true,
       pendingDataMigrationIds: []
     });
+    expect(columnNames(adopted.sqlite, "estimates")).toContain("is_deleted");
     expect(
       adopted.sqlite
         .prepare("SELECT creation_token FROM sales WHERE id = ?")

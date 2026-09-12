@@ -87,6 +87,13 @@ describe("dashboard integration", () => {
       grandTotal: 30000,
       createdAt: "2026-07-28T08:00:00.000Z"
     });
+    await seedEstimate(db, {
+      estimateNo: 703,
+      customerId: customer.id,
+      grandTotal: 90000,
+      createdAt: "2026-07-29T09:00:00.000Z",
+      isDeleted: true
+    });
 
     const response = await getJson(app, "/api/dashboard/summary");
     expect(await readJson<DashboardSummary>(response)).toEqual({
@@ -134,6 +141,14 @@ describe("dashboard integration", () => {
       totalQuantity: 2000,
       createdAt: "2026-07-27T08:00:00.000Z"
     });
+    await seedEstimate(db, {
+      estimateNo: 902,
+      customerId: customer.id,
+      grandTotal: 99000,
+      totalQuantity: 9000,
+      createdAt: "2026-07-29T08:00:00.000Z",
+      isDeleted: true
+    });
 
     const sales = await readJson<
       Array<{ transactionNo: number; customerName: string; grandTotal: number }>
@@ -163,6 +178,13 @@ describe("dashboard integration", () => {
       customerId: customer.id,
       grandTotal: 5000,
       createdAt: "2026-07-29T08:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1102,
+      customerId: customer.id,
+      grandTotal: 7000,
+      createdAt: "2026-07-29T09:00:00.000Z",
+      isDeleted: true
     });
 
     const daily = await readJson<Array<{ label: string; sales: number; estimates: number }>>(

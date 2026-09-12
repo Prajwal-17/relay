@@ -23,7 +23,7 @@ type EstimatePayloadData = Extract<TxnPayloadData, { transactionType: "estimate"
 
 const getEstimateById = async (id: string) => {
   return await db.query.estimates.findFirst({
-    where: eq(estimates.id, id),
+    where: and(eq(estimates.id, id), eq(estimates.isDeleted, false)),
     with: {
       customer: true,
       estimateItems: {
@@ -68,6 +68,7 @@ const filterEstimatesByDate = async (
   const offset = (params.pageNo - 1) * params.pageSize;
   const searchFilter = buildEstimateSearchFilter(params.search);
   const whereClause = and(
+    eq(estimates.isDeleted, false),
     gte(estimates.createdAt, params.from),
     lte(estimates.createdAt, params.to),
     searchFilter
@@ -118,6 +119,9 @@ const findEstimateCreateReplay = (tx: Tx, payload: EstimatePayloadData) => {
   if (!estimateById && !estimateByToken) return null;
   if (!estimateById || !estimateByToken || estimateById.id !== estimateByToken.id) {
     throw new AppError("Estimate creation identity conflicts with an existing estimate", 409);
+  }
+  if (estimateById.isDeleted) {
+    throw new AppError("Estimate creation identity belongs to a deleted estimate", 409);
   }
 
   const persistedItems = tx
@@ -239,6 +243,15 @@ const createEstimate = async (payload: EstimatePayloadData): Promise<SyncRespons
 
 const syncEstimateWithItems = async (estimateId: string, payload: EstimatePayloadData) => {
   return db.transaction((tx) => {
+    const estimate = tx
+      .select({ id: estimates.id })
+      .from(estimates)
+      .where(and(eq(estimates.id, estimateId), eq(estimates.isDeleted, false)))
+      .get();
+    if (!estimate) {
+      throw new AppError("Estimate does not exist", 404);
+    }
+
     const syncedItems: SyncedItems[] = [];
     const deletedRowIds: string[] = [];
 
@@ -402,7 +415,11 @@ const updateEstimateTotals = async (tx: any, estimateId: string) => {
 
 const deleteEstimateById = async (id: string) => {
   return db.transaction((tx) => {
-    const existingEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
+    const existingEstimate = tx
+      .select()
+      .from(estimates)
+      .where(and(eq(estimates.id, id), eq(estimates.isDeleted, false)))
+      .get();
 
     if (!existingEstimate) {
       throw new AppError(`Estimate with id:${id} does not exists`, 400);
@@ -421,7 +438,14 @@ const deleteEstimateById = async (id: string) => {
       }
     }
 
-    const result = tx.delete(estimates).where(eq(estimates.id, id)).run();
+    const result = tx
+      .update(estimates)
+      .set({
+        isDeleted: true,
+        updatedAt: sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`
+      })
+      .where(and(eq(estimates.id, id), eq(estimates.isDeleted, false)))
+      .run();
     if (result.changes === 0) {
       throw new AppError("Failed to delete Estimate record", 400);
     }
@@ -431,7 +455,11 @@ const deleteEstimateById = async (id: string) => {
 
 const convertEstimateToSale = async (id: string) => {
   return db.transaction((tx) => {
-    const estimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
+    const estimate = tx
+      .select()
+      .from(estimates)
+      .where(and(eq(estimates.id, id), eq(estimates.isDeleted, false)))
+      .get();
 
     if (!estimate) {
       throw new AppError(`Estimate with id:${id} does not exist`, 400);
@@ -494,10 +522,26 @@ const convertEstimateToSale = async (id: string) => {
 };
 
 // TODO: refactor logic & create utility func (Temporary solution)
-const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction) => {
+const updateCheckedQty = async (
+  estimateId: string,
+  estimateItemId: string,
+  action: UpdateQtyAction
+) => {
   db.transaction((tx) => {
-    const item = tx.select().from(estimateItems).where(eq(estimateItems.id, estimateItemId)).get();
+    const item = tx
+      .select()
+      .from(estimateItems)
+      .where(and(eq(estimateItems.id, estimateItemId), eq(estimateItems.estimateId, estimateId)))
+      .get();
     if (!item) {
+      throw new AppError("Estimate Item not found", 400);
+    }
+    const estimate = tx
+      .select({ id: estimates.id })
+      .from(estimates)
+      .where(and(eq(estimates.id, estimateId), eq(estimates.isDeleted, false)))
+      .get();
+    if (!estimate) {
       throw new AppError("Estimate Item not found", 400);
     }
 
@@ -506,7 +550,7 @@ const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction)
         .set({
           checkedQty: item.quantity === item.checkedQty ? 0 : item.quantity
         })
-        .where(eq(estimateItems.id, estimateItemId))
+        .where(and(eq(estimateItems.id, estimateItemId), eq(estimateItems.estimateId, estimateId)))
         .run();
       return;
     }
@@ -521,7 +565,7 @@ const updateCheckedQty = async (estimateItemId: string, action: UpdateQtyAction)
       .set({
         checkedQty: toMilliUnits(updatedQty)
       })
-      .where(eq(estimateItems.id, estimateItemId))
+      .where(and(eq(estimateItems.id, estimateItemId), eq(estimateItems.estimateId, estimateId)))
       .run();
   });
 };
@@ -530,7 +574,7 @@ const batchCheckItems = async (estimateId: string, action: BatchCheckAction) => 
   const estimate = db
     .select({ id: estimates.id })
     .from(estimates)
-    .where(eq(estimates.id, estimateId))
+    .where(and(eq(estimates.id, estimateId), eq(estimates.isDeleted, false)))
     .get();
   if (!estimate) {
     throw new AppError("Estimate not found", 404);
@@ -549,7 +593,11 @@ const batchCheckItems = async (estimateId: string, action: BatchCheckAction) => 
 
 const duplicateEstimateById = async (id: string) => {
   return db.transaction((tx) => {
-    const originalEstimate = tx.select().from(estimates).where(eq(estimates.id, id)).get();
+    const originalEstimate = tx
+      .select()
+      .from(estimates)
+      .where(and(eq(estimates.id, id), eq(estimates.isDeleted, false)))
+      .get();
     if (!originalEstimate) {
       throw new AppError(`Estimate with id:${id} does not exist`, 404);
     }

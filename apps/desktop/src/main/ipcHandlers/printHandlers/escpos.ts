@@ -9,6 +9,7 @@ import type {
 import {
   buildThermalUpiUri,
   fitThermalText,
+  formatReceiptSummaryAmount,
   formatThermalReceiptDate,
   receiptDocumentLabel,
   safeThermalText,
@@ -109,10 +110,14 @@ export function buildEscPosReceipt(
 
   chunks.push(
     line("-".repeat(LINE_WIDTH)),
-    line(`${fit("Subtotal", 39)}${fit(paisaToRupeeString(receipt.subtotalPaisa), 9, "right")}`),
+    line(
+      `${fit("Subtotal", 39)}${fit(formatReceiptSummaryAmount(receipt.subtotalPaisa), 9, "right")}`
+    ),
     escPosCommands.boldOn,
     escPosCommands.doubleHeightText,
-    line(`${fit("TOTAL", 30)}${fit(`Rs.${paisaToRupeeString(receipt.totalPaisa)}`, 18, "right")}`),
+    line(
+      `${fit("TOTAL", 30)}${fit(`Rs.${formatReceiptSummaryAmount(receipt.totalPaisa)}`, 18, "right")}`
+    ),
     escPosCommands.normalText,
     escPosCommands.boldOff,
     ...(receipt.accountSettlement

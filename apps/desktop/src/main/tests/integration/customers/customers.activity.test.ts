@@ -59,6 +59,12 @@ describe("customers activity integration", () => {
     await seedSale(db, { invoiceNo: 401, customerId: customer.id, grandTotal: 50000 });
     await seedSale(db, { invoiceNo: 402, customerId: customer.id, grandTotal: 70000 });
     await seedEstimate(db, { estimateNo: 501, customerId: customer.id, grandTotal: 30000 });
+    await seedEstimate(db, {
+      estimateNo: 502,
+      customerId: customer.id,
+      grandTotal: 90000,
+      isDeleted: true
+    });
 
     expect(await readJson(await getJson(app, `/api/customers/${customer.id}/summary`))).toEqual({
       salesCount: 2,
@@ -141,6 +147,13 @@ describe("customers activity integration", () => {
       grandTotal: 20000,
       createdAt: "2026-06-03T00:00:00.000Z"
     });
+    await seedEstimate(db, {
+      estimateNo: 813,
+      customerId: customer.id,
+      grandTotal: 90000,
+      createdAt: "2026-06-04T00:00:00.000Z",
+      isDeleted: true
+    });
 
     const first = await readJson<CustomerTransactions>(
       await getJson(app, `/api/customers/${customer.id}/estimates?pageSize=2&sort=amount_asc`)
@@ -167,6 +180,13 @@ describe("customers activity integration", () => {
       customerId: customer.id,
       grandTotal: 30000,
       createdAt: "2026-05-02T10:00:00.000Z"
+    });
+    await seedEstimate(db, {
+      estimateNo: 1102,
+      customerId: customer.id,
+      grandTotal: 90000,
+      createdAt: "2026-05-05T10:00:00.000Z",
+      isDeleted: true
     });
     db.insert(customerLedger)
       .values({

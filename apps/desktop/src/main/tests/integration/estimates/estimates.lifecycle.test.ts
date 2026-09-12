@@ -7,6 +7,7 @@ import {
   createTestDb,
   dbMock,
   estimatePayload,
+  getJson,
   postTxn,
   readJson,
   requestJson,
@@ -227,11 +228,11 @@ describe("estimates lifecycle integration", () => {
     ).toBe(2000);
   });
 
-  it("deletes an estimate and reverses product totals", async () => {
+  it("soft deletes an estimate, reverses product totals once, and blocks further access", async () => {
     const customer = await seedCustomer(db);
     const product = await seedProduct(db, { totalQuantitySold: 5000 });
     const estimate = await seedEstimate(db, { estimateNo: 80, customerId: customer.id });
-    await seedEstimateItem(db, {
+    const item = await seedEstimateItem(db, {
       estimateId: estimate.id,
       productId: product.id,
       quantity: 2000
@@ -240,13 +241,67 @@ describe("estimates lifecycle integration", () => {
     const response = await requestJson(app, "DELETE", `/api/estimates/${estimate.id}`);
 
     expect(response.status).toBe(204);
-    expect(db.select().from(estimates).where(eq(estimates.id, estimate.id)).get()).toBeUndefined();
+    expect(db.select().from(estimates).where(eq(estimates.id, estimate.id)).get()).toMatchObject({
+      isDeleted: true
+    });
     expect(
       db.select().from(estimateItems).where(eq(estimateItems.estimateId, estimate.id)).all()
-    ).toEqual([]);
+    ).toEqual([expect.objectContaining({ id: item.id })]);
     expect(
       db.select().from(products).where(eq(products.id, product.id)).get()?.totalQuantitySold
     ).toBe(3000);
+
+    expect((await getJson(app, `/api/estimates/${estimate.id}`)).status).toBe(400);
+    expect((await requestJson(app, "DELETE", `/api/estimates/${estimate.id}`)).status).toBe(400);
+    expect(
+      (await postTxn(app, `/api/estimates/${estimate.id}/sync`, estimatePayload(customer.id)))
+        .status
+    ).toBe(404);
+    expect((await requestJson(app, "POST", `/api/estimates/${estimate.id}/duplicate`)).status).toBe(
+      404
+    );
+    expect((await requestJson(app, "POST", `/api/estimates/${estimate.id}/convert`)).status).toBe(
+      400
+    );
+    expect(
+      (
+        await requestJson(
+          app,
+          "POST",
+          `/api/estimates/${estimate.id}/items/${item.id}/checked-qty`,
+          {
+            action: "inc"
+          }
+        )
+      ).status
+    ).toBe(400);
+    expect(
+      (
+        await requestJson(app, "POST", `/api/estimates/${estimate.id}/items/checked-qty/batch`, {
+          action: "mark_all"
+        })
+      ).status
+    ).toBe(404);
+    expect(
+      db.select().from(products).where(eq(products.id, product.id)).get()?.totalQuantitySold
+    ).toBe(3000);
+
+    const activeEstimate = await seedEstimate(db, { estimateNo: 81, customerId: customer.id });
+    const activeItem = await seedEstimateItem(db, {
+      estimateId: activeEstimate.id,
+      productId: null,
+      checkedQty: 0
+    });
+    const crossEstimateResponse = await requestJson(
+      app,
+      "POST",
+      `/api/estimates/${estimate.id}/items/${activeItem.id}/checked-qty`,
+      { action: "inc" }
+    );
+    expect(crossEstimateResponse.status).toBe(400);
+    expect(
+      db.select().from(estimateItems).where(eq(estimateItems.id, activeItem.id)).get()?.checkedQty
+    ).toBe(0);
   });
 
   it("moves product totals when sync changes an item's product", async () => {

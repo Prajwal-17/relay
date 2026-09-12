@@ -141,8 +141,12 @@ const convertEstimateToSale = async (id: string): Promise<{ id: string }> => {
   };
 };
 
-const updateCheckedQtyService = async (estimateItemId: string, action: UpdateQtyAction) => {
-  await estimatesRepository.updateCheckedQty(estimateItemId, action);
+const updateCheckedQtyService = async (
+  estimateId: string,
+  estimateItemId: string,
+  action: UpdateQtyAction
+) => {
+  await estimatesRepository.updateCheckedQty(estimateId, estimateItemId, action);
 };
 
 const batchCheckItemsService = async (id: string, action: BatchCheckAction) => {
