@@ -256,7 +256,7 @@ const getCustomerSummary = async (id: string) => {
         total: sql<number>`SUM(${estimates.grandTotal})`
       })
       .from(estimates)
-      .where(eq(estimates.customerId, id))
+      .where(and(eq(estimates.customerId, id), eq(estimates.isDeleted, false)))
       .get();
 
     const salesCount = salesResult?.count ?? 0;
@@ -329,7 +329,7 @@ const getCustomerActivity = async (params: {
       createdAt: estimates.createdAt
     })
     .from(estimates)
-    .where(eq(estimates.customerId, params.customerId))
+    .where(and(eq(estimates.customerId, params.customerId), eq(estimates.isDeleted, false)))
     .orderBy(desc(estimates.createdAt), desc(estimates.estimateNo))
     .limit(params.limit)
     .all();

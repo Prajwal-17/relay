@@ -17,7 +17,10 @@ export const buildSalesWhere = (params: SalesByCustomerParams): SQL => {
 };
 
 export const buildEstimatesWhere = (params: EstimatesByCustomerParams): SQL => {
-  const conditions: SQL[] = [eq(estimates.customerId, params.customerId)];
+  const conditions: SQL[] = [
+    eq(estimates.customerId, params.customerId),
+    eq(estimates.isDeleted, false)
+  ];
   if (params.search !== "") {
     conditions.push(sql`CAST(${estimates.estimateNo} AS TEXT) LIKE ${`%${params.search}%`}`);
   }

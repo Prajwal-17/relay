@@ -24,6 +24,7 @@ const getDashboardMetrics = async (dates: DashboardDates) => {
     const estimateCount = tx
       .select({ count: sql<number>`count(*)` })
       .from(estimates)
+      .where(eq(estimates.isDeleted, false))
       .get();
 
     const todaySaleRevenue = tx
@@ -48,6 +49,7 @@ const getDashboardMetrics = async (dates: DashboardDates) => {
       .from(estimates)
       .where(
         and(
+          eq(estimates.isDeleted, false),
           gte(estimates.createdAt, dates.startofToday),
           lte(estimates.createdAt, dates.endofToday)
         )
@@ -59,6 +61,7 @@ const getDashboardMetrics = async (dates: DashboardDates) => {
       .from(estimates)
       .where(
         and(
+          eq(estimates.isDeleted, false),
           gte(estimates.createdAt, dates.startofYesterday),
           lte(estimates.createdAt, dates.endofYesterday)
         )
@@ -103,6 +106,7 @@ const getRecentSales = async (limit: number = 5) => {
 
 const getRecentEstimates = async (limit: number = 5) => {
   return await db.query.estimates.findMany({
+    where: eq(estimates.isDeleted, false),
     with: {
       customer: true
     },
@@ -131,7 +135,13 @@ const getDailyRevenue = async (startDate: string, endDate: string) => {
         total: sql<number>`SUM(${estimates.grandTotal})`
       })
       .from(estimates)
-      .where(and(gte(estimates.createdAt, startDate), lte(estimates.createdAt, endDate)))
+      .where(
+        and(
+          eq(estimates.isDeleted, false),
+          gte(estimates.createdAt, startDate),
+          lte(estimates.createdAt, endDate)
+        )
+      )
       .groupBy(sql`strftime('%d',${estimates.createdAt})`)
       .all();
 
@@ -157,7 +167,12 @@ const getMonthlyRevenue = async (year: number) => {
         total: sql<number>`SUM(${estimates.grandTotal})`
       })
       .from(estimates)
-      .where(eq(sql`strftime('%Y',${estimates.createdAt})`, `${year}`))
+      .where(
+        and(
+          eq(estimates.isDeleted, false),
+          eq(sql`strftime('%Y',${estimates.createdAt})`, `${year}`)
+        )
+      )
       .groupBy(sql`strftime('%m',${estimates.createdAt})`)
       .all();
 

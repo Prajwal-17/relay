@@ -241,6 +241,7 @@ export const estimates = sqliteTable(
     grandTotal: integer("grand_total", { mode: "number" }),
     totalQuantity: integer("total_quantity", { mode: "number" }),
     notes: text("notes"),
+    isDeleted: integer("is_deleted", { mode: "boolean" }).notNull().default(false),
     createdAt: text("created_at")
       .default(sql`(STRFTIME('%Y-%m-%dT%H:%M:%fZ', 'now'))`)
       .notNull(),

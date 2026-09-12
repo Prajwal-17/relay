@@ -45,7 +45,7 @@ describe("estimates read integration", () => {
   it("returns the next estimate number", async () => {
     expect(await readJson(await getJson(app, "/api/estimates/next-number"))).toEqual({ nextNo: 1 });
     const customer = await seedCustomer(db);
-    await seedEstimate(db, { estimateNo: 12, customerId: customer.id });
+    await seedEstimate(db, { estimateNo: 12, customerId: customer.id, isDeleted: true });
     await seedEstimate(db, { estimateNo: 4, customerId: customer.id });
 
     expect(await readJson(await getJson(app, "/api/estimates/next-number"))).toEqual({
@@ -102,6 +102,13 @@ describe("estimates read integration", () => {
       { estimateNo: 33, grandTotal: 20000, createdAt: "2026-06-03T00:00:00.000Z" }
     ];
     for (const row of rows) await seedEstimate(db, { ...row, customerId: customer.id });
+    await seedEstimate(db, {
+      estimateNo: 34,
+      customerId: customer.id,
+      grandTotal: 90000,
+      createdAt: "2026-06-02T12:00:00.000Z",
+      isDeleted: true
+    });
 
     const base =
       "/api/estimates?from=2026-06-01T00:00:00.000Z&to=2026-06-03T00:00:00.000Z&pageSize=2&sortBy=high_to_low";

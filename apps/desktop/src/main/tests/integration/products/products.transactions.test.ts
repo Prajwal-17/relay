@@ -79,11 +79,13 @@ describe("product transactions integration", () => {
     createdAt: string;
     quantity: number;
     price: number;
+    isDeleted?: boolean;
   }) {
     const estimate = await seedEstimate(db, {
       estimateNo: params.transactionNo,
       customerId: params.customerId,
-      createdAt: params.createdAt
+      createdAt: params.createdAt,
+      isDeleted: params.isDeleted
     });
     await seedEstimateItem(db, {
       estimateId: estimate.id,
@@ -122,6 +124,15 @@ describe("product transactions integration", () => {
       createdAt: "2026-04-02T09:00:00.000Z",
       quantity: 500,
       price: 13000
+    });
+    await addEstimateTransaction({
+      productId: product.id,
+      customerId: customer.id,
+      transactionNo: 602,
+      createdAt: "2026-04-04T09:00:00.000Z",
+      quantity: 9000,
+      price: 99000,
+      isDeleted: true
     });
 
     const response = await getJson(app, `/api/products/${product.id}/transactions`);

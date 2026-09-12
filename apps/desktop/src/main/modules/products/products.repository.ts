@@ -302,7 +302,7 @@ const getTransactionsByProductId = async (params: {
     .from(estimateItems)
     .innerJoin(estimates, eq(estimateItems.estimateId, estimates.id))
     .innerJoin(customers, eq(estimates.customerId, customers.id))
-    .where(eq(estimateItems.productId, params.productId))
+    .where(and(eq(estimateItems.productId, params.productId), eq(estimates.isDeleted, false)))
     .all();
 
   const combined = [...saleRows, ...estimateRows].sort((a, b) => {
@@ -324,7 +324,8 @@ const countTransactionsByProductId = async (productId: string) => {
   const estimatesCount = db
     .select({ count: count() })
     .from(estimateItems)
-    .where(eq(estimateItems.productId, productId))
+    .innerJoin(estimates, eq(estimateItems.estimateId, estimates.id))
+    .where(and(eq(estimateItems.productId, productId), eq(estimates.isDeleted, false)))
     .get();
 
   return (salesCount?.count ?? 0) + (estimatesCount?.count ?? 0);
