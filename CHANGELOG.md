@@ -1,5 +1,16 @@
 # Changelog
 
+## v4.4.8 - 12 Sep 2026
+
+Patch release preserving deleted estimates for data integrity while removing them from user-facing workflows.
+
+### Improvements
+
+- Soft delete estimates while retaining their stored items and historical database records
+- Hide deleted estimates from estimate lists, dashboards, customer activity, product history, exports, and direct access
+- Prevent deleted estimates from being edited, duplicated, converted, or updated through item-checking actions
+- Preserve estimate number sequencing and product/customer integrity checks for retained records
+
 ## v4.4.7 - 07 Sep 2026
 
 Patch release completing the Relay rebrand and packaging cleanup.
