@@ -18,6 +18,7 @@ import type {
 import {
   buildThermalUpiUri,
   fitThermalText,
+  formatReceiptSummaryAmount,
   formatThermalReceiptDate,
   receiptDocumentLabel,
   thermalItemLines,
@@ -106,7 +107,7 @@ export function DeviceTextReceiptPaper({
     fitThermalText("AMT", widths.amount, "right")
   ].join("");
   const subtotalLine = `${fitThermalText("Subtotal", 39)}${fitThermalText(
-    paisaToRupeeString(receipt.subtotalPaisa),
+    formatReceiptSummaryAmount(receipt.subtotalPaisa),
     9,
     "right"
   )}`;
@@ -115,7 +116,7 @@ export function DeviceTextReceiptPaper({
       ? "YOU SAVED Rs." + paisaToRupeeString(receipt.savingsPaisa)
       : undefined;
   const totalLine = `${fitThermalText("TOTAL", 30)}${fitThermalText(
-    `Rs.${paisaToRupeeString(receipt.totalPaisa)}`,
+    `Rs.${formatReceiptSummaryAmount(receipt.totalPaisa)}`,
     18,
     "right"
   )}`;

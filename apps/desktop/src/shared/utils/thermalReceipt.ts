@@ -77,6 +77,14 @@ export function formatReceiptQuantity(value: string | number): string {
   return quantity.toFixed(3).replace(/\.?0+$/, "");
 }
 
+export function formatReceiptItemAmount(paisa: number): string {
+  return String(Math.round(paisa / 100));
+}
+
+export function formatReceiptSummaryAmount(paisa: number): string {
+  return (paisa / 100).toFixed(2);
+}
+
 export function buildReceiptAddressLines(profile: StoreProfile): string[] {
   const locality = [profile.city, profile.state]
     .map((part) => part.trim())
@@ -92,8 +100,8 @@ export function buildReceiptAddressLines(profile: StoreProfile): string[] {
 export function thermalItemLines(index: number, item: RawReceiptItem): string[] {
   const widths = THERMAL_RECEIPT_ITEM_WIDTHS;
   const nameLines = wrapThermalText(item.name, widths.name);
-  const rate = paisaToRupeeString(item.unitPricePaisa);
-  const amount = paisaToRupeeString(item.totalPaisa);
+  const rate = formatReceiptItemAmount(item.unitPricePaisa);
+  const amount = formatReceiptItemAmount(item.totalPaisa);
 
   return nameLines.map((name, lineIndex) =>
     [

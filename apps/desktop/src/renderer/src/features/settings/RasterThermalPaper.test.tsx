@@ -133,7 +133,7 @@ describe("canonical raster thermal papers", () => {
     );
   });
 
-  it("keeps line-item amounts separated and only shows meaningful decimals", () => {
+  it("shows whole rupees for line items and two decimals for the summary", () => {
     const wholeTotalReceipt: RawReceiptData = {
       ...receipt,
       subtotalPaisa: 41_900,
@@ -145,15 +145,15 @@ describe("canonical raster thermal papers", () => {
     const rows = screen.getAllByTestId("raster-receipt-item-row");
     const firstRowAmounts = Array.from(rows[0]!.querySelectorAll("[data-receipt-amount]"));
     const secondRowAmounts = Array.from(rows[1]!.querySelectorAll("[data-receipt-amount]"));
-    expect(firstRowAmounts.map((amount) => amount.textContent)).toEqual(["85", "212.50"]);
+    expect(firstRowAmounts.map((amount) => amount.textContent)).toEqual(["85", "213"]);
     expect(secondRowAmounts.map((amount) => amount.textContent)).toEqual(["199", "199"]);
 
     const summary = screen.getByTestId("raster-receipt-summary");
     const summaryAmounts = Array.from(summary.querySelectorAll("[data-receipt-amount]"));
     expect(summary).toHaveClass("ml-auto", "grid", "min-w-[330px]");
-    expect(summaryAmounts.map((amount) => amount.textContent)).toEqual(["419", "Rs.419"]);
+    expect(summaryAmounts.map((amount) => amount.textContent)).toEqual(["419.00", "Rs.419.00"]);
     expect(summary.children[0]).toHaveTextContent("Subtotal");
-    expect(summary.children[1]).toHaveTextContent("419");
+    expect(summary.children[1]).toHaveTextContent("419.00");
     expect(summary.querySelector('[aria-hidden="true"]')).not.toBeInTheDocument();
     expect(summary.children[2]).toHaveTextContent("TOTAL");
     expect(summary.children[2]).toHaveClass("text-[30px]", "font-[600]");

@@ -117,7 +117,7 @@ describe("ESC/POS receipt builder", () => {
     const lines = itemLines(1, receipt().items[0]!);
 
     expect(lines).toEqual([
-      "1. Long product name that  1.25   12.50    15.63",
+      "1. Long product name that  1.25      13       16",
       `   wraps cleanly${" ".repeat(32)}`
     ]);
     expect(lines.every((value) => value.length === 48)).toBe(true);
@@ -137,8 +137,29 @@ describe("ESC/POS receipt builder", () => {
       "ABCDEFGHIJKLMNOPQRSTUV",
       "WXYZ0123456789"
     ]);
-    expect(lines[0]!.slice(25)).toBe("     2   10.00    20.00");
+    expect(lines[0]!.slice(25)).toBe("     2      10       20");
     expect(lines[1]!.slice(25)).toBe(" ".repeat(23));
+  });
+
+  it("prints line-item amounts without decimals and summary amounts with two decimals", () => {
+    const text = buildEscPosReceipt(
+      receipt({
+        items: [
+          {
+            name: "Whole-number item",
+            quantity: "2",
+            unitPricePaisa: 1000,
+            totalPaisa: 2000
+          }
+        ],
+        subtotalPaisa: 2000,
+        totalPaisa: 2000
+      })
+    ).toString("ascii");
+
+    expect(text).toContain("     2      10       20");
+    expect(text).toContain(`Subtotal${" ".repeat(35)}20.00`);
+    expect(text).toContain(`TOTAL${" ".repeat(35)}Rs.20.00`);
   });
 
   it("keeps compatibility-mode bytes unchanged when raster fulfillment metadata is present", () => {

@@ -39,13 +39,19 @@ const receiptItemGridStyle = {
 function ReceiptAmount({
   paisa,
   prefix = false,
+  fixedDecimals = false,
   className = ""
 }: {
   paisa: number;
   prefix?: boolean;
+  fixedDecimals?: boolean;
   className?: string;
 }) {
-  const formattedAmount = formatRupee(paisa).replace("₹", "").replace(/\.00$/, "");
+  const formattedAmount = fixedDecimals
+    ? formatRupee(paisa).replace("₹", "")
+    : formatRupee(Math.round(paisa / 100) * 100)
+        .replace("₹", "")
+        .replace(/\.00$/, "");
   return (
     <span className={cn("shrink-0 whitespace-nowrap tabular-nums", className)} data-receipt-amount>
       {prefix ? "Rs." : ""}
@@ -253,6 +259,7 @@ function RasterReceiptBody({
             <span className="justify-self-end text-[25px] leading-[1.25] font-[400]">Subtotal</span>
             <ReceiptAmount
               paisa={receipt.subtotalPaisa}
+              fixedDecimals
               className="justify-self-end text-right text-[25px] leading-[1.25] font-[500]"
             />
             <span className="mt-1.5 justify-self-end text-[30px] leading-none font-[600]">
@@ -261,6 +268,7 @@ function RasterReceiptBody({
             <ReceiptAmount
               paisa={receipt.totalPaisa}
               prefix
+              fixedDecimals
               className="mt-1.5 justify-self-end text-right text-[33px] leading-none font-[600]"
             />
           </div>

@@ -11,6 +11,10 @@ Patch release preserving deleted estimates for data integrity while removing the
 - Prevent deleted estimates from being edited, duplicated, converted, or updated through item-checking actions
 - Preserve estimate number sequencing and product/customer integrity checks for retained records
 
+### Fixed
+
+- Show whole rupees for thermal receipt line items while keeping subtotal and total amounts at two decimal places
+
 ## v4.4.7 - 07 Sep 2026
 
 Patch release completing the Relay rebrand and packaging cleanup.
