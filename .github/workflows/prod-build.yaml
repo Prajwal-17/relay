@@ -3,7 +3,7 @@ name: Production Build and Release
 on:
   push:
     tags:
-      - "v.*"
+      - "v*.*.*"
 
 jobs:
   build:
