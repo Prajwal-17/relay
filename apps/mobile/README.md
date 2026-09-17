@@ -1,32 +1,58 @@
-# QuickCart Mobile
+# Relay Mobile
 
-Expo/React Native application for the QuickCart mobile prototype.
-
-## Data contract
-
-- [QuickCart Drizzle database schema](https://github.com/Prajwal-17/pos/blob/master/apps/desktop/src/main/db/schema.ts)
+Relay Mobile is an offline-first Expo companion focused on the shop's daily Money workflow.
+Money opens first. Home, Products, and Customers are intentionally limited to a clear “Coming
+soon” state until those workflows are ready.
 
 ## Stack
 
-- Expo SDK 54, React Native, and Expo Router
-- NativeWind 4 with Tailwind CSS 3
-- CVA, `clsx`, and `tailwind-merge` for reusable component variants
-- Lucide React Native icons
+- Expo SDK 57 with Expo Router
+- React Native 0.86 and React 19.2
+- UniWind with Tailwind CSS 4
+- Drizzle ORM with Expo SQLite
+- Local Inter font files and Lucide icons
 
-Theme values are defined directly in `tailwind.config.js`; CSS custom properties are not used.
-The only CSS file contains the three Tailwind directives required by NativeWind.
+## Money workflow
 
-## Commands
+The Money screen keeps the current daily-ledger features: choose a date, review received and paid
+totals, record cash and online receipts, add vendor payments, inspect receipt history, manage online
+payment channels, correct daily totals, and delete a day's record.
 
-Run from the repository root:
+All values are stored as integer paisa. Dates use the Asia/Kolkata business day. The app owns one
+local `relay-money.db` database and does not import or copy desktop data. Its schema contains only:
+
+- `daily_entries`
+- `online_channels`
+- `daily_online_receipts`
+- `supplier_payments`
+- `receipt_events`
+
+## Design
+
+`global.css` maps the semantic colors from the desktop `DESIGN.md` into Tailwind 4 tokens: warm
+canvas, white surfaces, charcoal actions, neutral selection, and terracotta focus cues. Screens use
+Inter, restrained 6px/8px radii, borders before shadows, tabular money, and at least 44px touch
+targets.
+
+## Development
+
+From the repository root:
 
 ```bash
+pnpm install
 pnpm --dir apps/mobile start
-pnpm --dir apps/mobile android
-pnpm --dir apps/mobile ios
-pnpm --dir apps/mobile web
-pnpm --dir apps/mobile lint
-pnpm --dir apps/mobile typecheck
 ```
 
-Application routes live under `src/app`. Shared component utilities live under `src/lib`.
+Useful checks:
+
+```bash
+pnpm --dir apps/mobile lint
+pnpm --dir apps/mobile typecheck
+pnpm --dir apps/mobile exec expo-doctor
+```
+
+Android and iOS are the primary targets. The web command remains available for quick layout checks:
+
+```bash
+pnpm --dir apps/mobile web
+```

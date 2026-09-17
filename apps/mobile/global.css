@@ -1,3 +1,79 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "uniwind";
+
+/* Relay Desktop's semantic palette, adapted to Tailwind 4 and UniWind. */
+@theme static {
+  --color-canvas: #f5f5f2;
+  --color-surface: #ffffff;
+  --color-surface-muted: #e8ebe6;
+  --color-surface-3: #d8ded7;
+  --color-border: #d8d5cc;
+  --color-frame: #c3bfb4;
+  --color-border-strong: #999487;
+  --color-ink: #20231f;
+  --color-muted: #4d544c;
+  --color-placeholder: #4d544c;
+  --color-primary: #283129;
+  --color-primary-hover: #1b211c;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #b6532b;
+  --color-accent-hover: #96411f;
+  --color-accent-ink: #76351f;
+  --color-accent-soft: #fbe9e1;
+  --color-sales: #1f9d72;
+  --color-sales-hover: #198660;
+  --color-sales-soft: #e3f5ef;
+  --color-sales-ink: #0b5c43;
+  --color-estimate: #b44a68;
+  --color-estimate-hover: #973951;
+  --color-estimate-soft: #f8e9ee;
+  --color-estimate-ink: #6f263e;
+  --color-gold: #754300;
+  --color-gold-accent: #d18a12;
+  --color-gold-soft: #fff0c7;
+  --color-gold-border: #e2a93c;
+  --color-olive: #3f521b;
+  --color-olive-accent: #5e7837;
+  --color-olive-soft: #d4e6ad;
+  --color-hover: #e8ebe6;
+  --color-selected: #d8ded7;
+  --color-selection-marker: #b6532b;
+  --color-focus: #b6532b;
+  --color-table-header: #e9ebe6;
+  --color-calendar-range: #e8c9bc;
+  --color-calendar-range-foreground: #76351f;
+  --color-calendar-range-edge: #96411f;
+  --color-calendar-range-edge-hover: #76351f;
+  --color-calendar-range-edge-foreground: #ffffff;
+  --color-success: #1f6a43;
+  --color-success-foreground: #ffffff;
+  --color-warning: #875b1d;
+  --color-warning-foreground: #ffffff;
+  --color-destructive: #9b342a;
+  --color-destructive-foreground: #ffffff;
+  --color-scrim: rgba(32, 35, 31, 0.32);
+
+  --font-sans: "Inter-Regular";
+  --radius-control: 6px;
+  --radius-card: 8px;
+}
+
+@utility font-normal {
+  font-family: "Inter-Regular";
+  font-weight: 400;
+}
+
+@utility font-medium {
+  font-family: "Inter-Medium";
+  font-weight: 400;
+}
+
+@utility font-semibold {
+  font-family: "Inter-SemiBold";
+  font-weight: 400;
+}
+
+@utility font-bold {
+  font-family: "Inter-Bold";
+  font-weight: 400;
+}
