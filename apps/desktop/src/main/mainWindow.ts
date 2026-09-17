@@ -1,5 +1,5 @@
 import { is } from "@electron-toolkit/utils";
-import { BrowserWindow, screen } from "electron";
+import { BrowserWindow, Menu, screen } from "electron";
 import { join } from "node:path";
 import { getLinuxAppIconPath } from "./appIcon";
 import { registerZoomController, restoreZoom, type ZoomStore } from "./zoom";
@@ -40,14 +40,19 @@ export function createMainWindow({
     minWidth: 1024,
     minHeight: 600,
     useContentSize: true,
-    autoHideMenuBar: false,
+    frame: false,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),
       sandbox: false,
       contextIsolation: true,
       nodeIntegration: false,
       zoomFactor: initialZoom,
-      additionalArguments: [`--api-port=${apiPort}`, `--api-token=${apiToken}`]
+      additionalArguments: [
+        `--api-port=${apiPort}`,
+        `--api-token=${apiToken}`,
+        "--window-kind=main"
+      ]
     } as Electron.WebPreferences
   });
 
@@ -68,7 +73,14 @@ export function createMainWindow({
     window.on("focus", () => restoreZoom(web, store));
   }
 
-  void import("./setupMenu").then(({ setupMenu }) => setupMenu({ autoHideMenuBar: false }));
+  Menu.setApplicationMenu(null);
+  window.removeMenu();
+
+  const sendMaximizedState = () => {
+    web.send("app-window:maximized-changed", window.isMaximized());
+  };
+  window.on("maximize", sendMaximizedState);
+  window.on("unmaximize", sendMaximizedState);
 
   if (isDevBuild) {
     web.on("before-input-event", (_, input) => {

@@ -1,4 +1,5 @@
 import type {
+  AppWindowApi,
   DatabaseUpgradeApi,
   DialogApi,
   ExportApi,
@@ -9,6 +10,7 @@ import type {
 
 declare global {
   interface Window {
+    appWindowApi?: AppWindowApi;
     productsApi: ProductsApi;
     dialogApi: DialogApi;
     exportApi: ExportApi;

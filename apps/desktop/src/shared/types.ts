@@ -812,6 +812,22 @@ export interface ZoomApi {
   getBounds: () => Promise<{ min: number; max: number; default: number }>;
 }
 
+export type AppWindowMetadata = {
+  name: string;
+  version: string;
+};
+
+export interface AppWindowApi {
+  getMetadata: () => Promise<AppWindowMetadata>;
+  isMaximized: () => Promise<boolean>;
+  toggleMaximize: () => Promise<boolean>;
+  minimize: () => void;
+  close: () => void;
+  reload: () => void;
+  checkForUpdates: () => void;
+  onMaximizedChange: (listener: (isMaximized: boolean) => void) => () => void;
+}
+
 export type DatabaseUpgradeStatus = {
   state:
     | "checking"

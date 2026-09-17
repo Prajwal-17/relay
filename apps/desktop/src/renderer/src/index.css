@@ -18,6 +18,7 @@
 
   /* Density primitives */
   --app-header-height: 3rem;
+  --app-titlebar-height: 2.25rem;
   --sidebar-width: 14.5rem;
   --sidebar-compact-width: 3.5rem;
   --sidebar-min-width: 13.5rem;
@@ -512,4 +513,15 @@
 body.dragging-active,
 body.dragging-active * {
   cursor: grabbing !important;
+}
+
+.app-titlebar {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+}
+
+.app-titlebar-interactive {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
