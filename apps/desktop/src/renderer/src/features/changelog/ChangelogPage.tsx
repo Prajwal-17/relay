@@ -104,7 +104,7 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
   return (
     <div ref={pageRef} className="bg-background min-h-full p-3">
       <div className="mx-auto grid w-full max-w-260 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_12rem]">
-        <article className="border-frame bg-card min-w-0 rounded-(--radius-panel) border">
+        <article className="min-w-0">
           <header className="border-border flex items-center justify-between gap-4 border-b px-5 py-4">
             <p className="text-muted-foreground max-w-[68ch] text-sm leading-relaxed">
               Features, improvements, and fixes shipped with Relay.
@@ -182,14 +182,14 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
         </article>
 
         <aside
-          className="border-frame bg-card sticky top-3 hidden max-h-[calc(100vh-var(--app-titlebar-height)-var(--app-header-height)-1.5rem)] rounded-(--radius-panel) border lg:flex lg:flex-col"
+          className="border-border sticky top-3 hidden max-h-[calc(100vh-var(--app-titlebar-height)-var(--app-header-height)-5rem)] border-l lg:flex lg:flex-col"
           aria-label="All releases"
         >
-          <div className="border-border flex h-10 shrink-0 items-center justify-between border-b px-3">
+          <div className="border-border flex h-9 shrink-0 items-center justify-between border-b px-3">
             <span className="text-sm font-semibold">All releases</span>
             <span className="text-muted-foreground text-xs tabular-nums">{releases.length}</span>
           </div>
-          <nav className="scrollbar-thick min-h-0 overflow-y-auto p-1.5">
+          <nav className="scrollbar-compact min-h-0 overflow-y-auto py-1.5 pr-0.5 pl-1.5">
             {releases.map((release) => {
               const isActive = release.id === activeReleaseId;
               return (

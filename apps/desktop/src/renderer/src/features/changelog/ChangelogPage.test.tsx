@@ -54,6 +54,6 @@ describe("ChangelogView", () => {
     await user.click(olderRelease);
 
     await waitFor(() => expect(olderRelease).toHaveAttribute("aria-current", "location"));
-    expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled();
+    await waitFor(() => expect(HTMLElement.prototype.scrollIntoView).toHaveBeenCalled());
   });
 });
