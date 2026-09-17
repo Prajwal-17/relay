@@ -33,6 +33,13 @@ export const router = createHashRouter([
           { path: "dashboard/:type", element: <TransactionsPage /> },
           { path: "reports", element: <ReportsPage /> },
           {
+            path: "changelog",
+            lazy: async () => {
+              const { default: Component } = await import("@/features/changelog/ChangelogPage");
+              return { Component };
+            }
+          },
+          {
             path: "settings",
             element: <SettingsPage />,
             children: [

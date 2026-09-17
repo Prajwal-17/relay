@@ -282,16 +282,17 @@ Virtualized dimensions are part of the layout contract and must change with the 
 
 Use these route compositions:
 
-| Surface                | Required composition                                                                                                                                      |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                                |
-| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                                 |
-| Sales and Estimates    | Contextual statistics strip with a value-privacy control, search and quick-date command bar, then explicit sort/group controls and the transaction table. |
-| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                                            |
-| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                   |
-| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                              |
-| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.   |
-| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                           |
+| Surface                | Required composition                                                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Home                   | Compact metric region followed by operational charts or summaries; chart height yields on short viewports.                                                 |
+| Products and Customers | One command bar, optional active-filter strip only when needed, then a framed dense list.                                                                  |
+| Sales and Estimates    | Contextual statistics strip with a value-privacy control, search and quick-date command bar, then explicit sort/group controls and the transaction table.  |
+| Customer detail        | Compact identity/action header, tabs, then the selected operational workspace.                                                                             |
+| Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                    |
+| Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                               |
+| Changelog              | One readable release ledger with rule-separated entries and a sticky right-side version index; collapse the index to a selector when space is constrained. |
+| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.    |
+| Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                            |
 
 ## Elevation & Depth
 

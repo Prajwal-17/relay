@@ -136,6 +136,10 @@ export function AppTitleBar() {
             Help
           </MenubarTrigger>
           <MenubarContent sideOffset={1} alignOffset={0}>
+            <MenubarItem asChild>
+              <a href="#/changelog">Changelog</a>
+            </MenubarItem>
+            <MenubarSeparator />
             <MenubarItem onSelect={() => appWindowApi.checkForUpdates()}>
               Check for updates
             </MenubarItem>
