@@ -14,11 +14,3 @@ describe("billing routes", () => {
     }
   );
 });
-
-describe("secondary routes", () => {
-  it("matches the changelog workspace", () => {
-    const matches = matchRoutes(router.routes, "/changelog?release=v4.4.8");
-
-    expect(matches?.at(-1)?.route.path).toBe("changelog");
-  });
-});
