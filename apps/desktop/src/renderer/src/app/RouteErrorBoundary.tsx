@@ -38,7 +38,7 @@ export const RouteErrorBoundary = ({ scope }: { scope: BoundaryScope }) => {
 
   return (
     <div
-      className={fullWindow ? "bg-background h-screen w-full" : "bg-background h-full p-3"}
+      className={fullWindow ? "bg-background h-full w-full" : "bg-background h-full p-3"}
       data-pdf-export-error={scope === "pdf" ? copy.title : undefined}
     >
       <ErrorState

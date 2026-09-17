@@ -13,7 +13,7 @@ const OnboardingFlow = React.lazy(() =>
 );
 
 const LoadingState = ({ label = "Loading Relay…" }: { label?: string }) => (
-  <div className="bg-background flex h-screen w-full items-center justify-center p-3">
+  <div className="bg-background flex h-full w-full items-center justify-center p-3">
     <div className="border-border bg-card flex min-w-56 flex-col items-center gap-3 rounded-(--radius-panel) border p-4">
       <LoaderCircle className="text-marker size-7 animate-spin" />
       <p className="text-muted-foreground text-sm font-medium">{label}</p>
@@ -27,7 +27,7 @@ const RootLayout = () => {
 
   if (hasError) {
     return (
-      <div className="bg-background h-screen w-full">
+      <div className="bg-background h-full w-full">
         <ErrorState
           layout="page"
           title="Relay could not start"
@@ -50,7 +50,7 @@ const RootLayout = () => {
   }
 
   return (
-    <div className="h-screen w-full">
+    <div className="h-full w-full">
       <AppShell />
       <ReactQueryDevtools initialIsOpen={false} />
     </div>

@@ -15,6 +15,7 @@ const getPageTitle = (pathname: string) => {
   if (matchPath("/dashboard/sales", pathname)) return "Sales Overview";
   if (matchPath("/dashboard/estimates", pathname)) return "Estimates Overview";
   if (matchPath("/reports", pathname)) return "Reports";
+  if (matchPath("/changelog", pathname)) return "Changelog";
   if (matchPath("/settings/*", pathname)) return "Settings";
   return "Workspace";
 };
@@ -90,6 +91,7 @@ const AppShell = () => {
 
         <section
           className={cn("min-h-0 flex-1", isBillingPage ? "overflow-clip" : "overflow-y-auto")}
+          data-workspace-scroll
         >
           <Outlet />
         </section>

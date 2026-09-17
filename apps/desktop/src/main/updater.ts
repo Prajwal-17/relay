@@ -1,10 +1,11 @@
-import { dialog, type MenuItem } from "electron";
+import { dialog } from "electron";
 import { autoUpdater } from "electron-updater";
 
-let updater: MenuItem | null = null;
+let isCheckingForUpdates = false;
 autoUpdater.autoDownload = false;
 
 autoUpdater.on("error", (error) => {
+  isCheckingForUpdates = false;
   dialog.showErrorBox("Error: ", error == null ? "unknown" : (error.stack || error).toString());
 });
 
@@ -20,8 +21,7 @@ autoUpdater.on("update-available", () => {
       if (buttonIndex.response === 0) {
         autoUpdater.downloadUpdate();
       } else {
-        if (updater) updater.enabled = true;
-        updater = null;
+        isCheckingForUpdates = false;
       }
     });
 });
@@ -31,8 +31,7 @@ autoUpdater.on("update-not-available", () => {
     title: "No Updates",
     message: "Current version is up-to-date."
   });
-  if (updater) updater.enabled = true;
-  updater = null;
+  isCheckingForUpdates = false;
 });
 
 autoUpdater.on("update-downloaded", () => {
@@ -46,8 +45,8 @@ autoUpdater.on("update-downloaded", () => {
     });
 });
 
-export function checkForUpdates(menuItem: MenuItem) {
-  updater = menuItem;
-  updater.enabled = false;
-  autoUpdater.checkForUpdatesAndNotify();
+export function checkForUpdates() {
+  if (isCheckingForUpdates) return;
+  isCheckingForUpdates = true;
+  void autoUpdater.checkForUpdatesAndNotify();
 }

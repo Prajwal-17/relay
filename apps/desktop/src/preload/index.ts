@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type {
+  AppWindowApi,
   DatabaseUpgradeApi,
   DatabaseUpgradeStatus,
   DialogApi,
@@ -9,6 +10,25 @@ import type {
   TransactionType,
   ZoomApi
 } from "../shared/types";
+
+const isMainWindow = process.argv.includes("--window-kind=main");
+
+const appWindowApi: AppWindowApi = {
+  getMetadata: () => ipcRenderer.invoke("app-window:get-metadata"),
+  isMaximized: () => ipcRenderer.invoke("app-window:is-maximized"),
+  toggleMaximize: () => ipcRenderer.invoke("app-window:toggle-maximize"),
+  minimize: () => ipcRenderer.send("app-window:minimize"),
+  close: () => ipcRenderer.send("app-window:close"),
+  reload: () => ipcRenderer.send("app-window:reload"),
+  checkForUpdates: () => ipcRenderer.send("app-window:check-for-updates"),
+  onMaximizedChange: (listener: (isMaximized: boolean) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, isMaximized: boolean) => {
+      listener(isMaximized);
+    };
+    ipcRenderer.on("app-window:maximized-changed", handler);
+    return () => ipcRenderer.removeListener("app-window:maximized-changed", handler);
+  }
+};
 
 const productsApi: ProductsApi = {
   saveProductImage: (dataUrl: string) => ipcRenderer.invoke("products:saveProductImage", dataUrl),
@@ -67,6 +87,7 @@ const apiToken = apiTokenArg?.slice("--api-token=".length) ?? "";
 
 if (process.contextIsolated) {
   try {
+    if (isMainWindow) contextBridge.exposeInMainWorld("appWindowApi", appWindowApi);
     contextBridge.exposeInMainWorld("productsApi", productsApi);
     contextBridge.exposeInMainWorld("dialogApi", dialogApi);
     contextBridge.exposeInMainWorld("exportApi", exportApi);
@@ -81,6 +102,10 @@ if (process.contextIsolated) {
     console.error(error);
   }
 } else {
+  if (isMainWindow) {
+    // @ts-ignore (define in ts)
+    window.appWindowApi = appWindowApi;
+  }
   // @ts-ignore (define in ts)
   window.productsApi = productsApi;
   // @ts-ignore (define in ts)

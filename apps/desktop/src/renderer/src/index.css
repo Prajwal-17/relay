@@ -18,6 +18,7 @@
 
   /* Density primitives */
   --app-header-height: 3rem;
+  --app-titlebar-height: 2.25rem;
   --sidebar-width: 14.5rem;
   --sidebar-compact-width: 3.5rem;
   --sidebar-min-width: 13.5rem;
@@ -482,6 +483,23 @@
   }
 }
 
+@utility scrollbar-compact {
+  scrollbar-color: var(--border-standard) transparent;
+  scrollbar-width: thin;
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-standard);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--border-strong);
+    background-clip: content-box;
+  }
+}
+
 @utility page-shell {
   padding: var(--page-padding);
 }
@@ -512,4 +530,15 @@
 body.dragging-active,
 body.dragging-active * {
   cursor: grabbing !important;
+}
+
+.app-titlebar {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+}
+
+.app-titlebar-interactive {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
 }

@@ -23,7 +23,7 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="bg-background h-screen w-full">
+        <div className="bg-background h-full w-full">
           <ErrorState
             layout="page"
             title="Relay needs to reload"
