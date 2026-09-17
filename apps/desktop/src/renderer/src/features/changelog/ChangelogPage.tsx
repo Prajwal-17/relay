@@ -105,12 +105,8 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
     <div ref={pageRef} className="bg-background min-h-full p-3">
       <div className="mx-auto grid w-full max-w-260 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_12rem]">
         <article className="min-w-0">
-          <header className="border-border flex items-center justify-between gap-4 border-b px-5 py-4">
-            <p className="text-muted-foreground max-w-[68ch] text-sm leading-relaxed">
-              Features, improvements, and fixes shipped with Relay.
-            </p>
-
-            <div className="w-44 shrink-0 lg:hidden">
+          <div className="flex justify-end px-5 pt-2 lg:hidden">
+            <div className="w-44 shrink-0">
               <Select value={activeRelease?.version} onValueChange={selectRelease}>
                 <SelectTrigger className="bg-card w-full" aria-label="Choose a release">
                   <SelectValue placeholder="Choose a release" />
@@ -124,7 +120,7 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
                 </SelectContent>
               </Select>
             </div>
-          </header>
+          </div>
 
           <div className="px-5 pb-6">
             <ReactMarkdown

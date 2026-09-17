@@ -118,8 +118,8 @@ spacing:
   panel: "12px"
 components:
   application-titlebar:
-    backgroundColor: "{colors.surface-1}"
-    textColor: "{colors.ink}"
+    backgroundColor: "{colors.primary}"
+    textColor: "{colors.on-primary}"
     typography: "{typography.secondary}"
     height: "36px"
   button-primary:
@@ -266,7 +266,7 @@ The shared density contract is:
 
 At a viewport height of 680px or less, page inset, panel inset, and section gap may reduce to 10px. Text and control heights do not shrink. At widths below 1120px, the standard sidebar becomes an overlay. Billing always uses the 56px icon rail with persistent tooltips. The receipt preview opens by default, remembers the operator’s preference, docks at 1280px and above, and becomes a right-side overlay below that width.
 
-The frameless desktop window uses one 36px application title bar inside the CSS viewport. It combines the Relay identity and version, the necessary View and Help menus, a flexible drag region, and standard minimize, maximize/restore, and close controls. The bar uses `surface-1`, a `border-frame` lower rule, compact sentence-case labels, and the existing hover, destructive, and focus roles. Interactive elements must opt out of the drag region, remain keyboard accessible, and expose native window actions only through the context-isolated preload bridge. Do not add a second native menu row or duplicate window commands inside a menu.
+The frameless desktop window uses one 36px application title bar inside the CSS viewport. It combines the Relay identity and version, the necessary View and Help menus, a flexible drag region, and standard minimize, maximize/restore, and close controls. The bar uses the charcoal `primary` surface with `on-primary` text, a `primary-hover` lower rule and interaction surface, plus the existing destructive and focus roles. Interactive elements must opt out of the drag region, remain keyboard accessible, and expose native window actions only through the context-isolated preload bridge. Do not add a second native menu row or duplicate window commands inside a menu.
 
 Every route must have one intentional scroll owner per region. The application root does not scroll. A page may have a scrolling content region, while a table or preview may own an internal scroll region; avoid nested scroll containers that compete for the wheel. Page-level horizontal scrolling is not allowed. A genuinely wide data grid may scroll inside its framed region while its page header and primary actions remain stable.
 
