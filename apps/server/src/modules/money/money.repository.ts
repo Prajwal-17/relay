@@ -1,4 +1,16 @@
-import { and, asc, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  max,
+  ne,
+  sql
+} from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { createDatabase } from "../../db/client";
@@ -24,18 +36,20 @@ function isUniqueError(error: unknown): boolean {
 }
 
 export async function ensureDefaultChannels(database: D1Database, userId: string): Promise<void> {
+  const db = createDatabase(database);
   const now = nowIso();
-  await database.batch(
-    PRESET_CHANNELS.map((name) =>
-      database
-        .prepare(
-          `INSERT OR IGNORE INTO online_channels
-             (user_id, name, is_preset, is_archived, created_at, updated_at)
-           VALUES (?, ?, 1, 0, ?, ?)`
-        )
-        .bind(userId, name, now, now)
+  await db
+    .insert(onlineChannels)
+    .values(
+      PRESET_CHANNELS.map((name) => ({
+        userId,
+        name,
+        isPreset: true,
+        createdAt: now,
+        updatedAt: now
+      }))
     )
-  );
+    .onConflictDoNothing();
 }
 
 export async function getDailyEntry(
@@ -91,13 +105,6 @@ export async function getDailyEntry(
   return { ...entry, onlineReceipts, supplierPayments: payments };
 }
 
-type MonthRow = {
-  date: string;
-  cashPaisa: number;
-  onlinePaisa: number;
-  paidPaisa: number;
-};
-
 export async function listMonthSummaries(
   database: D1Database,
   userId: string,
@@ -107,39 +114,69 @@ export async function listMonthSummaries(
   const start = `${year}-${String(month).padStart(2, "0")}-01`;
   const nextDate = new Date(Date.UTC(year, month, 1));
   const end = `${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth() + 1).padStart(2, "0")}-01`;
-  const result = await database
-    .prepare(
-      `SELECT d.entry_date AS date,
-              d.cash_paisa AS cashPaisa,
-              COALESCE((
-                SELECT SUM(r.amount_paisa)
-                FROM daily_online_receipts r
-                WHERE r.user_id = d.user_id AND r.entry_date = d.entry_date
-              ), 0) AS onlinePaisa,
-              COALESCE((
-                SELECT SUM(p.amount_paisa)
-                FROM supplier_payments p
-                WHERE p.user_id = d.user_id AND p.entry_date = d.entry_date
-              ), 0) AS paidPaisa
-       FROM daily_entries d
-       WHERE d.user_id = ? AND d.entry_date >= ? AND d.entry_date < ?
-       ORDER BY d.entry_date ASC`
-    )
-    .bind(userId, start, end)
-    .all<MonthRow>();
+  const db = createDatabase(database);
 
-  return result.results.map((row) => {
-    const cashPaisa = Number(row.cashPaisa);
-    const onlinePaisa = Number(row.onlinePaisa);
-    const paidPaisa = Number(row.paidPaisa);
-    const receivedPaisa = cashPaisa + onlinePaisa;
+  const onlineTotals = db
+    .select({
+      userId: dailyOnlineReceipts.userId,
+      date: dailyOnlineReceipts.date,
+      amountPaisa: sql<number>`coalesce(sum(${dailyOnlineReceipts.amountPaisa}), 0)`
+        .mapWith(Number)
+        .as("online_paisa")
+    })
+    .from(dailyOnlineReceipts)
+    .groupBy(dailyOnlineReceipts.userId, dailyOnlineReceipts.date)
+    .as("online_totals");
+
+  const paymentTotals = db
+    .select({
+      userId: supplierPayments.userId,
+      date: supplierPayments.date,
+      amountPaisa: sql<number>`coalesce(sum(${supplierPayments.amountPaisa}), 0)`
+        .mapWith(Number)
+        .as("paid_paisa")
+    })
+    .from(supplierPayments)
+    .groupBy(supplierPayments.userId, supplierPayments.date)
+    .as("payment_totals");
+
+  const rows = await db
+    .select({
+      date: dailyEntries.date,
+      cashPaisa: dailyEntries.cashPaisa,
+      onlinePaisa: sql<number>`coalesce(${onlineTotals.amountPaisa}, 0)`.mapWith(Number),
+      paidPaisa: sql<number>`coalesce(${paymentTotals.amountPaisa}, 0)`.mapWith(Number)
+    })
+    .from(dailyEntries)
+    .leftJoin(
+      onlineTotals,
+      and(
+        eq(onlineTotals.userId, dailyEntries.userId),
+        eq(onlineTotals.date, dailyEntries.date)
+      )
+    )
+    .leftJoin(
+      paymentTotals,
+      and(
+        eq(paymentTotals.userId, dailyEntries.userId),
+        eq(paymentTotals.date, dailyEntries.date)
+      )
+    )
+    .where(
+      and(
+        eq(dailyEntries.userId, userId),
+        gte(dailyEntries.date, start),
+        lt(dailyEntries.date, end)
+      )
+    )
+    .orderBy(asc(dailyEntries.date));
+
+  return rows.map((row) => {
+    const receivedPaisa = row.cashPaisa + row.onlinePaisa;
     return {
-      date: row.date,
-      cashPaisa,
-      onlinePaisa,
+      ...row,
       receivedPaisa,
-      paidPaisa,
-      netPaisa: receivedPaisa - paidPaisa
+      netPaisa: receivedPaisa - row.paidPaisa
     };
   });
 }
@@ -290,20 +327,23 @@ export async function listRecentVendorNames(
   userId: string,
   search: string
 ): Promise<string[]> {
-  const result = await database
-    .prepare(
-      `SELECT trim(payee) AS name
-       FROM supplier_payments
-       WHERE user_id = ?
-         AND trim(payee) <> ''
-         AND instr(lower(trim(payee)), lower(?)) > 0
-       GROUP BY trim(payee) COLLATE NOCASE
-       ORDER BY MAX(id) DESC
-       LIMIT 6`
+  const db = createDatabase(database);
+  const normalizedName = sql<string>`trim(${supplierPayments.payee})`;
+  const rows = await db
+    .select({ name: normalizedName })
+    .from(supplierPayments)
+    .where(
+      and(
+        eq(supplierPayments.userId, userId),
+        ne(normalizedName, ""),
+        sql`instr(lower(${normalizedName}), lower(${search.trim()})) > 0`
+      )
     )
-    .bind(userId, search.trim())
-    .all<{ name: string }>();
-  return result.results.map((row) => row.name);
+    .groupBy(sql`${normalizedName} COLLATE NOCASE`)
+    .orderBy(desc(max(supplierPayments.id)))
+    .limit(6);
+
+  return rows.map((row) => row.name);
 }
 
 export async function deleteDailyEntry(
@@ -322,22 +362,25 @@ export async function getMethodBalance(
   date: LocalDate,
   channelId: number | null
 ): Promise<number> {
-  const result =
+  const db = createDatabase(database);
+  const [result] =
     channelId === null
-      ? await database
-          .prepare(
-            `SELECT cash_paisa AS amount
-             FROM daily_entries WHERE user_id = ? AND entry_date = ?`
+      ? await db
+          .select({ amount: dailyEntries.cashPaisa })
+          .from(dailyEntries)
+          .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)))
+          .limit(1)
+      : await db
+          .select({ amount: dailyOnlineReceipts.amountPaisa })
+          .from(dailyOnlineReceipts)
+          .where(
+            and(
+              eq(dailyOnlineReceipts.userId, userId),
+              eq(dailyOnlineReceipts.date, date),
+              eq(dailyOnlineReceipts.channelId, channelId)
+            )
           )
-          .bind(userId, date)
-          .first<{ amount: number }>()
-      : await database
-          .prepare(
-            `SELECT amount_paisa AS amount
-             FROM daily_online_receipts
-             WHERE user_id = ? AND entry_date = ? AND channel_id = ?`
-          )
-          .bind(userId, date, channelId)
-          .first<{ amount: number }>();
-  return Number(result?.amount ?? 0);
+          .limit(1);
+
+  return result?.amount ?? 0;
 }

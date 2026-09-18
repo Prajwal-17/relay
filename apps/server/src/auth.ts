@@ -1,5 +1,9 @@
 import { expo } from "@better-auth/expo";
 import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+
+import { createDatabase } from "./db/client";
+import * as schema from "./db/schema";
 
 function trustedOrigins(env: Env): string[] {
   const configured = env.ALLOWED_ORIGINS.split(",")
@@ -14,7 +18,12 @@ export function createAuth(env: Env) {
     appName: "Relay",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
-    database: env.DB,
+    database: drizzleAdapter(createDatabase(env.DB), {
+      provider: "sqlite",
+      schema,
+      usePlural: true,
+      transaction: false
+    }),
     trustedOrigins: trustedOrigins(env),
     socialProviders: {
       google: {

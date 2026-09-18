@@ -1,4 +1,14 @@
+import { and, eq, max, sum } from "drizzle-orm";
+import type { BatchItem } from "drizzle-orm/batch";
 import { HTTPException } from "hono/http-exception";
+
+import { createDatabase } from "../../db/client";
+import {
+  dailyEntries,
+  dailyOnlineReceipts,
+  receiptEvents,
+  supplierPayments
+} from "../../db/schema";
 
 import { getDailyEntry, getMethodBalance, getOnlineChannelsById } from "./money.repository";
 import type {
@@ -65,6 +75,8 @@ async function requireOwnedChannels(
   }
 }
 
+type SqliteBatch = [BatchItem<"sqlite">, ...BatchItem<"sqlite">[]];
+
 type ReceiptAdjustment = {
   channelId: number | null;
   amountPaisa: number;
@@ -123,77 +135,83 @@ export async function saveDailyEntry(
     input.onlineReceipts.map((receipt) => receipt.channelId)
   );
   const previous = await getDailyEntry(database, userId, input.date);
+  const adjustments = receiptAdjustments(previous, input);
   const now = new Date().toISOString();
-  const statements: D1PreparedStatement[] = [
-    database
-      .prepare(
-        `INSERT INTO daily_entries
-           (user_id, entry_date, cash_paisa, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT(user_id, entry_date) DO UPDATE SET
-           cash_paisa = excluded.cash_paisa,
-           updated_at = excluded.updated_at`
+  const db = createDatabase(database);
+  const statements: SqliteBatch = [
+    db
+      .insert(dailyEntries)
+      .values({
+        userId,
+        date: input.date,
+        cashPaisa: input.cashPaisa,
+        createdAt: now,
+        updatedAt: now
+      })
+      .onConflictDoUpdate({
+        target: [dailyEntries.userId, dailyEntries.date],
+        set: { cashPaisa: input.cashPaisa, updatedAt: now }
+      }),
+    db
+      .delete(dailyOnlineReceipts)
+      .where(
+        and(
+          eq(dailyOnlineReceipts.userId, userId),
+          eq(dailyOnlineReceipts.date, input.date)
+        )
+      ),
+    db
+      .delete(supplierPayments)
+      .where(
+        and(eq(supplierPayments.userId, userId), eq(supplierPayments.date, input.date))
       )
-      .bind(userId, input.date, input.cashPaisa, now, now),
-    database
-      .prepare("DELETE FROM daily_online_receipts WHERE user_id = ? AND entry_date = ?")
-      .bind(userId, input.date),
-    database
-      .prepare("DELETE FROM supplier_payments WHERE user_id = ? AND entry_date = ?")
-      .bind(userId, input.date)
   ];
 
-  for (const receipt of input.onlineReceipts) {
+  if (input.onlineReceipts.length > 0) {
     statements.push(
-      database
-        .prepare(
-          `INSERT INTO daily_online_receipts
-             (user_id, entry_date, channel_id, amount_paisa)
-           VALUES (?, ?, ?, ?)`
-        )
-        .bind(userId, input.date, receipt.channelId, receipt.amountPaisa)
+      db.insert(dailyOnlineReceipts).values(
+        input.onlineReceipts.map((receipt) => ({
+          userId,
+          date: input.date,
+          channelId: receipt.channelId,
+          amountPaisa: receipt.amountPaisa
+        }))
+      )
     );
   }
 
-  for (const [position, payment] of input.supplierPayments.entries()) {
+  if (input.supplierPayments.length > 0) {
     statements.push(
-      database
-        .prepare(
-          `INSERT INTO supplier_payments
-             (user_id, entry_date, payee, amount_paisa, note, position)
-           VALUES (?, ?, ?, ?, ?, ?)`
-        )
-        .bind(
+      db.insert(supplierPayments).values(
+        input.supplierPayments.map((payment, position) => ({
           userId,
-          input.date,
-          payment.payee.trim(),
-          payment.amountPaisa,
-          payment.note?.trim() || null,
+          date: input.date,
+          payee: payment.payee.trim(),
+          amountPaisa: payment.amountPaisa,
+          note: payment.note?.trim() || null,
           position
-        )
+        }))
+      )
     );
   }
 
-  for (const adjustment of receiptAdjustments(previous, input)) {
+  if (adjustments.length > 0) {
     statements.push(
-      database
-        .prepare(
-          `INSERT INTO receipt_events
-             (user_id, entry_date, channel_id, kind, amount_paisa, balance_paisa, recorded_at)
-           VALUES (?, ?, ?, 'adjustment', ?, ?, ?)`
-        )
-        .bind(
+      db.insert(receiptEvents).values(
+        adjustments.map((adjustment) => ({
           userId,
-          input.date,
-          adjustment.channelId,
-          adjustment.amountPaisa,
-          adjustment.balancePaisa,
-          now
-        )
+          date: input.date,
+          channelId: adjustment.channelId,
+          kind: "adjustment" as const,
+          amountPaisa: adjustment.amountPaisa,
+          balancePaisa: adjustment.balancePaisa,
+          recordedAt: now
+        }))
+      )
     );
   }
 
-  await database.batch(statements);
+  await db.batch(statements);
 }
 
 export async function addReceivedPayment(
@@ -216,39 +234,48 @@ export async function addReceivedPayment(
   const balance = current + input.amountPaisa;
   validateAmount(balance);
   const now = new Date().toISOString();
-  const upsertDay = database
-    .prepare(
-      `INSERT INTO daily_entries
-         (user_id, entry_date, cash_paisa, created_at, updated_at)
-       VALUES (?, ?, 0, ?, ?)
-       ON CONFLICT(user_id, entry_date) DO UPDATE SET updated_at = excluded.updated_at`
-    )
-    .bind(userId, input.date, now, now);
+  const db = createDatabase(database);
+  const upsertDay = db
+    .insert(dailyEntries)
+    .values({ userId, date: input.date, cashPaisa: 0, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: [dailyEntries.userId, dailyEntries.date],
+      set: { updatedAt: now }
+    });
   const setBalance =
     input.channelId === null
-      ? database
-          .prepare(
-            "UPDATE daily_entries SET cash_paisa = ?, updated_at = ? WHERE user_id = ? AND entry_date = ?"
-          )
-          .bind(balance, now, userId, input.date)
-      : database
-          .prepare(
-            `INSERT INTO daily_online_receipts
-               (user_id, entry_date, channel_id, amount_paisa)
-             VALUES (?, ?, ?, ?)
-             ON CONFLICT(user_id, entry_date, channel_id) DO UPDATE SET
-               amount_paisa = excluded.amount_paisa`
-          )
-          .bind(userId, input.date, input.channelId, balance);
-  const event = database
-    .prepare(
-      `INSERT INTO receipt_events
-         (user_id, entry_date, channel_id, kind, amount_paisa, balance_paisa, recorded_at, name)
-       VALUES (?, ?, ?, 'payment', ?, ?, ?, ?)`
-    )
-    .bind(userId, input.date, input.channelId, input.amountPaisa, balance, now, name);
+      ? db
+          .update(dailyEntries)
+          .set({ cashPaisa: balance, updatedAt: now })
+          .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, input.date)))
+      : db
+          .insert(dailyOnlineReceipts)
+          .values({
+            userId,
+            date: input.date,
+            channelId: input.channelId,
+            amountPaisa: balance
+          })
+          .onConflictDoUpdate({
+            target: [
+              dailyOnlineReceipts.userId,
+              dailyOnlineReceipts.date,
+              dailyOnlineReceipts.channelId
+            ],
+            set: { amountPaisa: balance }
+          });
+  const event = db.insert(receiptEvents).values({
+    userId,
+    date: input.date,
+    channelId: input.channelId,
+    kind: "payment",
+    amountPaisa: input.amountPaisa,
+    balancePaisa: balance,
+    recordedAt: now,
+    name
+  });
 
-  await database.batch([upsertDay, setBalance, event]);
+  await db.batch([upsertDay, setBalance, event]);
 }
 
 export async function addVendorPayment(
@@ -261,45 +288,32 @@ export async function addVendorPayment(
   const payee = input.payee.trim();
   if (!payee) throw new HTTPException(400, { message: "Enter a vendor name." });
 
-  const current = await database
-    .prepare(
-      `SELECT COALESCE(SUM(amount_paisa), 0) AS amount
-       FROM supplier_payments WHERE user_id = ? AND entry_date = ?`
-    )
-    .bind(userId, input.date)
-    .first<{ amount: number }>();
-  validateAmount(Number(current?.amount ?? 0) + input.amountPaisa);
+  const db = createDatabase(database);
+  const [current] = await db
+    .select({
+      amountPaisa: sum(supplierPayments.amountPaisa).mapWith(Number),
+      lastPosition: max(supplierPayments.position)
+    })
+    .from(supplierPayments)
+    .where(and(eq(supplierPayments.userId, userId), eq(supplierPayments.date, input.date)));
+  validateAmount((current?.amountPaisa ?? 0) + input.amountPaisa);
 
   const now = new Date().toISOString();
-  await database.batch([
-    database
-      .prepare(
-        `INSERT INTO daily_entries
-           (user_id, entry_date, cash_paisa, created_at, updated_at)
-         VALUES (?, ?, 0, ?, ?)
-         ON CONFLICT(user_id, entry_date) DO UPDATE SET updated_at = excluded.updated_at`
-      )
-      .bind(userId, input.date, now, now),
-    database
-      .prepare(
-        `INSERT INTO supplier_payments
-           (user_id, entry_date, payee, amount_paisa, note, position)
-         VALUES (
-           ?, ?, ?, ?, ?,
-           COALESCE((
-             SELECT MAX(position) + 1 FROM supplier_payments
-             WHERE user_id = ? AND entry_date = ?
-           ), 0)
-         )`
-      )
-      .bind(
-        userId,
-        input.date,
-        payee,
-        input.amountPaisa,
-        input.note?.trim() || null,
-        userId,
-        input.date
-      )
-  ]);
+  const upsertDay = db
+    .insert(dailyEntries)
+    .values({ userId, date: input.date, cashPaisa: 0, createdAt: now, updatedAt: now })
+    .onConflictDoUpdate({
+      target: [dailyEntries.userId, dailyEntries.date],
+      set: { updatedAt: now }
+    });
+  const insertPayment = db.insert(supplierPayments).values({
+    userId,
+    date: input.date,
+    payee,
+    amountPaisa: input.amountPaisa,
+    note: input.note?.trim() || null,
+    position: (current?.lastPosition ?? -1) + 1
+  });
+
+  await db.batch([upsertDay, insertPayment]);
 }
