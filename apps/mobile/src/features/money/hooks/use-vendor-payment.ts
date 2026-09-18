@@ -1,13 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { usePreventRemove } from "expo-router/build/react-navigation/core";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Keyboard } from "react-native";
 
-import { confirmAction } from "@/lib/confirm-action";
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { parseRupeeInput } from "@/lib/format/money";
+import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
 import { moneyKeys } from "../money.keys";
 import { addVendorPayment } from "../money.repository";
@@ -17,7 +16,6 @@ export function useVendorPayment() {
   const date = parseLocalDate(params.date);
   const valid = date !== null && !isFutureDate(date);
   const queryClient = useQueryClient();
-  const navigation = useNavigation();
   const router = useRouter();
   const { isOffline } = useNetworkStatus();
   const [saved, setSaved] = useState(false);
@@ -55,11 +53,11 @@ export function useVendorPayment() {
     else router.replace("/money");
   }, [router]);
 
-  usePreventRemove((dirty || saving) && !saved, ({ data }) => {
-    if (lock.current) return;
-    confirmAction("Discard vendor payment?", "This payment has not been added.", "Discard", () => {
-      navigation.dispatch(data.action);
-    });
+  useConfirmSheetDismissal({
+    blocked: (dirty || saving) && !saved,
+    canDiscard: !saving,
+    title: "Discard vendor payment?",
+    message: "This payment has not been added."
   });
 
   useEffect(() => {

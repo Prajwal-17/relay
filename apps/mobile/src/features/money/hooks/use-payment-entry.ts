@@ -1,13 +1,12 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { usePreventRemove } from "expo-router/build/react-navigation/core";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Keyboard } from "react-native";
 
-import { confirmAction } from "@/lib/confirm-action";
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { parseRupeeInput } from "@/lib/format/money";
+import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
 import { moneyKeys } from "../money.keys";
 import {
@@ -27,7 +26,6 @@ export function usePaymentEntry() {
     !isFutureDate(date) &&
     (paymentMethodId === null || (Number.isSafeInteger(paymentMethodId) && paymentMethodId > 0));
   const router = useRouter();
-  const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { isOffline } = useNetworkStatus();
   const [amount, setAmount] = useState("");
@@ -127,14 +125,11 @@ export function usePaymentEntry() {
     ]);
   }
 
-  usePreventRemove((dirty || saving) && !saved, ({ data }) => {
-    if (saveLock.current) return;
-    confirmAction(
-      "Discard this entry?",
-      "This amount has not been added to the till.",
-      "Discard",
-      () => navigation.dispatch(data.action)
-    );
+  useConfirmSheetDismissal({
+    blocked: (dirty || saving) && !saved,
+    canDiscard: !saving,
+    title: "Discard this entry?",
+    message: "This amount has not been added to the till."
   });
 
   useEffect(() => {

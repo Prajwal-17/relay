@@ -74,6 +74,7 @@ function SessionLayout() {
   const sheetOptions = {
     presentation: "formSheet" as const,
     headerShown: false,
+    headerBackButtonMenuEnabled: false,
     sheetGrabberVisible: true,
     contentStyle: { backgroundColor: colors.canvas }
   };
