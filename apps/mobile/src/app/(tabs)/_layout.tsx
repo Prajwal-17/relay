@@ -1,53 +1,84 @@
-import { NativeTabs } from "expo-router/unstable-native-tabs";
+import { Tabs } from "expo-router";
+import { Banknote, House, Package, UsersRound } from "lucide-react-native";
+import { View } from "react-native";
 
+import { Pressable } from "@/components/ui/pressable";
+import { SafeAreaView } from "@/components/ui/safe-area-view";
+import { Text } from "@/components/ui/text";
 import { usePalette } from "@/theme/palette";
 
 export const unstable_settings = {
   initialRouteName: "money"
 };
 
+const items = {
+  home: { label: "Home", icon: House },
+  products: { label: "Products", icon: Package },
+  money: { label: "Till", icon: Banknote },
+  customers: { label: "Customers", icon: UsersRound }
+} as const;
+
 export default function TabLayout() {
   const colors = usePalette();
 
   return (
-    <NativeTabs
-      backgroundColor={colors.surface}
-      disableTransparentOnScrollEdge
-      iconColor={{ default: colors.muted, selected: colors.primary }}
-      indicatorColor={colors.selected}
-      labelStyle={{
-        default: { color: colors.muted, fontFamily: "Inter-Medium", fontSize: 11 },
-        selected: { color: colors.primary, fontFamily: "Inter-SemiBold", fontSize: 11 }
-      }}
-      minimizeBehavior="never"
-      shadowColor={colors.border}
-      tintColor={colors.primary}
+    <Tabs
+      backBehavior="history"
+      screenOptions={{ headerShown: false, lazy: true }}
+      tabBar={({ state, navigation }) => (
+        <SafeAreaView className="bg-surface border-frame border-t" edges={["bottom"]}>
+          <View className="flex-row gap-1 px-2 pt-2 pb-1">
+            {state.routes.map((route, index) => {
+              const item = items[route.name as keyof typeof items];
+              if (!item) return null;
+
+              const focused = state.index === index;
+              const Icon = item.icon;
+
+              return (
+                <Pressable
+                  key={route.key}
+                  accessibilityRole="tab"
+                  accessibilityLabel={item.label}
+                  accessibilityState={{ selected: focused }}
+                  className={`rounded-control min-h-14 flex-1 items-center justify-center gap-1 px-1 ${focused ? "bg-selected" : "bg-transparent"}`}
+                  onLongPress={() => navigation.emit({ type: "tabLongPress", target: route.key })}
+                  onPress={() => {
+                    const event = navigation.emit({
+                      type: "tabPress",
+                      target: route.key,
+                      canPreventDefault: true
+                    });
+
+                    if (!focused && !event.defaultPrevented) {
+                      navigation.navigate(route.name, route.params);
+                    }
+                  }}
+                >
+                  <View
+                    className={`h-0.5 w-5 rounded-full ${focused ? "bg-accent" : "bg-transparent"}`}
+                  />
+                  <Icon
+                    color={focused ? colors.primary : colors.muted}
+                    size={21}
+                    strokeWidth={focused ? 2.2 : 1.8}
+                  />
+                  <Text
+                    className={`text-[11px] leading-4 ${focused ? "text-ink font-semibold" : "text-muted font-medium"}`}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </SafeAreaView>
+      )}
     >
-      <NativeTabs.Trigger name="home">
-        <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="products">
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "shippingbox", selected: "shippingbox.fill" }}
-          md="inventory_2"
-        />
-        <NativeTabs.Trigger.Label>Products</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="money">
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "banknote", selected: "banknote.fill" }}
-          md="point_of_sale"
-        />
-        <NativeTabs.Trigger.Label>Till</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="customers">
-        <NativeTabs.Trigger.Icon
-          sf={{ default: "person.2", selected: "person.2.fill" }}
-          md="groups"
-        />
-        <NativeTabs.Trigger.Label>Customers</NativeTabs.Trigger.Label>
-      </NativeTabs.Trigger>
-    </NativeTabs>
+      <Tabs.Screen name="home" options={{ title: "Home" }} />
+      <Tabs.Screen name="products" options={{ title: "Products" }} />
+      <Tabs.Screen name="money" options={{ title: "Till" }} />
+      <Tabs.Screen name="customers" options={{ title: "Customers" }} />
+    </Tabs>
   );
 }

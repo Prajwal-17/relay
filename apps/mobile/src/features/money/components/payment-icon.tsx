@@ -39,7 +39,7 @@ export function PaymentIcon({
       )}
     >
       {image && kind === "upi" ? (
-        <Image source={image} resizeMode="contain" style={{ width: 32, height: 22 }} />
+        <Image className="h-[22px] w-8" source={image} resizeMode="contain" />
       ) : (
         <Icon
           size={20}

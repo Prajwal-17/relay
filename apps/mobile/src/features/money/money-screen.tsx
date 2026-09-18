@@ -70,7 +70,8 @@ export default function MoneyScreen() {
   const loading = ledger.isPending;
   const refreshing = ledger.isRefetching && !ledger.isPending;
   const error = deleteEntry.error ?? signOut.error ?? ledger.error;
-  const actionsDisabled = deleteEntry.isPending || signOut.isPending || isOffline;
+  const interactionLocked = deleteEntry.isPending || signOut.isPending;
+  const refreshDisabled = interactionLocked || isOffline;
   const dateValue = new Date(`${selectedDate}T12:00:00Z`);
   const weekday = new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "UTC" }).format(
     dateValue
@@ -133,9 +134,9 @@ export default function MoneyScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            enabled={!actionsDisabled}
+            enabled={!refreshDisabled}
             onRefresh={() => {
-              if (!actionsDisabled) void ledger.refetch();
+              if (!refreshDisabled) void ledger.refetch();
             }}
             colors={[colors.accent]}
             tintColor={colors.accent}
@@ -168,7 +169,7 @@ export default function MoneyScreen() {
             <View className="border-border bg-surface-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
               <WifiOff color={colors.muted} size={17} strokeWidth={1.8} />
               <Text className="text-muted min-w-0 flex-1 text-sm">
-                Offline. Showing the last available data; new entries are paused.
+                Offline. You can still review the till; saving is paused until you reconnect.
               </Text>
             </View>
           ) : null}
@@ -204,7 +205,8 @@ export default function MoneyScreen() {
                 <AppButton
                   className="min-w-[46%] grow"
                   icon={BanknoteArrowDown}
-                  disabled={actionsDisabled}
+                  disabled={interactionLocked}
+                  accessibilityHint="Opens a form to record money received"
                   onPress={() => openPayment(null, "add")}
                 >
                   Add received
@@ -213,7 +215,8 @@ export default function MoneyScreen() {
                   className="min-w-[46%] grow"
                   icon={Store}
                   variant="outline"
-                  disabled={actionsDisabled}
+                  disabled={interactionLocked}
+                  accessibilityHint="Opens a form to record a vendor payment"
                   onPress={() =>
                     router.push({ pathname: "/vendor-payment", params: { date: selectedDate } })
                   }
@@ -225,12 +228,12 @@ export default function MoneyScreen() {
               <ReceivedMethods
                 entry={entry}
                 paymentMethods={paymentMethods}
-                disabled={actionsDisabled}
+                disabled={interactionLocked}
                 onOpen={openPayment}
               />
               <DayDetails
                 entry={entry}
-                disabled={actionsDisabled}
+                disabled={interactionLocked}
                 onAdd={() =>
                   router.push({ pathname: "/vendor-payment", params: { date: selectedDate } })
                 }
