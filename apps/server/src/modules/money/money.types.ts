@@ -1,79 +1,48 @@
 export type LocalDate = string;
 
-export type OnlineChannel = {
+export type PaymentMethod = {
   id: number;
   name: string;
   isPreset: boolean;
   isArchived: boolean;
 };
 
-export type OnlineReceipt = {
-  channelId: number;
-  channelName: string;
-  amountPaisa: number;
-  isChannelArchived: boolean;
+export type DailyPaymentTotal = {
+  paymentMethodId: number;
+  paymentMethodName: string;
+  amount: number;
+  isPaymentMethodArchived: boolean;
 };
 
-export type SupplierPayment = {
+export type VendorPayment = {
   id: number;
-  payee: string;
-  amountPaisa: number;
+  vendorName: string;
+  amount: number;
   note: string | null;
-  position: number;
+  createdAt: string;
 };
 
 export type DailyEntry = {
   date: LocalDate;
-  cashPaisa: number;
-  onlineReceipts: OnlineReceipt[];
-  supplierPayments: SupplierPayment[];
+  cashAmount: number;
+  paymentTotals: DailyPaymentTotal[];
+  vendorPayments: VendorPayment[];
   createdAt: string;
   updatedAt: string;
 };
 
-export type OnlineReceiptInput = {
-  channelId: number;
-  amountPaisa: number;
-};
-
-export type SupplierPaymentInput = {
-  payee: string;
-  amountPaisa: number;
-  note?: string;
-};
-
-export type DailyEntryInput = {
-  date: LocalDate;
-  cashPaisa: number;
-  onlineReceipts: OnlineReceiptInput[];
-  supplierPayments: SupplierPaymentInput[];
-};
-
-export type ReceivedPaymentInput = {
-  date: LocalDate;
-  channelId: number | null;
-  amountPaisa: number;
-  name?: string;
-};
-
-export type VendorPaymentInput = SupplierPaymentInput & {
-  date: LocalDate;
-};
-
 export type DaySummary = {
   date: LocalDate;
-  cashPaisa: number;
-  onlinePaisa: number;
-  receivedPaisa: number;
-  paidPaisa: number;
-  netPaisa: number;
+  cashAmount: number;
+  onlineAmount: number;
+  receivedAmount: number;
+  paidAmount: number;
+  netAmount: number;
 };
 
-export type ReceiptEvent = {
+export type ReceivedEntry = {
   id: number;
-  kind: "opening" | "payment" | "adjustment";
-  amountPaisa: number;
-  balancePaisa: number;
-  recordedAt: string | null;
-  name: string | null;
+  amount: number;
+  note: string | null;
+  createdAt: string;
 };

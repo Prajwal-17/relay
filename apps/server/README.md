@@ -52,9 +52,12 @@ origins. Expo development origins must be added explicitly to `ALLOWED_ORIGINS` 
 
 ## Schema
 
-The migration creates Better Auth's `user`, `session`, `account`, and `verification` tables plus
-the five Money tables. Every Money record contains `user_id`; API queries and mutations always
-scope by the authenticated Better Auth user. Amounts remain integer paisa.
+`src/db/schema.ts` is the single schema source. `pnpm db:generate` creates the SQL and metadata
+under `drizzle/`; do not maintain a second handwritten schema. The generated migration creates
+Better Auth's four tables plus the five Money tables. Every Money query is scoped by the
+authenticated user. Amounts remain integer minor currency units while fields and columns use
+`amount` names. Vendor suggestions come from previously entered vendor payments, so entering an
+unseen name saves it automatically without a separate vendor record.
 
 ## Checks
 

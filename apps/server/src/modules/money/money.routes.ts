@@ -4,32 +4,39 @@ import type { z } from "zod";
 
 import type { AppEnv } from "../../app-env";
 import {
-  createOnlineChannel,
+  createPaymentMethod,
   deleteDailyEntry,
   getDailyEntry,
   listMonthSummaries,
-  listOnlineChannels,
-  listReceiptEvents,
-  listRecentVendorNames,
-  updateOnlineChannel
+  listPaymentMethods,
+  listReceivedEntries,
+  searchVendorNames,
+  updatePaymentMethod
 } from "./money.repository";
 import {
-  channelCreateSchema,
-  channelUpdateSchema,
-  dailyEntryBodySchema,
   localDateSchema,
   overviewQuerySchema,
+  paymentMethodCreateSchema,
+  paymentMethodUpdateSchema,
+  positiveIdSchema,
+  receivedEntriesQuerySchema,
   receivedPaymentSchema,
-  vendorPaymentSchema
+  vendorPaymentSchema,
+  vendorSearchSchema
 } from "./money.schemas";
-import {
-  addReceivedPayment,
-  addVendorPayment,
-  saveDailyEntry,
-  validateLedgerDate
-} from "./money.service";
+import { addReceivedPayment, addVendorPayment } from "./money.service";
 
 export const moneyRoutes = new Hono<AppEnv>();
+
+function parse<TSchema extends z.ZodType>(schema: TSchema, value: unknown): z.infer<TSchema> {
+  const result = schema.safeParse(value);
+  if (!result.success) {
+    throw new HTTPException(400, {
+      message: result.error.issues[0]?.message ?? "Request data is invalid."
+    });
+  }
+  return result.data;
+}
 
 async function jsonBody<TSchema extends z.ZodType>(
   request: Request,
@@ -41,82 +48,48 @@ async function jsonBody<TSchema extends z.ZodType>(
   } catch {
     throw new HTTPException(400, { message: "Send a valid JSON body." });
   }
-  const result = schema.safeParse(body);
-  if (!result.success) {
-    throw new HTTPException(400, {
-      message: result.error.issues[0]?.message ?? "Request data is invalid."
-    });
-  }
-  return result.data;
-}
-
-function pathDate(value: string): string {
-  const parsed = localDateSchema.safeParse(value);
-  if (!parsed.success) throw new HTTPException(400, { message: "Use a valid ledger date." });
-  validateLedgerDate(parsed.data);
-  return parsed.data;
-}
-
-function pathId(value: string): number {
-  const id = Number(value);
-  if (!Number.isSafeInteger(id) || id <= 0) {
-    throw new HTTPException(400, { message: "Use a valid provider ID." });
-  }
-  return id;
+  return parse(schema, body);
 }
 
 moneyRoutes.get("/overview", async (context) => {
-  const query = overviewQuerySchema.safeParse(context.req.query());
-  if (!query.success) {
-    throw new HTTPException(400, {
-      message: query.error.issues[0]?.message ?? "Invalid ledger query."
-    });
-  }
-  validateLedgerDate(query.data.date);
+  const query = parse(overviewQuerySchema, context.req.query());
   const userId = context.get("userId");
-  const [summaries, entry, channels] = await Promise.all([
-    listMonthSummaries(context.env.DB, userId, query.data.year, query.data.month),
-    getDailyEntry(context.env.DB, userId, query.data.date),
-    listOnlineChannels(context.env.DB, userId, true)
+  const [summaries, entry, paymentMethods] = await Promise.all([
+    listMonthSummaries(context.env.DB, userId, query.year, query.month),
+    getDailyEntry(context.env.DB, userId, query.date),
+    listPaymentMethods(context.env.DB, userId, true)
   ]);
-  return context.json({ summaries, entry, channels });
+  return context.json({ summaries, entry, paymentMethods });
 });
 
 moneyRoutes.get("/days/:date", async (context) => {
-  const date = pathDate(context.req.param("date"));
+  const date = parse(localDateSchema, context.req.param("date"));
   return context.json(await getDailyEntry(context.env.DB, context.get("userId"), date));
 });
 
-moneyRoutes.put("/days/:date", async (context) => {
-  const date = pathDate(context.req.param("date"));
-  const input = await jsonBody(context.req.raw, dailyEntryBodySchema);
-  await saveDailyEntry(context.env.DB, context.get("userId"), { date, ...input });
-  return context.body(null, 204);
-});
-
 moneyRoutes.delete("/days/:date", async (context) => {
-  const date = pathDate(context.req.param("date"));
+  const date = parse(localDateSchema, context.req.param("date"));
   await deleteDailyEntry(context.env.DB, context.get("userId"), date);
   return context.body(null, 204);
 });
 
-moneyRoutes.get("/channels", async (context) => {
+moneyRoutes.get("/payment-methods", async (context) => {
   const includeArchived = context.req.query("includeArchived") === "true";
   return context.json(
-    await listOnlineChannels(context.env.DB, context.get("userId"), includeArchived)
+    await listPaymentMethods(context.env.DB, context.get("userId"), includeArchived)
   );
 });
 
-moneyRoutes.post("/channels", async (context) => {
-  const input = await jsonBody(context.req.raw, channelCreateSchema);
-  const channel = await createOnlineChannel(context.env.DB, context.get("userId"), input.name);
-  return context.json(channel, 201);
+moneyRoutes.post("/payment-methods", async (context) => {
+  const input = await jsonBody(context.req.raw, paymentMethodCreateSchema);
+  const method = await createPaymentMethod(context.env.DB, context.get("userId"), input.name);
+  return context.json(method, 201);
 });
 
-moneyRoutes.patch("/channels/:id", async (context) => {
-  const id = pathId(context.req.param("id"));
-  const input = await jsonBody(context.req.raw, channelUpdateSchema);
-  return context.json(await updateOnlineChannel(context.env.DB, context.get("userId"), id, input));
+moneyRoutes.patch("/payment-methods/:id", async (context) => {
+  const id = parse(positiveIdSchema, context.req.param("id"));
+  const input = await jsonBody(context.req.raw, paymentMethodUpdateSchema);
+  return context.json(await updatePaymentMethod(context.env.DB, context.get("userId"), id, input));
 });
 
 moneyRoutes.post("/received-payments", async (context) => {
@@ -131,19 +104,23 @@ moneyRoutes.post("/vendor-payments", async (context) => {
   return context.body(null, 204);
 });
 
-moneyRoutes.get("/receipt-events", async (context) => {
-  const date = pathDate(context.req.query("date") ?? "");
-  const channel = context.req.query("channel");
-  const channelId = channel === "cash" ? null : pathId(channel ?? "");
-  const beforeRaw = context.req.query("beforeId");
-  const beforeId = beforeRaw === undefined ? Number.MAX_SAFE_INTEGER : pathId(beforeRaw);
+moneyRoutes.get("/received-entries", async (context) => {
+  const query = parse(receivedEntriesQuerySchema, context.req.query());
+  const paymentMethodId = query.paymentMethod === "cash" ? null : query.paymentMethod;
   return context.json(
-    await listReceiptEvents(context.env.DB, context.get("userId"), date, channelId, beforeId)
+    await listReceivedEntries(
+      context.env.DB,
+      context.get("userId"),
+      query.date,
+      paymentMethodId,
+      query.beforeId
+    )
   );
 });
 
 moneyRoutes.get("/vendors", async (context) => {
-  const search = context.req.query("q")?.trim() ?? "";
-  if (search.length > 120) throw new HTTPException(400, { message: "Search is too long." });
-  return context.json(await listRecentVendorNames(context.env.DB, context.get("userId"), search));
+  const query = parse(vendorSearchSchema, context.req.query());
+  return context.json(
+    await searchVendorNames(context.env.DB, context.get("userId"), query.q)
+  );
 });

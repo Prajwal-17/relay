@@ -9,25 +9,23 @@ import {
   lt,
   max,
   ne,
-  sql
+  sql,
+  sum
 } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { createDatabase } from "../../db/client";
 import {
   dailyEntries,
-  dailyOnlineReceipts,
-  onlineChannels,
-  receiptEvents,
-  supplierPayments
+  dailyPaymentTotals,
+  paymentMethods,
+  receivedEntries,
+  vendorPayments
 } from "../../db/schema";
-import type { DailyEntry, DaySummary, LocalDate, OnlineChannel, ReceiptEvent } from "./money.types";
+import type { DailyEntry, DaySummary, LocalDate, PaymentMethod, ReceivedEntry } from "./money.types";
+import { nowIso } from "./money.utils";
 
-const PRESET_CHANNELS = ["Paytm", "PhonePe", "Google Pay", "Other"] as const;
-
-function nowIso(): string {
-  return new Date().toISOString();
-}
+const PRESET_PAYMENT_METHODS = ["Paytm", "PhonePe", "Google Pay", "Other"] as const;
 
 function isUniqueError(error: unknown): boolean {
   return String(error instanceof Error && error.cause ? error.cause : error)
@@ -35,13 +33,16 @@ function isUniqueError(error: unknown): boolean {
     .includes("unique");
 }
 
-export async function ensureDefaultChannels(database: D1Database, userId: string): Promise<void> {
+export async function ensureDefaultPaymentMethods(
+  database: D1Database,
+  userId: string
+): Promise<void> {
   const db = createDatabase(database);
   const now = nowIso();
   await db
-    .insert(onlineChannels)
+    .insert(paymentMethods)
     .values(
-      PRESET_CHANNELS.map((name) => ({
+      PRESET_PAYMENT_METHODS.map((name) => ({
         userId,
         name,
         isPreset: true,
@@ -61,7 +62,7 @@ export async function getDailyEntry(
   const [entry] = await db
     .select({
       date: dailyEntries.date,
-      cashPaisa: dailyEntries.cashPaisa,
+      cashAmount: dailyEntries.cashAmount,
       createdAt: dailyEntries.createdAt,
       updatedAt: dailyEntries.updatedAt
     })
@@ -71,38 +72,32 @@ export async function getDailyEntry(
 
   if (!entry) return null;
 
-  const [onlineReceipts, payments] = await Promise.all([
+  const [paymentTotals, payments] = await Promise.all([
     db
       .select({
-        channelId: onlineChannels.id,
-        channelName: onlineChannels.name,
-        amountPaisa: dailyOnlineReceipts.amountPaisa,
-        isChannelArchived: onlineChannels.isArchived
+        paymentMethodId: paymentMethods.id,
+        paymentMethodName: paymentMethods.name,
+        amount: dailyPaymentTotals.amount,
+        isPaymentMethodArchived: paymentMethods.isArchived
       })
-      .from(dailyOnlineReceipts)
-      .innerJoin(
-        onlineChannels,
-        and(
-          eq(onlineChannels.userId, dailyOnlineReceipts.userId),
-          eq(onlineChannels.id, dailyOnlineReceipts.channelId)
-        )
-      )
-      .where(and(eq(dailyOnlineReceipts.userId, userId), eq(dailyOnlineReceipts.date, date)))
-      .orderBy(desc(onlineChannels.isPreset), onlineChannels.id),
+      .from(dailyPaymentTotals)
+      .innerJoin(paymentMethods, eq(paymentMethods.id, dailyPaymentTotals.paymentMethodId))
+      .where(and(eq(dailyPaymentTotals.userId, userId), eq(dailyPaymentTotals.date, date)))
+      .orderBy(desc(paymentMethods.isPreset), paymentMethods.id),
     db
       .select({
-        id: supplierPayments.id,
-        payee: supplierPayments.payee,
-        amountPaisa: supplierPayments.amountPaisa,
-        note: supplierPayments.note,
-        position: supplierPayments.position
+        id: vendorPayments.id,
+        vendorName: vendorPayments.vendorName,
+        amount: vendorPayments.amount,
+        note: vendorPayments.note,
+        createdAt: vendorPayments.createdAt
       })
-      .from(supplierPayments)
-      .where(and(eq(supplierPayments.userId, userId), eq(supplierPayments.date, date)))
-      .orderBy(supplierPayments.position, supplierPayments.id)
+      .from(vendorPayments)
+      .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date)))
+      .orderBy(vendorPayments.id)
   ]);
 
-  return { ...entry, onlineReceipts, supplierPayments: payments };
+  return { ...entry, paymentTotals, vendorPayments: payments };
 }
 
 export async function listMonthSummaries(
@@ -118,49 +113,39 @@ export async function listMonthSummaries(
 
   const onlineTotals = db
     .select({
-      userId: dailyOnlineReceipts.userId,
-      date: dailyOnlineReceipts.date,
-      amountPaisa: sql<number>`coalesce(sum(${dailyOnlineReceipts.amountPaisa}), 0)`
-        .mapWith(Number)
-        .as("online_paisa")
+      userId: dailyPaymentTotals.userId,
+      date: dailyPaymentTotals.date,
+      amount: sum(dailyPaymentTotals.amount).mapWith(Number).as("online_amount")
     })
-    .from(dailyOnlineReceipts)
-    .groupBy(dailyOnlineReceipts.userId, dailyOnlineReceipts.date)
+    .from(dailyPaymentTotals)
+    .groupBy(dailyPaymentTotals.userId, dailyPaymentTotals.date)
     .as("online_totals");
 
-  const paymentTotals = db
+  const paidTotals = db
     .select({
-      userId: supplierPayments.userId,
-      date: supplierPayments.date,
-      amountPaisa: sql<number>`coalesce(sum(${supplierPayments.amountPaisa}), 0)`
-        .mapWith(Number)
-        .as("paid_paisa")
+      userId: vendorPayments.userId,
+      date: vendorPayments.date,
+      amount: sum(vendorPayments.amount).mapWith(Number).as("paid_amount")
     })
-    .from(supplierPayments)
-    .groupBy(supplierPayments.userId, supplierPayments.date)
-    .as("payment_totals");
+    .from(vendorPayments)
+    .groupBy(vendorPayments.userId, vendorPayments.date)
+    .as("paid_totals");
 
   const rows = await db
     .select({
       date: dailyEntries.date,
-      cashPaisa: dailyEntries.cashPaisa,
-      onlinePaisa: sql<number>`coalesce(${onlineTotals.amountPaisa}, 0)`.mapWith(Number),
-      paidPaisa: sql<number>`coalesce(${paymentTotals.amountPaisa}, 0)`.mapWith(Number)
+      cashAmount: dailyEntries.cashAmount,
+      onlineAmount: sql<number>`coalesce(${onlineTotals.amount}, 0)`.mapWith(Number),
+      paidAmount: sql<number>`coalesce(${paidTotals.amount}, 0)`.mapWith(Number)
     })
     .from(dailyEntries)
     .leftJoin(
       onlineTotals,
-      and(
-        eq(onlineTotals.userId, dailyEntries.userId),
-        eq(onlineTotals.date, dailyEntries.date)
-      )
+      and(eq(onlineTotals.userId, dailyEntries.userId), eq(onlineTotals.date, dailyEntries.date))
     )
     .leftJoin(
-      paymentTotals,
-      and(
-        eq(paymentTotals.userId, dailyEntries.userId),
-        eq(paymentTotals.date, dailyEntries.date)
-      )
+      paidTotals,
+      and(eq(paidTotals.userId, dailyEntries.userId), eq(paidTotals.date, dailyEntries.date))
     )
     .where(
       and(
@@ -172,175 +157,170 @@ export async function listMonthSummaries(
     .orderBy(asc(dailyEntries.date));
 
   return rows.map((row) => {
-    const receivedPaisa = row.cashPaisa + row.onlinePaisa;
+    const receivedAmount = row.cashAmount + row.onlineAmount;
     return {
       ...row,
-      receivedPaisa,
-      netPaisa: receivedPaisa - row.paidPaisa
+      receivedAmount,
+      netAmount: receivedAmount - row.paidAmount
     };
   });
 }
 
-export async function listOnlineChannels(
+export async function listPaymentMethods(
   database: D1Database,
   userId: string,
   includeArchived = false
-): Promise<OnlineChannel[]> {
-  await ensureDefaultChannels(database, userId);
-  const db = createDatabase(database);
-  return db
+): Promise<PaymentMethod[]> {
+  await ensureDefaultPaymentMethods(database, userId);
+  return createDatabase(database)
     .select({
-      id: onlineChannels.id,
-      name: onlineChannels.name,
-      isPreset: onlineChannels.isPreset,
-      isArchived: onlineChannels.isArchived
+      id: paymentMethods.id,
+      name: paymentMethods.name,
+      isPreset: paymentMethods.isPreset,
+      isArchived: paymentMethods.isArchived
     })
-    .from(onlineChannels)
+    .from(paymentMethods)
     .where(
       and(
-        eq(onlineChannels.userId, userId),
-        includeArchived ? undefined : eq(onlineChannels.isArchived, false)
+        eq(paymentMethods.userId, userId),
+        includeArchived ? undefined : eq(paymentMethods.isArchived, false)
       )
     )
     .orderBy(
-      desc(onlineChannels.isPreset),
-      sql`CASE WHEN ${onlineChannels.isPreset} THEN ${onlineChannels.id} END`,
-      sql`${onlineChannels.name} COLLATE NOCASE`
+      desc(paymentMethods.isPreset),
+      sql`CASE WHEN ${paymentMethods.isPreset} THEN ${paymentMethods.id} END`,
+      sql`${paymentMethods.name} COLLATE NOCASE`
     );
 }
 
-export async function getOnlineChannelsById(
+export async function getPaymentMethodsById(
   database: D1Database,
   userId: string,
   ids: number[]
-): Promise<OnlineChannel[]> {
-  if (!ids.length) return [];
-  const db = createDatabase(database);
-  return db
+): Promise<PaymentMethod[]> {
+  if (ids.length === 0) return [];
+  return createDatabase(database)
     .select({
-      id: onlineChannels.id,
-      name: onlineChannels.name,
-      isPreset: onlineChannels.isPreset,
-      isArchived: onlineChannels.isArchived
+      id: paymentMethods.id,
+      name: paymentMethods.name,
+      isPreset: paymentMethods.isPreset,
+      isArchived: paymentMethods.isArchived
     })
-    .from(onlineChannels)
-    .where(and(eq(onlineChannels.userId, userId), inArray(onlineChannels.id, ids)));
+    .from(paymentMethods)
+    .where(and(eq(paymentMethods.userId, userId), inArray(paymentMethods.id, ids)));
 }
 
-export async function createOnlineChannel(
+export async function createPaymentMethod(
   database: D1Database,
   userId: string,
   name: string
-): Promise<OnlineChannel> {
+): Promise<PaymentMethod> {
   const db = createDatabase(database);
   const now = nowIso();
   try {
     const [created] = await db
-      .insert(onlineChannels)
+      .insert(paymentMethods)
       .values({ userId, name, createdAt: now, updatedAt: now })
       .returning({
-        id: onlineChannels.id,
-        name: onlineChannels.name,
-        isPreset: onlineChannels.isPreset,
-        isArchived: onlineChannels.isArchived
+        id: paymentMethods.id,
+        name: paymentMethods.name,
+        isPreset: paymentMethods.isPreset,
+        isArchived: paymentMethods.isArchived
       });
-    if (!created) throw new Error("Channel was not created.");
+    if (!created) throw new Error("Payment method was not created.");
     return created;
   } catch (error) {
     if (isUniqueError(error)) {
-      throw new HTTPException(409, { message: "A provider with this name already exists." });
+      throw new HTTPException(409, { message: "A payment method with this name already exists." });
     }
     throw error;
   }
 }
 
-export async function updateOnlineChannel(
+export async function updatePaymentMethod(
   database: D1Database,
   userId: string,
   id: number,
   patch: { name?: string; isArchived?: boolean }
-): Promise<OnlineChannel> {
+): Promise<PaymentMethod> {
   const db = createDatabase(database);
   try {
     const [updated] = await db
-      .update(onlineChannels)
+      .update(paymentMethods)
       .set({ ...patch, updatedAt: nowIso() })
       .where(
         and(
-          eq(onlineChannels.userId, userId),
-          eq(onlineChannels.id, id),
-          eq(onlineChannels.isPreset, false)
+          eq(paymentMethods.userId, userId),
+          eq(paymentMethods.id, id),
+          eq(paymentMethods.isPreset, false)
         )
       )
       .returning({
-        id: onlineChannels.id,
-        name: onlineChannels.name,
-        isPreset: onlineChannels.isPreset,
-        isArchived: onlineChannels.isArchived
+        id: paymentMethods.id,
+        name: paymentMethods.name,
+        isPreset: paymentMethods.isPreset,
+        isArchived: paymentMethods.isArchived
       });
     if (!updated) {
-      throw new HTTPException(404, { message: "Custom payment provider not found." });
+      throw new HTTPException(404, { message: "Custom payment method not found." });
     }
     return updated;
   } catch (error) {
     if (isUniqueError(error)) {
-      throw new HTTPException(409, { message: "A provider with this name already exists." });
+      throw new HTTPException(409, { message: "A payment method with this name already exists." });
     }
     throw error;
   }
 }
 
-export async function listReceiptEvents(
+export async function listReceivedEntries(
   database: D1Database,
   userId: string,
   date: LocalDate,
-  channelId: number | null,
+  paymentMethodId: number | null,
   beforeId: number
-): Promise<ReceiptEvent[]> {
-  const db = createDatabase(database);
-  return db
+): Promise<ReceivedEntry[]> {
+  return createDatabase(database)
     .select({
-      id: receiptEvents.id,
-      kind: receiptEvents.kind,
-      amountPaisa: receiptEvents.amountPaisa,
-      balancePaisa: receiptEvents.balancePaisa,
-      recordedAt: receiptEvents.recordedAt,
-      name: receiptEvents.name
+      id: receivedEntries.id,
+      amount: receivedEntries.amount,
+      note: receivedEntries.note,
+      createdAt: receivedEntries.createdAt
     })
-    .from(receiptEvents)
+    .from(receivedEntries)
     .where(
       and(
-        eq(receiptEvents.userId, userId),
-        eq(receiptEvents.date, date),
-        lt(receiptEvents.id, beforeId),
-        channelId === null
-          ? isNull(receiptEvents.channelId)
-          : eq(receiptEvents.channelId, channelId)
+        eq(receivedEntries.userId, userId),
+        eq(receivedEntries.date, date),
+        lt(receivedEntries.id, beforeId),
+        paymentMethodId === null
+          ? isNull(receivedEntries.paymentMethodId)
+          : eq(receivedEntries.paymentMethodId, paymentMethodId)
       )
     )
-    .orderBy(desc(receiptEvents.id))
+    .orderBy(desc(receivedEntries.id))
     .limit(50);
 }
 
-export async function listRecentVendorNames(
+export async function searchVendorNames(
   database: D1Database,
   userId: string,
   search: string
 ): Promise<string[]> {
   const db = createDatabase(database);
-  const normalizedName = sql<string>`trim(${supplierPayments.payee})`;
+  const normalizedName = sql<string>`trim(${vendorPayments.vendorName})`;
   const rows = await db
     .select({ name: normalizedName })
-    .from(supplierPayments)
+    .from(vendorPayments)
     .where(
       and(
-        eq(supplierPayments.userId, userId),
+        eq(vendorPayments.userId, userId),
         ne(normalizedName, ""),
-        sql`instr(lower(${normalizedName}), lower(${search.trim()})) > 0`
+        sql`instr(lower(${normalizedName}), lower(${search})) > 0`
       )
     )
     .groupBy(sql`${normalizedName} COLLATE NOCASE`)
-    .orderBy(desc(max(supplierPayments.id)))
+    .orderBy(desc(max(vendorPayments.id)))
     .limit(6);
 
   return rows.map((row) => row.name);
@@ -351,36 +331,60 @@ export async function deleteDailyEntry(
   userId: string,
   date: LocalDate
 ): Promise<void> {
-  await createDatabase(database)
-    .delete(dailyEntries)
-    .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)));
+  const db = createDatabase(database);
+  await db.batch([
+    db
+      .delete(receivedEntries)
+      .where(and(eq(receivedEntries.userId, userId), eq(receivedEntries.date, date))),
+    db
+      .delete(vendorPayments)
+      .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date))),
+    db
+      .delete(dailyPaymentTotals)
+      .where(and(eq(dailyPaymentTotals.userId, userId), eq(dailyPaymentTotals.date, date))),
+    db
+      .delete(dailyEntries)
+      .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)))
+  ]);
 }
 
-export async function getMethodBalance(
+export async function getPaymentMethodTotal(
   database: D1Database,
   userId: string,
   date: LocalDate,
-  channelId: number | null
+  paymentMethodId: number | null
 ): Promise<number> {
   const db = createDatabase(database);
   const [result] =
-    channelId === null
+    paymentMethodId === null
       ? await db
-          .select({ amount: dailyEntries.cashPaisa })
+          .select({ amount: dailyEntries.cashAmount })
           .from(dailyEntries)
           .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)))
           .limit(1)
       : await db
-          .select({ amount: dailyOnlineReceipts.amountPaisa })
-          .from(dailyOnlineReceipts)
+          .select({ amount: dailyPaymentTotals.amount })
+          .from(dailyPaymentTotals)
           .where(
             and(
-              eq(dailyOnlineReceipts.userId, userId),
-              eq(dailyOnlineReceipts.date, date),
-              eq(dailyOnlineReceipts.channelId, channelId)
+              eq(dailyPaymentTotals.userId, userId),
+              eq(dailyPaymentTotals.date, date),
+              eq(dailyPaymentTotals.paymentMethodId, paymentMethodId)
             )
           )
           .limit(1);
 
+  return result?.amount ?? 0;
+}
+
+export async function getVendorPaymentsTotal(
+  database: D1Database,
+  userId: string,
+  date: LocalDate
+): Promise<number> {
+  const [result] = await createDatabase(database)
+    .select({ amount: sum(vendorPayments.amount).mapWith(Number) })
+    .from(vendorPayments)
+    .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date)));
   return result?.amount ?? 0;
 }

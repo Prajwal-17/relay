@@ -1,72 +1,43 @@
 import { z } from "zod";
 
-const MAX_MONEY = Number.MAX_SAFE_INTEGER;
+import { isValidLedgerDate } from "./money.utils";
 
-export const localDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.");
-export const amountSchema = z.number().int().min(0).max(MAX_MONEY);
-export const positiveAmountSchema = z.number().int().min(1).max(MAX_MONEY);
+const MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
 
-export const dailyEntryBodySchema = z
-  .object({
-    cashPaisa: amountSchema,
-    onlineReceipts: z
-      .array(
-        z.object({
-          channelId: z.number().int().positive(),
-          amountPaisa: positiveAmountSchema
-        })
-      )
-      .max(100),
-    supplierPayments: z
-      .array(
-        z.object({
-          payee: z.string().trim().min(1).max(120),
-          amountPaisa: positiveAmountSchema,
-          note: z.string().trim().max(240).optional()
-        })
-      )
-      .max(250)
-  })
-  .superRefine((value, context) => {
-    const ids = new Set<number>();
-    for (const receipt of value.onlineReceipts) {
-      if (ids.has(receipt.channelId)) {
-        context.addIssue({
-          code: "custom",
-          path: ["onlineReceipts"],
-          message: "Each payment provider can appear only once."
-        });
-        return;
-      }
-      ids.add(receipt.channelId);
-    }
-  });
+export const localDateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD.")
+  .refine(isValidLedgerDate, "Choose a valid date that is not in the future.");
+
+export const amountSchema = z.number().int().min(0).max(MAX_AMOUNT);
+export const positiveIdSchema = z.coerce.number().int().positive();
+export const positiveAmountSchema = amountSchema.min(1);
 
 export const receivedPaymentSchema = z.object({
   date: localDateSchema,
-  channelId: z.number().int().positive().nullable(),
-  amountPaisa: positiveAmountSchema,
-  name: z.string().trim().max(120).optional()
+  paymentMethodId: positiveIdSchema.nullable(),
+  amount: positiveAmountSchema,
+  note: z.string().trim().max(240).optional()
 });
 
 export const vendorPaymentSchema = z.object({
   date: localDateSchema,
-  payee: z.string().trim().min(1).max(120),
-  amountPaisa: positiveAmountSchema,
+  vendorName: z.string().trim().min(1).max(120),
+  amount: positiveAmountSchema,
   note: z.string().trim().max(240).optional()
 });
 
-export const channelCreateSchema = z.object({
+export const paymentMethodCreateSchema = z.object({
   name: z.string().trim().min(1).max(60)
 });
 
-export const channelUpdateSchema = z
+export const paymentMethodUpdateSchema = z
   .object({
     name: z.string().trim().min(1).max(60).optional(),
     isArchived: z.boolean().optional()
   })
   .refine((value) => value.name !== undefined || value.isArchived !== undefined, {
-    message: "Provide a channel change."
+    message: "Provide a payment method change."
   });
 
 export const overviewQuerySchema = z.object({
@@ -74,3 +45,16 @@ export const overviewQuerySchema = z.object({
   year: z.coerce.number().int().min(2000).max(2200),
   month: z.coerce.number().int().min(1).max(12)
 });
+
+export const receivedEntriesQuerySchema = z.object({
+  date: localDateSchema,
+  paymentMethod: z.union([z.literal("cash"), positiveIdSchema]),
+  beforeId: positiveIdSchema.default(Number.MAX_SAFE_INTEGER)
+});
+
+export const vendorSearchSchema = z.object({
+  q: z.string().trim().max(120).default("")
+});
+
+export type ReceivedPaymentInput = z.infer<typeof receivedPaymentSchema>;
+export type VendorPaymentInput = z.infer<typeof vendorPaymentSchema>;

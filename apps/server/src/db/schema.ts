@@ -1,14 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  check,
-  foreignKey,
-  index,
-  integer,
-  primaryKey,
-  sqliteTable,
-  text,
-  uniqueIndex
-} from "drizzle-orm/sqlite-core";
+import { check, index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("user", {
   id: text("id").primaryKey(),
@@ -78,22 +69,23 @@ export const verifications = sqliteTable(
 export const dailyEntries = sqliteTable(
   "daily_entries",
   {
+    id: integer("id").primaryKey({ autoIncrement: true }),
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     date: text("entry_date").notNull(),
-    cashPaisa: integer("cash_paisa").notNull().default(0),
+    cashAmount: integer("cash_amount").notNull().default(0),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull()
   },
   (table) => [
-    primaryKey({ columns: [table.userId, table.date] }),
-    check("daily_entries_cash_nonnegative", sql`${table.cashPaisa} >= 0`)
+    uniqueIndex("daily_entries_user_date_unique").on(table.userId, table.date),
+    check("daily_entries_cash_nonnegative", sql`${table.cashAmount} >= 0`)
   ]
 );
 
-export const onlineChannels = sqliteTable(
-  "online_channels",
+export const paymentMethods = sqliteTable(
+  "payment_methods",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     userId: text("user_id")
@@ -106,91 +98,77 @@ export const onlineChannels = sqliteTable(
     updatedAt: text("updated_at").notNull()
   },
   (table) => [
-    uniqueIndex("online_channels_user_name_unique").on(
+    uniqueIndex("payment_methods_user_name_unique").on(
       table.userId,
       sql`${table.name} COLLATE NOCASE`
-    ),
-    uniqueIndex("online_channels_user_id_id_unique").on(table.userId, table.id)
-  ]
-);
-
-export const dailyOnlineReceipts = sqliteTable(
-  "daily_online_receipts",
-  {
-    userId: text("user_id").notNull(),
-    date: text("entry_date").notNull(),
-    channelId: integer("channel_id").notNull(),
-    amountPaisa: integer("amount_paisa").notNull()
-  },
-  (table) => [
-    primaryKey({ columns: [table.userId, table.date, table.channelId] }),
-    foreignKey({
-      columns: [table.userId, table.date],
-      foreignColumns: [dailyEntries.userId, dailyEntries.date],
-      name: "daily_online_receipts_entry_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.userId, table.channelId],
-      foreignColumns: [onlineChannels.userId, onlineChannels.id],
-      name: "daily_online_receipts_channel_fk"
-    }).onDelete("restrict"),
-    check("daily_online_receipts_positive", sql`${table.amountPaisa} > 0`)
-  ]
-);
-
-export const supplierPayments = sqliteTable(
-  "supplier_payments",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userId: text("user_id").notNull(),
-    date: text("entry_date").notNull(),
-    payee: text("payee").notNull(),
-    amountPaisa: integer("amount_paisa").notNull(),
-    note: text("note"),
-    position: integer("position").notNull().default(0)
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.userId, table.date],
-      foreignColumns: [dailyEntries.userId, dailyEntries.date],
-      name: "supplier_payments_entry_fk"
-    }).onDelete("cascade"),
-    index("supplier_payments_user_date_idx").on(table.userId, table.date, table.position),
-    check("supplier_payments_positive", sql`${table.amountPaisa} > 0`)
-  ]
-);
-
-export const receiptEvents = sqliteTable(
-  "receipt_events",
-  {
-    id: integer("id").primaryKey({ autoIncrement: true }),
-    userId: text("user_id").notNull(),
-    date: text("entry_date").notNull(),
-    channelId: integer("channel_id"),
-    kind: text("kind", { enum: ["opening", "payment", "adjustment"] }).notNull(),
-    amountPaisa: integer("amount_paisa").notNull(),
-    balancePaisa: integer("balance_paisa").notNull(),
-    recordedAt: text("recorded_at"),
-    name: text("name")
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.userId, table.date],
-      foreignColumns: [dailyEntries.userId, dailyEntries.date],
-      name: "receipt_events_entry_fk"
-    }).onDelete("cascade"),
-    foreignKey({
-      columns: [table.userId, table.channelId],
-      foreignColumns: [onlineChannels.userId, onlineChannels.id],
-      name: "receipt_events_channel_fk"
-    }).onDelete("restrict"),
-    index("receipt_events_user_method_idx").on(table.userId, table.date, table.channelId, table.id),
-    check("receipt_events_nonzero", sql`${table.amountPaisa} <> 0`),
-    check("receipt_events_balance_nonnegative", sql`${table.balancePaisa} >= 0`),
-    check("receipt_events_kind", sql`${table.kind} IN ('opening', 'payment', 'adjustment')`),
-    check(
-      "receipt_events_timestamp",
-      sql`(${table.kind} = 'opening' AND ${table.recordedAt} IS NULL) OR (${table.kind} <> 'opening' AND ${table.recordedAt} IS NOT NULL)`
     )
+  ]
+);
+
+export const dailyPaymentTotals = sqliteTable(
+  "daily_payment_totals",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: text("entry_date").notNull(),
+    paymentMethodId: integer("payment_method_id")
+      .notNull()
+      .references(() => paymentMethods.id, { onDelete: "restrict" }),
+    amount: integer("amount").notNull()
+  },
+  (table) => [
+    uniqueIndex("daily_payment_totals_method_unique").on(
+      table.userId,
+      table.date,
+      table.paymentMethodId
+    ),
+    check("daily_payment_totals_positive", sql`${table.amount} > 0`)
+  ]
+);
+
+export const vendorPayments = sqliteTable(
+  "vendor_payments",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: text("entry_date").notNull(),
+    vendorName: text("vendor_name").notNull(),
+    amount: integer("amount").notNull(),
+    note: text("note"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => [
+    index("vendor_payments_user_date_idx").on(table.userId, table.date, table.id),
+    check("vendor_payments_positive", sql`${table.amount} > 0`)
+  ]
+);
+
+export const receivedEntries = sqliteTable(
+  "received_entries",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: text("entry_date").notNull(),
+    paymentMethodId: integer("payment_method_id").references(() => paymentMethods.id, {
+      onDelete: "restrict"
+    }),
+    amount: integer("amount").notNull(),
+    note: text("note"),
+    createdAt: text("created_at").notNull()
+  },
+  (table) => [
+    index("received_entries_user_method_idx").on(
+      table.userId,
+      table.date,
+      table.paymentMethodId,
+      table.id
+    ),
+    check("received_entries_positive", sql`${table.amount} > 0`)
   ]
 );
