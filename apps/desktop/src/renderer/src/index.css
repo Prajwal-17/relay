@@ -39,97 +39,109 @@
   --font-size-body: 0.875rem;
   --font-size-navigation: 0.9375rem;
   --font-size-label: 0.75rem;
+  --font-size-section: 0.875rem;
+  --font-weight-label: 500;
+  --font-weight-heading: 600;
   --font-size-page-title: 1.125rem;
   --font-size-financial: 1.375rem;
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 
-  /* Neutral palette */
-  --canvas: #f5f5f2;
-  --surface-1: #ffffff;
-  --surface-2: #e8ebe6;
-  --surface-3: #d8ded7;
-  --border-standard: #d8d5cc;
-  --border-frame: #c3bfb4;
-  --border-strong: #999487;
-  --ink: #20231f;
-  --ink-muted: #4d544c;
-  --ink-subtle: #4d544c;
+  /* OKLCH neutral ramp: coordinated hue, low chroma, deliberate lightness steps. */
+  --canvas: oklch(97.4% 0.004 110);
+  --surface-1: oklch(100% 0 0);
+  --surface-2: oklch(95.8% 0.006 110);
+  --surface-3: oklch(92.8% 0.01 110);
+  --border-standard: oklch(88% 0.012 110);
+  --border-frame: oklch(81.5% 0.017 110);
+  --border-strong: oklch(59% 0.024 110);
+  --ink: oklch(25.154% 0.00861 137.82);
+  --ink-muted: oklch(44.613% 0.02032 137.1);
+  --ink-subtle: oklch(49.843% 0.02308 135.94);
 
   /* Operational accents */
-  --counter-accent: #b6532b;
-  --counter-accent-hover: #96411f;
-  --counter-accent-soft: #fbe9e1;
-  --counter-accent-foreground: #76351f;
-  --sales-accent: #1f9d72;
-  --sales-accent-hover: #198660;
-  --sales-accent-soft: #e3f5ef;
-  --sales-accent-foreground: #0b5c43;
-  --estimate-accent: #b44a68;
-  --estimate-accent-hover: #973951;
-  --estimate-accent-soft: #f8e9ee;
-  --estimate-accent-foreground: #6f263e;
-  --olive-accent: #5e7837;
-  --olive-accent-soft: #d4e6ad;
-  --olive-accent-foreground: #3f521b;
-  --gold-accent: #d18a12;
-  --gold-accent-soft: #fff0c7;
-  --gold-accent-border: #e2a93c;
-  --gold-accent-foreground: #754300;
+  --counter-accent: oklch(56.049% 0.13936 41.23);
+  --counter-accent-hover: oklch(48.239% 0.12365 40.88);
+  --counter-accent-soft: oklch(94.62% 0.02246 45.6);
+  --counter-accent-foreground: oklch(41.213% 0.09761 38.98);
+  --sales-accent: oklch(61.995% 0.12385 164.16);
+  --sales-accent-hover: oklch(55.211% 0.11099 163.68);
+  --sales-accent-soft: oklch(95.518% 0.02054 173.95);
+  --sales-accent-foreground: oklch(42.287% 0.0838 165.87);
+  --estimate-accent: oklch(55.638% 0.1402 5.18);
+  --estimate-accent-hover: oklch(48.204% 0.12748 7.49);
+  --estimate-accent-soft: oklch(94.73% 0.01751 355.12);
+  --estimate-accent-foreground: oklch(38.489% 0.10579 3.11);
+  --olive-accent: oklch(53.665% 0.09652 127.41);
+  --olive-accent-soft: oklch(89.736% 0.07737 122.19);
+  --olive-accent-foreground: oklch(40.958% 0.08291 125.99);
+  --gold-accent: oklch(68.932% 0.14377 71.95);
+  --gold-accent-soft: oklch(95.683% 0.0555 90.32);
+  --gold-accent-border: oklch(76.958% 0.13804 79.82);
+  --gold-accent-foreground: oklch(43.352% 0.09788 64.22);
 
   /* Compact commerce tags */
-  --unit-tag-bg: #e3f5ef;
-  --unit-tag-border: #75bea5;
-  --unit-tag-text: #0b5c43;
+  --unit-tag-bg: oklch(95.518% 0.02054 173.95);
+  --unit-tag-border: oklch(74.63% 0.08235 170.2);
+  --unit-tag-text: oklch(42.287% 0.0838 165.87);
   --mrp-tag-bg: var(--gold-accent-soft);
   --mrp-tag-border: var(--gold-accent-border);
   --mrp-tag-text: var(--gold-accent-foreground);
 
+  /* Controls have independent roles: dividers must not define input boundaries. */
+  --control-surface: oklch(100% 0 0);
+  --control-hover-border: oklch(51.295% 0.03081 133.22);
+  --placeholder: var(--ink-subtle);
+  --pressed: oklch(88.5% 0.018 110);
+  --primary-pressed: oklch(20.62% 0.01913 151.24);
+  --control-highlight: inset 0 1px 0 oklch(100% 0 0 / 0.14);
+  --control-pressed-shadow: inset 0 1px 2px oklch(20.62% 0.01913 151.24 / 0.18);
+
   /* Interaction palette */
-  --hover: #e8ebe6;
-  --selected: #d8ded7;
+  --hover: oklch(95% 0.008 110);
+  --selected: oklch(91.8% 0.014 110);
   --selection-marker: var(--counter-accent);
   --focus: var(--counter-accent);
-  --table-header: #e9ebe6;
-  --calendar-range: #e8c9bc;
+  --table-header: oklch(94% 0.008 110);
+  --calendar-range: oklch(85.863% 0.03949 44.08);
   --calendar-range-foreground: var(--counter-accent-foreground);
   --calendar-range-edge: var(--counter-accent-hover);
   --calendar-range-edge-hover: var(--counter-accent-foreground);
-  --calendar-range-edge-foreground: #ffffff;
+  --calendar-range-edge-foreground: oklch(100% 0 0);
 
   /* Actions */
-  --primary: #283129;
-  --primary-hover: #1b211c;
-  --on-primary: #ffffff;
+  --primary: oklch(30.182% 0.01886 148.2);
+  --primary-hover: oklch(23.98% 0.01288 150.06);
+  --on-primary: oklch(100% 0 0);
 
   /* Sidebar */
   --sidebar: var(--surface-1);
   --sidebar-foreground: var(--ink);
   --sidebar-primary: var(--counter-accent);
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary-foreground: oklch(100% 0 0);
   --sidebar-accent: var(--hover);
   --sidebar-accent-foreground: var(--ink);
   --nav-icon-active-bg: var(--primary);
   --nav-icon-active-foreground: var(--on-primary);
 
   /* Semantic states */
-  --success: #1f6a43;
-  --success-foreground: #ffffff;
-  --warning: #875b1d;
-  --warning-foreground: #ffffff;
-  --line-item-complete: #bfe2cc;
-  --line-item-complete-field: #d9efe1;
-  --line-item-partial: #dfc99f;
-  --line-item-partial-field: #efe2c8;
-  --destructive: #9b342a;
-  --destructive-foreground: #ffffff;
+  --success: oklch(46.792% 0.09684 156.38);
+  --success-foreground: oklch(100% 0 0);
+  --warning: oklch(50.747% 0.09511 71.24);
+  --warning-foreground: oklch(100% 0 0);
+  --line-item-complete: oklch(88.142% 0.04751 157.7);
+  --line-item-complete-field: oklch(93.206% 0.0298 157.88);
+  --line-item-partial: oklch(84.387% 0.0608 83.46);
+  --line-item-partial-field: oklch(91.637% 0.03725 84.58);
+  --destructive: oklch(47.398% 0.13933 28.9);
+  --destructive-foreground: oklch(100% 0 0);
 
   /* Charts */
   --chart-1: var(--sales-accent);
   --chart-2: var(--estimate-accent);
   --chart-3: var(--counter-accent);
-  --chart-4: #7a8b43;
-  --chart-5: #d18a12;
+  --chart-4: oklch(60.658% 0.09942 120.43);
+  --chart-5: oklch(68.932% 0.14377 71.95);
 
   /* Semantic token map */
   --background: var(--canvas);
@@ -155,17 +167,17 @@
 
   --border: var(--border-standard);
   --borderprimary: var(--border-strong);
-  --input: var(--border-standard);
+  --input: var(--border-strong);
 
   --ring: var(--focus);
 
   /* Onboarding */
-  --onboarding-panel: #202720;
-  --onboarding-text: #ffffff;
-  --onboarding-text-muted: #d8ded7;
-  --onboarding-text-footer: #d8ded7;
-  --onboarding-icon-bg: rgb(255 255 255 / 0.1);
-  --onboarding-feature-text: #f5f5f2;
+  --onboarding-panel: oklch(26.329% 0.01628 145.09);
+  --onboarding-text: oklch(100% 0 0);
+  --onboarding-text-muted: oklch(89.402% 0.01142 141.26);
+  --onboarding-text-footer: oklch(89.402% 0.01142 141.26);
+  --onboarding-icon-bg: oklch(100% 0 0 / 0.1);
+  --onboarding-feature-text: oklch(96.932% 0.00397 106.47);
   --onboarding-icon-dark: var(--selection-marker);
   --onboarding-step-active: var(--selection-marker);
   --onboarding-step-complete: var(--success);
@@ -182,7 +194,7 @@
   --product-badge-text: var(--ink);
 
   /* Search Dropdown */
-  --search-highlight: oklch(93% 0.14 95);
+  --search-highlight: oklch(93% 0.1 95);
   --search-icon-bg-from: var(--surface-1);
   --search-icon-bg-to: var(--hover);
   --search-icon-fg: var(--primary);
@@ -196,19 +208,81 @@
   --invoice-table-header-bg: #e9ebe6;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px rgb(29 30 27 / 0.08);
-  --shadow-sm: 0 2px 5px rgb(29 30 27 / 0.1);
-  --shadow-md: 0 8px 20px -6px rgb(29 30 27 / 0.22);
-  --shadow-lg: 0 16px 36px -10px rgb(29 30 27 / 0.28);
-  --shadow-xl: 0 24px 48px -12px rgb(29 30 27 / 0.32);
-  --shadow-2xl: 0 32px 64px -14px rgb(29 30 27 / 0.36);
+  --shadow-xs: 0 1px 2px oklch(25.154% 0.00861 137.82 / 0.05);
+  --shadow-sm: 0 2px 6px -2px oklch(25.154% 0.00861 137.82 / 0.1);
+  --shadow-md: 0 8px 24px -8px oklch(25.154% 0.00861 137.82 / 0.18);
+  --shadow-lg: 0 20px 48px -16px oklch(25.154% 0.00861 137.82 / 0.24);
+  --shadow-xl: 0 24px 48px -12px oklch(23.28% 0.00584 121.9 / 0.32);
+  --shadow-2xl: 0 32px 64px -14px oklch(23.28% 0.00584 121.9 / 0.36);
 
   /* Radius */
   --radius: var(--radius-panel);
   --spacing: 0.25rem;
 }
 
+/* Recompute derived colors at each boundary: inherited custom properties alone
+   do not recompute when only their source changes in a descendant. */
+@layer base {
+  :root,
+  [data-surface] {
+    --surface-local: var(--surface-1);
+    --surface-ink: var(--ink);
+    --context-foreground: var(--surface-ink);
+    --context-control: color-mix(in oklab, var(--surface-local), var(--surface-1) 85%);
+    --context-hover: color-mix(in oklab, var(--surface-local), var(--surface-ink) 5%);
+    --context-pressed: color-mix(in oklab, var(--surface-local), var(--surface-ink) 13%);
+    --context-selected: color-mix(in oklab, var(--surface-local), var(--surface-ink) 10%);
+    --context-border: color-mix(in oklab, var(--surface-local), var(--surface-ink) 58%);
+    --context-border-hover: color-mix(in oklab, var(--surface-local), var(--surface-ink) 68%);
+    --context-muted: color-mix(in oklab, var(--surface-local), var(--surface-ink) 78%);
+    --context-placeholder: color-mix(in oklab, var(--context-control), var(--surface-ink) 74%);
+    --context-focus: var(--focus);
+  }
+
+  :root,
+  [data-surface="canvas"] {
+    --surface-local: var(--canvas);
+  }
+
+  [data-surface="panel"],
+  [data-surface="overlay"] {
+    --surface-local: var(--surface-1);
+  }
+
+  [data-surface="selected"] {
+    --surface-local: var(--selected);
+  }
+
+  [data-surface="complete"] {
+    --surface-local: var(--line-item-complete);
+    --context-control: var(--line-item-complete-field);
+  }
+
+  [data-surface="partial"] {
+    --surface-local: var(--line-item-partial);
+    --context-control: var(--line-item-partial-field);
+  }
+
+  [data-surface="inverse"] {
+    --surface-local: var(--primary);
+    --surface-ink: var(--on-primary);
+    --context-control: color-mix(in oklab, var(--surface-local), var(--surface-ink) 8%);
+    --context-focus: var(--calendar-range);
+  }
+}
+
 @theme inline {
+  --color-context-foreground: var(--context-foreground);
+  --color-context-control: var(--context-control);
+  --color-context-hover: var(--context-hover);
+  --color-context-pressed: var(--context-pressed);
+  --color-context-selected: var(--context-selected);
+  --color-context-border: var(--context-border);
+  --color-context-border-hover: var(--context-border-hover);
+  --color-context-muted: var(--context-muted);
+  --color-context-placeholder: var(--context-placeholder);
+  --color-context-focus: var(--context-focus);
+
   --font-sans: var(--font-sans);
   --font-serif: var(--font-serif);
   --font-mono: var(--font-mono);
@@ -254,6 +328,11 @@
   --color-mrp-tag-border: var(--mrp-tag-border);
   --color-mrp-tag-text: var(--mrp-tag-text);
 
+  --color-control: var(--control-surface);
+  --color-control-hover-border: var(--control-hover-border);
+  --color-placeholder: var(--placeholder);
+  --color-pressed: var(--pressed);
+  --color-primary-pressed: var(--primary-pressed);
   --color-hover: var(--hover);
   --color-selected: var(--selected);
   --color-marker: var(--selection-marker);
@@ -348,6 +427,8 @@
   --radius-xl: calc(var(--radius) + 2px);
   --radius-2xl: calc(var(--radius) + 4px);
   --radius-3xl: calc(var(--radius) + 8px);
+  --shadow-control: var(--control-highlight);
+  --shadow-control-pressed: var(--control-pressed-shadow);
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
@@ -376,7 +457,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--border-standard);
+    background-color: var(--border-strong);
     border-radius: var(--radius-sm);
     border: 2px solid transparent;
     background-clip: content-box;
@@ -436,6 +517,11 @@
   select,
   textarea {
     font: inherit;
+  }
+
+  input,
+  textarea {
+    caret-color: var(--ink);
   }
 
   :focus-visible {
@@ -541,4 +627,34 @@ body.dragging-active * {
 .app-titlebar-interactive {
   -webkit-app-region: no-drag;
   app-region: no-drag;
+}
+
+/* Screen-only type roles: use explicitly so print templates keep their own typography. */
+@utility workspace-title {
+  font-size: var(--font-size-page-title);
+  font-weight: var(--font-weight-heading);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+@utility section-title {
+  font-size: var(--font-size-section);
+  font-weight: var(--font-weight-heading);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+@utility field-label {
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-label);
+  line-height: 1.35;
+  letter-spacing: normal;
+}
+
+@utility supporting-text {
+  color: var(--ink-muted);
+  font-size: var(--font-size-label);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: normal;
 }

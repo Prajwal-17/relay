@@ -1,4 +1,4 @@
-import relayAppIcon from "@assets/desktop/app-icon-small.svg";
+import { relaySmallAppIcon as relayAppIcon } from "@/lib/appIcon";
 import {
   Menubar,
   MenubarContent,
@@ -14,8 +14,8 @@ import { Minus, Square, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const windowControlClass = cn(
-  "app-titlebar-interactive text-primary-foreground/75 inline-flex h-full w-11.5 items-center justify-center outline-none transition-colors",
-  "hover:bg-primary-hover hover:text-primary-foreground focus-visible:bg-primary-hover focus-visible:text-primary-foreground focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-inset"
+  "app-titlebar-interactive text-context-muted inline-flex h-full w-11.5 items-center justify-center outline-none transition-colors",
+  "active:bg-context-pressed hover:bg-context-hover hover:text-primary-foreground focus-visible:bg-context-hover focus-visible:text-primary-foreground focus-visible:ring-context-focus focus-visible:ring-2 focus-visible:ring-inset"
 );
 
 const changeZoom = async (action: ZoomShortcutAction) => {
@@ -89,6 +89,7 @@ export function AppTitleBar() {
 
   return (
     <header
+      data-surface="inverse"
       aria-label="Application title bar"
       className="app-titlebar bg-primary text-primary-foreground border-b-primary-hover flex h-(--app-titlebar-height) shrink-0 items-center border-b"
       data-app-titlebar
@@ -97,7 +98,7 @@ export function AppTitleBar() {
         <img src={relayAppIcon} alt="" className="size-4.5 shrink-0 rounded-[4px]" />
         <span className="truncate text-sm font-semibold tracking-[-0.01em]">{metadata.name}</span>
         {metadata.version && (
-          <span className="text-primary-foreground/70 shrink-0 text-xs tabular-nums">
+          <span className="text-context-muted shrink-0 text-xs tabular-nums">
             v{metadata.version}
           </span>
         )}
@@ -107,7 +108,7 @@ export function AppTitleBar() {
 
       <Menubar className="app-titlebar-interactive h-full rounded-none border-0 bg-transparent p-0 shadow-none">
         <MenubarMenu>
-          <MenubarTrigger className="text-primary-foreground focus:bg-primary-hover focus:text-primary-foreground data-[state=open]:bg-primary-hover data-[state=open]:text-primary-foreground h-full rounded-none px-2 text-sm font-medium">
+          <MenubarTrigger className="text-primary-foreground focus:bg-context-hover focus:text-primary-foreground data-[state=open]:bg-context-selected data-[state=open]:text-primary-foreground h-full rounded-none px-2 text-sm font-medium">
             View
           </MenubarTrigger>
           <MenubarContent sideOffset={1} alignOffset={0}>
@@ -132,7 +133,7 @@ export function AppTitleBar() {
         </MenubarMenu>
 
         <MenubarMenu>
-          <MenubarTrigger className="text-primary-foreground focus:bg-primary-hover focus:text-primary-foreground data-[state=open]:bg-primary-hover data-[state=open]:text-primary-foreground h-full rounded-none px-2 text-sm font-medium">
+          <MenubarTrigger className="text-primary-foreground focus:bg-context-hover focus:text-primary-foreground data-[state=open]:bg-context-selected data-[state=open]:text-primary-foreground h-full rounded-none px-2 text-sm font-medium">
             Help
           </MenubarTrigger>
           <MenubarContent sideOffset={1} alignOffset={0}>

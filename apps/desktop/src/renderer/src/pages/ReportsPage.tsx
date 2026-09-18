@@ -11,7 +11,7 @@ const ReportsPage = () => {
           <Clock3 className="size-3.5" />
           Coming soon
         </div>
-        <h1 className="text-foreground mt-1.5 text-xl font-semibold">Reports are on the way</h1>
+        <h1 className="text-foreground workspace-title mt-1.5">Reports are on the way</h1>
       </section>
     </div>
   );

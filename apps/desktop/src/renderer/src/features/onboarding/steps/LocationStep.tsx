@@ -93,9 +93,7 @@ export const LocationStep = () => {
         <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
           <MapPin className="text-onboarding-icon-dark size-5" />
         </div>
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          Location & Compliance
-        </h2>
+        <h2 className="text-foreground workspace-title">Location & Compliance</h2>
         <p className="text-muted-foreground text-sm">
           Your store address and tax registration details.
         </p>

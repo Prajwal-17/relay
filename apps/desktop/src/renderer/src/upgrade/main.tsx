@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import relayAppIcon from "@assets/desktop/app-icon-small.svg";
+import { relaySmallAppIcon as relayAppIcon } from "@/lib/appIcon";
 import type { DatabaseUpgradeStatus } from "@shared/types";
 import { CircleAlert, FolderOpen, Power, RotateCcw } from "lucide-react";
 import { StrictMode, useEffect, useMemo, useState } from "react";

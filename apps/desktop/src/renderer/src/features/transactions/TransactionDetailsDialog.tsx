@@ -441,7 +441,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                 >
                   <div className="border-border bg-card flex shrink-0 items-center justify-between gap-2 border-b px-3 py-2">
                     <div className="flex min-w-0 items-center gap-2">
-                      <h3 id="transaction-items-heading" className="text-foreground font-semibold">
+                      <h3 id="transaction-items-heading" className="text-foreground section-title">
                         Items
                       </h3>
                       <span className="text-muted-foreground truncate text-xs tabular-nums">
@@ -577,7 +577,7 @@ export const TransactionDetailsDialog = ({ type, id }: { type: DashboardType; id
                 aria-label="Bill summary and transaction actions"
                 className="border-border bg-card hidden min-h-0 flex-col rounded-lg border p-3 min-[900px]:flex"
               >
-                <h3 className="text-foreground font-semibold">Bill summary</h3>
+                <h3 className="text-foreground section-title">Bill summary</h3>
                 <dl className="mt-3 space-y-2.5">
                   <SummaryRow label="Items" value={String(itemsCount)} />
                   <SummaryRow label="Total quantity" value={formattedTotalQty} />

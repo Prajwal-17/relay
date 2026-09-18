@@ -128,7 +128,7 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
                 h1: () => null,
                 h2: ({ children }) => {
                   const release = parseReleaseHeading(reactNodeText(children));
-                  if (!release) return <h2 className="mt-6 text-lg font-semibold">{children}</h2>;
+                  if (!release) return <h2 className="workspace-title mt-6">{children}</h2>;
                   const isFirst = release.id === releases[0]?.id;
 
                   return (
@@ -136,7 +136,7 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
                       id={release.id}
                       data-release-heading
                       className={cn(
-                        "scroll-mt-3 pt-5 text-lg font-semibold tracking-[-0.02em]",
+                        "workspace-title scroll-mt-3 pt-5",
                         isFirst ? "mt-0" : "border-t-frame mt-7 border-t"
                       )}
                     >
@@ -148,7 +148,7 @@ export function ChangelogView({ markdown }: ChangelogViewProps) {
                   );
                 },
                 h3: ({ children }) => (
-                  <h3 className="text-foreground mt-4 text-sm font-semibold">{children}</h3>
+                  <h3 className="section-title text-foreground mt-4">{children}</h3>
                 ),
                 p: ({ children }) => (
                   <p className="text-muted-foreground mt-2 max-w-[72ch] text-sm leading-relaxed">

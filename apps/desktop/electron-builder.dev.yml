@@ -19,21 +19,21 @@ extraResources:
     to: drizzle/
     filter:
       - "**/*"
-  - from: ../../assets/desktop/icon.png
+  - from: ../../assets/desktop/icon-dev.png
     to: relay-icon.png
 win:
   executableName: Relay-Dev
-  icon: icon.ico
+  icon: icon-dev.ico
 nsis:
   artifactName: "${productName}-${version}.${ext}"
   shortcutName: "${productName}"
   uninstallDisplayName: "${productName}"
   createDesktopShortcut: always
 mac:
-  icon: icon.icns
+  icon: icon-dev.icns
 linux:
   executableName: relay-dev
-  icon: icon.png
+  icon: icon-dev.png
   syncDesktopName: true
   target:
     - AppImage

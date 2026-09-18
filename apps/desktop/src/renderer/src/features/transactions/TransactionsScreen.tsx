@@ -129,7 +129,7 @@ const TransactionsScreen = ({ type }: { type: DashboardType }) => {
             <span className="bg-secondary text-secondary-foreground flex size-8 shrink-0 items-center justify-center rounded-(--radius-control)">
               <FileText className="size-4" aria-hidden="true" />
             </span>
-            <span className="text-muted-foreground text-sm font-semibold whitespace-nowrap">
+            <span className="text-muted-foreground text-sm font-medium whitespace-nowrap">
               {isSales ? "Bills" : "Estimates"}
             </span>
             <span className="text-foreground ml-auto text-lg font-bold tracking-tight tabular-nums">

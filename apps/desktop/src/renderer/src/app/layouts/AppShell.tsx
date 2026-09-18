@@ -84,7 +84,7 @@ const AppShell = () => {
                   <PanelLeftOpen className="size-4.5" />
                 )}
               </button>
-              <h1 className="truncate text-lg font-semibold tracking-[-0.02em]">{pageTitle}</h1>
+              <h1 className="workspace-title truncate">{pageTitle}</h1>
             </div>
           </header>
         )}

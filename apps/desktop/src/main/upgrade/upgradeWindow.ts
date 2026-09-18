@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import fs from "node:fs";
 import path from "node:path";
 import type { DatabaseUpgradeStatus } from "../../shared/types";
-import { getLinuxAppIconPath } from "../appIcon";
+import { getAppIconPath } from "../appIcon";
 
 const CHANNELS = {
   getStatus: "database-upgrade:get-status",
@@ -60,7 +60,7 @@ export class UpgradeWindowController {
       center: true,
       maximizable: false,
       minimizable: true,
-      icon: getLinuxAppIconPath(),
+      icon: getAppIconPath(),
       autoHideMenuBar: true,
       backgroundColor: "#f4f3ef",
       title: "Relay database upgrade",

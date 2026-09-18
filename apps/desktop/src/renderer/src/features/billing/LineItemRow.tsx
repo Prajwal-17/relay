@@ -73,11 +73,7 @@ const LineItemRow = memo(
     const checked = qtyVal === item.checkedQty && qtyVal > 0;
     const partiallyChecked = item.checkedQty > 0 && item.checkedQty < qtyVal;
     const checkedColor = getCheckStatusColor(item.checkedQty, qtyVal);
-    const checkedFieldColor = checked
-      ? "bg-line-item-complete-field"
-      : partiallyChecked
-        ? "bg-line-item-partial-field"
-        : "bg-background";
+    const checkedFieldColor = "bg-context-control";
 
     const purchasePriceWarningId = "purchase-price-warning-" + item.rowId;
     const purchasePriceWarning =
@@ -122,6 +118,7 @@ const LineItemRow = memo(
     return (
       <div key={item.rowId} data-billing-row-id={item.rowId} className="relative">
         <div
+          data-surface={checked ? "complete" : partiallyChecked ? "partial" : "panel"}
           data-check-state={checked ? "complete" : partiallyChecked ? "partial" : "unchecked"}
           className={cn(
             "group focus-within:ring-focus/40 relative grid min-h-(--billing-row-height) w-full items-center gap-0.5 rounded-lg border px-0.5 transition-[background-color,border-color,box-shadow] duration-150 focus-within:ring-1",
@@ -177,7 +174,7 @@ const LineItemRow = memo(
                 activeRowId === item.rowId && isDropdownOpen ? itemQuery : item.productSnapshot
               }
               className={cn(
-                "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/80 border-input h-9 w-full rounded-lg border px-3 py-2 text-base font-semibold shadow-xs transition-[border-color,box-shadow,background-color,color] outline-none focus-visible:ring-2",
+                "focus-visible:border-context-focus focus-visible:ring-context-focus text-foreground placeholder:text-context-placeholder border-context-border h-9 w-full rounded-lg border px-3 py-2 text-base font-semibold shadow-xs transition-[border-color,box-shadow,background-color,color] outline-none focus-visible:ring-2",
                 checkedFieldColor
               )}
               onClick={(e) => {
@@ -214,7 +211,7 @@ const LineItemRow = memo(
           <div className="min-w-0">
             <div
               className={cn(
-                "border-input focus-within:border-ring focus-within:ring-ring/50 relative mx-auto flex h-9 w-full items-center rounded-lg border font-bold shadow-xs transition-[border-color,box-shadow,background-color] focus-within:ring-2",
+                "border-context-border focus-within:border-context-focus focus-within:ring-context-focus relative mx-auto flex h-9 w-full items-center rounded-lg border font-bold shadow-xs transition-[border-color,box-shadow,background-color] focus-within:ring-2",
                 checkedFieldColor
               )}
             >
@@ -244,7 +241,7 @@ const LineItemRow = memo(
                   setQtyPresetOpen(idx);
                 }}
                 value={item.quantity}
-                className="placeholder:text-muted-foreground/60 min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-sm font-semibold tabular-nums outline-none"
+                className="placeholder:text-context-placeholder min-w-0 flex-1 appearance-none bg-transparent px-1 py-2 text-center text-sm font-semibold tabular-nums outline-none"
                 onChange={(e) => {
                   const tabId = getActiveTabId();
                   if (!tabId) return;
@@ -328,7 +325,7 @@ const LineItemRow = memo(
                   }
                 }}
                 className={cn(
-                  "focus-visible:border-ring focus-visible:ring-ring/50 text-foreground placeholder:text-muted-foreground/60 border-input h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-sm font-semibold tabular-nums shadow-xs transition-[border-color,box-shadow,background-color,color] duration-150 outline-none focus-visible:ring-2 disabled:cursor-not-allowed",
+                  "focus-visible:border-context-focus focus-visible:ring-context-focus text-foreground placeholder:text-context-placeholder border-context-border h-full w-full appearance-none rounded-lg border py-2 pr-3 pl-9 text-right text-sm font-semibold tabular-nums shadow-xs transition-[border-color,box-shadow,background-color,color] duration-150 outline-none focus-visible:ring-2 disabled:cursor-not-allowed",
                   checkedFieldColor,
                   showPurchasePriceWarning &&
                     "border-warning bg-warning/10 text-foreground ring-warning/30 focus-visible:border-warning focus-visible:ring-warning/40 ring-1 focus-visible:ring-2"
@@ -351,7 +348,7 @@ const LineItemRow = memo(
               </span>
               <div
                 className={cn(
-                  "border-input text-foreground flex h-full w-full items-center justify-end rounded-lg border px-3 pl-8 text-right text-sm font-semibold tabular-nums shadow-xs transition-[background-color] duration-150",
+                  "text-foreground flex h-full w-full items-center justify-end rounded-lg border border-transparent px-3 pl-8 text-right text-sm font-semibold tabular-nums transition-[background-color] duration-150",
                   checked
                     ? "bg-line-item-complete-field"
                     : partiallyChecked
@@ -384,7 +381,7 @@ const LineItemRow = memo(
                   ? "border-success bg-success text-success-foreground"
                   : partiallyChecked
                     ? "border-warning bg-warning text-warning-foreground"
-                    : "border-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
+                    : "border-context-border bg-muted/70 text-muted-foreground hover:border-foreground hover:text-foreground"
               }`}
             >
               {checked && <Check strokeWidth={3} size={18} />}

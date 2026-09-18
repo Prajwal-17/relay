@@ -281,3 +281,14 @@ script, use the same environment setting or configure the installed Chromium san
 The API defaults to port `4723` in development and `4722` in production. Set a free validated
 `M_VITE_API_PORT` when isolation is needed; the E2E fixture allocates one automatically for every
 development Electron launch.
+
+### Development icons
+
+`pnpm dev` uses the charcoal DEV icon in app chrome and native windows. Production uses the
+terracotta icon. Shared SVG selection lives in renderer `lib/appIcon.ts`; native selection lives
+in `src/main/appIcon.ts`. Restart the Electron process to refresh native icons.
+
+`pnpm build:dev` compiles with `--mode development`; `build:win:dev` and `build:linux:dev` use it
+before the development packaging config so renderer and native branding agree. Production build
+commands retain production mode. Regenerate both icon sets with `python3 assets/generate-icons.py`
+from the repository root (see `assets/README.md`).
