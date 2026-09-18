@@ -2,14 +2,15 @@ import { Pressable } from "@/components/ui/pressable";
 import { usePalette } from "@/theme/palette";
 import { AppTextInput } from "@/components/ui/app-text-input";
 import * as Haptics from "expo-haptics";
-import { useSQLiteContext } from "expo-sqlite";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Text } from "@/components/ui/text";
 
 import { listRecentVendorNames } from "@/features/money/money.repository";
 import { cn } from "@/lib/utils";
+import { moneyKeys } from "@/features/money/money.keys";
 
 export function VendorNameInput({
   value,
@@ -23,38 +24,20 @@ export function VendorNameInput({
   onChangeText: (value: string) => void;
 }) {
   const colors = usePalette();
-  const db = useSQLiteContext();
   const [open, setOpen] = useState(false);
-  const [names, setNames] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [failed, setFailed] = useState(false);
   const [active, setActive] = useState(-1);
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    void listRecentVendorNames(db, value)
-      .then((rows) => {
-        if (!cancelled) setNames(rows);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setNames([]);
-          setFailed(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [db, open, value]);
+  const suggestions = useQuery({
+    queryKey: moneyKeys.vendors(value),
+    queryFn: ({ signal }) => listRecentVendorNames(value, signal),
+    enabled: open,
+    staleTime: 30_000
+  });
+  const names = suggestions.data ?? [];
+  const loading = suggestions.isPending;
+  const failed = suggestions.isError;
 
   function showSuggestions() {
     setOpen(true);
-    setLoading(true);
-    setFailed(false);
     setActive(-1);
   }
 
@@ -79,6 +62,7 @@ export function VendorNameInput({
             variant="bare"
             editable={!disabled}
             accessibilityLabel="Vendor name"
+            maxLength={120}
             aria-invalid={Boolean(error)}
             className="text-ink min-h-12 min-w-0 flex-1 px-3 text-base outline-none"
             placeholder="Enter vendor name"

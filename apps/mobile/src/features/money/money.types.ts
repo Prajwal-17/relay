@@ -1,75 +1,75 @@
-import type { receiptEvents } from "@/lib/db/schema";
 import type { LocalDate } from "@/types/date.types";
 
 export type { LocalDate } from "@/types/date.types";
-export type ReceiptEvent = Omit<typeof receiptEvents.$inferSelect, "date" | "channelId">;
-export type ReceiptEventInput = typeof receiptEvents.$inferInsert;
 
-export interface ReceivedPaymentInput {
-  date: LocalDate;
-  channelId: number | null;
-  amountPaisa: number;
-  name?: string;
-}
-
-export interface OnlineChannel {
+export interface PaymentMethod {
   id: number;
   name: string;
   isPreset: boolean;
   isArchived: boolean;
 }
 
-export interface OnlineReceipt {
-  channelId: number;
-  channelName: string;
-  amountPaisa: number;
-  isChannelArchived: boolean;
+export interface DailyPaymentTotal {
+  paymentMethodId: number;
+  paymentMethodName: string;
+  amount: number;
+  isPaymentMethodArchived: boolean;
 }
 
-export interface SupplierPayment {
+export interface VendorPayment {
   id: number;
-  payee: string;
-  amountPaisa: number;
+  vendorName: string;
+  amount: number;
   note: string | null;
-  position: number;
+  createdAt: string;
 }
 
 export interface DailyEntry {
   date: LocalDate;
-  cashPaisa: number;
-  onlineReceipts: OnlineReceipt[];
-  supplierPayments: SupplierPayment[];
+  cashAmount: number;
+  paymentTotals: DailyPaymentTotal[];
+  vendorPayments: VendorPayment[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface OnlineReceiptInput {
-  channelId: number;
-  amountPaisa: number;
+export interface DaySummary {
+  date: LocalDate;
+  cashAmount: number;
+  onlineAmount: number;
+  receivedAmount: number;
+  paidAmount: number;
+  netAmount: number;
 }
 
-export interface SupplierPaymentInput {
-  payee: string;
-  amountPaisa: number;
+export interface ReceivedEntry {
+  id: number;
+  amount: number;
+  note: string | null;
+  createdAt: string;
+}
+
+export interface MoneyOverview {
+  summaries: DaySummary[];
+  entry: DailyEntry | null;
+  paymentMethods: PaymentMethod[];
+}
+
+export interface ReceivedPaymentInput {
+  date: LocalDate;
+  paymentMethodId: number | null;
+  amount: number;
   note?: string;
 }
 
-export interface VendorPaymentInput extends SupplierPaymentInput {
+export interface VendorPaymentInput {
   date: LocalDate;
+  vendorName: string;
+  amount: number;
+  note?: string;
 }
 
-export interface DailyEntryInput {
-  date: LocalDate;
-  cashPaisa: number;
-  onlineReceipts: OnlineReceiptInput[];
-  supplierPayments: SupplierPaymentInput[];
-}
-
-export interface DaySummary {
-  date: LocalDate;
-  cashPaisa: number;
-  onlinePaisa: number;
-  receivedPaisa: number;
-  paidPaisa: number;
-  netPaisa: number;
+export interface PaymentMethodUpdate {
+  name?: string;
+  isArchived?: boolean;
 }

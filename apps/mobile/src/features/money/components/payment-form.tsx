@@ -1,60 +1,52 @@
-import { usePalette } from "@/theme/palette";
-import { AppTextInput } from "@/components/ui/app-text-input";
 import { View } from "react-native";
+
+import { AppTextInput } from "@/components/ui/app-text-input";
 import { Text } from "@/components/ui/text";
-import { AmountInput } from "./amount-input";
+import { usePalette } from "@/theme/palette";
 import type { usePaymentEntry } from "../hooks/use-payment-entry";
+import { AmountInput } from "./amount-input";
 
 export function PaymentForm({ entry }: { entry: ReturnType<typeof usePaymentEntry> }) {
   const colors = usePalette();
-  const {
-    params,
-    method,
-    amount,
-    saving,
-    name,
-    setName,
-    hasSaved,
-    amountError,
-    setAmount,
-    setSaveError
-  } = entry;
+  const { method, amount, note, saving, amountError, setAmount, setNote, setSaveError } = entry;
+
+  if (method.archived) {
+    return <Text className="text-muted text-sm">This payment method is archived.</Text>;
+  }
+
   return (
     <View className="gap-4 py-2">
-      {method.archived ? (
-        <Text className="text-muted text-sm">Archived method · history only</Text>
-      ) : (
-        <>
-          <View>
-            <AmountInput
-              label="Amount"
-              className="text-2xl"
-              value={amount}
-              editable={!saving}
-              autoFocus={params.history !== "1" && !hasSaved}
-              error={amountError ?? undefined}
-              onChangeText={(value) => {
-                setAmount(value);
-                setSaveError(null);
-              }}
-            />
-          </View>
-          <View className="gap-1.5">
-            <Text className="text-ink text-sm font-medium">Name (optional)</Text>
-            <AppTextInput
-              accessibilityLabel="Name (optional)"
-              className="bg-canvas"
-              value={name}
-              onChangeText={setName}
-              editable={!saving}
-              maxLength={120}
-              placeholder="Customer or payment name"
-              selectionColor={colors["accent"]}
-              returnKeyType="done"
-            />
-          </View>
-        </>
-      )}
+      <AmountInput
+        label="Amount"
+        className="text-2xl"
+        value={amount}
+        editable={!saving}
+        autoFocus
+        error={amountError ?? undefined}
+        onChangeText={(value) => {
+          setAmount(value);
+          setSaveError(null);
+        }}
+      />
+      <View className="gap-1.5">
+        <Text className="text-ink text-sm font-medium">Note (optional)</Text>
+        <AppTextInput
+          accessibilityLabel="Note (optional)"
+          className="bg-surface min-h-24 px-3 py-3 text-base"
+          value={note}
+          onChangeText={(value) => {
+            setNote(value);
+            setSaveError(null);
+          }}
+          editable={!saving}
+          maxLength={240}
+          multiline
+          placeholder="What was this payment for?"
+          selectionColor={colors.accent}
+          textAlignVertical="top"
+        />
+        <Text className="text-muted text-right text-xs tabular-nums">{note.length}/240</Text>
+      </View>
     </View>
   );
 }

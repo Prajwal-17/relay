@@ -7,10 +7,9 @@ from the Relay rebrand on master (fda3276). `images/relay-foreground.png` and
 `icon-1024.png` and `play-store-512.png`. Keep app config image paths inside this app so
 Expo Go asset URLs do not contain parent-directory segments.
 
-`payment-icons.json` contains the PhonePe, Google Pay, and Paytm SVG paths from
-[Simple Icons](https://github.com/simple-icons/simple-icons/tree/develop/icons), distributed under
-[CC0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md). Brand marks identify
-payment providers; no affiliation is implied. Icons are bundled and require no network access.
+Official Paytm and PhonePe marks live in [`payment-methods/`](payment-methods/README.md), with
+their source and rights status documented beside the assets. Generic methods use Relay's bundled
+icon set. All payment marks are local and require no network access.
 
 `fonts/Inter-*.ttf` are static 400/500/600/700 weight instances of the desktop app's bundled
 `InterVariable.woff2` (default optical size), generated with fontTools. Both apps use Inter;

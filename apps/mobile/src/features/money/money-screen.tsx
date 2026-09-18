@@ -1,105 +1,76 @@
-import { Pressable } from "@/components/ui/pressable";
-import { usePalette } from "@/theme/palette";
-import { useFocusEffect, useRouter } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite";
-import { Pencil, Trash2 } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useLocalSearchParams } from "expo-router";
+import {
+  BanknoteArrowDown,
+  CalendarDays,
+  LogOut,
+  Store,
+  Trash2,
+  WifiOff
+} from "lucide-react-native";
+import { useMemo } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, View } from "react-native";
-import { Text } from "@/components/ui/text";
-import { SafeAreaView } from "@/components/ui/safe-area-view";
 
-import { confirmAction } from "@/lib/confirm-action";
 import { AppButton } from "@/components/ui/app-button";
-import { DayTotals } from "@/features/money/components/day-totals";
-import { MonthCalendar } from "@/features/money/components/month-calendar";
-import { ReceivedMethods } from "./components/received-methods";
-import { DayDetails } from "./components/day-details";
+import { IconButton } from "@/components/ui/icon-button";
+import { SafeAreaView } from "@/components/ui/safe-area-view";
+import { Text } from "@/components/ui/text";
+import { authClient } from "@/lib/auth/auth-client";
+import { confirmAction } from "@/lib/confirm-action";
 import {
   formatDisplayDate,
   getTodayIST,
   isFutureDate,
-  isSameMonth,
   monthFromDate,
-  shiftMonth,
-  type LedgerMonth
+  parseLocalDate
 } from "@/lib/format/dates";
-import {
-  deleteDailyEntry,
-  getDailyEntry,
-  listMonthSummaries,
-  listOnlineChannels
-} from "@/features/money/money.repository";
-import {
-  type DailyEntry,
-  type DaySummary,
-  type LocalDate,
-  type OnlineChannel
-} from "@/features/money/money.types";
-import { summarizeEntry } from "./money.utils";
 import { formatRupee } from "@/lib/format/money";
+import { useNetworkStatus } from "@/lib/network/use-network-status";
+import { usePalette } from "@/theme/palette";
+import { DayDetails } from "./components/day-details";
+import { DayTotals } from "./components/day-totals";
+import { ReceivedMethods } from "./components/received-methods";
+import { moneyKeys } from "./money.keys";
+import { deleteDailyEntry, getMoneyOverview } from "./money.repository";
+import type { LocalDate, VendorPayment } from "./money.types";
+import { summarizeEntry } from "./money.utils";
 
 export default function MoneyScreen() {
   const colors = usePalette();
-  const db = useSQLiteContext();
-  const router = useRouter();
+  const queryClient = useQueryClient();
+  const session = authClient.useSession();
+  const params = useLocalSearchParams<{ date?: string }>();
+  const { isOffline } = useNetworkStatus();
   const today = getTodayIST();
-  const [month, setMonth] = useState<LedgerMonth>(() => monthFromDate(today));
-  const [selectedDate, setSelectedDate] = useState<LocalDate>(today);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [summaries, setSummaries] = useState<DaySummary[]>([]);
-  const [entry, setEntry] = useState<DailyEntry | null>(null);
-  const [channels, setChannels] = useState<OnlineChannel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const requestId = useRef(0);
+  const requestedDate = parseLocalDate(params.date);
+  const selectedDate: LocalDate =
+    requestedDate && !isFutureDate(requestedDate) ? requestedDate : today;
+  const month = useMemo(() => monthFromDate(selectedDate), [selectedDate]);
 
-  const loadLedger = useCallback(
-    async (showRefresh = false) => {
-      const request = ++requestId.current;
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
-      setError(null);
-      try {
-        const [monthRows, selectedEntry, channelRows] = await Promise.all([
-          listMonthSummaries(db, month),
-          getDailyEntry(db, selectedDate),
-          listOnlineChannels(db, true)
-        ]);
-        if (request !== requestId.current) return;
-        setSummaries(monthRows);
-        setEntry(selectedEntry);
-        setChannels(channelRows);
-      } catch (loadError) {
-        if (request === requestId.current)
-          setError(loadError instanceof Error ? loadError.message : "Could not read the ledger.");
-      } finally {
-        if (request === requestId.current) {
-          setLoading(false);
-          setRefreshing(false);
-        }
-      }
+  const ledger = useQuery({
+    queryKey: moneyKeys.overview(month, selectedDate),
+    queryFn: ({ signal }) => getMoneyOverview(month, selectedDate, signal),
+    refetchOnMount: "always"
+  });
+  const deleteEntry = useMutation({
+    mutationFn: deleteDailyEntry,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: moneyKeys.all })
+  });
+  const signOut = useMutation({
+    mutationFn: async () => {
+      const result = await authClient.signOut();
+      if (result.error) throw new Error(result.error.message || "Could not sign out.");
     },
-    [db, month, selectedDate]
-  );
+    onSuccess: () => queryClient.clear()
+  });
 
-  useFocusEffect(
-    useCallback(() => {
-      void loadLedger();
-      return () => {
-        requestId.current += 1;
-      };
-    }, [loadLedger])
-  );
-
-  const actionsDisabled = deleting;
-
-  const summaryMap = useMemo(
-    () => new Map(summaries.map((summary) => [summary.date, summary])),
-    [summaries]
-  );
-  const selectedSummary = entry ? summarizeEntry(entry) : null;
+  const entry = ledger.data?.entry ?? null;
+  const paymentMethods = ledger.data?.paymentMethods ?? [];
+  const summary = entry ? summarizeEntry(entry) : null;
+  const loading = ledger.isPending;
+  const refreshing = ledger.isRefetching && !ledger.isPending;
+  const error = deleteEntry.error ?? signOut.error ?? ledger.error;
+  const actionsDisabled = deleteEntry.isPending || signOut.isPending || isOffline;
   const dateValue = new Date(`${selectedDate}T12:00:00Z`);
   const weekday = new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "UTC" }).format(
     dateValue
@@ -111,49 +82,45 @@ export default function MoneyScreen() {
     timeZone: "UTC"
   }).format(dateValue);
 
-  function changeMonth(amount: number) {
-    const nextMonth = shiftMonth(month, amount);
-    setMonth(nextMonth);
-    setSelectedDate(
-      isSameMonth(today, nextMonth)
-        ? today
-        : (`${nextMonth.year}-${String(nextMonth.month + 1).padStart(2, "0")}-01` as LocalDate)
-    );
-  }
-
-  function openEditor() {
-    if (isFutureDate(selectedDate)) return;
-    router.push({ pathname: "/entry", params: { date: selectedDate } });
-  }
-
-  function openPayment(channelId: number | null, history = false) {
+  function openPayment(paymentMethodId: number | null, mode: "add" | "history") {
     router.push({
       pathname: "/payment",
       params: {
         date: selectedDate,
-        channel: channelId === null ? "cash" : String(channelId),
-        history: history ? "1" : "0"
+        method: paymentMethodId === null ? "cash" : String(paymentMethodId),
+        mode
+      }
+    });
+  }
+
+  function openVendorDetails(payment: VendorPayment) {
+    router.push({
+      pathname: "/vendor-details",
+      params: {
+        vendorName: payment.vendorName,
+        amount: String(payment.amount),
+        note: payment.note ?? "",
+        createdAt: payment.createdAt
       }
     });
   }
 
   function confirmDelete() {
-    if (!entry || !selectedSummary) return;
+    if (!entry || !summary) return;
     confirmAction(
       "Delete this day's record?",
-      `${formatDisplayDate(entry.date)}\nReceived ${formatRupee(selectedSummary.receivedPaisa)} · Paid ${formatRupee(selectedSummary.paidPaisa)}\n\nThis cannot be undone.`,
+      `${formatDisplayDate(entry.date)}\nReceived ${formatRupee(summary.receivedAmount)} · Paid ${formatRupee(summary.paidAmount)}\n\nThis cannot be undone.`,
       "Delete",
-      () => {
-        setDeleting(true);
-        void deleteDailyEntry(db, entry.date)
-          .then(() => loadLedger())
-          .catch((deleteError) => {
-            setError(
-              deleteError instanceof Error ? deleteError.message : "Could not delete this record."
-            );
-          })
-          .finally(() => setDeleting(false));
-      }
+      () => deleteEntry.mutate(entry.date)
+    );
+  }
+
+  function confirmSignOut() {
+    confirmAction(
+      "Sign out of Relay?",
+      "You will need to sign in with Google before opening the ledger again.",
+      "Sign out",
+      () => signOut.mutate()
     );
   }
 
@@ -161,113 +128,144 @@ export default function MoneyScreen() {
     <SafeAreaView className="bg-canvas flex-1" edges={["top", "left", "right"]}>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="items-center px-5 pb-6 pt-5"
+        contentContainerClassName="items-center px-5 pt-5 pb-8"
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             enabled={!actionsDisabled}
             onRefresh={() => {
-              if (!actionsDisabled) void loadLedger(true);
+              if (!actionsDisabled) void ledger.refetch();
             }}
-            colors={[colors["accent"]]}
-            tintColor={colors["accent"]}
+            colors={[colors.accent]}
+            tintColor={colors.accent}
           />
         }
       >
-        <View className="w-full max-w-xl gap-6">
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${formatDisplayDate(selectedDate)}. ${calendarOpen ? "Close" : "Open"} calendar`}
-            accessibilityHint="Shows the monthly ledger calendar"
-            disabled={actionsDisabled}
-            accessibilityState={{ expanded: calendarOpen, disabled: actionsDisabled }}
-            onPress={() => setCalendarOpen(!calendarOpen)}
-            className="min-h-16 self-start py-1"
-          >
-            <Text className="text-muted text-sm font-medium">
-              {selectedDate === today ? `Today, ${weekday}` : weekday}
-            </Text>
-            <Text
-              accessibilityRole="header"
-              className="text-ink mt-1 text-2xl leading-8 font-semibold tracking-tight"
-            >
-              {dateLabel}
-            </Text>
-          </Pressable>
-
-          {calendarOpen && !actionsDisabled ? (
-            <MonthCalendar
-              month={month}
-              selectedDate={selectedDate}
-              today={today}
-              summaries={summaryMap}
-              loading={loading}
-              onPreviousMonth={() => changeMonth(-1)}
-              onNextMonth={() => changeMonth(1)}
-              onSelectDate={(date) => {
-                setSelectedDate(date);
-                setCalendarOpen(false);
-              }}
+        <View className="w-full max-w-xl gap-5">
+          <View className="flex-row items-center gap-4">
+            <View className="min-w-0 flex-1">
+              <Text className="text-muted text-sm font-medium">
+                {selectedDate === today ? `Today · ${weekday}` : weekday}
+              </Text>
+              <Text
+                accessibilityRole="header"
+                adjustsFontSizeToFit
+                className="text-ink mt-1 text-[28px] leading-9 font-semibold tracking-tight"
+                numberOfLines={1}
+              >
+                {dateLabel}
+              </Text>
+            </View>
+            <IconButton
+              icon={CalendarDays}
+              label={`Choose date. Selected ${formatDisplayDate(selectedDate)}`}
+              onPress={() => router.push({ pathname: "/calendar", params: { date: selectedDate } })}
             />
+          </View>
+
+          {isOffline ? (
+            <View className="border-border bg-surface-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
+              <WifiOff color={colors.muted} size={17} strokeWidth={1.8} />
+              <Text className="text-muted min-w-0 flex-1 text-sm">
+                Offline. Showing the last available data; new entries are paused.
+              </Text>
+            </View>
           ) : null}
 
           {loading ? (
-            <View className="min-h-40 items-center justify-center gap-3 py-6">
-              <ActivityIndicator color={colors["accent"]} />
-              <Text className="text-muted text-sm">Loading…</Text>
+            <View className="min-h-48 items-center justify-center gap-3 py-6">
+              <ActivityIndicator color={colors.accent} />
+              <Text className="text-muted text-sm">Loading the till…</Text>
             </View>
           ) : error ? (
-            <View className="gap-4 py-5">
-              <Text accessibilityRole="alert" className="text-destructive text-base">
-                {error}
+            <View className="border-border bg-surface rounded-card gap-4 border p-5">
+              <Text accessibilityRole="alert" className="text-destructive text-sm leading-5">
+                {error instanceof Error ? error.message : "Could not read the till."}
               </Text>
-              <AppButton variant="outline" onPress={() => void loadLedger()}>
+              <AppButton
+                variant="outline"
+                disabled={isOffline}
+                onPress={() => {
+                  deleteEntry.reset();
+                  signOut.reset();
+                  void session.refetch();
+                  void ledger.refetch();
+                }}
+              >
                 Try again
               </AppButton>
             </View>
           ) : (
             <>
-              <View className="border-border border-y py-5">
-                <DayTotals
-                  received={selectedSummary?.receivedPaisa ?? 0}
-                  paid={selectedSummary?.paidPaisa ?? 0}
-                />
+              <DayTotals received={summary?.receivedAmount ?? 0} paid={summary?.paidAmount ?? 0} />
+
+              <View className="flex-row flex-wrap gap-3">
+                <AppButton
+                  className="min-w-[46%] grow"
+                  icon={BanknoteArrowDown}
+                  disabled={actionsDisabled}
+                  onPress={() => openPayment(null, "add")}
+                >
+                  Add received
+                </AppButton>
+                <AppButton
+                  className="min-w-[46%] grow"
+                  icon={Store}
+                  variant="outline"
+                  disabled={actionsDisabled}
+                  onPress={() =>
+                    router.push({ pathname: "/vendor-payment", params: { date: selectedDate } })
+                  }
+                >
+                  Pay vendor
+                </AppButton>
               </View>
+
               <ReceivedMethods
                 entry={entry}
-                channels={channels}
-                onOpen={openPayment}
+                paymentMethods={paymentMethods}
                 disabled={actionsDisabled}
+                onOpen={openPayment}
               />
               <DayDetails
                 entry={entry}
-                disabled={deleting}
+                disabled={actionsDisabled}
                 onAdd={() =>
                   router.push({ pathname: "/vendor-payment", params: { date: selectedDate } })
                 }
+                onOpen={openVendorDetails}
               />
-              <AppButton
-                icon={Pencil}
-                variant="outline"
-                onPress={openEditor}
-                disabled={actionsDisabled}
-              >
-                {entry ? "Edit record" : "Set daily totals"}
-              </AppButton>
-              {entry ? (
-                <View className="border-border mt-3 border-t pt-4">
+
+              <View className="border-border mt-2 gap-3 border-t pt-4">
+                <Text className="text-muted text-xs" numberOfLines={1}>
+                  {session.data?.user.name || session.data?.user.email}
+                </Text>
+                <View className="flex-row flex-wrap items-center justify-between gap-2">
                   <AppButton
                     compact
-                    icon={Trash2}
-                    loading={deleting}
-                    variant="destructive"
-                    disabled={actionsDisabled}
-                    onPress={confirmDelete}
+                    icon={LogOut}
+                    variant="ghost"
+                    loading={signOut.isPending}
+                    disabled={deleteEntry.isPending}
+                    onPress={confirmSignOut}
                   >
-                    Delete day&apos;s record
+                    Sign out
                   </AppButton>
+                  {entry ? (
+                    <AppButton
+                      compact
+                      icon={Trash2}
+                      variant="destructive"
+                      loading={deleteEntry.isPending}
+                      disabled={signOut.isPending || isOffline}
+                      onPress={confirmDelete}
+                    >
+                      Delete day
+                    </AppButton>
+                  ) : null}
                 </View>
-              ) : null}
+              </View>
             </>
           )}
         </View>

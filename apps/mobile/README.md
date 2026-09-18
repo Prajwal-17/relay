@@ -1,58 +1,71 @@
 # Relay Mobile
 
-Relay Mobile is an offline-first Expo companion focused on the shop's daily Money workflow.
-Money opens first. Home, Products, and Customers are intentionally limited to a clear “Coming
-soon” state until those workflows are ready.
+Relay Mobile is the authenticated Expo companion for the shop's daily Till workflow. Google sign-in
+opens Till first. Home, Products, and Customers remain simple “Coming soon” placeholders until those
+workflows are ready.
 
 ## Stack
 
-- Expo SDK 57 with Expo Router
+- Expo SDK 57 with Expo Router native tabs and native form sheets
 - React Native 0.86 and React 19.2
 - UniWind with Tailwind CSS 4
-- Drizzle ORM with Expo SQLite
-- Local Inter font files and Lucide icons
+- Better Auth's Expo client with SecureStore-backed native cookies
+- TanStack Query for API state, cancellation, retries, focus, and connectivity
+- `react-native-calendars` for the date-only Till calendar
+- Local Inter font files, Lucide icons, and documented official payment marks
 
-## Money workflow
+## Till workflow
 
-The Money screen keeps the current daily-ledger features: choose a date, review received and paid
-totals, record cash and online receipts, add vendor payments, inspect receipt history, manage online
-payment channels, correct daily totals, and delete a day's record.
+Till loads the authenticated Cloudflare API in `apps/server`. A user can choose today or an earlier
+India business date, review received/paid/net totals, add multiple entries for Cash or any active
+payment method, inspect per-method entry history, record vendor payments with optional notes, view
+untruncated vendor details, and delete the selected day's record.
 
-All values are stored as integer paisa. Dates use the Asia/Kolkata business day. The app owns one
-local `relay-money.db` database and does not import or copy desktop data. Its schema contains only:
+The app has no local business database and does not import desktop data. Money values remain integer
+paisa in transit and dates use the Asia/Kolkata business day. Future dates are disabled in the UI and
+rejected by the server. Payment method management is server-owned; the mobile Till consumes the
+methods returned by `/api/money/overview`.
 
-- `daily_entries`
-- `online_channels`
-- `daily_online_receipts`
-- `supplier_payments`
-- `receipt_events`
+## Authentication and resilience
+
+Better Auth restores the SecureStore-backed session before protected routes render. Google OAuth is
+the only sign-in method; the first successful sign-in creates the account. Cancellation, offline,
+authentication, loading, empty, and API-error states are handled explicitly. Mutating controls pause
+while offline, while cached TanStack Query data remains visible.
 
 ## Design
 
-`global.css` maps the semantic colors from the desktop `DESIGN.md` into Tailwind 4 tokens: warm
-canvas, white surfaces, charcoal actions, neutral selection, and terracotta focus cues. Screens use
-Inter, restrained 6px/8px radii, borders before shadows, tabular money, and at least 44px touch
-targets.
+`global.css` maps desktop `DESIGN.md` semantics into Tailwind 4 tokens: warm canvas, white surfaces,
+charcoal actions, neutral selection, and terracotta focus cues. Screens use Inter, restrained 6px/8px
+radii, borders before shadows, tabular financial numerals, responsive wrapping, safe areas, and at
+least 44px touch targets. Native sheets provide spatial transitions; tab switching intentionally uses
+the platform default without extra JavaScript animation.
 
 ## Development
 
-From the repository root:
+Start the server first, then point Expo at it. Android emulators use `10.0.2.2` instead of
+`localhost`; physical devices need a reachable LAN or deployed Worker URL.
 
 ```bash
 pnpm install
+cp apps/server/.dev.vars.example apps/server/.dev.vars
+pnpm --dir apps/server db:migrate:local
+pnpm --dir apps/server dev
+
+cp apps/mobile/.env.example apps/mobile/.env.local
+# Set EXPO_PUBLIC_SERVER_URL in apps/mobile/.env.local
 pnpm --dir apps/mobile start
 ```
 
-Useful checks:
+Google sign-in also requires the OAuth values documented in `apps/server/README.md`.
+
+Static checks:
 
 ```bash
 pnpm --dir apps/mobile lint
 pnpm --dir apps/mobile typecheck
-pnpm --dir apps/mobile exec expo-doctor
 ```
 
-Android and iOS are the primary targets. The web command remains available for quick layout checks:
-
-```bash
-pnpm --dir apps/mobile web
-```
+Android and iOS are the primary targets. Real-device review should cover narrow screens, the keyboard,
+native sheets, tab bar safe-area spacing, OAuth cancellation, offline recovery, long names/notes, and
+large Indian-formatted values.

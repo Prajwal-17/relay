@@ -1,58 +1,53 @@
-import { usePalette } from "@/theme/palette";
-import * as Haptics from "expo-haptics";
-import { Tabs } from "expo-router";
-import { Banknote, House, Package, Users, type LucideIcon } from "lucide-react-native";
-import { StyleSheet } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { NativeTabs } from "expo-router/unstable-native-tabs";
 
-const TAB_ICONS: Record<string, LucideIcon> = {
-  home: House,
-  products: Package,
-  money: Banknote,
-  customers: Users
+import { usePalette } from "@/theme/palette";
+
+export const unstable_settings = {
+  initialRouteName: "money"
 };
 
 export default function TabLayout() {
   const colors = usePalette();
-  const insets = useSafeAreaInsets();
 
   return (
-    <Tabs
-      initialRouteName="money"
-      screenListeners={{
-        tabPress: () => {
-          void Haptics.selectionAsync().catch(() => {});
-        }
+    <NativeTabs
+      backgroundColor={colors.surface}
+      disableTransparentOnScrollEdge
+      iconColor={{ default: colors.muted, selected: colors.primary }}
+      indicatorColor={colors.selected}
+      labelStyle={{
+        default: { color: colors.muted, fontFamily: "Inter-Medium", fontSize: 11 },
+        selected: { color: colors.primary, fontFamily: "Inter-SemiBold", fontSize: 11 }
       }}
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarHideOnKeyboard: true,
-        tabBarLabelPosition: "below-icon",
-        tabBarActiveTintColor: colors.ink,
-        tabBarActiveBackgroundColor: colors.selected,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: {
-          height: 64 + insets.bottom,
-          paddingTop: 6,
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          elevation: 0,
-          shadowOpacity: 0
-        },
-        tabBarItemStyle: { paddingBottom: 6 },
-        tabBarLabelStyle: { fontFamily: "Inter-SemiBold", fontSize: 12, lineHeight: 16 },
-        tabBarIcon: ({ color, focused }) => {
-          const Icon = TAB_ICONS[route.name];
-          return Icon ? <Icon size={24} color={color} strokeWidth={focused ? 2.3 : 1.8} /> : null;
-        }
-      })}
+      minimizeBehavior="never"
+      shadowColor={colors.border}
+      tintColor={colors.primary}
     >
-      <Tabs.Screen name="home" options={{ title: "Home" }} />
-      <Tabs.Screen name="products" options={{ title: "Products" }} />
-      <Tabs.Screen name="money" options={{ title: "Money" }} />
-      <Tabs.Screen name="customers" options={{ title: "Customers" }} />
-      <Tabs.Screen name="index" options={{ href: null }} />
-    </Tabs>
+      <NativeTabs.Trigger name="home">
+        <NativeTabs.Trigger.Icon sf={{ default: "house", selected: "house.fill" }} md="home" />
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="products">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "shippingbox", selected: "shippingbox.fill" }}
+          md="inventory_2"
+        />
+        <NativeTabs.Trigger.Label>Products</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="money">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "banknote", selected: "banknote.fill" }}
+          md="point_of_sale"
+        />
+        <NativeTabs.Trigger.Label>Till</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="customers">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "person.2", selected: "person.2.fill" }}
+          md="groups"
+        />
+        <NativeTabs.Trigger.Label>Customers</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }

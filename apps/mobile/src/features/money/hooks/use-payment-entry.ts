@@ -1,173 +1,202 @@
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { usePreventRemove } from "expo-router/build/react-navigation/core";
-import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Keyboard } from "react-native";
-import {
-  addReceivedPayment,
-  getDailyEntry,
-  listOnlineChannels,
-  listReceiptEvents
-} from "../money.repository";
-import type { ReceiptEvent } from "../money.types";
+
 import { confirmAction } from "@/lib/confirm-action";
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { parseRupeeInput } from "@/lib/format/money";
+import { useNetworkStatus } from "@/lib/network/use-network-status";
+import { moneyKeys } from "../money.keys";
+import {
+  addReceivedPayment,
+  getDailyEntry,
+  listPaymentMethods,
+  listReceivedEntries
+} from "../money.repository";
 
 export function usePaymentEntry() {
-  const params = useLocalSearchParams<{ date?: string; channel?: string; history?: string }>();
+  const params = useLocalSearchParams<{ date?: string; method?: string; mode?: string }>();
   const date = parseLocalDate(params.date);
-  const channelId = params.channel === "cash" ? null : Number(params.channel);
+  const paymentMethodId = params.method === "cash" ? null : Number(params.method);
+  const mode: "history" | "add" = params.mode === "history" ? "history" : "add";
   const valid =
     date !== null &&
     !isFutureDate(date) &&
-    (channelId === null || (Number.isSafeInteger(channelId) && channelId > 0));
-  const db = useSQLiteContext();
+    (paymentMethodId === null || (Number.isSafeInteger(paymentMethodId) && paymentMethodId > 0));
   const router = useRouter();
   const navigation = useNavigation();
-  const [method, setMethod] = useState({ name: "", archived: false });
-  const [balance, setBalance] = useState(0);
-  const [events, setEvents] = useState<ReceiptEvent[]>([]);
-  const [hasMore, setHasMore] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const { isOffline } = useNetworkStatus();
   const [amount, setAmount] = useState("");
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [hasSaved, setHasSaved] = useState(false);
+  const [note, setNote] = useState("");
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
   const saveLock = useRef(false);
-  const pageLock = useRef(false);
-  const requestId = useRef(0);
-  const parsed = parseRupeeInput(amount, "Payment");
-  const amountPaisa = parsed.paisa ?? 0;
-  const nextBalance = balance + amountPaisa;
-  const amountError =
-    parsed.error || (!Number.isSafeInteger(nextBalance) ? "The new total is too large." : null);
-  const canSave =
-    valid && !loading && !loadError && !method.archived && !amountError && amountPaisa > 0;
 
-  const load = useCallback(async () => {
-    if (!date || !valid) {
-      setLoading(false);
-      return;
-    }
-    const request = ++requestId.current;
-    setLoading(true);
-    setLoadError(null);
-    try {
-      const [entry, channels, history] = await Promise.all([
-        getDailyEntry(db, date),
-        listOnlineChannels(db, true),
-        listReceiptEvents(db, date, channelId)
+  const detailsQuery = useQuery({
+    queryKey: ["money", "payment-details", date ?? "invalid", paymentMethodId ?? "cash"],
+    enabled: valid,
+    queryFn: async ({ signal }) => {
+      if (!date) throw new Error("Choose a valid payment date.");
+      const [entry, methods] = await Promise.all([
+        getDailyEntry(date, signal),
+        listPaymentMethods(true, signal)
       ]);
-      const channel = channels.find((item) => item.id === channelId);
-      if (channelId !== null && !channel) throw new Error("Payment method not found.");
-      if (request !== requestId.current) return;
-      setMethod({ name: channel?.name ?? "Cash", archived: channel?.isArchived ?? false });
-      setBalance(
-        channelId === null
-          ? (entry?.cashPaisa ?? 0)
-          : (entry?.onlineReceipts.find((row) => row.channelId === channelId)?.amountPaisa ?? 0)
-      );
-      setEvents(history);
-      setHasMore(history.length === 50);
-    } catch (error) {
-      if (request === requestId.current) {
-        setLoadError(error instanceof Error ? error.message : "Could not load payments.");
-      }
-    } finally {
-      if (request === requestId.current) setLoading(false);
-    }
-  }, [db, date, channelId, valid]);
+      const paymentMethod = methods.find((item) => item.id === paymentMethodId);
+      if (paymentMethodId !== null && !paymentMethod) throw new Error("Payment method not found.");
+      return {
+        method: {
+          name: paymentMethod?.name ?? "Cash",
+          archived: paymentMethod?.isArchived ?? false
+        },
+        total:
+          paymentMethodId === null
+            ? (entry?.cashAmount ?? 0)
+            : (entry?.paymentTotals.find((row) => row.paymentMethodId === paymentMethodId)
+                ?.amount ?? 0)
+      };
+    },
+    refetchOnMount: "always"
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => void load(), 0);
-    return () => {
-      clearTimeout(timer);
-      requestId.current += 1;
-    };
-  }, [load]);
+  const historyQuery = useInfiniteQuery({
+    queryKey: date
+      ? moneyKeys.receivedEntries(date, paymentMethodId)
+      : (["money", "received-entries", "invalid"] as const),
+    enabled: valid && mode === "history",
+    initialPageParam: undefined as number | undefined,
+    queryFn: ({ pageParam, signal }) => {
+      if (!date) throw new Error("Choose a valid payment date.");
+      return listReceivedEntries(date, paymentMethodId, pageParam, signal);
+    },
+    getNextPageParam: (lastPage) => (lastPage.length === 50 ? lastPage.at(-1)?.id : undefined),
+    refetchOnMount: "always"
+  });
 
-  usePreventRemove(saving || amount.trim().length > 0 || name.trim().length > 0, ({ data }) => {
+  const addPayment = useMutation({ mutationFn: addReceivedPayment });
+  const method = detailsQuery.data?.method ?? { name: "", archived: false };
+  const total = detailsQuery.data?.total ?? 0;
+  const entries = historyQuery.data?.pages.flat() ?? [];
+  const hasMore = Boolean(historyQuery.hasNextPage);
+  const loadingMore = historyQuery.isFetchingNextPage;
+  const loading =
+    valid && (detailsQuery.isPending || (mode === "history" && historyQuery.isPending));
+  const loadCause = detailsQuery.error ?? historyQuery.error;
+  const loadError =
+    loadCause instanceof Error ? loadCause.message : loadCause ? "Could not load entries." : null;
+  const saving = addPayment.isPending;
+  const saveError =
+    requestError ??
+    (addPayment.error instanceof Error
+      ? addPayment.error.message
+      : addPayment.error
+        ? "Could not save this entry."
+        : null);
+  const parsed = parseRupeeInput(amount, "Payment");
+  const parsedAmount = parsed.paisa ?? 0;
+  const nextTotal = total + parsedAmount;
+  const amountError =
+    parsed.error || (!Number.isSafeInteger(nextTotal) ? "The new total is too large." : null);
+  const canSave =
+    valid &&
+    mode === "add" &&
+    !isOffline &&
+    !loading &&
+    !loadError &&
+    !method.archived &&
+    !amountError &&
+    parsedAmount > 0 &&
+    note.length <= 240;
+  const dirty = amount.trim().length > 0 || note.trim().length > 0;
+
+  const goBack = useCallback(() => {
+    if (router.canGoBack()) router.back();
+    else router.replace("/money");
+  }, [router]);
+
+  const refetchDetails = detailsQuery.refetch;
+  const refetchHistory = historyQuery.refetch;
+  async function load() {
+    setRequestError(null);
+    await Promise.all([
+      refetchDetails(),
+      mode === "history" ? refetchHistory() : Promise.resolve()
+    ]);
+  }
+
+  usePreventRemove((dirty || saving) && !saved, ({ data }) => {
     if (saveLock.current) return;
     confirmAction(
-      "Discard this payment?",
-      "This amount has not been added to the ledger.",
+      "Discard this entry?",
+      "This amount has not been added to the till.",
       "Discard",
       () => navigation.dispatch(data.action)
     );
   });
 
+  useEffect(() => {
+    if (saved) goBack();
+  }, [goBack, saved]);
+
   async function save() {
     if (!canSave || !date || saveLock.current) return;
     saveLock.current = true;
-    setSaving(true);
-    setSaveError(null);
+    setRequestError(null);
+    addPayment.reset();
     try {
-      await addReceivedPayment(db, { date, channelId, amountPaisa, name });
-    } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Could not save this payment.");
-      setSaving(false);
+      await addPayment.mutateAsync({
+        date,
+        paymentMethodId,
+        amount: parsedAmount,
+        note: note.trim() || undefined
+      });
+      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
+    } catch {
       saveLock.current = false;
       return;
     }
-    // The write is committed. A refresh failure must never invite saving this payment twice.
-    setHasSaved(true);
-    setAmount("");
-    setName("");
     Keyboard.dismiss();
-    await load();
-    setSaving(false);
-    saveLock.current = false;
+    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    setSaved(true);
   }
 
   async function loadMore() {
-    if (!date || !hasMore || pageLock.current || saving) return;
-    pageLock.current = true;
-    setLoadingMore(true);
-    const request = requestId.current;
+    if (!date || !hasMore || loadingMore || saving) return;
+    setRequestError(null);
     try {
-      const rows = await listReceiptEvents(db, date, channelId, events.at(-1)?.id);
-      if (request !== requestId.current) return;
-      setEvents((previous) => [...previous, ...rows]);
-      setHasMore(rows.length === 50);
-      setSaveError(null);
+      await historyQuery.fetchNextPage();
     } catch {
-      if (request === requestId.current) {
-        setSaveError("Could not load older payments. Please try again.");
-      }
-    } finally {
-      setLoadingMore(false);
-      pageLock.current = false;
+      setRequestError("Could not load older entries. Please try again.");
     }
   }
 
   return {
-    params,
     date,
-    channelId,
+    paymentMethodId,
+    mode,
     valid,
-    router,
     method,
-    balance,
-    events,
+    total,
+    entries,
     hasMore,
     loadingMore,
     loading,
     loadError,
     amount,
+    note,
     saving,
     saveError,
-    name,
-    setName,
-    hasSaved,
     amountError,
     canSave,
-    amountPaisa,
+    parsedAmount,
+    isOffline,
     setAmount,
-    setSaveError,
+    setNote,
+    setSaveError: setRequestError,
+    goBack,
     load,
     save,
     loadMore

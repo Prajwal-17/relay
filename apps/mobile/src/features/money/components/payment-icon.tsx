@@ -1,17 +1,11 @@
-import { usePalette } from "@/theme/palette";
-import { Banknote, QrCode, Store } from "lucide-react-native";
-import { View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import { Banknote, QrCode, Store, WalletCards } from "lucide-react-native";
+import { Image, View } from "react-native";
 
-import paths from "../../../../assets/payment-icons.json";
 import { cn } from "@/lib/utils";
+import { usePalette } from "@/theme/palette";
 
-// Provider marks are bundled from Simple Icons; see assets/README.md.
-const providers = {
-  phonepe: { path: paths.phonepe },
-  "google pay": { path: paths.googlepay },
-  paytm: { path: paths.paytm }
-};
+const PAYTM = require("../../../../assets/payment-methods/paytm.png");
+const PHONEPE = require("../../../../assets/payment-methods/phonepe.png");
 
 export function PaymentIcon({
   name,
@@ -21,13 +15,22 @@ export function PaymentIcon({
   kind?: "cash" | "upi" | "vendor";
 }) {
   const colors = usePalette();
-  const provider = providers[name?.toLowerCase() as keyof typeof providers];
-  const Icon = kind === "cash" ? Banknote : kind === "vendor" ? Store : QrCode;
+  const provider = name?.trim().toLowerCase();
+  const image = provider === "paytm" ? PAYTM : provider === "phonepe" ? PHONEPE : null;
+  const Icon =
+    kind === "cash"
+      ? Banknote
+      : kind === "vendor"
+        ? Store
+        : provider === "google pay"
+          ? WalletCards
+          : QrCode;
+
   return (
     <View
       accessible={false}
       className={cn(
-        "rounded-control h-9 w-9 shrink-0 items-center justify-center",
+        "rounded-control h-10 w-10 shrink-0 items-center justify-center overflow-hidden",
         kind === "cash"
           ? "bg-sales-soft"
           : kind === "vendor"
@@ -35,10 +38,8 @@ export function PaymentIcon({
             : "bg-surface-muted"
       )}
     >
-      {provider && kind === "upi" ? (
-        <Svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
-          <Path d={provider.path} fill={colors.primary} />
-        </Svg>
+      {image && kind === "upi" ? (
+        <Image source={image} resizeMode="contain" style={{ width: 32, height: 22 }} />
       ) : (
         <Icon
           size={20}
@@ -48,7 +49,7 @@ export function PaymentIcon({
               ? colors["sales-ink"]
               : kind === "vendor"
                 ? colors["accent-ink"]
-                : colors["primary"]
+                : colors.primary
           }
         />
       )}

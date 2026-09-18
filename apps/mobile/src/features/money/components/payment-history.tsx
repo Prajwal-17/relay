@@ -1,77 +1,61 @@
 import { View } from "react-native";
-import { Text } from "@/components/ui/text";
+
 import { AppButton } from "@/components/ui/app-button";
+import { Text } from "@/components/ui/text";
 import { formatRupee } from "@/lib/format/money";
-import type { LocalDate, ReceiptEvent } from "../money.types";
-import { groupPaymentHistory, paymentTime } from "../payment-history.utils";
+import type { ReceivedEntry } from "../money.types";
+import { paymentTime } from "../payment-history.utils";
 
 interface PaymentHistoryProps {
-  date: LocalDate | null;
-  events: ReceiptEvent[];
+  entries: ReceivedEntry[];
   hasMore: boolean;
   loadingMore: boolean;
-  saving: boolean;
   loadMore: () => Promise<void>;
 }
-export function PaymentHistory({
-  date,
-  events,
-  hasMore,
-  loadingMore,
-  saving,
-  loadMore
-}: PaymentHistoryProps) {
+
+export function PaymentHistory({ entries, hasMore, loadingMore, loadMore }: PaymentHistoryProps) {
   return (
     <View className="gap-3" testID="payment-history">
-      <View className="gap-2">
-        <Text accessibilityRole="header" className="text-ink text-base font-semibold">
-          History
-        </Text>
-      </View>
-      {events.length === 0 ? (
-        <View>
-          <Text className="text-muted py-4 text-sm">No payments added yet.</Text>
+      <Text accessibilityRole="header" className="text-ink text-base font-semibold">
+        Entries
+      </Text>
+      {entries.length === 0 ? (
+        <View className="border-border bg-surface rounded-card border px-4 py-6">
+          <Text className="text-muted text-center text-sm">No entries for this method.</Text>
         </View>
       ) : (
-        groupPaymentHistory(events, date).map((group) => (
-          <View key={group.key} className="gap-2">
-            {group.label ? (
-              <Text className="text-muted text-xs font-medium">{group.label}</Text>
-            ) : null}
-            <View>
-              {group.events.map((event) => (
-                <View
-                  key={event.id}
-                  className="border-border flex-row flex-wrap items-center justify-between gap-3 border-b py-4 last:border-b-0"
+        <View className="border-border bg-surface rounded-card overflow-hidden border">
+          {entries.map((entry, index) => (
+            <View
+              key={entry.id}
+              className={`gap-2 px-4 py-3 ${
+                index < entries.length - 1 ? "border-border border-b" : ""
+              }`}
+            >
+              <View className="flex-row flex-wrap items-baseline justify-between gap-2">
+                <Text className="text-muted text-xs tabular-nums">
+                  {paymentTime(entry.createdAt)}
+                </Text>
+                <Text
+                  adjustsFontSizeToFit
+                  className="text-ink max-w-[65%] text-right text-lg font-semibold tabular-nums"
+                  numberOfLines={1}
                 >
-                  <View className="min-w-[40%] flex-1 gap-1">
-                    {event.name ? (
-                      <Text className="text-ink text-base font-semibold">{event.name}</Text>
-                    ) : null}
-                    {paymentTime(event.recordedAt) ? (
-                      <Text className="text-muted text-xs leading-5 tabular-nums">
-                        {paymentTime(event.recordedAt)}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <Text className="text-ink ml-auto max-w-full text-right text-lg font-semibold tabular-nums">
-                    {event.kind === "opening" ? "" : event.amountPaisa > 0 ? "+ " : "− "}
-                    {formatRupee(Math.abs(event.amountPaisa))}
-                  </Text>
-                </View>
-              ))}
+                  + {formatRupee(entry.amount)}
+                </Text>
+              </View>
+              {entry.note ? (
+                <Text className="text-ink text-sm leading-5">{entry.note}</Text>
+              ) : (
+                <Text className="text-muted text-xs">No note</Text>
+              )}
             </View>
-          </View>
-        ))
+          ))}
+        </View>
       )}
       {hasMore ? (
-        <AppButton
-          variant="outline"
-          loading={loadingMore}
-          disabled={saving}
-          onPress={() => void loadMore()}
-        >
-          Load older payments
+        <AppButton variant="outline" loading={loadingMore} onPress={() => void loadMore()}>
+          Load older entries
         </AppButton>
       ) : null}
     </View>

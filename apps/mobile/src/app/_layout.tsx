@@ -1,88 +1,69 @@
 import "../../global.css";
 
-import { DatabaseBackup, RotateCcw } from "lucide-react-native";
-import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { SQLiteProvider } from "expo-sqlite";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
+import { RotateCcw, WifiOff } from "lucide-react-native";
+import { useEffect } from "react";
 import { View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { AppButton } from "@/components/ui/app-button";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { Text } from "@/components/ui/text";
-import { migrateDatabase } from "@/lib/db/money-database";
+import { authClient } from "@/lib/auth/auth-client";
+import { QueryProvider } from "@/lib/query/query-provider";
 import { usePalette } from "@/theme/palette";
 
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  const [loaded, fontError] = useFonts({
     "Inter-Regular": require("../../assets/fonts/Inter-Regular.ttf"),
     "Inter-Medium": require("../../assets/fonts/Inter-Medium.ttf"),
     "Inter-SemiBold": require("../../assets/fonts/Inter-SemiBold.ttf"),
     "Inter-Bold": require("../../assets/fonts/Inter-Bold.ttf")
   });
 
+  if (!loaded && !fontError) return null;
+
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <QueryProvider>
+          <SessionLayout />
+        </QueryProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+function SessionLayout() {
+  const colors = usePalette();
+  const session = authClient.useSession();
+
   useEffect(() => {
-    if (loaded || error) void SplashScreen.hideAsync();
-  }, [loaded, error]);
+    if (!session.isPending) void SplashScreen.hideAsync();
+  }, [session.isPending]);
 
-  if (!loaded && !error) return null;
+  if (session.isPending) return null;
 
-  return (
-    <SafeAreaProvider>
-      <DatabaseLayout />
-    </SafeAreaProvider>
-  );
-}
-
-function RootNavigator() {
-  const colors = usePalette();
-  return (
-    <>
-      <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }}
-      >
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="vendor-payment" options={{ animation: "slide_from_right" }} />
-        <Stack.Screen name="payment" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
-        <Stack.Screen name="entry" options={{ presentation: "modal", animation: "slide_from_bottom" }} />
-        <Stack.Screen name="channels" options={{ presentation: "modal", animation: "slide_from_right" }} />
-      </Stack>
-      <StatusBar style="dark" />
-    </>
-  );
-}
-
-function DatabaseLayout() {
-  const colors = usePalette();
-  const [databaseKey, setDatabaseKey] = useState(0);
-  const [databaseError, setDatabaseError] = useState<Error | null>(null);
-
-  if (databaseError) {
+  if (session.error && !session.data) {
     return (
       <SafeAreaView className="bg-canvas flex-1 items-center justify-center px-6">
         <View className="border-border bg-surface rounded-card w-full max-w-sm items-center border p-6">
           <View className="bg-accent-soft mb-4 h-12 w-12 items-center justify-center rounded-full">
-            <DatabaseBackup color={colors.accent} size={24} strokeWidth={1.8} />
+            <WifiOff color={colors.accent} size={24} strokeWidth={1.8} />
           </View>
           <Text accessibilityRole="header" className="text-ink text-xl font-semibold">
-            Ledger could not open
+            Relay could not connect
           </Text>
           <Text className="text-muted my-3 text-center text-sm leading-5">
-            {databaseError.message || "The local money database could not be prepared."}
+            We could not restore your session. Check your connection, then try again.
           </Text>
-          <AppButton
-            className="w-full"
-            icon={RotateCcw}
-            onPress={() => {
-              setDatabaseError(null);
-              setDatabaseKey((value) => value + 1);
-            }}
-          >
+          <AppButton className="w-full" icon={RotateCcw} onPress={() => void session.refetch()}>
             Try again
           </AppButton>
         </View>
@@ -90,14 +71,42 @@ function DatabaseLayout() {
     );
   }
 
+  const sheetOptions = {
+    presentation: "formSheet" as const,
+    headerShown: false,
+    sheetGrabberVisible: true,
+    contentStyle: { backgroundColor: colors.canvas }
+  };
+
   return (
-    <SQLiteProvider
-      key={databaseKey}
-      databaseName="relay-money.db"
-      onInit={migrateDatabase}
-      onError={setDatabaseError}
-    >
-      <RootNavigator />
-    </SQLiteProvider>
+    <>
+      <Stack
+        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.canvas } }}
+      >
+        <Stack.Protected guard={!session.data}>
+          <Stack.Screen name="sign-in" />
+        </Stack.Protected>
+        <Stack.Protected guard={Boolean(session.data)}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="calendar"
+            options={{ ...sheetOptions, sheetAllowedDetents: [0.68] }}
+          />
+          <Stack.Screen
+            name="payment"
+            options={{ ...sheetOptions, sheetAllowedDetents: [0.72, 0.96] }}
+          />
+          <Stack.Screen
+            name="vendor-payment"
+            options={{ ...sheetOptions, sheetAllowedDetents: [0.78, 0.96] }}
+          />
+          <Stack.Screen
+            name="vendor-details"
+            options={{ ...sheetOptions, sheetAllowedDetents: "fitToContents" }}
+          />
+        </Stack.Protected>
+      </Stack>
+      <StatusBar style={session.data ? "dark" : "light"} />
+    </>
   );
 }
