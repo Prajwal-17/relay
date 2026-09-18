@@ -97,7 +97,7 @@ export const TransactionTable = ({
     <div className="flex min-h-0 flex-1 flex-col gap-1.5">
       <div className="flex h-9 shrink-0 items-center justify-between gap-3 pl-1">
         <div className="flex items-center gap-1 text-xs font-medium">
-          <h2 className="text-foreground">Recent {transactionLabel}</h2>
+          <h2 className="text-foreground section-title">Recent {transactionLabel}</h2>
           <span className="text-muted-foreground" aria-hidden="true">
             ·
           </span>

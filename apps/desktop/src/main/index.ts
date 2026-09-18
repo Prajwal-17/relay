@@ -5,6 +5,7 @@ import { isAbsolute, join, resolve } from "node:path";
 import { resolveApiPort } from "../shared/runtimeConfig";
 import type { DatabaseUpgradeStatus } from "../shared/types";
 import type { UpgradeInspection } from "./db/upgradeCoordinator";
+import { getAppIconPath } from "./appIcon";
 import { initMainEnv } from "./loadEnv";
 import { createMainWindow } from "./mainWindow";
 import { handleAssetsProtocol, registerProtocol } from "./protocol";
@@ -70,6 +71,8 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(async () => {
+    const appIcon = getAppIconPath();
+    if (process.platform === "darwin" && appIcon) app.dock?.setIcon(appIcon);
     handleAssetsProtocol();
 
     const [{ setupIpcHandlers }, { store }] = await Promise.all([

@@ -31,7 +31,7 @@ function TabsTrigger({ className, ...props }: React.ComponentProps<typeof TabsPr
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "text-muted-foreground hover:bg-hover hover:text-foreground data-[state=active]:bg-selected data-[state=active]:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] border border-transparent px-3 py-0 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow] focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "text-muted-foreground hover:bg-hover hover:text-foreground data-[state=active]:bg-selected data-[state=active]:text-foreground data-[state=active]:border-border-strong focus-visible:border-ring focus-visible:ring-ring inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-control)-2px)] border border-transparent px-3 py-0 text-sm font-medium whitespace-nowrap transition-[background-color,color,border-color,box-shadow] duration-150 ease-out focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}

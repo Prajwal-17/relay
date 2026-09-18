@@ -49,9 +49,7 @@ export const OnboardingComplete = () => {
         transition={{ duration: 0.4, delay: 0.25, ease: [0.23, 1, 0.32, 1] }}
         className="flex flex-col gap-2"
       >
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">
-          You&apos;re all set! 🎉
-        </h2>
+        <h2 className="text-foreground workspace-title">You&apos;re all set! 🎉</h2>
         <p className="text-muted-foreground text-sm">
           Your store profile has been created. Here&apos;s a quick summary:
         </p>

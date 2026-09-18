@@ -48,7 +48,7 @@ export const StoreIdentityStep = () => {
         <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
           <Store className="text-onboarding-icon-dark size-5" />
         </div>
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">Your Store</h2>
+        <h2 className="text-foreground workspace-title">Your Store</h2>
         <p className="text-muted-foreground text-sm">
           This will appear on all your invoices and receipts.
           <span className="text-muted-foreground/60 ml-1">

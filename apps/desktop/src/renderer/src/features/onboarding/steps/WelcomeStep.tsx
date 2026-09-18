@@ -1,4 +1,4 @@
-import relayAppIcon from "@assets/desktop/app-icon.svg";
+import { relayAppIcon } from "@/lib/appIcon";
 import { Button } from "@/components/ui/button";
 import { FEATURE_PILLS, PRODUCT_NAME } from "@/constants/renderer.constants";
 import { useOnboardingStore } from "@/features/onboarding/onboarding.store";

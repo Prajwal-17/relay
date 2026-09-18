@@ -6,8 +6,8 @@ interface StatCardProps {
 export function StatCard({ label, value }: StatCardProps) {
   return (
     <div className="bg-card flex items-center justify-between rounded-(--radius-control) border px-3 py-2 text-sm font-medium">
-      <span>{label}</span>
-      <span className="font-semibold">{value}</span>
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold tabular-nums">{value}</span>
     </div>
   );
 }

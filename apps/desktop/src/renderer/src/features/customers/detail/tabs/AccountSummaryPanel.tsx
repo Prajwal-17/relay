@@ -89,7 +89,7 @@ export function AccountSummaryPanel({
       className="border-border bg-card flex flex-col self-start overflow-hidden rounded-(--radius-panel) border shadow-xs"
     >
       <div className="border-border border-b px-3 py-2.5">
-        <h2 className="text-sm font-semibold">Account summary</h2>
+        <h2 className="section-title">Account summary</h2>
       </div>
 
       <div className="px-3 py-3">

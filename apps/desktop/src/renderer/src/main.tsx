@@ -1,4 +1,4 @@
-import relayAppIcon from "@assets/desktop/app-icon-small.svg";
+import { relaySmallAppIcon as relayAppIcon } from "@/lib/appIcon";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app/App";

@@ -71,7 +71,7 @@ export const OwnerContactStep = () => {
         <div className="bg-hover flex size-10 items-center justify-center rounded-(--radius-panel)">
           <User className="text-onboarding-icon-dark size-5" />
         </div>
-        <h2 className="text-foreground text-xl font-semibold tracking-tight">Owner & Contact</h2>
+        <h2 className="text-foreground workspace-title">Owner & Contact</h2>
 
         <p className="text-muted-foreground text-sm">
           Printed on invoices as the contact information for your store. <br />

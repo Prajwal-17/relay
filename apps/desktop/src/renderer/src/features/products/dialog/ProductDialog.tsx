@@ -125,7 +125,7 @@ export function ProductDialog() {
         >
           <div className="border-border bg-card grid shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 border-b px-4 py-2">
             <div className="min-w-0 pr-2">
-              <h2 className="text-foreground wrap-break-words max-w-full text-xl leading-tight font-bold tracking-tight">
+              <h2 className="text-foreground wrap-break-words workspace-title max-w-full">
                 {isAddMode ? "New Product" : productSnapshot || productName || "Product Details"}
               </h2>
               {!isAddMode && (
@@ -195,7 +195,7 @@ export function ProductDialog() {
                               <Button
                                 variant="outline"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.RESTORE)}
-                                className="text-foreground border-border hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                                className="text-foreground border-border hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-colors duration-150 ease-out"
                               >
                                 <RotateCcw className="h-4 w-4" />
                                 Restore
@@ -210,7 +210,7 @@ export function ProductDialog() {
                               <Button
                                 variant="destructive"
                                 onClick={() => setActiveDialog(PRODUCT_OPERATION.PERMANENT_DELETE)}
-                                className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                                className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-colors duration-150 ease-out"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 <span className="hidden sm:inline">Delete</span>
@@ -226,7 +226,7 @@ export function ProductDialog() {
                           <Button
                             variant="outline"
                             onClick={() => setDialogMode(DIALOG_MODE.EDIT)}
-                            className="border-border text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                            className="border-border text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-5 text-sm font-semibold transition-colors duration-150 ease-out"
                           >
                             <Edit3 className="h-4 w-4" />
                             Edit
@@ -234,7 +234,7 @@ export function ProductDialog() {
                           <Button
                             variant="destructive"
                             onClick={() => setActiveDialog(PRODUCT_OPERATION.SOFT_DELETE)}
-                            className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                            className="h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-colors duration-150 ease-out"
                           >
                             <Trash2 className="h-4 w-4" />
                             <span className="hidden sm:inline">Delete</span>
@@ -247,7 +247,7 @@ export function ProductDialog() {
                       variant="ghost"
                       onClick={() => setDialogMode(DIALOG_MODE.VIEW)}
                       disabled={productMutation.isPending}
-                      className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-all duration-160 ease-out active:scale-[0.97]"
+                      className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 cursor-pointer gap-2 px-4 text-sm font-semibold transition-colors duration-150 ease-out"
                     >
                       <Eye className="h-4 w-4" />
                       View
@@ -263,7 +263,7 @@ export function ProductDialog() {
                 onClick={() => {
                   closeProductDialog();
                 }}
-                className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 w-10 shrink-0 cursor-pointer p-0 transition-all duration-160 ease-out active:scale-[0.97]"
+                className="text-muted-foreground hover:text-foreground hover:bg-hover h-10 w-10 shrink-0 cursor-pointer p-0 transition-colors duration-150 ease-out"
               >
                 <X className="h-6! w-6!" />
               </Button>

@@ -2,68 +2,73 @@
 name: Relay Desktop
 description: "A compact, keyboard-first billing workspace for fast and dependable shop-counter operation."
 colors:
-  canvas: "#f5f5f2"
-  surface-1: "#ffffff"
-  surface-2: "#e8ebe6"
-  surface-3: "#d8ded7"
-  border-standard: "#d8d5cc"
-  border-frame: "#c3bfb4"
-  border-strong: "#999487"
-  ink: "#20231f"
-  ink-muted: "#4d544c"
-  ink-subtle: "#4d544c"
-  hover: "#e8ebe6"
-  selected: "#d8ded7"
-  counter-accent: "#b6532b"
-  counter-accent-hover: "#96411f"
-  counter-accent-soft: "#fbe9e1"
-  counter-accent-foreground: "#76351f"
-  sales-accent: "#1f9d72"
-  sales-accent-hover: "#198660"
-  sales-accent-soft: "#e3f5ef"
-  sales-accent-foreground: "#0b5c43"
-  estimate-accent: "#b44a68"
-  estimate-accent-hover: "#973951"
-  estimate-accent-soft: "#f8e9ee"
-  estimate-accent-foreground: "#6f263e"
-  olive-accent: "#5e7837"
-  olive-accent-soft: "#d4e6ad"
-  olive-accent-foreground: "#3f521b"
-  gold-accent: "#d18a12"
-  gold-accent-soft: "#fff0c7"
-  gold-accent-border: "#e2a93c"
-  gold-accent-foreground: "#754300"
-  selection-marker: "#b6532b"
-  focus: "#b6532b"
-  table-header: "#e9ebe6"
-  calendar-range: "#e8c9bc"
-  calendar-range-foreground: "#76351f"
-  calendar-range-edge: "#96411f"
-  calendar-range-edge-hover: "#76351f"
-  calendar-range-edge-foreground: "#ffffff"
-  primary: "#283129"
-  primary-hover: "#1b211c"
-  on-primary: "#ffffff"
-  unit-tag-background: "#e3f5ef"
-  unit-tag-border: "#75bea5"
-  unit-tag-text: "#0b5c43"
-  mrp-tag-background: "#fff0c7"
-  mrp-tag-border: "#e2a93c"
-  mrp-tag-text: "#754300"
-  onboarding-panel: "#202720"
-  success: "#1f6a43"
-  warning: "#875b1d"
-  line-item-complete: "#bfe2cc"
-  line-item-complete-field: "#d9efe1"
-  line-item-partial: "#dfc99f"
-  line-item-partial-field: "#efe2c8"
-  destructive: "#9b342a"
-  chart-1: "#1f9d72"
-  chart-2: "#b44a68"
-  chart-3: "#b6532b"
-  chart-4: "#7a8b43"
-  chart-5: "#d18a12"
-  search-highlight: "oklch(93% 0.14 95)"
+  canvas: "oklch(97.4% 0.004 110)"
+  surface-1: "oklch(100% 0 0)"
+  surface-2: "oklch(95.8% 0.006 110)"
+  surface-3: "oklch(92.8% 0.01 110)"
+  border-standard: "oklch(88% 0.012 110)"
+  border-frame: "oklch(81.5% 0.017 110)"
+  border-strong: "oklch(59% 0.024 110)"
+  ink: "oklch(25.154% 0.00861 137.82)"
+  ink-muted: "oklch(44.613% 0.02032 137.1)"
+  ink-subtle: "oklch(49.843% 0.02308 135.94)"
+  hover: "oklch(95% 0.008 110)"
+  selected: "oklch(91.8% 0.014 110)"
+  counter-accent: "oklch(56.049% 0.13936 41.23)"
+  counter-accent-hover: "oklch(48.239% 0.12365 40.88)"
+  counter-accent-soft: "oklch(94.62% 0.02246 45.6)"
+  counter-accent-foreground: "oklch(41.213% 0.09761 38.98)"
+  sales-accent: "oklch(61.995% 0.12385 164.16)"
+  sales-accent-hover: "oklch(55.211% 0.11099 163.68)"
+  sales-accent-soft: "oklch(95.518% 0.02054 173.95)"
+  sales-accent-foreground: "oklch(42.287% 0.0838 165.87)"
+  estimate-accent: "oklch(55.638% 0.1402 5.18)"
+  estimate-accent-hover: "oklch(48.204% 0.12748 7.49)"
+  estimate-accent-soft: "oklch(94.73% 0.01751 355.12)"
+  estimate-accent-foreground: "oklch(38.489% 0.10579 3.11)"
+  olive-accent: "oklch(53.665% 0.09652 127.41)"
+  olive-accent-soft: "oklch(89.736% 0.07737 122.19)"
+  olive-accent-foreground: "oklch(40.958% 0.08291 125.99)"
+  gold-accent: "oklch(68.932% 0.14377 71.95)"
+  gold-accent-soft: "oklch(95.683% 0.0555 90.32)"
+  gold-accent-border: "oklch(76.958% 0.13804 79.82)"
+  gold-accent-foreground: "oklch(43.352% 0.09788 64.22)"
+  selection-marker: "oklch(56.049% 0.13936 41.23)"
+  focus: "oklch(56.049% 0.13936 41.23)"
+  table-header: "oklch(94% 0.008 110)"
+  calendar-range: "oklch(85.863% 0.03949 44.08)"
+  calendar-range-foreground: "oklch(41.213% 0.09761 38.98)"
+  calendar-range-edge: "oklch(48.239% 0.12365 40.88)"
+  calendar-range-edge-hover: "oklch(41.213% 0.09761 38.98)"
+  calendar-range-edge-foreground: "oklch(100% 0 0)"
+  primary: "oklch(30.182% 0.01886 148.2)"
+  primary-hover: "oklch(23.98% 0.01288 150.06)"
+  primary-pressed: "oklch(20.62% 0.01913 151.24)"
+  control-surface: "oklch(100% 0 0)"
+  control-hover-border: "oklch(51.295% 0.03081 133.22)"
+  placeholder: "oklch(49.843% 0.02308 135.94)"
+  pressed: "oklch(88.5% 0.018 110)"
+  on-primary: "oklch(100% 0 0)"
+  unit-tag-background: "oklch(95.518% 0.02054 173.95)"
+  unit-tag-border: "oklch(74.63% 0.08235 170.2)"
+  unit-tag-text: "oklch(42.287% 0.0838 165.87)"
+  mrp-tag-background: "oklch(95.683% 0.0555 90.32)"
+  mrp-tag-border: "oklch(76.958% 0.13804 79.82)"
+  mrp-tag-text: "oklch(43.352% 0.09788 64.22)"
+  onboarding-panel: "oklch(26.329% 0.01628 145.09)"
+  success: "oklch(46.792% 0.09684 156.38)"
+  warning: "oklch(50.747% 0.09511 71.24)"
+  line-item-complete: "oklch(88.142% 0.04751 157.7)"
+  line-item-complete-field: "oklch(93.206% 0.0298 157.88)"
+  line-item-partial: "oklch(84.387% 0.0608 83.46)"
+  line-item-partial-field: "oklch(91.637% 0.03725 84.58)"
+  destructive: "oklch(47.398% 0.13933 28.9)"
+  chart-1: "oklch(61.995% 0.12385 164.16)"
+  chart-2: "oklch(55.638% 0.1402 5.18)"
+  chart-3: "oklch(56.049% 0.13936 41.23)"
+  chart-4: "oklch(60.658% 0.09942 120.43)"
+  chart-5: "oklch(68.932% 0.14377 71.95)"
+  search-highlight: "oklch(93% 0.1 95)"
   invoice-background: "#ffffff"
   invoice-text: "#20231f"
   invoice-muted: "#4d544c"
@@ -99,8 +104,26 @@ typography:
     fontFamily: "InterVariable, system-ui, sans-serif"
     fontSize: "18px"
     fontWeight: 600
-    lineHeight: 1.2
+    lineHeight: 1.25
     letterSpacing: "-0.02em"
+  section-title:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 600
+    lineHeight: 1.4
+    letterSpacing: "-0.01em"
+  field-label:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "14px"
+    fontWeight: 500
+    lineHeight: 1.35
+    letterSpacing: "normal"
+  supporting-text:
+    fontFamily: "InterVariable, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: 1.4
+    letterSpacing: "normal"
   financial-total:
     fontFamily: "InterVariable, system-ui, sans-serif"
     fontSize: "22px"
@@ -201,9 +224,32 @@ The product follows these priorities, in order:
 
 Relay currently has one supported light visual system. Do not introduce an isolated dark section or a second visual language without a product-level decision and a complete token set.
 
+## Refinement direction
+
+The desktop finish uses a coordinated warm-neutral surface ramp, white working surfaces, charcoal
+actions, and terracotta focus. Keep the compact Counter Ledger composition and familiar billing
+geometry. Quality comes from aligned controls, distinct interaction states, restrained edge
+highlights, and readable information hierarchy. No texture, glass, new theme engine, or decorative
+motion is required. See [the desktop plan and mobile handoff](docs/design-refinement.md).
+
 ## Colors
 
+Screen colors are authored and shipped as OKLCH. The neutral ramp holds hue at 110° and
+uses low chroma; lightness separates canvas, grouping, hover, selection, and boundaries.
+Operational accents retain their established appearance. Validate sRGB gamut and contrast
+after changing lightness or chroma. Alpha is reserved for nonessential highlights and
+shadows; essential text, fields, focus, and status cues stay opaque. Invoice tokens remain
+independent sRGB values. Mobile should derive native-safe sRGB from the same approved
+roles when it adopts this palette; see the mobile handoff.
+
 The neutral system carries most of the interface. Use `canvas` for the application background, `surface-1` for working panels, and the stronger neutral surfaces only for grouping, hover, or selected regions. Use solid border tokens to establish hierarchy; avoid low-opacity hairlines for important boundaries.
+
+Structural dividers use `border-standard`, panel boundaries use `border-frame`, and editable
+control boundaries use `border-strong` through `input`. A divider is not an input affordance.
+`control-surface` is opaque white; `control-hover-border` strengthens pointer feedback.
+`hover`, `pressed`, and `selected` are independent interaction colors. A focused control uses
+a solid 2px terracotta ring; invalid controls use solid destructive focus. Active segmented tabs also have a solid
+border so their state is not conveyed by a subtle fill alone.
 
 Color roles are deliberately separate:
 
@@ -225,18 +271,49 @@ Invoice colors are isolated from the screen theme. Receipt and A4 output may ref
 
 Text and interactive contrast must meet WCAG AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for component boundaries and meaningful icons. Muted color is for supporting information, not required instructions, totals, or row identifiers. Do not use alpha variants such as `/40` or `/50` for critical text or borders.
 
+## Brand assets
+
+Relay's Continuum mark retains its existing geometry. App icons use white `on-primary` on the
+terracotta `counter-accent` background, shared by desktop and mobile. This fixed identity does
+not change with the surrounding UI surface or operational status. The heavier small-size mark
+remains the app-chrome variant. Source colors are OKLCH; exported SVG/PNG/ICO/ICNS colors are
+resolved sRGB for native compatibility. Regenerate all formats with
+`python3 assets/generate-icons.py`; see `assets/README.md`. Invoice colors remain independent.
+Development builds use a charcoal `primary` tile with the white mark and vector DEV lettering,
+selected consistently for app chrome, native windows, and development installers. Production
+retains the terracotta identity.
+
 ## Typography
 
 Inter Variable is the application typeface. System sans-serif is the fallback. Monospace is reserved for identifiers or diagnostic values; it is not a decorative counterpoint.
 
+Main ink carries operational values; muted ink carries supporting labels and remains readable
+on billing status surfaces. Subtle ink is reserved for placeholders on light control surfaces;
+never substitute it for product names, amounts, or text on colored status rows.
+
 Use the frontmatter roles instead of choosing a size by eye:
 
-- `page-title` names the current workspace or major section.
+- `page-title`, applied with `workspace-title`, names a workspace or dialog (18px/600).
+- `section-title` names an internal section or compact card (14px/600).
+- `field-label` names a form control (14px/500); keep the entered value visually distinct.
+- `supporting-text` is 12px/400 muted text for metadata, with a 1.4 line height.
 - `body` is the default for controls, tables, forms, and descriptions.
 - `navigation` is the 15px label role for expanded sidebar destinations.
 - `secondary` supports timestamps, hints, metadata, and secondary labels.
 - `label` is for compact field labels, table headings, and short section kickers.
 - `financial-total` is reserved for the most important total in the current task.
+
+These named utilities are applied explicitly to screen components; do not apply global heading
+or font-weight overrides that could change invoices. Keep Inter as the single operational typeface.
+Placeholder text uses normal weight even when an entered product name uses semibold. Supporting
+labels must not compete with product names, financial totals, or selected navigation. Sidebar group
+labels use opaque muted ink rather than reduced-opacity text.
+
+Calculated billing amounts keep their grid width and padding but use transparent borders and no
+input shadow. Editable quantity and price retain visible input boundaries. Read-only shared inputs
+use a neutral grouping surface and frame border, remain selectable, and retain keyboard focus.
+Never remove input affordances from a value the operator can edit. Product-dialog buttons use color
+feedback without scaling; respect the same reduced-motion contract as the rest of the app.
 
 Application headings are compact and use slightly tightened tracking. Avoid marketing-scale display text inside routed workspaces. Use sentence case for actions and headings. Uppercase is limited to short table headings and category kickers; never use it for paragraphs or primary actions.
 
@@ -266,7 +343,7 @@ The shared density contract is:
 
 At a viewport height of 680px or less, page inset, panel inset, and section gap may reduce to 10px. Text and control heights do not shrink. At widths below 1120px, the standard sidebar becomes an overlay. Billing always uses the 56px icon rail with persistent tooltips. The receipt preview opens by default, remembers the operator’s preference, docks at 1280px and above, and becomes a right-side overlay below that width.
 
-The frameless desktop window uses one 36px application title bar inside the CSS viewport. It combines the Relay identity and version, the necessary View and Help menus, a flexible drag region, and standard minimize, maximize/restore, and close controls. The bar uses the charcoal `primary` surface with `on-primary` text, a `primary-hover` lower rule and interaction surface, plus the existing destructive and focus roles. Interactive elements must opt out of the drag region, remain keyboard accessible, and expose native window actions only through the context-isolated preload bridge. Do not add a second native menu row or duplicate window commands inside a menu.
+The frameless desktop window uses one 36px application title bar inside the CSS viewport. It combines the Relay identity and version, the necessary View and Help menus, a flexible drag region, and standard minimize, maximize/restore, and close controls. The bar uses the charcoal `primary` surface with `on-primary` text, a `primary-hover` lower rule, contextual hover/pressed surfaces, and a light terracotta focus ring, plus the existing destructive role. Interactive elements must opt out of the drag region, remain keyboard accessible, and expose native window actions only through the context-isolated preload bridge. Do not add a second native menu row or duplicate window commands inside a menu.
 
 Every route must have one intentional scroll owner per region. The application root does not scroll. A page may have a scrolling content region, while a table or preview may own an internal scroll region; avoid nested scroll containers that compete for the wheel. Page-level horizontal scrolling is not allowed. A genuinely wide data grid may scroll inside its framed region while its page header and primary actions remain stable.
 
@@ -291,7 +368,7 @@ Use these route compositions:
 | Settings               | 200px section navigation and a flexible content column with a 300–420px control region.                                                                    |
 | Reports                | A compact “Coming soon” state; do not imply unavailable reporting functions.                                                                               |
 | Changelog              | One readable release ledger with rule-separated entries and a sticky right-side version index; collapse the index to a selector when space is constrained. |
-| Onboarding             | A flat `onboarding-panel` (`#202720`) beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.    |
+| Onboarding             | A flat `onboarding-panel` beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.                |
 | Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                            |
 
 ## Elevation & Depth
@@ -305,7 +382,48 @@ Relay uses borders before shadows. Depth communicates stacking, not importance.
 
 Do not stack multiple shadowed cards inside another shadowed card. Do not use elevation to compensate for weak spacing or unclear grouping. Receipt preview docking is separated by a frame border; it receives a shadow only while behaving as an overlay.
 
+Solid action buttons use a restrained top inset highlight (`control-highlight`: inset 0 1px 0
+white at 14%); pressed solid buttons use `control-pressed-shadow` (inset 0 1px 2px,
+#111a13 at 18%) and a darker fill, without scaling or changing geometry. Inputs stay flat.
+The xs/sm/md/lg shadow tokens are respectively `0 1px 2px` at 5%, `0 2px 6px -2px`
+at 10%, `0 8px 24px -8px` at 18%, and `0 20px 48px -16px` at 24%, using #20231f.
+Menus and dialogs remain opaque white, framed, and clearly above their parent surface.
+
 Most interaction feedback is a color or border transition. Use the shared easing tokens and keep routine state changes between 150ms and 200ms. Movement should explain entry, exit, or reordering; it should not animate every row or total update. Avoid bouncy motion in billing entry, save, and destructive flows. Respect `prefers-reduced-motion` and keep the resulting interface fully understandable.
+
+### Contextual surface recipes
+
+Screen colors stay authored in OKLCH. Shared controls derive their neutral states with
+`color-mix(in oklab, …)` at explicit `data-surface` boundaries in `index.css`:
+
+| Context                | Base surface                     | Use                                                            |
+| ---------------------- | -------------------------------- | -------------------------------------------------------------- |
+| `canvas`               | `canvas`                         | App root and ungrouped workspace                               |
+| `panel`                | `surface-1`                      | Cards, settings groups, unchecked billing rows                 |
+| `overlay`              | `surface-1`                      | Dialogs, popovers, menus, search results; always reset context |
+| `selected`             | `selected`                       | Descendants of an explicitly selected surface when needed      |
+| `complete` / `partial` | Billing status fills             | Retain the established lighter status field fills              |
+| `inverse`              | `primary`, with `on-primary` ink | Dark application title bar                                     |
+
+A boundary declares context; it does not paint a background. Its rendered background must match
+its base. Use `context-control`, `context-foreground`, `context-muted`, `context-placeholder`,
+`context-border`, `context-border-hover`, `context-hover`, `context-selected`, `context-pressed`,
+and `context-focus` utilities for reusable controls. Existing branded actions, semantic status
+colors, chart colors, and print tokens keep their own roles.
+
+Recipes are redeclared at every boundary so descendant overrides recompute correctly. Starting
+from the local surface, hover mixes 5% local ink, selected 10%, pressed 13%, boundaries 58%,
+hover boundaries 68%, and supporting text 78%. Placeholders mix 74% ink into the local control
+surface. Ordinary controls mix 85% white into the local surface; inverse controls mix 8% light
+ink instead. Complete/partial controls retain their explicit field tokens. Focus uses the existing
+terracotta on light surfaces and `calendar-range` on inverse surfaces.
+
+This is deterministic CSS color composition, not pixel sampling or automatic contrast correction.
+Do not apply these recipes to arbitrary photography, gradients, or untested custom colors. The
+palette unit checks cover 4.5:1 text and 3:1 field/focus contrast across all seven contexts and
+sRGB gamut. New contexts require the same checks and a visual review. Overlays reset the local
+ink and focus as well as the surface, including menus opened from the dark title bar. Keep opaque
+surfaces and existing elevation levels; do not add blur, glass, or extra animation to billing.
 
 ## Shapes
 

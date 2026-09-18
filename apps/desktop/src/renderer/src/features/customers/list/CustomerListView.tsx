@@ -141,7 +141,7 @@ export function CustomerListView() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search customers…"
-              className="bg-background focus-visible:border-ring h-9 pr-9 pl-9 text-sm shadow-none"
+              className="bg-control focus-visible:border-ring h-9 pr-9 pl-9 text-sm shadow-none"
             />
             {search && (
               <button

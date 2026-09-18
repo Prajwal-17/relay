@@ -79,9 +79,7 @@ export const ProductEditForm = () => {
             />
 
             <div className="flex flex-col items-end space-y-3">
-              <Label className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-                Status
-              </Label>
+              <Label className="supporting-text">Status</Label>
               <div className="bg-secondary/60 border-border/50 flex items-center gap-5 rounded-(--radius-panel) border px-3 py-1.5">
                 <StatusIndicator size="lg" isDisabled={formDataState.isDisabled} />
                 <div className="bg-border/80 h-6 w-px" />
@@ -98,7 +96,7 @@ export const ProductEditForm = () => {
           <div className="bg-border/60 my-2 h-px w-full" />
 
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-semibold">
+            <Label htmlFor="name" className="field-label">
               Product Name *
             </Label>
             <Input
@@ -115,7 +113,7 @@ export const ProductEditForm = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-start justify-between gap-3">
               <div className="w-full space-y-2">
-                <Label htmlFor="weight" className="text-sm font-semibold">
+                <Label htmlFor="weight" className="field-label">
                   Weight
                 </Label>
                 <Input
@@ -129,7 +127,7 @@ export const ProductEditForm = () => {
                 {errors.weight && <div className="text-destructive">{errors.weight}</div>}
               </div>
               <div className="space-y-2">
-                <Label htmlFor="unit" className="text-sm font-semibold">
+                <Label htmlFor="unit" className="field-label">
                   Unit
                 </Label>
                 <Select
@@ -153,7 +151,7 @@ export const ProductEditForm = () => {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="purchasePrice" className="text-sm font-semibold">
+              <Label htmlFor="purchasePrice" className="field-label">
                 Purchase Price (Optional)
               </Label>
               <Input
@@ -174,7 +172,7 @@ export const ProductEditForm = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="price" className="text-sm font-semibold">
+              <Label htmlFor="price" className="field-label">
                 Selling Price *
               </Label>
               <Input
@@ -190,7 +188,7 @@ export const ProductEditForm = () => {
               {errors.price && <div className="text-destructive">{errors.price}</div>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="mrp" className="text-sm font-semibold">
+              <Label htmlFor="mrp" className="field-label">
                 MRP (Optional)
               </Label>
               <Input
@@ -259,7 +257,7 @@ export const ProductEditForm = () => {
                 ? Object.keys(formDataState).length === 0
                 : Object.keys(dirtyFields).length === 0)
             }
-            className="bg-primary hover:bg-primary-hover h-10 cursor-pointer px-5 text-sm font-semibold transition-colors disabled:opacity-60"
+            className="bg-primary hover:bg-primary-hover h-10 cursor-pointer px-5 text-sm font-medium transition-colors disabled:opacity-60"
           >
             {productMutation.isPending
               ? actionType === ACTION_TYPE.ADD
@@ -309,9 +307,7 @@ export const ProductPreview = () => {
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="bg-success h-2 w-2 animate-pulse rounded-full" />
-          <span className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
-            Live Preview
-          </span>
+          <span className="supporting-text">Live Preview</span>
         </div>
         <StatusIndicator isDisabled={formData.isDisabled} />
       </div>
@@ -340,35 +336,25 @@ export const ProductPreview = () => {
 
       <div className="grid grid-cols-2 gap-y-6 px-1 text-center">
         <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            Weight & Unit
-          </span>
+          <span className="supporting-text">Weight & Unit</span>
           <span className="text-foreground text-base font-semibold">{weightStr}</span>
         </div>
         <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            Selling Price
-          </span>
+          <span className="supporting-text">Selling Price</span>
           <span className="text-foreground text-xl font-black">{displayPrice}</span>
         </div>
         <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            Purchase Price
-          </span>
+          <span className="supporting-text">Purchase Price</span>
           <span className="text-foreground text-lg font-bold tracking-tight">
             {displayPurchasePrice}
           </span>
         </div>
         <div className="flex flex-col gap-1.5">
-          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            MRP
-          </span>
+          <span className="supporting-text">MRP</span>
           <span className="text-foreground text-lg font-bold tracking-tight">{displayMrp}</span>
         </div>
         <div className="col-span-2 flex flex-col gap-1.5 pt-1">
-          <span className="text-muted-foreground text-xs font-bold tracking-widest uppercase">
-            Total Qty Sold
-          </span>
+          <span className="supporting-text">Total Qty Sold</span>
           <span className="text-foreground text-base font-semibold">{soldStr}</span>
         </div>
       </div>

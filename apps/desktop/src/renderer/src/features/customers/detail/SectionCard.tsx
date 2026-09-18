@@ -28,7 +28,7 @@ export function SectionCard({
       {(title || action) && (
         <header className="border-border flex items-center justify-between gap-3 border-b px-3 py-2.5">
           <div className="min-w-0">
-            {title && <h3 className="text-foreground font-semibold tracking-[-0.02em]">{title}</h3>}
+            {title && <h3 className="text-foreground section-title">{title}</h3>}
             {description && <p className="text-muted-foreground text-sm">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}

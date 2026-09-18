@@ -37,7 +37,7 @@ export function DetailHeader({
             onClick={openSearch}
             title="Switch customer"
             aria-current="page"
-            className="text-foreground hover:bg-hover focus-visible:ring-ring flex min-w-0 cursor-pointer items-center gap-1 rounded-(--radius-control) px-1.5 py-1 text-lg font-semibold tracking-[-0.02em] transition-colors outline-none focus-visible:ring-2"
+            className="text-foreground hover:bg-hover focus-visible:ring-ring workspace-title flex min-w-0 cursor-pointer items-center gap-1 rounded-(--radius-control) px-1.5 py-1 transition-colors outline-none focus-visible:ring-2"
           >
             <span className="truncate">{customer.name}</span>
             <ChevronDown className="text-foreground size-5 shrink-0" />

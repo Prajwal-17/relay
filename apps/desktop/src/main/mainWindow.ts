@@ -1,7 +1,7 @@
 import { is } from "@electron-toolkit/utils";
 import { BrowserWindow, Menu, screen } from "electron";
 import { join } from "node:path";
-import { getLinuxAppIconPath } from "./appIcon";
+import { getAppIconPath } from "./appIcon";
 import { registerZoomController, restoreZoom, type ZoomStore } from "./zoom";
 
 type MainWindowOptions = {
@@ -36,7 +36,7 @@ export function createMainWindow({
     show: false,
     width: contentWidth,
     height: contentHeight,
-    icon: getLinuxAppIconPath(),
+    icon: getAppIconPath(),
     minWidth: 1024,
     minHeight: 600,
     useContentSize: true,

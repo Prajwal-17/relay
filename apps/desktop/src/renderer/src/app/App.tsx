@@ -8,7 +8,7 @@ import { router } from "./routes";
 
 const App = () => {
   return (
-    <div className="bg-background-secondary flex h-screen w-full flex-col">
+    <div data-surface="canvas" className="bg-background-secondary flex h-screen w-full flex-col">
       <AppTitleBar />
       <div className="min-h-0 flex-1">
         <AppErrorBoundary>

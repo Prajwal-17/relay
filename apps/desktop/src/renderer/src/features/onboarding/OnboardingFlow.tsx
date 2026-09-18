@@ -1,4 +1,4 @@
-import relayAppIcon from "@assets/desktop/app-icon.svg";
+import { relayAppIcon } from "@/lib/appIcon";
 import {
   ONBOARDING_FEATURES,
   ONBOARDING_STEPS,

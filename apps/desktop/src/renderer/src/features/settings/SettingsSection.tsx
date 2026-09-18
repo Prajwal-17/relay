@@ -35,9 +35,9 @@ export const SettingsSection = ({
   const canReset = resettableFieldsCount != null && onResetSection != null;
 
   return (
-    <section className="border-frame bg-card rounded-(--radius-panel) border">
+    <section data-surface="panel" className="border-frame bg-card rounded-(--radius-panel) border">
       <header className={description ? "border-border border-b px-4 py-3" : "px-4 py-3"}>
-        <h2 className="text-foreground text-lg font-semibold tracking-[-0.02em]">{title}</h2>
+        <h2 className="text-foreground workspace-title">{title}</h2>
         {description ? <p className="text-muted-foreground mt-1 text-sm">{description}</p> : null}
       </header>
 

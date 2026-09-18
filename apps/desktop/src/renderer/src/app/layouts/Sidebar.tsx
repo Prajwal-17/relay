@@ -1,4 +1,4 @@
-import relayAppIcon from "@assets/desktop/app-icon-small.svg";
+import { relaySmallAppIcon as relayAppIcon } from "@/lib/appIcon";
 import { navLinks } from "@/app/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
@@ -315,14 +315,14 @@ export const Sidebar = ({ variant = "docked" }: SidebarProps) => {
 
           <nav className="mt-4 flex flex-col">
             <div className="flex flex-col">
-              <span className="text-sidebar-foreground/50 mb-1 px-2 text-xs font-semibold tracking-wide uppercase">
+              <span className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wide uppercase">
                 Main
               </span>
               <div className="flex flex-col gap-0.5">{mainLinks.map(renderNavItem)}</div>
             </div>
 
             <div className="mt-4 flex flex-col">
-              <span className="text-sidebar-foreground/50 mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
+              <span className="text-muted-foreground mb-2 px-1 text-xs font-semibold tracking-wider uppercase">
                 System
               </span>
               <div className="flex flex-col gap-0.5">{systemLinks.map(renderNavItem)}</div>

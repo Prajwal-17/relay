@@ -48,7 +48,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                "text-sm leading-5 font-semibold",
+                "text-sm leading-5 font-medium",
                 isSalesMetric
                   ? "text-sales-foreground"
                   : isEstimateMetric
@@ -67,7 +67,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
               aria-label={`View ${label}`}
               title={`View ${label}`}
               className={cn(
-                "border-border focus-visible:ring-focus/60 inline-flex cursor-pointer items-center justify-center rounded-(--radius-control) border p-1 transition-colors outline-none focus-visible:ring-2",
+                "border-border focus-visible:ring-focus inline-flex cursor-pointer items-center justify-center rounded-(--radius-control) border p-1 transition-colors outline-none focus-visible:ring-2",
                 isSalesMetric
                   ? "bg-sales-soft text-sales-foreground hover:bg-sales-soft"
                   : isEstimateMetric
@@ -81,9 +81,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
         </div>
 
         <div className="mt-2">
-          <div className="financial-nums text-foreground text-xl font-semibold tracking-tight">
-            {value}
-          </div>
+          <div className="financial-nums text-foreground font-semibold">{value}</div>
         </div>
 
         {trend !== TREND_OPTION.NO_CHANGE && (
@@ -102,9 +100,7 @@ export function MetricCard({ label, value, changePercent, href, trend }: MetricC
               </Badge>
             ) : null}
 
-            <span className="text-muted-foreground text-xs leading-5 font-medium">
-              vs Yesterday
-            </span>
+            <span className="supporting-text">vs Yesterday</span>
           </div>
         )}
       </CardContent>
