@@ -50,11 +50,11 @@ export function VendorNameInput({
   const Chevron = open ? ChevronUp : ChevronDown;
   return (
     <View className="gap-1.5">
-      <Text className="text-ink text-sm font-medium">Vendor name</Text>
+      <Text className="text-foreground text-sm font-medium">Vendor name</Text>
       <View
         className={cn(
-          "bg-surface rounded-control border",
-          error ? "border-destructive" : open ? "border-accent" : "border-border"
+          "bg-card rounded-control border",
+          error ? "border-destructive" : open ? "border-counter-accent" : "border-border"
         )}
       >
         <View className="flex-row items-center">
@@ -64,9 +64,9 @@ export function VendorNameInput({
             accessibilityLabel="Vendor name"
             maxLength={120}
             aria-invalid={Boolean(error)}
-            className="text-ink min-h-12 min-w-0 flex-1 px-3 text-base outline-none"
+            className="text-foreground min-h-12 min-w-0 flex-1 px-3 text-base outline-none"
             placeholder="Enter vendor name"
-            selectionColor={colors["accent"]}
+            selectionColor={colors["counter-accent"]}
             value={value}
             onFocus={() => {
               if (!open) showSuggestions();
@@ -93,7 +93,7 @@ export function VendorNameInput({
             onPress={() => (open ? setOpen(false) : showSuggestions())}
             className="min-h-12 min-w-12 items-center justify-center"
           >
-            <Chevron size={18} color={colors["muted"]} />
+            <Chevron size={18} color={colors["muted-foreground"]} />
           </Pressable>
         </View>
         {open ? (
@@ -101,11 +101,13 @@ export function VendorNameInput({
             {loading ? (
               <ActivityIndicator
                 accessibilityLabel="Loading vendors"
-                color={colors["accent"]}
+                color={colors["counter-accent"]}
                 className="p-3"
               />
             ) : failed ? (
-              <Text className="text-muted px-3 py-3 text-sm">Recent vendors unavailable</Text>
+              <Text className="text-muted-foreground px-3 py-3 text-sm">
+                Recent vendors unavailable
+              </Text>
             ) : names.length ? (
               names.map((name, index) => (
                 <Pressable
@@ -120,11 +122,11 @@ export function VendorNameInput({
                     active === index && "bg-selected"
                   )}
                 >
-                  <Text className="text-ink text-base font-semibold">{name}</Text>
+                  <Text className="text-foreground text-base font-semibold">{name}</Text>
                 </Pressable>
               ))
             ) : (
-              <Text className="text-muted px-3 py-3 text-sm">
+              <Text className="text-muted-foreground px-3 py-3 text-sm">
                 {value.trim() ? "No matches" : "No recent vendors"}
               </Text>
             )}

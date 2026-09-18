@@ -1,44 +1,44 @@
-import { X } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import { View } from "react-native";
 
-import { IconButton } from "@/components/ui/icon-button";
+import { Pressable } from "@/components/ui/pressable";
 import { Text } from "@/components/ui/text";
 import { formatDisplayDate } from "@/lib/format/dates";
+import { usePalette } from "@/theme/palette";
 import type { LocalDate } from "../money.types";
-import { PaymentIcon } from "./payment-icon";
 
 export function PaymentHeader({
   name,
   date,
-  cash,
-  mode,
-  saving,
   onClose
 }: {
   name: string;
   date: LocalDate | null;
-  cash: boolean;
-  mode: "add" | "history";
-  saving: boolean;
   onClose: () => void;
 }) {
+  const colors = usePalette();
   return (
-    <View className="border-border bg-canvas border-b">
-      <View className="w-full max-w-xl flex-row items-center gap-3 self-center px-4 pt-3 pb-3">
-        {name ? <PaymentIcon name={name} kind={cash ? "cash" : "upi"} /> : null}
+    <View className="border-border border-b">
+      <View className="w-full max-w-xl flex-row items-center gap-2 self-center px-4 py-2">
+        <Pressable
+          accessibilityLabel="Back to Money"
+          className="min-h-12 min-w-12 items-center justify-center"
+          onPress={onClose}
+        >
+          <ArrowLeft color={colors.foreground} size={20} strokeWidth={1.8} />
+        </Pressable>
         <View className="min-w-0 flex-1">
           <Text
             accessibilityRole="header"
-            className="text-ink text-xl font-semibold"
+            className="text-foreground text-lg font-semibold"
             numberOfLines={1}
           >
-            {mode === "history" ? `${name || "Payment"} entries` : `Add ${name || "payment"}`}
+            {name || "Payment"} entries
           </Text>
           {date ? (
-            <Text className="text-muted mt-0.5 text-xs">{formatDisplayDate(date)}</Text>
+            <Text className="text-muted-foreground mt-0.5 text-xs">{formatDisplayDate(date)}</Text>
           ) : null}
         </View>
-        <IconButton icon={X} label="Close" disabled={saving} onPress={onClose} />
       </View>
     </View>
   );

@@ -2,12 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
 import { createDatabase } from "../../db/client";
-import {
-  dailyEntries,
-  dailyPaymentTotals,
-  receivedEntries,
-  vendorPayments
-} from "../../db/schema";
+import { dailyEntries, dailyPaymentTotals, receivedEntries, vendorPayments } from "../../db/schema";
 import {
   amountSchema,
   receivedPaymentSchema,
@@ -16,9 +11,11 @@ import {
   type VendorPaymentInput
 } from "./money.schemas";
 import {
+  getReceivedEntryById,
   getPaymentMethodsById,
   getPaymentMethodTotal,
-  getVendorPaymentsTotal
+  getVendorPaymentsTotal,
+  removeReceivedEntry
 } from "./money.repository";
 import { nowIso } from "./money.utils";
 
@@ -88,6 +85,29 @@ export async function addReceivedPayment(
   });
 
   await db.batch([upsertDay, updateTotal, insertEntry]);
+}
+
+export async function deleteReceivedPayment(
+  database: D1Database,
+  userId: string,
+  id: number
+): Promise<void> {
+  const entry = await getReceivedEntryById(database, userId, id);
+  if (!entry) throw new HTTPException(404, { message: "Payment entry not found." });
+
+  const currentTotal = await getPaymentMethodTotal(
+    database,
+    userId,
+    entry.date,
+    entry.paymentMethodId
+  );
+  if (currentTotal < entry.amount) {
+    throw new HTTPException(409, {
+      message: "Payment total is out of sync. Refresh and try again."
+    });
+  }
+
+  await removeReceivedEntry(database, userId, entry, currentTotal - entry.amount);
 }
 
 export async function addVendorPayment(

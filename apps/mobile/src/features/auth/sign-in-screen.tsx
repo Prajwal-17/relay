@@ -1,3 +1,4 @@
+import * as Linking from "expo-linking";
 import { router } from "expo-router";
 import { LogIn, ShieldCheck, WifiOff } from "lucide-react-native";
 import { useState } from "react";
@@ -26,7 +27,7 @@ export default function SignInScreen() {
     try {
       const result = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/money"
+        callbackURL: Linking.createURL("money")
       });
       if (result.error) throw new Error(result.error.message || "Google sign-in did not finish.");
 
@@ -50,8 +51,8 @@ export default function SignInScreen() {
     <SafeAreaView className="bg-primary flex-1">
       <View className="flex-1 justify-between">
         <View className="px-6 pt-12">
-          <View className="bg-accent mb-7 h-1 w-10" />
-          <Text className="text-primary-foreground text-[34px] leading-10 font-semibold tracking-tight">
+          <View className="bg-counter-accent mb-7 h-1 w-10" />
+          <Text className="text-primary-foreground text-[28px] leading-9 font-semibold tracking-tight">
             Relay
           </Text>
           <Text className="text-primary-foreground mt-3 max-w-xs text-base leading-6 opacity-80">
@@ -59,27 +60,27 @@ export default function SignInScreen() {
           </Text>
         </View>
 
-        <View className="bg-canvas border-frame border-t px-6 pt-7 pb-8">
+        <View className="bg-background border-frame border-t px-6 pt-7 pb-8">
           <View className="mx-auto w-full max-w-md">
-            <Text accessibilityRole="header" className="text-ink text-2xl font-semibold">
+            <Text accessibilityRole="header" className="text-foreground text-xl font-semibold">
               Open your ledger
             </Text>
-            <Text className="text-muted mt-2 text-sm leading-6">
+            <Text className="text-muted-foreground mt-2 text-sm leading-6">
               Continue with the Google account you use for Relay. A first sign-in creates your
               account.
             </Text>
 
             {isOffline ? (
-              <View className="border-border bg-surface-muted rounded-control mt-5 flex-row items-start gap-3 border px-4 py-3">
-                <WifiOff color={colors.muted} size={18} strokeWidth={1.8} />
-                <Text className="text-muted min-w-0 flex-1 text-sm leading-5">
+              <View className="border-border bg-muted rounded-control mt-5 flex-row items-start gap-3 border px-4 py-3">
+                <WifiOff color={colors["muted-foreground"]} size={18} strokeWidth={1.8} />
+                <Text className="text-muted-foreground min-w-0 flex-1 text-sm leading-5">
                   You are offline. Reconnect to sign in.
                 </Text>
               </View>
             ) : null}
 
             {error ? (
-              <View className="border-destructive bg-surface rounded-control mt-5 border px-4 py-3">
+              <View className="border-destructive bg-card rounded-control mt-5 border px-4 py-3">
                 <Text accessibilityRole="alert" className="text-destructive text-sm leading-5">
                   {error}
                 </Text>
@@ -87,8 +88,11 @@ export default function SignInScreen() {
             ) : null}
 
             {notice ? (
-              <View className="border-border bg-surface rounded-control mt-5 border px-4 py-3">
-                <Text accessibilityLiveRegion="polite" className="text-muted text-sm leading-5">
+              <View className="border-border bg-card rounded-control mt-5 border px-4 py-3">
+                <Text
+                  accessibilityLiveRegion="polite"
+                  className="text-muted-foreground text-sm leading-5"
+                >
                   {notice}
                 </Text>
               </View>
@@ -99,14 +103,15 @@ export default function SignInScreen() {
               disabled={isOffline}
               icon={LogIn}
               loading={signingIn}
+              loadingLabel="Signing in…"
               onPress={() => void signInWithGoogle()}
             >
               Continue with Google
             </AppButton>
 
             <View className="mt-5 flex-row items-start gap-2">
-              <ShieldCheck color={colors.muted} size={17} strokeWidth={1.8} />
-              <Text className="text-muted min-w-0 flex-1 text-xs leading-5">
+              <ShieldCheck color={colors["muted-foreground"]} size={17} strokeWidth={1.8} />
+              <Text className="text-muted-foreground min-w-0 flex-1 text-xs leading-5">
                 Google identifies your account. Your ledger remains private to you.
               </Text>
             </View>

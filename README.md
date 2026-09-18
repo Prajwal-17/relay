@@ -67,6 +67,10 @@ Run these from the repository root:
 | `pnpm build`                          | Build all workspace packages                       |
 | `pnpm lint`                           | Lint all workspace packages                        |
 | `pnpm format`                         | Format the workspace                               |
+| `pnpm --dir apps/mobile format`        | Format the mobile app                                |
+| `pnpm --dir apps/mobile format:check`  | Check mobile formatting without changing files      |
+| `pnpm --dir apps/server format`        | Format the server app                                |
+| `pnpm --dir apps/server format:check`  | Check server formatting without changing files      |
 | `pnpm --dir apps/desktop typecheck`   | Typecheck application and all test code            |
 | `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once                     |
 | `pnpm --dir apps/desktop build:win`   | Build the Windows installer                        |

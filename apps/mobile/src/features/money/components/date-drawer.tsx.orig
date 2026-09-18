@@ -1,0 +1,110 @@
+import * as Haptics from "expo-haptics";
+import { X } from "lucide-react-native";
+import { useWindowDimensions, View } from "react-native";
+import { CalendarList, type DateData } from "react-native-calendars";
+
+import { Drawer } from "@/components/ui/drawer";
+import { Pressable } from "@/components/ui/pressable";
+import { Text } from "@/components/ui/text";
+import { getTodayIST, isFutureDate, parseLocalDate } from "@/lib/format/dates";
+import { usePalette } from "@/theme/palette";
+import type { LocalDate } from "../money.types";
+
+interface DateDrawerProps {
+  open: boolean;
+  selectedDate: LocalDate;
+  onClose: () => void;
+  onSelect: (date: LocalDate) => void;
+}
+
+export function DateDrawer({ open, selectedDate, onClose, onSelect }: DateDrawerProps) {
+  const colors = usePalette();
+  const today = getTodayIST();
+
+  function selectDate(day: DateData) {
+    const date = parseLocalDate(day.dateString);
+    if (!date || isFutureDate(date)) return;
+    void Haptics.selectionAsync().catch(() => {});
+    onSelect(date);
+  }
+
+  return (
+    <Drawer open={open} onClose={onClose} label="calendar">
+      <View className="flex-row items-center justify-between px-5 pt-2 pb-1">
+        <Text accessibilityRole="header" className="text-ink text-lg font-semibold">
+          Choose a date
+        </Text>
+        <Pressable
+          accessibilityLabel="Close calendar"
+          className="min-h-11 min-w-11 items-center justify-center"
+          onPress={onClose}
+        >
+          <X color={colors.muted} size={20} strokeWidth={1.8} />
+        </Pressable>
+      </View>
+      <View className="h-[360px] px-3 pb-4">
+        <CalendarList
+          key={`${selectedDate.slice(0, 7)}-${calendarWidth}`}
+          animateScroll
+          calendarWidth={calendarWidth}
+          current={selectedDate}
+          disableAllTouchEventsForDisabledDays
+          firstDay={1}
+          futureScrollRange={futureScrollRange}
+          hideExtraDays
+          horizontal
+          maxDate={today}
+          markingType="custom"
+          markedDates={{
+            [today]: {
+              customStyles: {
+                container: {
+                  backgroundColor: colors["accent-soft"],
+                  borderColor: colors.accent,
+                  borderWidth: 1,
+                  borderRadius: 6
+                },
+                text: { color: colors["accent-ink"], fontFamily: "Inter-SemiBold" }
+              }
+            },
+            [selectedDate]: {
+              selected: true,
+              customStyles: {
+                container: {
+                  backgroundColor: colors.primary,
+                  borderColor: selectedDate === today ? colors.accent : colors.primary,
+                  borderWidth: selectedDate === today ? 2 : 0,
+                  borderRadius: 6
+                },
+                text: { color: colors["primary-foreground"], fontFamily: "Inter-SemiBold" }
+              }
+            }
+          }}
+          onDayPress={selectDate}
+          pagingEnabled
+          pastScrollRange={120}
+          style={{ backgroundColor: colors.surface }}
+          theme={{
+            backgroundColor: colors.surface,
+            calendarBackground: colors.surface,
+            textSectionTitleColor: colors.muted,
+            selectedDayBackgroundColor: colors.primary,
+            selectedDayTextColor: colors["primary-foreground"],
+            todayTextColor: colors.accent,
+            dayTextColor: colors.ink,
+            textDisabledColor: colors["border-strong"],
+            arrowColor: colors.primary,
+            monthTextColor: colors.ink,
+            textDayFontFamily: "Inter-Regular",
+            textMonthFontFamily: "Inter-SemiBold",
+            textDayHeaderFontFamily: "Inter-Medium",
+            textDayFontSize: 15,
+            textMonthFontSize: 15,
+            textDayHeaderFontSize: 12,
+            textDayStyle: { fontVariant: ["tabular-nums"] }
+          }}
+        />
+      </View>
+    </Drawer>
+  );
+}

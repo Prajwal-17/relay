@@ -6,21 +6,33 @@ import { Keyboard } from "react-native";
 
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { parseRupeeInput } from "@/lib/format/money";
+import { confirmAction } from "@/lib/confirm-action";
 import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
 import { moneyKeys } from "../money.keys";
 import {
   addReceivedPayment,
+  deleteReceivedEntry,
   getDailyEntry,
   listPaymentMethods,
   listReceivedEntries
 } from "../money.repository";
 
-export function usePaymentEntry() {
+interface PaymentEntryOptions {
+  date: string;
+  method: string;
+  name: string;
+  archived: boolean;
+  total: number;
+  onClose: () => void;
+}
+
+export function usePaymentEntry(options?: PaymentEntryOptions) {
   const params = useLocalSearchParams<{ date?: string; method?: string; mode?: string }>();
-  const date = parseLocalDate(params.date);
-  const paymentMethodId = params.method === "cash" ? null : Number(params.method);
-  const mode: "history" | "add" = params.mode === "history" ? "history" : "add";
+  const date = parseLocalDate(options?.date ?? params.date);
+  const methodParam = options?.method ?? params.method;
+  const paymentMethodId = methodParam === "cash" ? null : Number(methodParam);
+  const mode: "history" | "add" = options ? "add" : "history";
   const valid =
     date !== null &&
     !isFutureDate(date) &&
@@ -32,11 +44,12 @@ export function usePaymentEntry() {
   const [note, setNote] = useState("");
   const [requestError, setRequestError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [savingFlow, setSavingFlow] = useState(false);
   const saveLock = useRef(false);
 
   const detailsQuery = useQuery({
     queryKey: ["money", "payment-details", date ?? "invalid", paymentMethodId ?? "cash"],
-    enabled: valid,
+    enabled: valid && !options,
     queryFn: async ({ signal }) => {
       if (!date) throw new Error("Choose a valid payment date.");
       const [entry, methods] = await Promise.all([
@@ -75,17 +88,33 @@ export function usePaymentEntry() {
   });
 
   const addPayment = useMutation({ mutationFn: addReceivedPayment });
-  const method = detailsQuery.data?.method ?? { name: "", archived: false };
-  const total = detailsQuery.data?.total ?? 0;
+  const deletePayment = useMutation({
+    mutationFn: deleteReceivedEntry,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
+  });
+  const method = options
+    ? { name: options.name, archived: options.archived }
+    : (detailsQuery.data?.method ?? { name: "", archived: false });
+  const total = options ? options.total : (detailsQuery.data?.total ?? 0);
   const entries = historyQuery.data?.pages.flat() ?? [];
   const hasMore = Boolean(historyQuery.hasNextPage);
   const loadingMore = historyQuery.isFetchingNextPage;
-  const loading =
-    valid && (detailsQuery.isPending || (mode === "history" && historyQuery.isPending));
-  const loadCause = detailsQuery.error ?? historyQuery.error;
+  const loading = valid && !options && (detailsQuery.isPending || historyQuery.isPending);
+  const retrying = !options && (detailsQuery.isFetching || historyQuery.isRefetching);
+  const loadCause = options ? null : (detailsQuery.error ?? historyQuery.error);
   const loadError =
     loadCause instanceof Error ? loadCause.message : loadCause ? "Could not load entries." : null;
-  const saving = addPayment.isPending;
+  const saving = savingFlow;
+  const deletingId = deletePayment.isPending ? deletePayment.variables : null;
+  const deleteError =
+    deletePayment.error instanceof Error
+      ? deletePayment.error.message
+      : deletePayment.error
+        ? "Could not delete this entry."
+        : null;
   const saveError =
     requestError ??
     (addPayment.error instanceof Error
@@ -102,6 +131,8 @@ export function usePaymentEntry() {
     valid &&
     mode === "add" &&
     !isOffline &&
+    !saving &&
+    !saved &&
     !loading &&
     !loadError &&
     !method.archived &&
@@ -111,9 +142,21 @@ export function usePaymentEntry() {
   const dirty = amount.trim().length > 0 || note.trim().length > 0;
 
   const goBack = useCallback(() => {
+    if (options) {
+      if (saving) return;
+      if (dirty && !saved) {
+        confirmAction(
+          "Discard this entry?",
+          "This amount has not been added to Money.",
+          "Discard",
+          options.onClose
+        );
+      } else options.onClose();
+      return;
+    }
     if (router.canGoBack()) router.back();
     else router.replace("/money");
-  }, [router]);
+  }, [dirty, options, router, saved, saving]);
 
   const refetchDetails = detailsQuery.refetch;
   const refetchHistory = historyQuery.refetch;
@@ -126,19 +169,23 @@ export function usePaymentEntry() {
   }
 
   useConfirmSheetDismissal({
-    blocked: (dirty || saving) && !saved,
+    blocked: !options && (dirty || saving) && !saved,
     canDiscard: !saving,
     title: "Discard this entry?",
-    message: "This amount has not been added to the till."
+    message: "This amount has not been added to Money."
   });
 
   useEffect(() => {
-    if (saved) goBack();
-  }, [goBack, saved]);
+    if (saved) {
+      if (options) options.onClose();
+      else goBack();
+    }
+  }, [goBack, options, saved]);
 
   async function save() {
     if (!canSave || !date || saveLock.current) return;
     saveLock.current = true;
+    setSavingFlow(true);
     setRequestError(null);
     addPayment.reset();
     try {
@@ -151,10 +198,11 @@ export function usePaymentEntry() {
       await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
     } catch {
       saveLock.current = false;
+      setSavingFlow(false);
       return;
     }
     Keyboard.dismiss();
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setSaved(true);
   }
 
@@ -165,6 +213,22 @@ export function usePaymentEntry() {
       await historyQuery.fetchNextPage();
     } catch {
       setRequestError("Could not load older entries. Please try again.");
+    }
+  }
+
+  function setSaveError(message: string | null) {
+    setRequestError(message);
+    if (message === null) addPayment.reset();
+  }
+
+  async function deleteEntry(id: number): Promise<boolean> {
+    if (isOffline || deletePayment.isPending || mode !== "history") return false;
+    deletePayment.reset();
+    try {
+      await deletePayment.mutateAsync(id);
+      return true;
+    } catch {
+      return false;
     }
   }
 
@@ -179,7 +243,10 @@ export function usePaymentEntry() {
     hasMore,
     loadingMore,
     loading,
+    retrying,
     loadError,
+    deleteError,
+    deletingId,
     amount,
     note,
     saving,
@@ -190,10 +257,12 @@ export function usePaymentEntry() {
     isOffline,
     setAmount,
     setNote,
-    setSaveError: setRequestError,
+    setSaveError,
     goBack,
     load,
     save,
-    loadMore
+    loadMore,
+    deleteEntry,
+    clearDeleteError: deletePayment.reset
   };
 }

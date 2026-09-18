@@ -15,5 +15,5 @@ apps/desktop/test-results/
 apps/desktop/playwright-report/
 apps/desktop/blob-report/
 apps/desktop/playwright/.cache/
-.impeccable
+.impeccable/
 dist/

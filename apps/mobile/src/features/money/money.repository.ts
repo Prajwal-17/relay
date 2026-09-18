@@ -74,6 +74,10 @@ export function addVendorPayment(input: VendorPaymentInput): Promise<void> {
   });
 }
 
+export function deleteVendorPayment(id: number): Promise<void> {
+  return apiRequest(`/api/money/vendor-payments/${id}`, { method: "DELETE" });
+}
+
 export function listReceivedEntries(
   date: LocalDate,
   paymentMethodId: number | null,
@@ -86,6 +90,10 @@ export function listReceivedEntries(
   });
   if (beforeId !== undefined) query.set("beforeId", String(beforeId));
   return apiRequest(`/api/money/received-entries?${query}`, { signal });
+}
+
+export function deleteReceivedEntry(id: number): Promise<void> {
+  return apiRequest(`/api/money/received-entries/${id}`, { method: "DELETE" });
 }
 
 export function listRecentVendorNames(search: string, signal?: AbortSignal): Promise<string[]> {

@@ -26,20 +26,22 @@ export function VendorPaymentForm({ form }: { form: ReturnType<typeof useVendorP
         editable={!form.saving}
       />
       <View className="gap-1.5">
-        <Text className="text-ink text-sm font-medium">Note (optional)</Text>
+        <Text className="text-foreground text-sm font-medium">Note (optional)</Text>
         <AppTextInput
           accessibilityLabel="Vendor payment note (optional)"
-          className="bg-surface min-h-24 px-3 py-3 text-base"
+          className="bg-card min-h-24 px-3 py-3 text-base"
           value={form.note}
           onChangeText={form.setNote}
           editable={!form.saving}
           maxLength={240}
           multiline
           placeholder="Invoice, purpose, or reference"
-          selectionColor={colors.accent}
+          selectionColor={colors["counter-accent"]}
           textAlignVertical="top"
         />
-        <Text className="text-muted text-right text-xs tabular-nums">{form.note.length}/240</Text>
+        <Text className="text-muted-foreground text-right text-xs tabular-nums">
+          {form.note.length}/240
+        </Text>
       </View>
       {form.error ? (
         <Text accessibilityRole="alert" className="text-destructive text-sm">

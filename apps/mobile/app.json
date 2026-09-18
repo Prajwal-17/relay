@@ -19,7 +19,7 @@
         "foregroundImage": "./assets/images/relay-foreground.png",
         "monochromeImage": "./assets/images/relay-foreground.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": true
     },
     "web": {
       "output": "single",

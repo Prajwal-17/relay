@@ -6,24 +6,31 @@ import { Keyboard } from "react-native";
 
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { parseRupeeInput } from "@/lib/format/money";
+import { confirmAction } from "@/lib/confirm-action";
 import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
 import { moneyKeys } from "../money.keys";
 import { addVendorPayment } from "../money.repository";
 
-export function useVendorPayment() {
+interface VendorPaymentOptions {
+  date: string;
+  onClose: () => void;
+}
+
+export function useVendorPayment(options?: VendorPaymentOptions) {
   const params = useLocalSearchParams<{ date?: string }>();
-  const date = parseLocalDate(params.date);
+  const date = parseLocalDate(options?.date ?? params.date);
   const valid = date !== null && !isFutureDate(date);
   const queryClient = useQueryClient();
   const router = useRouter();
   const { isOffline } = useNetworkStatus();
   const [saved, setSaved] = useState(false);
+  const [savingFlow, setSavingFlow] = useState(false);
   const [vendorName, setVendorName] = useState("");
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const savePayment = useMutation({ mutationFn: addVendorPayment });
-  const saving = savePayment.isPending;
+  const saving = savingFlow;
   const error =
     savePayment.error instanceof Error
       ? savePayment.error.message
@@ -43,30 +50,47 @@ export function useVendorPayment() {
     valid &&
     !isOffline &&
     !saved &&
+    !saving &&
     !vendorError &&
     !parsed.error &&
     (parsed.paisa ?? 0) > 0 &&
     note.length <= 240;
 
   const goBack = useCallback(() => {
+    if (options) {
+      if (saving) return;
+      if (dirty && !saved) {
+        confirmAction(
+          "Discard vendor payment?",
+          "This payment has not been added.",
+          "Discard",
+          options.onClose
+        );
+      } else options.onClose();
+      return;
+    }
     if (router.canGoBack()) router.back();
     else router.replace("/money");
-  }, [router]);
+  }, [dirty, options, router, saved, saving]);
 
   useConfirmSheetDismissal({
-    blocked: (dirty || saving) && !saved,
+    blocked: !options && (dirty || saving) && !saved,
     canDiscard: !saving,
     title: "Discard vendor payment?",
     message: "This payment has not been added."
   });
 
   useEffect(() => {
-    if (saved) goBack();
-  }, [saved, goBack]);
+    if (saved) {
+      if (options) options.onClose();
+      else goBack();
+    }
+  }, [saved, goBack, options]);
 
   async function save() {
     if (lock.current || !canSave || !date || parsed.paisa === null) return;
     lock.current = true;
+    setSavingFlow(true);
     savePayment.reset();
     try {
       await savePayment.mutateAsync({
@@ -78,11 +102,27 @@ export function useVendorPayment() {
       await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
     } catch {
       lock.current = false;
+      setSavingFlow(false);
       return;
     }
     Keyboard.dismiss();
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     setSaved(true);
+  }
+
+  function updateVendorName(value: string) {
+    savePayment.reset();
+    setVendorName(value);
+  }
+
+  function updateAmount(value: string) {
+    savePayment.reset();
+    setAmount(value);
+  }
+
+  function updateNote(value: string) {
+    savePayment.reset();
+    setNote(value);
   }
 
   return {
@@ -97,9 +137,9 @@ export function useVendorPayment() {
     isOffline,
     amountError: parsed.error,
     canSave,
-    setVendorName,
-    setAmount,
-    setNote,
+    setVendorName: updateVendorName,
+    setAmount: updateAmount,
+    setNote: updateNote,
     goBack,
     save
   };

@@ -17,9 +17,9 @@ export function Pressable({
       disabled={disabled}
       accessibilityState={{ ...accessibilityState, disabled: Boolean(disabled) }}
       className={cn(
-        "web:focus-visible:outline web:focus-visible:outline-2 web:focus-visible:outline-offset-2 web:focus-visible:outline-focus",
+        "web:focus-visible:outline web:focus-visible:outline-2 web:focus-visible:outline-offset-2 web:focus-visible:outline-ring",
         className,
-        disabled ? "opacity-50" : "active:opacity-80"
+        disabled ? (accessibilityState?.busy ? "opacity-100" : "opacity-50") : "active:opacity-80"
       )}
       style={style}
     />

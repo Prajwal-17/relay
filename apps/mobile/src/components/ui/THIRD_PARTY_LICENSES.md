@@ -1,13 +1,12 @@
 # React Native Reusables
 
-`button.tsx`, `input.tsx`, and `text.tsx` are adapted from
-[React Native Reusables](https://github.com/founded-labs/react-native-reusables),
-commit `119d0b101ff0d18408dc392120e12b5c78ae0c05`.
+`button.tsx`, `card.tsx`, `icon.tsx`, `input.tsx`, and `text.tsx` are adapted from the
+[React Native Reusables](https://github.com/founded-labs/react-native-reusables) UniWind registry.
 
 Relay adaptations use its semantic palette, Inter typography and 44px minimum
-touch targets. Button text styles are exported explicitly for composition instead
-of inherited through context. Feature behavior belongs in application wrappers,
-not these primitives.
+touch targets. Feature behavior belongs in application wrappers, not these
+source-owned primitives. `components.json` and the `ui:add` script keep future
+registry additions on the same UniWind path.
 
 MIT License
 

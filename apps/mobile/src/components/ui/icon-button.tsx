@@ -1,7 +1,7 @@
-import { usePalette } from "@/theme/palette";
 import type { LucideIcon } from "lucide-react-native";
 import type { PressableProps } from "react-native";
 import { Button } from "@/components/ui/button";
+import { Icon as ReusableIcon } from "@/components/ui/icon";
 
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,6 @@ export function IconButton({
   className,
   ...props
 }: IconButtonProps) {
-  const colors = usePalette();
   return (
     <Button
       variant="outline"
@@ -32,9 +31,9 @@ export function IconButton({
       className={cn(tone === "destructive" && "border-destructive", className)}
       {...props}
     >
-      <Icon
-        color={tone === "destructive" ? colors["destructive"] : colors["primary"]}
-        size={19}
+      <ReusableIcon
+        as={Icon}
+        className={cn("size-[19px]", tone === "destructive" ? "text-destructive" : "text-primary")}
         strokeWidth={2}
       />
     </Button>

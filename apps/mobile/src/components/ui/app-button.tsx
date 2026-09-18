@@ -1,7 +1,8 @@
 import type { LucideIcon } from "lucide-react-native";
 import type { PropsWithChildren } from "react";
 import { ActivityIndicator, type PressableProps } from "react-native";
-import { Button, buttonTextVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
+import { Icon as ReusableIcon } from "@/components/ui/icon";
 import { Text } from "@/components/ui/text";
 
 import { usePalette } from "@/theme/palette";
@@ -12,6 +13,7 @@ interface AppButtonProps extends Omit<PressableProps, "children">, PropsWithChil
   variant?: ButtonVariant;
   icon?: LucideIcon;
   loading?: boolean;
+  loadingLabel?: string;
   compact?: boolean;
   className?: string;
 }
@@ -20,6 +22,7 @@ export function AppButton({
   variant = "primary",
   icon: Icon,
   loading = false,
+  loadingLabel,
   compact = false,
   disabled,
   className,
@@ -27,10 +30,10 @@ export function AppButton({
   ...props
 }: AppButtonProps) {
   const colors = usePalette();
-  const iconColors: Record<ButtonVariant, string> = {
+  const loadingColors: Record<ButtonVariant, string> = {
     primary: colors["primary-foreground"],
-    outline: colors.ink,
-    ghost: colors.muted,
+    outline: colors.foreground,
+    ghost: colors["muted-foreground"],
     destructive: colors["destructive-foreground"]
   };
   const isDisabled = disabled || loading;
@@ -47,11 +50,11 @@ export function AppButton({
       {...props}
     >
       {loading ? (
-        <ActivityIndicator color={iconColors[variant]} size="small" />
+        <ActivityIndicator color={loadingColors[variant]} size="small" />
       ) : Icon ? (
-        <Icon color={iconColors[variant]} size={18} strokeWidth={2} />
+        <ReusableIcon as={Icon} className="size-[18px]" strokeWidth={2} />
       ) : null}
-      <Text className={buttonTextVariants({ variant: baseVariant, size })}>{children}</Text>
+      <Text>{loading && loadingLabel ? loadingLabel : children}</Text>
     </Button>
   );
 }

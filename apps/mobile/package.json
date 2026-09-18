@@ -7,12 +7,17 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "ui:add": "pnpm dlx @react-native-reusables/cli@latest add --cwd . --styling-library uniwind",
+    "ui:doctor": "pnpm dlx @react-native-reusables/cli@latest doctor --cwd . --summary",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@better-auth/expo": "^1.7.5",
     "@expo/metro-runtime": "~57.0.15",
+    "@rn-primitives/portal": "^1.5.3",
     "@rn-primitives/slot": "^1.5.2",
     "@tanstack/react-query": "^5.101.2",
     "better-auth": "^1.7.5",
@@ -43,6 +48,7 @@
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.10.1",
     "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
     "uniwind": "^1.6.4"
   },
   "devDependencies": {
@@ -50,6 +56,8 @@
     "babel-preset-expo": "~57.0.12",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~57.0.2",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.6.14",
     "tailwindcss": "^4.1.13",
     "typescript": "~6.0.3"
   },

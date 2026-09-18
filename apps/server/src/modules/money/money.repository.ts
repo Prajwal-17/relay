@@ -9,12 +9,13 @@ import {
   lt,
   max,
   ne,
+  notExists,
   sql,
   sum
 } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
 
-import { createDatabase } from "../../db/client";
+import { createDatabase, type CloudDatabase } from "../../db/client";
 import {
   dailyEntries,
   dailyPaymentTotals,
@@ -22,7 +23,13 @@ import {
   receivedEntries,
   vendorPayments
 } from "../../db/schema";
-import type { DailyEntry, DaySummary, LocalDate, PaymentMethod, ReceivedEntry } from "./money.types";
+import type {
+  DailyEntry,
+  DaySummary,
+  LocalDate,
+  PaymentMethod,
+  ReceivedEntry
+} from "./money.types";
 import { nowIso } from "./money.utils";
 
 const PRESET_PAYMENT_METHODS = ["Paytm", "PhonePe", "Google Pay", "Other"] as const;
@@ -302,6 +309,63 @@ export async function listReceivedEntries(
     .limit(50);
 }
 
+export async function getReceivedEntryById(
+  database: D1Database,
+  userId: string,
+  id: number
+): Promise<{ id: number; date: LocalDate; paymentMethodId: number | null; amount: number } | null> {
+  const [entry] = await createDatabase(database)
+    .select({
+      id: receivedEntries.id,
+      date: receivedEntries.date,
+      paymentMethodId: receivedEntries.paymentMethodId,
+      amount: receivedEntries.amount
+    })
+    .from(receivedEntries)
+    .where(and(eq(receivedEntries.id, id), eq(receivedEntries.userId, userId)))
+    .limit(1);
+  return entry ?? null;
+}
+
+export async function removeReceivedEntry(
+  database: D1Database,
+  userId: string,
+  entry: { id: number; date: LocalDate; paymentMethodId: number | null },
+  nextTotal: number
+): Promise<void> {
+  const db = createDatabase(database);
+  const removeEntry = db
+    .delete(receivedEntries)
+    .where(and(eq(receivedEntries.id, entry.id), eq(receivedEntries.userId, userId)));
+  const updateTotal =
+    entry.paymentMethodId === null
+      ? db
+          .update(dailyEntries)
+          .set({ cashAmount: nextTotal, updatedAt: nowIso() })
+          .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, entry.date)))
+      : nextTotal === 0
+        ? db
+            .delete(dailyPaymentTotals)
+            .where(
+              and(
+                eq(dailyPaymentTotals.userId, userId),
+                eq(dailyPaymentTotals.date, entry.date),
+                eq(dailyPaymentTotals.paymentMethodId, entry.paymentMethodId)
+              )
+            )
+        : db
+            .update(dailyPaymentTotals)
+            .set({ amount: nextTotal })
+            .where(
+              and(
+                eq(dailyPaymentTotals.userId, userId),
+                eq(dailyPaymentTotals.date, entry.date),
+                eq(dailyPaymentTotals.paymentMethodId, entry.paymentMethodId)
+              )
+            );
+  await db.batch([removeEntry, updateTotal, pruneEmptyDay(db, userId, entry.date)]);
+}
+
 export async function searchVendorNames(
   database: D1Database,
   userId: string,
@@ -342,9 +406,7 @@ export async function deleteDailyEntry(
     db
       .delete(dailyPaymentTotals)
       .where(and(eq(dailyPaymentTotals.userId, userId), eq(dailyPaymentTotals.date, date))),
-    db
-      .delete(dailyEntries)
-      .where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)))
+    db.delete(dailyEntries).where(and(eq(dailyEntries.userId, userId), eq(dailyEntries.date, date)))
   ]);
 }
 
@@ -387,4 +449,53 @@ export async function getVendorPaymentsTotal(
     .from(vendorPayments)
     .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date)));
   return result?.amount ?? 0;
+}
+
+export async function deleteVendorPayment(
+  database: D1Database,
+  userId: string,
+  id: number
+): Promise<boolean> {
+  const db = createDatabase(database);
+  const [entry] = await db
+    .select({ date: vendorPayments.date })
+    .from(vendorPayments)
+    .where(and(eq(vendorPayments.id, id), eq(vendorPayments.userId, userId)))
+    .limit(1);
+  if (!entry) return false;
+  const removePayment = db
+    .delete(vendorPayments)
+    .where(and(eq(vendorPayments.id, id), eq(vendorPayments.userId, userId)))
+    .returning({ id: vendorPayments.id });
+  const [removed] = await db.batch([removePayment, pruneEmptyDay(db, userId, entry.date)]);
+  if (!removed.length) return false;
+  return true;
+}
+
+function pruneEmptyDay(db: CloudDatabase, userId: string, date: LocalDate) {
+  return db.delete(dailyEntries).where(
+    and(
+      eq(dailyEntries.userId, userId),
+      eq(dailyEntries.date, date),
+      eq(dailyEntries.cashAmount, 0),
+      notExists(
+        db
+          .select({ id: dailyPaymentTotals.id })
+          .from(dailyPaymentTotals)
+          .where(and(eq(dailyPaymentTotals.userId, userId), eq(dailyPaymentTotals.date, date)))
+      ),
+      notExists(
+        db
+          .select({ id: vendorPayments.id })
+          .from(vendorPayments)
+          .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date)))
+      ),
+      notExists(
+        db
+          .select({ id: receivedEntries.id })
+          .from(receivedEntries)
+          .where(and(eq(receivedEntries.userId, userId), eq(receivedEntries.date, date)))
+      )
+    )
+  );
 }

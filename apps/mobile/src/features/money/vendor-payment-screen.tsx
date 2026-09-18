@@ -15,18 +15,20 @@ export default function VendorPaymentScreen() {
   const form = useVendorPayment();
 
   return (
-    <SafeAreaView className="bg-canvas flex-1" edges={["bottom", "left", "right"]}>
+    <SafeAreaView className="bg-background flex-1" edges={["bottom", "left", "right"]}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View className="border-border w-full max-w-xl flex-row items-center gap-3 self-center border-b px-4 pt-3 pb-3">
           <View className="min-w-0 flex-1">
-            <Text accessibilityRole="header" className="text-ink text-xl font-semibold">
+            <Text accessibilityRole="header" className="text-foreground text-lg font-semibold">
               Pay vendor
             </Text>
             {form.date ? (
-              <Text className="text-muted mt-0.5 text-xs">{formatDisplayDate(form.date)}</Text>
+              <Text className="text-muted-foreground mt-0.5 text-xs">
+                {formatDisplayDate(form.date)}
+              </Text>
             ) : null}
           </View>
           <IconButton icon={X} label="Close" disabled={form.saving} onPress={form.goBack} />
@@ -39,9 +41,9 @@ export default function VendorPaymentScreen() {
         >
           <View className="w-full max-w-xl gap-4">
             {form.isOffline ? (
-              <View className="border-border bg-surface-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
-                <WifiOff color={colors.muted} size={17} strokeWidth={1.8} />
-                <Text className="text-muted min-w-0 flex-1 text-sm">
+              <View className="border-border bg-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
+                <WifiOff color={colors["muted-foreground"]} size={17} strokeWidth={1.8} />
+                <Text className="text-muted-foreground min-w-0 flex-1 text-sm">
                   Offline. Reconnect before recording this payment.
                 </Text>
               </View>
@@ -50,13 +52,13 @@ export default function VendorPaymentScreen() {
               <VendorPaymentForm form={form} />
             ) : (
               <Text accessibilityRole="alert" className="text-destructive text-base">
-                Choose today or an earlier date from Till.
+                Choose today or an earlier date from Money.
               </Text>
             )}
           </View>
         </ScrollView>
         {form.valid ? (
-          <View className="border-border bg-surface border-t px-4 py-3">
+          <View className="border-border bg-card border-t px-4 py-3">
             <View className="w-full max-w-xl flex-row gap-2 self-center">
               <AppButton variant="outline" disabled={form.saving} onPress={form.goBack}>
                 Cancel
@@ -65,6 +67,7 @@ export default function VendorPaymentScreen() {
                 icon={Plus}
                 className="flex-1"
                 loading={form.saving}
+                loadingLabel="Saving…"
                 disabled={!form.canSave}
                 onPress={() => void form.save()}
               >

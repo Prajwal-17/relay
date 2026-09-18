@@ -23,7 +23,7 @@ export function AppTextInput({
       className={cn(
         "font-sans",
         className,
-        "text-ink",
+        "text-foreground",
         current.length ? "font-semibold" : "font-normal"
       )}
     />
