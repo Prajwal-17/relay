@@ -230,7 +230,7 @@ The desktop finish uses a coordinated warm-neutral surface ramp, white working s
 actions, and terracotta focus. Keep the compact Counter Ledger composition and familiar billing
 geometry. Quality comes from aligned controls, distinct interaction states, restrained edge
 highlights, and readable information hierarchy. No texture, glass, new theme engine, or decorative
-motion is required. See [the desktop plan and mobile handoff](docs/design-refinement.md).
+motion is required.
 
 ## Colors
 
