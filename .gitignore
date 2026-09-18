@@ -6,6 +6,8 @@ node_modules/
 .env
 .env.production
 .env.development
+.dev.vars
+.wrangler/
 .commandcode/*
 .agents/*
 skills-lock.json
