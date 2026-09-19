@@ -15,7 +15,7 @@ export default function VendorPaymentScreen() {
   const form = useVendorPayment();
 
   return (
-    <SafeAreaView className="bg-canvas flex-1" edges={["bottom", "left", "right"]}>
+    <SafeAreaView className="bg-canvas flex-1" edges={["top", "bottom", "left", "right"]}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -50,7 +50,7 @@ export default function VendorPaymentScreen() {
               <VendorPaymentForm form={form} />
             ) : (
               <Text accessibilityRole="alert" className="text-destructive text-base">
-                Choose today or an earlier date from Till.
+                Choose today or an earlier date from Money.
               </Text>
             )}
           </View>

@@ -169,7 +169,7 @@ export default function MoneyScreen() {
             <View className="border-border bg-surface-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
               <WifiOff color={colors.muted} size={17} strokeWidth={1.8} />
               <Text className="text-muted min-w-0 flex-1 text-sm">
-                Offline. You can still review the till; saving is paused until you reconnect.
+                Offline. You can still review Money; saving is paused until you reconnect.
               </Text>
             </View>
           ) : null}
@@ -177,12 +177,12 @@ export default function MoneyScreen() {
           {loading ? (
             <View className="min-h-48 items-center justify-center gap-3 py-6">
               <ActivityIndicator color={colors.accent} />
-              <Text className="text-muted text-sm">Loading the till…</Text>
+              <Text className="text-muted text-sm">Loading Money…</Text>
             </View>
           ) : error ? (
             <View className="border-border bg-surface rounded-card gap-4 border p-5">
               <Text accessibilityRole="alert" className="text-destructive text-sm leading-5">
-                {error instanceof Error ? error.message : "Could not read the till."}
+                {error instanceof Error ? error.message : "Could not load Money."}
               </Text>
               <AppButton
                 variant="outline"

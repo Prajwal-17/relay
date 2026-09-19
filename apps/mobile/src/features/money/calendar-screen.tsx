@@ -24,7 +24,7 @@ export default function CalendarScreen() {
   }
 
   return (
-    <SafeAreaView className="bg-canvas flex-1" edges={["bottom", "left", "right"]}>
+    <SafeAreaView className="bg-canvas flex-1" edges={["top", "bottom", "left", "right"]}>
       <View className="flex-1 px-4 pt-3 pb-4">
         <View className="mb-2 flex-row items-center justify-between gap-3">
           <View className="min-w-0 flex-1">

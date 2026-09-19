@@ -6,7 +6,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { RotateCcw, WifiOff } from "lucide-react-native";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -71,6 +71,12 @@ function SessionLayout() {
     );
   }
 
+  const modalOptions = {
+    presentation: "modal" as const,
+    headerShown: false,
+    headerBackButtonMenuEnabled: false,
+    contentStyle: { backgroundColor: colors.canvas }
+  };
   const sheetOptions = {
     presentation: "formSheet" as const,
     headerShown: false,
@@ -78,6 +84,30 @@ function SessionLayout() {
     sheetGrabberVisible: true,
     contentStyle: { backgroundColor: colors.canvas }
   };
+  const calendarOptions =
+    Platform.OS === "ios" ? { ...sheetOptions, sheetAllowedDetents: [0.68] } : modalOptions;
+  const paymentOptions =
+    Platform.OS === "ios"
+      ? {
+          ...sheetOptions,
+          gestureEnabled: false,
+          sheetGrabberVisible: false,
+          sheetAllowedDetents: [0.72, 0.96]
+        }
+      : { ...modalOptions, gestureEnabled: false };
+  const vendorPaymentOptions =
+    Platform.OS === "ios"
+      ? {
+          ...sheetOptions,
+          gestureEnabled: false,
+          sheetGrabberVisible: false,
+          sheetAllowedDetents: [0.78, 0.96]
+        }
+      : { ...modalOptions, gestureEnabled: false };
+  const vendorDetailsOptions =
+    Platform.OS === "ios"
+      ? { ...sheetOptions, sheetAllowedDetents: "fitToContents" as const }
+      : modalOptions;
 
   return (
     <>
@@ -89,22 +119,10 @@ function SessionLayout() {
         </Stack.Protected>
         <Stack.Protected guard={Boolean(session.data)}>
           <Stack.Screen name="(tabs)" />
-          <Stack.Screen
-            name="calendar"
-            options={{ ...sheetOptions, sheetAllowedDetents: [0.68] }}
-          />
-          <Stack.Screen
-            name="payment"
-            options={{ ...sheetOptions, sheetAllowedDetents: [0.72, 0.96] }}
-          />
-          <Stack.Screen
-            name="vendor-payment"
-            options={{ ...sheetOptions, sheetAllowedDetents: [0.78, 0.96] }}
-          />
-          <Stack.Screen
-            name="vendor-details"
-            options={{ ...sheetOptions, sheetAllowedDetents: "fitToContents" }}
-          />
+          <Stack.Screen name="calendar" options={calendarOptions} />
+          <Stack.Screen name="payment" options={paymentOptions} />
+          <Stack.Screen name="vendor-payment" options={vendorPaymentOptions} />
+          <Stack.Screen name="vendor-details" options={vendorDetailsOptions} />
         </Stack.Protected>
       </Stack>
       <StatusBar style={session.data ? "dark" : "light"} />

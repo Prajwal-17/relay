@@ -16,7 +16,7 @@ export default function PaymentScreen() {
   const entry = usePaymentEntry();
 
   return (
-    <SafeAreaView className="bg-canvas flex-1" edges={["bottom", "left", "right"]}>
+    <SafeAreaView className="bg-canvas flex-1" edges={["top", "bottom", "left", "right"]}>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -46,7 +46,7 @@ export default function PaymentScreen() {
 
             {!entry.valid ? (
               <Text accessibilityRole="alert" className="text-destructive">
-                Choose a valid date and payment method from Till.
+                Choose a valid date and payment method from Money.
               </Text>
             ) : entry.loading ? (
               <View className="items-center gap-3 py-8">

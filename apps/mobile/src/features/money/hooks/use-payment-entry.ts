@@ -110,7 +110,8 @@ export function usePaymentEntry() {
     note.length <= 240;
   const dirty = amount.trim().length > 0 || note.trim().length > 0;
 
-  const goBack = useCallback(() => {
+  const closeScreen = useCallback(() => {
+    Keyboard.dismiss();
     if (router.canGoBack()) router.back();
     else router.replace("/money");
   }, [router]);
@@ -125,16 +126,17 @@ export function usePaymentEntry() {
     ]);
   }
 
-  useConfirmSheetDismissal({
+  const goBack = useConfirmSheetDismissal({
     blocked: (dirty || saving) && !saved,
     canDiscard: !saving,
     title: "Discard this entry?",
-    message: "This amount has not been added to the till."
+    message: "This amount has not been saved.",
+    onClose: closeScreen
   });
 
   useEffect(() => {
-    if (saved) goBack();
-  }, [goBack, saved]);
+    if (saved) closeScreen();
+  }, [closeScreen, saved]);
 
   async function save() {
     if (!canSave || !date || saveLock.current) return;

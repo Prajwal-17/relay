@@ -14,7 +14,7 @@ export const unstable_settings = {
 const items = {
   home: { label: "Home", icon: House },
   products: { label: "Products", icon: Package },
-  money: { label: "Till", icon: Banknote },
+  money: { label: "Money", icon: Banknote },
   customers: { label: "Customers", icon: UsersRound }
 } as const;
 
@@ -77,7 +77,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="home" options={{ title: "Home" }} />
       <Tabs.Screen name="products" options={{ title: "Products" }} />
-      <Tabs.Screen name="money" options={{ title: "Till" }} />
+      <Tabs.Screen name="money" options={{ title: "Money" }} />
       <Tabs.Screen name="customers" options={{ title: "Customers" }} />
     </Tabs>
   );

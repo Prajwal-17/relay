@@ -48,21 +48,23 @@ export function useVendorPayment() {
     (parsed.paisa ?? 0) > 0 &&
     note.length <= 240;
 
-  const goBack = useCallback(() => {
+  const closeScreen = useCallback(() => {
+    Keyboard.dismiss();
     if (router.canGoBack()) router.back();
     else router.replace("/money");
   }, [router]);
 
-  useConfirmSheetDismissal({
+  const goBack = useConfirmSheetDismissal({
     blocked: (dirty || saving) && !saved,
     canDiscard: !saving,
     title: "Discard vendor payment?",
-    message: "This payment has not been added."
+    message: "This payment has not been saved.",
+    onClose: closeScreen
   });
 
   useEffect(() => {
-    if (saved) goBack();
-  }, [saved, goBack]);
+    if (saved) closeScreen();
+  }, [saved, closeScreen]);
 
   async function save() {
     if (lock.current || !canSave || !date || parsed.paisa === null) return;

@@ -34,7 +34,7 @@ export default function VendorDetailsScreen() {
       : "Time unavailable";
 
   return (
-    <SafeAreaView className="bg-canvas" edges={["bottom", "left", "right"]}>
+    <SafeAreaView className="bg-canvas flex-1" edges={["top", "bottom", "left", "right"]}>
       <ScrollView contentContainerClassName="px-4 pt-3 pb-6">
         <View className="w-full max-w-xl gap-5 self-center">
           <View className="flex-row items-center gap-3">

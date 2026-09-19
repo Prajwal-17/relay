@@ -1,29 +1,29 @@
 # Relay Mobile
 
-Relay Mobile is the authenticated Expo companion for the shop's daily Till workflow. Google sign-in
-opens Till first. Home, Products, and Customers remain simple “Coming soon” placeholders until those
+Relay Mobile is the authenticated Expo companion for the shop's daily Money workflow. Google sign-in
+opens Money first. Home, Products, and Customers remain simple “Coming soon” placeholders until those
 workflows are ready.
 
 ## Stack
 
-- Expo SDK 57 with Expo Router native tabs and native form sheets
+- Expo SDK 57 with Expo Router tabs and platform-aware native modals
 - React Native 0.86 and React 19.2
 - UniWind with Tailwind CSS 4
 - Better Auth's Expo client with SecureStore-backed native cookies
 - TanStack Query for API state, cancellation, retries, focus, and connectivity
-- `react-native-calendars` for the date-only Till calendar
+- `react-native-calendars` for the date-only Money calendar
 - Local Inter font files, Lucide icons, and documented official payment marks
 
-## Till workflow
+## Money workflow
 
-Till loads the authenticated Cloudflare API in `apps/server`. A user can choose today or an earlier
+Money loads the authenticated Cloudflare API in `apps/server`. A user can choose today or an earlier
 India business date, review received/paid/net totals, add multiple entries for Cash or any active
 payment method, inspect per-method entry history, record vendor payments with optional notes, view
 untruncated vendor details, and delete the selected day's record.
 
 The app has no local business database and does not import desktop data. Money values remain integer
 paisa in transit and dates use the Asia/Kolkata business day. Future dates are disabled in the UI and
-rejected by the server. Payment method management is server-owned; the mobile Till consumes the
+rejected by the server. Payment method management is server-owned; the mobile Money screen consumes the
 methods returned by `/api/money/overview`.
 
 ## Authentication and resilience
@@ -38,8 +38,8 @@ while offline, while cached TanStack Query data remains visible.
 `global.css` maps desktop `DESIGN.md` semantics into Tailwind 4 tokens: warm canvas, white surfaces,
 charcoal actions, neutral selection, and terracotta focus cues. Screens use Inter, restrained 6px/8px
 radii, borders before shadows, tabular financial numerals, responsive wrapping, safe areas, and at
-least 44px touch targets. Native sheets provide spatial transitions; tab switching intentionally uses
-the platform default without extra JavaScript animation.
+least 44px touch targets. iOS sheets and Android full-screen modals use native transitions; tab
+switching intentionally uses no additional JavaScript animation.
 
 ## Development
 

@@ -1,6 +1,6 @@
-import { useNavigation } from "expo-router";
-import { usePreventRemove } from "expo-router/build/react-navigation/core";
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
+import { BackHandler, Platform } from "react-native";
 
 import { confirmAction } from "@/lib/confirm-action";
 
@@ -9,40 +9,38 @@ interface ConfirmSheetDismissalOptions {
   canDiscard: boolean;
   title: string;
   message: string;
+  onClose: () => void;
 }
 
 export function useConfirmSheetDismissal({
   blocked,
   canDiscard,
   title,
-  message
+  message,
+  onClose
 }: ConfirmSheetDismissalOptions) {
-  const navigation = useNavigation();
-  const pendingRemoval = useRef<(() => void) | null>(null);
-  const [removalAllowed, setRemovalAllowed] = useState(false);
-  const shouldPreventRemove = blocked && !removalAllowed;
-
-  usePreventRemove(shouldPreventRemove, ({ data }) => {
+  const requestClose = useCallback(() => {
+    if (!blocked) {
+      onClose();
+      return;
+    }
     if (!canDiscard) return;
 
-    confirmAction(title, message, "Discard", () => {
-      pendingRemoval.current = () => navigation.dispatch(data.action);
-      setRemovalAllowed(true);
-    });
-  });
+    confirmAction(title, message, "Discard", onClose);
+  }, [blocked, canDiscard, message, onClose, title]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      gestureEnabled: !shouldPreventRemove,
-      headerBackButtonMenuEnabled: false
-    });
-  }, [navigation, shouldPreventRemove]);
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS !== "android") return undefined;
 
-  useEffect(() => {
-    if (!removalAllowed) return;
+      const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+        requestClose();
+        return true;
+      });
 
-    const remove = pendingRemoval.current;
-    pendingRemoval.current = null;
-    remove?.();
-  }, [removalAllowed]);
+      return () => subscription.remove();
+    }, [requestClose])
+  );
+
+  return requestClose;
 }
