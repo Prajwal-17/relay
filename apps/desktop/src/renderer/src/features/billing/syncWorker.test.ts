@@ -87,6 +87,47 @@ function success(rowId: string, billingId = crypto.randomUUID()): SyncResponse {
   };
 }
 
+type PostedBillingPayload = {
+  data: {
+    items: Array<{ rowId: string }>;
+  };
+};
+
+function successForPayload(
+  payload: PostedBillingPayload,
+  billingId?: string,
+  transactionNo?: number
+): SyncResponse {
+  return {
+    ...(billingId ? { billingId } : {}),
+    ...(transactionNo ? { transactionNo } : {}),
+    syncedItems: payload.data.items.map((item) => ({
+      rowId: item.rowId,
+      id: crypto.randomUUID(),
+      updatedAt: new Date().toISOString()
+    })),
+    deletedRowIds: []
+  };
+}
+
+function fillTabToItemCount(tabId: string, itemCount: number): string[] {
+  const store = useBillingSessionStore.getState();
+  let filledItems = useBillingSessionStore
+    .getState()
+    .sessions[tabId]!.lineItems.filter((item) => item.productSnapshot.length > 0);
+
+  while (filledItems.length < itemCount) {
+    store.addEmptyLineItem(tabId, "button");
+    const rowId = useBillingSessionStore.getState().sessions[tabId]!.lineItems.at(-1)!.rowId;
+    store.addLineItem(tabId, rowId, product(`Autosave Product ${filledItems.length + 1}`));
+    filledItems = useBillingSessionStore
+      .getState()
+      .sessions[tabId]!.lineItems.filter((item) => item.productSnapshot.length > 0);
+  }
+
+  return filledItems.map((item) => item.rowId);
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -155,6 +196,121 @@ describe("billing autosave state machine", () => {
         items: [{ rowId, quantity: 3125 }]
       }
     });
+  });
+
+  it("persists rows 13-15 in a follow-up sync when the 12-row create acknowledgement arrives", async () => {
+    const { tabId } = initTab({ type: TRANSACTION_TYPE.ESTIMATE });
+    const billingId = crypto.randomUUID();
+    const firstRequest = deferred<SyncResponse>();
+    let firstPayload: PostedBillingPayload | undefined;
+    postMock
+      .mockImplementationOnce((_endpoint: string, payload: PostedBillingPayload) => {
+        firstPayload = payload;
+        return firstRequest.promise;
+      })
+      .mockImplementationOnce((_endpoint: string, payload: PostedBillingPayload) =>
+        Promise.resolve(successForPayload(payload))
+      );
+
+    fillTabToItemCount(tabId, 12);
+    processSyncQueue(tabId);
+    await vi.advanceTimersByTimeAsync(800);
+    expect(postMock).toHaveBeenCalledTimes(1);
+    expect(firstPayload?.data.items).toHaveLength(12);
+
+    const allRowIds = fillTabToItemCount(tabId, 15);
+    processSyncQueue(tabId);
+    firstRequest.resolve(successForPayload(firstPayload!, billingId, 71));
+    await vi.waitFor(() =>
+      expect(useBillingSessionStore.getState().sessions[tabId]?.billingId).toBe(billingId)
+    );
+    await flushSync(tabId);
+
+    expect.soft(postMock).toHaveBeenCalledTimes(2);
+    expect.soft(postMock.mock.calls[0]?.[0]).toBe("/api/estimates/create");
+    expect.soft(postMock.mock.calls[1]?.[0]).toBe(`/api/estimates/${billingId}/sync`);
+    expect.soft((postMock.mock.calls[1]?.[1] as PostedBillingPayload).data.items).toHaveLength(3);
+    expect
+      .soft(
+        (postMock.mock.calls[1]?.[1] as PostedBillingPayload).data.items.map((item) => item.rowId)
+      )
+      .toEqual(allRowIds.slice(12));
+    expect
+      .soft(
+        useBillingSessionStore
+          .getState()
+          .sessions[tabId]!.lineItems.filter((item) => allRowIds.includes(item.rowId))
+          .map((item) => item.syncStatus)
+      )
+      .toEqual(Array.from({ length: 15 }, () => SYNCSTATUS.SYNCED));
+    expect.soft(useBillingSessionStore.getState().sessions[tabId]?.status).toBe(BILLSTATUS.SAVED);
+  });
+
+  it("keeps all rows dirty when an ambiguous 12-row create is retried with 15 rows", async () => {
+    const { tabId } = initTab({ type: TRANSACTION_TYPE.ESTIMATE });
+    const committedRowIds: string[] = [];
+    const transport = {
+      post: vi.fn(
+        (_endpoint: string, payload: PostedBillingPayload, options?: { signal?: AbortSignal }) => {
+          if (transport.post.mock.calls.length === 1) {
+            committedRowIds.push(...payload.data.items.map((item) => item.rowId));
+            return new Promise<never>((_resolve, reject) => {
+              options?.signal?.addEventListener("abort", () =>
+                reject(new DOMException("Aborted", "AbortError"))
+              );
+            });
+          }
+          return Promise.reject(
+            new ApiError("Estimate replay does not match the original request", 409)
+          );
+        }
+      )
+    };
+    const coordinator = createBillingSyncCoordinator({
+      transport,
+      debounceMs: 25,
+      requestTimeoutMs: 100
+    });
+
+    fillTabToItemCount(tabId, 12);
+    coordinator.schedule(tabId);
+    await vi.advanceTimersByTimeAsync(25);
+    expect(transport.post).toHaveBeenCalledTimes(1);
+
+    const allRowIds = fillTabToItemCount(tabId, 15);
+    coordinator.schedule(tabId);
+    await vi.advanceTimersByTimeAsync(100);
+    expect.soft(useBillingSessionStore.getState().sessions[tabId]?.status).toBe(BILLSTATUS.ERROR);
+
+    const retryFailure = await coordinator.flush(tabId).then(
+      () => null,
+      (error: unknown) => error
+    );
+    const session = useBillingSessionStore.getState().sessions[tabId]!;
+
+    expect.soft(retryFailure).toMatchObject({
+      name: "ApiError",
+      status: 409,
+      message: "Estimate replay does not match the original request"
+    });
+    expect.soft(transport.post).toHaveBeenCalledTimes(2);
+    expect
+      .soft(transport.post.mock.calls.map((call) => call[0]))
+      .toEqual(["/api/estimates/create", "/api/estimates/create"]);
+    expect.soft(committedRowIds).toEqual(allRowIds.slice(0, 12));
+    expect
+      .soft((transport.post.mock.calls[1]?.[1] as PostedBillingPayload).data.items)
+      .toHaveLength(15);
+    expect.soft(session.billingId).toBeNull();
+    expect.soft(session.status).toBe(BILLSTATUS.ERROR);
+    expect
+      .soft(
+        session.lineItems
+          .filter((item) => allRowIds.includes(item.rowId))
+          .map((item) => item.syncStatus)
+      )
+      .toEqual(Array.from({ length: 15 }, () => SYNCSTATUS.IS_DIRTY));
+    coordinator.cancel(tabId, { discard: true });
   });
 
   it("retains Error after a non-retryable failure and does not loop", async () => {

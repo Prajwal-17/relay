@@ -160,6 +160,44 @@ describe("Print & Close RAW workflow", () => {
     await waitFor(() => expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales"));
   });
 
+  it("blocks printing and tab removal when the final sync has an ambiguous outcome", async () => {
+    mocks.flushSync.mockRejectedValue(
+      new Error("Estimate replay does not match the original request")
+    );
+
+    render(<SummaryFooter />);
+    fireEvent.click(screen.getByRole("button", { name: "Print & Close" }));
+
+    await waitFor(() =>
+      expect(mocks.toastError).toHaveBeenCalledWith("Failed to sync changes. Please try again.")
+    );
+    expect.soft(mocks.printReceipt).not.toHaveBeenCalled();
+    expect.soft(mocks.removeTab).not.toHaveBeenCalled();
+    expect.soft(mocks.navigate).not.toHaveBeenCalled();
+    expect.soft(screen.getByRole("button", { name: "Print & Close" })).toBeEnabled();
+  });
+
+  it("blocks Close Tab after a failed sync and retries only after another explicit click", async () => {
+    mocks.flushSync
+      .mockRejectedValueOnce(new TypeError("Unable to reach Relay"))
+      .mockResolvedValueOnce(undefined);
+
+    render(<SummaryFooter />);
+    const closeButton = screen.getByRole("button", { name: "Close Tab" });
+    fireEvent.click(closeButton);
+
+    await waitFor(() => expect(mocks.flushSync).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(closeButton).toBeEnabled());
+    expect.soft(mocks.removeTab).not.toHaveBeenCalled();
+    expect.soft(mocks.navigate).not.toHaveBeenCalled();
+
+    fireEvent.click(closeButton);
+
+    await waitFor(() => expect(mocks.flushSync).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mocks.removeTab).toHaveBeenCalledWith("tab-1"));
+    expect(mocks.navigate).toHaveBeenCalledWith("/dashboard/sales");
+  });
+
   it("closes only the printed tab and activates the next billing tab", async () => {
     mocks.removeTab.mockReturnValue("tab-2");
     mocks.billingTabs.push({ id: "tab-2", routePath: "/billing/sales/sale-2/edit" });
