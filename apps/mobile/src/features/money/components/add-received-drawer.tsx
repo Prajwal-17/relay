@@ -1,7 +1,5 @@
 import { Plus, X } from "lucide-react-native";
 import {
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   useWindowDimensions,
   View
@@ -31,46 +29,44 @@ export function AddReceivedDrawer({ date, payment, onClose }: AddReceivedDrawerP
 
   return (
     <Drawer open onClose={entry.goBack} label="entry form">
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <View className="border-border flex-row items-center justify-between border-b px-5 pt-2 pb-2">
-          <View className="min-w-0 flex-1">
-            <Text accessibilityRole="header" className="text-foreground text-lg font-semibold">
-              Add {entry.method.name || "received money"}
-            </Text>
-            <Text className="text-muted-foreground mt-0.5 text-xs">{formatDisplayDate(date)}</Text>
-          </View>
-          <Pressable
-            accessibilityLabel="Close entry form"
-            className="min-h-12 min-w-12 items-center justify-center"
-            onPress={entry.goBack}
-          >
-            <X color={colors["muted-foreground"]} size={20} strokeWidth={1.8} />
-          </Pressable>
+      <View className="border-border flex-row items-center justify-between border-b px-5 pt-2 pb-2">
+        <View className="min-w-0 flex-1">
+          <Text accessibilityRole="header" className="text-foreground text-lg font-semibold">
+            Add {entry.method.name || "received money"}
+          </Text>
+          <Text className="text-muted-foreground mt-0.5 text-xs">{formatDisplayDate(date)}</Text>
         </View>
-        <ScrollView
-          style={{ maxHeight: height * 0.62 }}
-          keyboardShouldPersistTaps="handled"
-          contentContainerClassName="px-5 pb-3"
+        <Pressable
+          accessibilityLabel="Close entry form"
+          className="min-h-12 min-w-12 items-center justify-center"
+          onPress={entry.goBack}
         >
-          <PaymentForm entry={entry} />
-          {entry.saveError ? (
-            <Text accessibilityRole="alert" className="text-destructive pb-2 text-sm">
-              {entry.saveError}
-            </Text>
-          ) : null}
-        </ScrollView>
-        <View className="border-border bg-card border-t px-5 py-3">
-          <AppButton
-            icon={Plus}
-            disabled={!entry.canSave}
-            loading={entry.saving}
-            loadingLabel="Saving…"
-            onPress={() => void entry.save()}
-          >
-            {entry.canSave ? `Add ${formatRupee(entry.parsedAmount)}` : "Add entry"}
-          </AppButton>
-        </View>
-      </KeyboardAvoidingView>
+          <X color={colors["muted-foreground"]} size={20} strokeWidth={1.8} />
+        </Pressable>
+      </View>
+      <ScrollView
+        style={{ maxHeight: height * 0.62, flexShrink: 1 }}
+        keyboardShouldPersistTaps="handled"
+        contentContainerClassName="px-5 pb-3"
+      >
+        <PaymentForm entry={entry} />
+        {entry.saveError ? (
+          <Text accessibilityRole="alert" className="text-destructive pb-2 text-sm">
+            {entry.saveError}
+          </Text>
+        ) : null}
+      </ScrollView>
+      <View className="border-border bg-card border-t px-5 py-3">
+        <AppButton
+          icon={Plus}
+          disabled={!entry.canSave}
+          loading={entry.saving}
+          loadingLabel="Saving…"
+          onPress={() => void entry.save()}
+        >
+          {entry.canSave ? `Add ${formatRupee(entry.parsedAmount)}` : "Add entry"}
+        </AppButton>
+      </View>
     </Drawer>
   );
 }
