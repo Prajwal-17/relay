@@ -10,7 +10,14 @@ function trustedOrigins(env: Env): string[] {
     .map((origin) => origin.trim())
     .filter(Boolean);
 
-  return [...new Set(["relay://", "relay://*", ...configured])];
+  return [
+    ...new Set([
+      "relay://",
+      "relay://*",
+      ...(env.ENVIRONMENT === "development" ? ["exp://", "exp://**"] : []),
+      ...configured
+    ])
+  ];
 }
 
 export function createAuth(env: Env) {

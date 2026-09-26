@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-09T00:00:00Z",
-  "title": "Design System: Relay Desktop",
+  "generatedAt": "2026-09-26T00:00:00Z",
+  "title": "Design System: Relay",
   "extensions": {
     "colorMeta": {
       "canvas": {
@@ -123,6 +123,90 @@
       "invoice-accent": {
         "role": "print",
         "displayName": "Invoice Charcoal"
+      },
+      "mobile-background": {
+        "role": "neutral",
+        "displayName": "Mobile Warm Canvas"
+      },
+      "mobile-foreground": {
+        "role": "neutral",
+        "displayName": "Mobile Ledger Ink"
+      },
+      "mobile-card": {
+        "role": "neutral",
+        "displayName": "Mobile Working White"
+      },
+      "mobile-muted": {
+        "role": "neutral",
+        "displayName": "Mobile Muted Surface"
+      },
+      "mobile-muted-foreground": {
+        "role": "neutral",
+        "displayName": "Mobile Muted Ledger Ink"
+      },
+      "mobile-hover": {
+        "role": "neutral",
+        "displayName": "Mobile Pressed Row"
+      },
+      "mobile-selected": {
+        "role": "neutral",
+        "displayName": "Mobile Selected Row"
+      },
+      "mobile-border": {
+        "role": "neutral",
+        "displayName": "Mobile Divider"
+      },
+      "mobile-frame": {
+        "role": "neutral",
+        "displayName": "Mobile Structural Frame"
+      },
+      "mobile-border-strong": {
+        "role": "neutral",
+        "displayName": "Mobile Input Boundary"
+      },
+      "mobile-primary": {
+        "role": "primary",
+        "displayName": "Mobile Charcoal Action"
+      },
+      "mobile-primary-hover": {
+        "role": "primary",
+        "displayName": "Mobile Charcoal Action Hover"
+      },
+      "mobile-primary-foreground": {
+        "role": "neutral",
+        "displayName": "Mobile On Charcoal"
+      },
+      "mobile-counter-accent": {
+        "role": "accent",
+        "displayName": "Mobile Counter Terracotta"
+      },
+      "mobile-counter-accent-foreground": {
+        "role": "accent",
+        "displayName": "Mobile Dark Terracotta Ink"
+      },
+      "mobile-counter-accent-soft": {
+        "role": "accent",
+        "displayName": "Mobile Soft Terracotta"
+      },
+      "mobile-sales-soft": {
+        "role": "accent",
+        "displayName": "Mobile Soft Received Teal"
+      },
+      "mobile-sales-ink": {
+        "role": "accent",
+        "displayName": "Mobile Received Teal Ink"
+      },
+      "mobile-destructive": {
+        "role": "destructive",
+        "displayName": "Mobile Brick Red"
+      },
+      "mobile-destructive-foreground": {
+        "role": "neutral",
+        "displayName": "Mobile On Brick Red"
+      },
+      "mobile-scrim": {
+        "role": "overlay",
+        "displayName": "Mobile Modal Scrim"
       }
     },
     "typographyMeta": {
@@ -145,6 +229,42 @@
       "financial-total": {
         "displayName": "Financial Total",
         "purpose": "The most important total in the active transaction."
+      },
+      "mobile-display": {
+        "displayName": "Mobile Display",
+        "purpose": "Reserved for short sign-in branding; top-level app screens omit a masthead."
+      },
+      "mobile-financial-total": {
+        "displayName": "Mobile Financial Total",
+        "purpose": "The day net in the Counter Cashbox summary lid."
+      },
+      "mobile-title": {
+        "displayName": "Mobile Title",
+        "purpose": "Money section, drawer, and detail titles."
+      },
+      "mobile-body": {
+        "displayName": "Mobile Body",
+        "purpose": "Primary mobile content, fields, and controls."
+      },
+      "mobile-action": {
+        "displayName": "Mobile Action",
+        "purpose": "Semibold labels on mobile buttons and primary controls."
+      },
+      "mobile-label": {
+        "displayName": "Mobile Label",
+        "purpose": "Compact field labels, state copy, and action support."
+      },
+      "mobile-caption": {
+        "displayName": "Mobile Caption",
+        "purpose": "Dates, notes, counters, and low-priority metadata."
+      },
+      "mobile-navigation": {
+        "displayName": "Mobile Navigation",
+        "purpose": "Compact labels in the static Material Ledger bottom tab bar."
+      },
+      "mobile-navigation-active": {
+        "displayName": "Mobile Navigation Active",
+        "purpose": "The selected destination label in the static Material Ledger bottom tab bar."
       }
     },
     "shadows": [
@@ -177,6 +297,11 @@
         "name": "shadow-2xl",
         "value": "0 32px 64px -14px rgb(29 30 27 / 0.36)",
         "purpose": "Reserved for the highest emergency overlay; not routine UI."
+      },
+      {
+        "name": "mobile-overlay",
+        "value": "platform shadow-lg",
+        "purpose": "Centered native confirmation dialogs only; drawers and ledger surfaces remain border-led."
       }
     ],
     "motion": [
@@ -199,6 +324,11 @@
         "name": "overlay-transition",
         "value": "200ms",
         "purpose": "Dialogs, drawers, and popovers."
+      },
+      {
+        "name": "mobile-modal-fade",
+        "value": "native modal fade",
+        "purpose": "Current entry and dismissal treatment for mobile drawers and confirmations."
       }
     ],
     "breakpoints": [
@@ -221,6 +351,14 @@
       {
         "name": "release-baseline",
         "value": "1280px × 650px"
+      },
+      {
+        "name": "mobile-content-cap",
+        "value": "576px"
+      },
+      {
+        "name": "mobile-form-scroll-cap",
+        "value": "62% viewport height"
       }
     ]
   },
@@ -286,11 +424,51 @@
       "description": "Stable transaction footer with an anchored total and one dependable charcoal primary action.",
       "html": "<footer class=\"ds-summary\"><div class=\"ds-total\"><span>Total</span><strong>₹1,24,560.00</strong></div><button class=\"ds-summary-action\" type=\"button\">Save &amp; Print</button></footer>",
       "css": ".ds-summary { height: 52px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 12px; border-top: 1px solid var(--border-frame); background: var(--surface-1); color: var(--ink); font-family: var(--font-sans); } .ds-total { display: flex; align-items: baseline; gap: 6px; min-width: 0; } .ds-total span { color: var(--ink-muted); font-size: 12px; font-weight: 600; } .ds-total strong { font-size: 22px; line-height: 1.1; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; white-space: nowrap; } .ds-summary-action { height: 40px; padding: 0 16px; border: 1px solid var(--primary); border-radius: var(--radius-control); background: var(--primary); color: var(--on-primary); font: 600 14px/1.2 var(--font-sans); } .ds-summary-action:hover { background: var(--primary-hover); border-color: var(--primary-hover); } .ds-summary-action:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }"
+    },
+    {
+      "name": "Mobile Primary Button",
+      "kind": "button",
+      "refersTo": "mobile-button-primary",
+      "description": "A 48px charcoal action whose own label and spinner communicate pending state.",
+      "html": "<button class=\"ds-mobile-button\" type=\"button\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\"/></svg><span>Add received</span></button>",
+      "css": ".ds-mobile-button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 16px; border: 1px solid #283129; border-radius: 6px; background: #283129; color: #ffffff; font: 600 16px/24px Inter, system-ui, sans-serif; transition: background-color 150ms ease, opacity 150ms ease; } .ds-mobile-button svg { width: 18px; height: 18px; } .ds-mobile-button:hover { background: #1b211c; } .ds-mobile-button:active { opacity: 0.8; } .ds-mobile-button:focus-visible { outline: 2px solid #b6532b; outline-offset: 2px; } .ds-mobile-button:disabled { opacity: 0.5; } .ds-mobile-button[aria-busy=\"true\"] { opacity: 1; cursor: wait; }"
+    },
+    {
+      "name": "Mobile Text Input",
+      "kind": "input",
+      "refersTo": "mobile-input",
+      "description": "A labeled 48px native field with explicit focus, disabled, and invalid boundaries.",
+      "html": "<label class=\"ds-mobile-field\"><span>Vendor name</span><input class=\"ds-mobile-input\" value=\"Czcgf\" aria-label=\"Vendor name\"></label>",
+      "css": ".ds-mobile-field { display: grid; gap: 6px; color: #20231f; font: 500 14px/20px Inter, system-ui, sans-serif; } .ds-mobile-input { min-height: 48px; width: 100%; padding: 8px 12px; border: 1px solid #999487; border-radius: 6px; background: #f5f5f2; color: #20231f; font: 600 16px/24px Inter, system-ui, sans-serif; } .ds-mobile-input::placeholder { color: #4d544c; font-weight: 400; } .ds-mobile-input:hover { border-color: #4d544c; } .ds-mobile-input:focus-visible { border-color: #b6532b; outline: 2px solid #b6532b; outline-offset: 1px; } .ds-mobile-input[aria-invalid=\"true\"] { border-color: #9b342a; } .ds-mobile-input:disabled { opacity: 0.5; }"
+    },
+    {
+      "name": "Mobile Counter Cashbox Summary",
+      "kind": "card",
+      "refersTo": "mobile-money-summary",
+      "description": "The day-total lid: dominant right-aligned net with received and paid compartments below one divider.",
+      "html": "<section class=\"ds-mobile-summary\"><div class=\"ds-mobile-net\"><strong>Net for day</strong><b>₹1,443.00</b></div><div class=\"ds-mobile-totals\"><div><span>Received</span><strong class=\"ds-mobile-received\">₹7,331.00</strong></div><div><span>Paid</span><strong class=\"ds-mobile-paid\">₹5,888.00</strong></div></div></section>",
+      "css": ".ds-mobile-summary { padding: 16px; border: 1px solid #c3bfb4; border-radius: 8px; background: #ffffff; color: #20231f; font-family: Inter, system-ui, sans-serif; } .ds-mobile-net { display: flex; align-items: flex-start; gap: 16px; } .ds-mobile-net > strong { min-width: 0; flex: 1; padding-top: 4px; font-size: 15px; line-height: 22px; } .ds-mobile-net > b { max-width: 68%; text-align: right; font-size: 28px; line-height: 32px; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-mobile-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 12px; padding-top: 12px; border-top: 1px solid #d8d5cc; } .ds-mobile-totals span { display: block; color: #4d544c; font-size: 13px; line-height: 18px; } .ds-mobile-totals strong { display: block; margin-top: 4px; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-mobile-received { color: #0b5c43; } .ds-mobile-paid { color: #76351f; }"
+    },
+    {
+      "name": "Mobile Ledger Row",
+      "kind": "custom",
+      "refersTo": "mobile-ledger-card",
+      "description": "A compact 56px cashbox compartment with protected name, amount, and row action regions.",
+      "html": "<div class=\"ds-mobile-ledger\"><button class=\"ds-mobile-ledger-main\" type=\"button\"><span class=\"ds-mobile-ledger-icon\">₹</span><span class=\"ds-mobile-ledger-name\">Cash</span><strong>₹236.00</strong></button><button class=\"ds-mobile-ledger-add\" type=\"button\" aria-label=\"Add Cash entry\">+</button></div>",
+      "css": ".ds-mobile-ledger { min-height: 56px; display: flex; align-items: stretch; overflow: hidden; border: 1px solid #d8d5cc; border-radius: 8px; background: #ffffff; color: #20231f; font-family: Inter, system-ui, sans-serif; } .ds-mobile-ledger-main { min-width: 0; flex: 1; display: flex; align-items: center; gap: 8px; padding: 6px 4px 6px 12px; border: 0; background: transparent; color: inherit; text-align: left; } .ds-mobile-ledger-main:hover, .ds-mobile-ledger-main:active { background: #e8ebe6; } .ds-mobile-ledger-main:focus-visible, .ds-mobile-ledger-add:focus-visible { outline: 2px solid #b6532b; outline-offset: -2px; } .ds-mobile-ledger-icon { width: 36px; height: 36px; display: inline-flex; flex: none; align-items: center; justify-content: center; border-radius: 6px; background: #e3f5ef; color: #0b5c43; font-weight: 700; } .ds-mobile-ledger-name { min-width: 0; flex: 1; overflow: hidden; color: #20231f; font-size: 15px; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; } .ds-mobile-ledger strong { max-width: 45%; font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-mobile-ledger-add { min-width: 48px; border: 0; background: transparent; color: #20231f; font-size: 24px; } .ds-mobile-ledger-add:hover, .ds-mobile-ledger-add:active { background: #e8ebe6; }"
+    },
+    {
+      "name": "Mobile Static Tab Navigation",
+      "kind": "nav",
+      "refersTo": "mobile-navigation-icon-active",
+      "description": "A rounded white bottom shelf with an immediate soft-terracotta selected state, no tab transition or Android ripple, and clear separation from the system gesture region.",
+      "html": "<nav class=\"ds-mobile-nav\" aria-label=\"Primary\"><a href=\"#\"><span class=\"ds-mobile-nav-icon\">⌂</span><span>Home</span></a><a class=\"ds-mobile-nav-active\" href=\"#\" aria-current=\"page\"><span class=\"ds-mobile-nav-icon\">▣</span><span>Money</span></a><a href=\"#\"><span class=\"ds-mobile-nav-icon\">♙</span><span>Profile</span></a></nav>",
+      "css": ".ds-mobile-nav { min-height: 58px; display: flex; align-items: flex-start; gap: 4px; padding: 4px 8px 0; border-top: 1px solid #d8d5cc; border-radius: 22px 22px 0 0; background: #ffffff; font-family: Inter, system-ui, sans-serif; } .ds-mobile-nav a { min-height: 56px; min-width: 56px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #4d544c; font-size: 11px; line-height: 16px; font-weight: 500; text-decoration: none; } .ds-mobile-nav-icon { width: 56px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9999px; font-size: 20px; } .ds-mobile-nav a:hover .ds-mobile-nav-icon { background: #e8ebe6; } .ds-mobile-nav a:focus-visible { outline: 2px solid #b6532b; outline-offset: 1px; } .ds-mobile-nav a:active { opacity: 0.8; } .ds-mobile-nav .ds-mobile-nav-active { color: #76351f; font-weight: 600; } .ds-mobile-nav-active .ds-mobile-nav-icon { background: #fbe9e1; color: #b6532b; }"
     }
   ],
   "narrative": {
-    "northStar": "Counter Ledger",
-    "overview": "Relay is a compact, keyboard-and-mouse point-of-sale workspace for repeated shop-counter operation. Crisp white working surfaces, a warm neutral canvas, strong charcoal actions, controlled terracotta, teal, berry, and amber accents, and solid borders make the interface feel stable and trustworthy. Density is intentional: common tasks stay visible, financial values are easy to compare, and geometry remains fixed while data changes.",
+    "northStar": "Counter Ledger on desktop; Counter Cashbox on mobile",
+    "overview": "Relay is a compact, keyboard-and-mouse Counter Ledger on desktop and a touch-first Counter Cashbox on mobile. Both use warm neutral canvas, opaque white working surfaces, charcoal actions, controlled terracotta and teal accents, tabular money, and solid borders to feel stable and trustworthy. Mobile turns the day total into a broad lid, related entries into aligned compartments, and uses a static rounded tab bar for the bottom shell; pending and offline state remain visible at the point of action.",
     "keyCharacteristics": [
       "Compact without shrinking text or interaction targets",
       "Neutral working surfaces with solid structural borders",
@@ -299,7 +477,10 @@
       "Tabular financial data and stable column geometry",
       "Wide single-line product identification in billing search with stable virtualized rows",
       "Keyboard parity for every billing-critical action",
-      "Screen and print themes kept intentionally separate"
+      "Screen and print themes kept intentionally separate",
+      "Touch-first Money hierarchy with 48px targets and 64px ledger rows",
+      "Action-local pending state held through cache synchronization and outcome feedback",
+      "Static rounded bottom navigation with immediate Relay terracotta selection"
     ],
     "rules": [
       {
@@ -326,6 +507,36 @@
         "name": "Print Isolation",
         "body": "Receipt and A4 output use invoice-only tokens so screen-theme changes cannot reduce print legibility.",
         "section": "colors"
+      },
+      {
+        "name": "Action Owns the State",
+        "body": "The control that initiates a mutation remains the single visible owner of pending state and stays locked until the request, required cache invalidation, success haptic, and dismissal or navigation have resolved.",
+        "section": "overview"
+      },
+      {
+        "name": "Native Palette",
+        "body": "Add or change a mobile color in global.css first, then keep palette.ts, this frontmatter, and the sidecar aligned whenever native props consume it.",
+        "section": "colors"
+      },
+      {
+        "name": "Counted Money",
+        "body": "Financial numerals align, remain visible, and never become the expendable side of a row.",
+        "section": "typography"
+      },
+      {
+        "name": "Cashbox Order",
+        "body": "Preserve total → actions → received compartments → vendor compartments even when the viewport requires scrolling.",
+        "section": "layout"
+      },
+      {
+        "name": "Compartments Before Cards",
+        "body": "Group related money rows inside one bordered ledger and separate them with rules; do not promote every row into its own elevated surface.",
+        "section": "elevation"
+      },
+      {
+        "name": "Resolved Outcome",
+        "body": "Success haptic, feedback, dismissal, and navigation all derive from the same resolved mutation outcome; no part of the interface may announce completion early.",
+        "section": "components"
       }
     ],
     "dos": [
@@ -333,14 +544,20 @@
       "Keep frequent controls visible and stable.",
       "Design long-name, large-amount, loading, empty, error, and focus states.",
       "Update virtualizer estimates with row-height changes.",
-      "Validate the baseline viewport at 100% zoom."
+      "Validate the baseline viewport at 100% zoom.",
+      "On mobile, preserve the Counter Cashbox reading order, 48px touch floor, 64px ledger rows, safe areas, and 576px content cap.",
+      "On mobile, keep pending state at the initiating control through cache synchronization, haptic feedback, and dismissal or navigation.",
+      "On mobile, test cached offline reading, disabled mutations, retry, empty ledgers, long vendor names and notes, large Indian-formatted amounts, software keyboards, and text scaling."
     ],
     "donts": [
       "Do not use zoom or transform scaling as a layout system.",
       "Concentrate accents in primary billing actions, compact identity cues, commerce tags, and charts.",
       "Do not hide billing-critical controls behind overflow menus.",
       "Do not rely on hover or color alone for essential state.",
-      "Do not let screen colors leak into invoice output."
+      "Do not let screen colors leak into invoice output.",
+      "Do not turn mobile Money into a stack of floating rounded finance cards or use elevation to imply data hierarchy.",
+      "Do not let a pending drawer dismiss, enable a duplicate submission, or move its spinner to a global overlay.",
+      "Do not use color alone for selected navigation, money direction, offline state, failure, or completion."
     ]
   }
 }

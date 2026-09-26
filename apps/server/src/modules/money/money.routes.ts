@@ -6,6 +6,7 @@ import type { AppEnv } from "../../app-env";
 import {
   createPaymentMethod,
   deleteDailyEntry,
+  deleteVendorPayment,
   getDailyEntry,
   listMonthSummaries,
   listPaymentMethods,
@@ -24,7 +25,7 @@ import {
   vendorPaymentSchema,
   vendorSearchSchema
 } from "./money.schemas";
-import { addReceivedPayment, addVendorPayment } from "./money.service";
+import { addReceivedPayment, addVendorPayment, deleteReceivedPayment } from "./money.service";
 
 export const moneyRoutes = new Hono<AppEnv>();
 
@@ -98,9 +99,22 @@ moneyRoutes.post("/received-payments", async (context) => {
   return context.body(null, 204);
 });
 
+moneyRoutes.delete("/received-entries/:id", async (context) => {
+  const id = parse(positiveIdSchema, context.req.param("id"));
+  await deleteReceivedPayment(context.env.DB, context.get("userId"), id);
+  return context.body(null, 204);
+});
+
 moneyRoutes.post("/vendor-payments", async (context) => {
   const input = await jsonBody(context.req.raw, vendorPaymentSchema);
   await addVendorPayment(context.env.DB, context.get("userId"), input);
+  return context.body(null, 204);
+});
+
+moneyRoutes.delete("/vendor-payments/:id", async (context) => {
+  const id = parse(positiveIdSchema, context.req.param("id"));
+  const deleted = await deleteVendorPayment(context.env.DB, context.get("userId"), id);
+  if (!deleted) throw new HTTPException(404, { message: "Vendor payment not found." });
   return context.body(null, 204);
 });
 
@@ -120,7 +134,5 @@ moneyRoutes.get("/received-entries", async (context) => {
 
 moneyRoutes.get("/vendors", async (context) => {
   const query = parse(vendorSearchSchema, context.req.query());
-  return context.json(
-    await searchVendorNames(context.env.DB, context.get("userId"), query.q)
-  );
+  return context.json(await searchVendorNames(context.env.DB, context.get("userId"), query.q));
 });

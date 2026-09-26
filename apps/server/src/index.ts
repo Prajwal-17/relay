@@ -25,9 +25,7 @@ app.use("/api/*", async (context, next) => {
   return handleCors(context, next);
 });
 
-app.get("/health", (context) =>
-  context.json({ service: "relay-server", status: "ok" as const })
-);
+app.get("/health", (context) => context.json({ service: "relay-server", status: "ok" as const }));
 
 app.all("/api/auth/*", (context) => createAuth(context.env).handler(context.req.raw));
 

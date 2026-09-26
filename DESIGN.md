@@ -1,6 +1,6 @@
 ---
-name: Relay Desktop
-description: "A compact, keyboard-first billing workspace for fast and dependable shop-counter operation."
+name: Relay
+description: "A dependable counter operating system: compact Counter Ledger on desktop and touch-first Counter Cashbox on mobile."
 colors:
   canvas: "oklch(97.4% 0.004 110)"
   surface-1: "oklch(100% 0 0)"
@@ -75,6 +75,27 @@ colors:
   invoice-accent: "#283129"
   invoice-border: "#aaa596"
   invoice-table-header: "#e9ebe6"
+  mobile-background: "#f5f5f2"
+  mobile-foreground: "#20231f"
+  mobile-card: "#ffffff"
+  mobile-muted: "#e8ebe6"
+  mobile-muted-foreground: "#4d544c"
+  mobile-hover: "#e8ebe6"
+  mobile-selected: "#d8ded7"
+  mobile-border: "#d8d5cc"
+  mobile-frame: "#c3bfb4"
+  mobile-border-strong: "#999487"
+  mobile-primary: "#283129"
+  mobile-primary-hover: "#1b211c"
+  mobile-primary-foreground: "#ffffff"
+  mobile-counter-accent: "#b6532b"
+  mobile-counter-accent-foreground: "#76351f"
+  mobile-counter-accent-soft: "#fbe9e1"
+  mobile-sales-soft: "#e3f5ef"
+  mobile-sales-ink: "#0b5c43"
+  mobile-destructive: "#9b342a"
+  mobile-destructive-foreground: "#ffffff"
+  mobile-scrim: "#20231f52"
 typography:
   body:
     fontFamily: "InterVariable, system-ui, sans-serif"
@@ -130,15 +151,81 @@ typography:
     fontWeight: 700
     lineHeight: 1.1
     letterSpacing: "-0.02em"
+  mobile-display:
+    fontFamily: "Inter-Bold, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: "36px"
+    letterSpacing: "-0.025em"
+  mobile-financial-total:
+    fontFamily: "Inter-Bold, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 400
+    lineHeight: "32px"
+    letterSpacing: "-0.025em"
+  mobile-title:
+    fontFamily: "Inter-SemiBold, system-ui, sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
+    lineHeight: "24px"
+    letterSpacing: "normal"
+  mobile-body:
+    fontFamily: "Inter-Regular, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "24px"
+    letterSpacing: "normal"
+  mobile-action:
+    fontFamily: "Inter-SemiBold, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "24px"
+    letterSpacing: "normal"
+  mobile-label:
+    fontFamily: "Inter-SemiBold, system-ui, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: "20px"
+    letterSpacing: "normal"
+  mobile-caption:
+    fontFamily: "Inter-Regular, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 400
+    lineHeight: "16px"
+    letterSpacing: "normal"
+  mobile-navigation:
+    fontFamily: "Inter-Medium, system-ui, sans-serif"
+    fontSize: "11px"
+    fontWeight: 400
+    lineHeight: "16px"
+    letterSpacing: "normal"
+  mobile-navigation-active:
+    fontFamily: "Inter-SemiBold, system-ui, sans-serif"
+    fontSize: "11px"
+    fontWeight: 400
+    lineHeight: "16px"
+    letterSpacing: "normal"
 rounded:
   control: "6px"
   panel: "8px"
+  mobile-control: "6px"
+  mobile-card: "8px"
+  mobile-drawer: "16px"
+  mobile-pill: "9999px"
 spacing:
   unit: "4px"
   common: "8px"
   section: "12px"
   page: "12px"
   panel: "12px"
+  mobile-1: "4px"
+  mobile-1-5: "6px"
+  mobile-2: "8px"
+  mobile-3: "12px"
+  mobile-4: "16px"
+  mobile-5: "20px"
+  mobile-6: "24px"
+  mobile-8: "32px"
 components:
   application-titlebar:
     backgroundColor: "{colors.primary}"
@@ -203,15 +290,59 @@ components:
   search-match:
     backgroundColor: "{colors.search-highlight}"
     textColor: "{colors.ink}"
+  mobile-button-primary:
+    backgroundColor: "{colors.mobile-primary}"
+    textColor: "{colors.mobile-primary-foreground}"
+    typography: "{typography.mobile-action}"
+    rounded: "{rounded.mobile-control}"
+    padding: "0 16px"
+    height: "48px"
+  mobile-button-outline:
+    backgroundColor: "{colors.mobile-background}"
+    textColor: "{colors.mobile-foreground}"
+    typography: "{typography.mobile-action}"
+    rounded: "{rounded.mobile-control}"
+    padding: "0 16px"
+    height: "48px"
+  mobile-input:
+    backgroundColor: "{colors.mobile-background}"
+    textColor: "{colors.mobile-foreground}"
+    typography: "{typography.mobile-body}"
+    rounded: "{rounded.mobile-control}"
+    padding: "8px 12px"
+    height: "48px"
+  mobile-ledger-card:
+    backgroundColor: "{colors.mobile-card}"
+    textColor: "{colors.mobile-foreground}"
+    rounded: "{rounded.mobile-card}"
+  mobile-money-summary:
+    backgroundColor: "{colors.mobile-card}"
+    textColor: "{colors.mobile-foreground}"
+    typography: "{typography.mobile-financial-total}"
+    rounded: "{rounded.mobile-card}"
+    padding: "20px"
+  mobile-navigation-item:
+    textColor: "{colors.mobile-muted-foreground}"
+    typography: "{typography.mobile-navigation}"
+    height: "58px"
+  mobile-navigation-item-active:
+    textColor: "{colors.mobile-counter-accent-foreground}"
+    typography: "{typography.mobile-navigation-active}"
+  mobile-navigation-icon-active:
+    backgroundColor: "{colors.mobile-counter-accent-soft}"
+    textColor: "{colors.mobile-counter-accent}"
+    rounded: "{rounded.mobile-pill}"
+    width: "56px"
+    height: "28px"
 ---
 
-# Relay Desktop Design System
+# Relay Design System
 
 ## Overview
 
 Relay is an offline-first point-of-sale application used repeatedly, at speed, on a desktop or shop laptop. Its design north star is **Counter Ledger**: the clarity and trust of a well-kept paper ledger, translated into a compact keyboard-and-mouse workspace. The interface should feel practical, stable, and unmistakably operational—not promotional, touch-first, or decorative.
 
-This file is the canonical design contract for `apps/desktop`. The frontmatter is the normative token layer; the sections below explain how those tokens are applied. Runtime values live in `apps/desktop/src/renderer/src/index.css`. Any intentional token change must update both files in the same change. The machine-readable extension is `.impeccable/design.json`.
+This file is the canonical design contract for both `apps/desktop` and `apps/mobile`. The frontmatter is the normative token layer; the sections below explain how those tokens are applied. Desktop runtime values live in `apps/desktop/src/renderer/src/index.css`; mobile runtime values live in `apps/mobile/global.css` and native-prop mappings in `apps/mobile/src/theme/palette.ts`. Any intentional token change must update the applicable runtime source and both design artifacts in the same change. The machine-readable extension is `.impeccable/design.json`.
 
 The product follows these priorities, in order:
 
@@ -224,7 +355,15 @@ The product follows these priorities, in order:
 
 Relay currently has one supported light visual system. Do not introduce an isolated dark section or a second visual language without a product-level decision and a complete token set.
 
-## Refinement direction
+### Mobile: Counter Cashbox
+
+Relay Mobile translates the same identity into **Counter Cashbox**: a touch-first cashbox whose broad daily total forms the lid and whose received methods and vendor payments read as aligned compartments. It is an adaptive native Operate surface for short, repeated, often one-handed sessions. The visual world stays warm, crisp, and accountable—never a stack of interchangeable finance cards.
+
+The mobile shell uses a static **Material Ledger** tab bar: a quiet white rounded shelf, a compact soft-terracotta selected icon capsule, and a terracotta active icon and label. Selection color changes immediately without a tab transition or Android ripple. The shell owns the bottom safe area and leaves clear space above the system gesture region. The hierarchy is day and net position first, received and paid totals second, recording actions third, then the method and vendor ledgers. Product truth always outranks the approved comp: pending, offline, empty, error, destructive, long-name, and large-value states are part of the finished system.
+
+**The Action Owns the State Rule.** The control that initiates a mutation remains the single visible owner of pending state and stays locked until the request, required cache invalidation, success haptic, and dismissal or navigation have resolved.
+
+### Desktop refinement direction
 
 The desktop finish uses a coordinated warm-neutral surface ramp, white working surfaces, charcoal
 actions, and terracotta focus. Keep the compact Counter Ledger composition and familiar billing
@@ -271,7 +410,20 @@ Invoice colors are isolated from the screen theme. Receipt and A4 output may ref
 
 Text and interactive contrast must meet WCAG AA: at least 4.5:1 for normal text, 3:1 for large text, and 3:1 for component boundaries and meaningful icons. Muted color is for supporting information, not required instructions, totals, or row identifiers. Do not use alpha variants such as `/40` or `/50` for critical text or borders.
 
-## Brand assets
+### Mobile palette mapping
+
+Mobile uses native-safe hexadecimal sRGB values rather than importing desktop OKLCH strings into React Native. The `mobile-*` tokens in frontmatter are normative mirrors of the roles actually consumed by `global.css`, `palette.ts`, navigation, primitives, and Money. The unprefixed OKLCH tokens remain the desktop source; platform prefixes prevent one format from silently replacing the other.
+
+- Warm Canvas, Working White, Ledger Ink, Muted Ledger Ink, and the neutral border ramp carry almost every mobile surface.
+- Charcoal Action is the filled primary button and selected-calendar surface. It is not a generic card accent.
+- Counter Terracotta is reserved for focus, loading, active navigation, add affordances, and paid-money emphasis. Its soft tint may back the compact active navigation capsule.
+- Received Teal is confined to received-money values and compact payment icon plates; the ledger row itself remains white.
+- Brick Red is only for destructive actions and errors. Offline notices use neutral muted surfaces with an icon and explicit copy.
+- The translucent scrim belongs only behind drawers and confirmations; content surfaces remain opaque.
+
+**The Native Palette Rule.** Add or change a mobile color in `global.css` first, then keep `palette.ts`, this frontmatter, and the sidecar aligned whenever native props consume it.
+
+### Brand assets
 
 Relay's Continuum mark retains its existing geometry. App icons use white `on-primary` on the
 terracotta `counter-accent` background, shared by desktop and mobile. This fixed identity does
@@ -316,6 +468,14 @@ Never remove input affordances from a value the operator can edit. Product-dialo
 feedback without scaling; respect the same reduced-motion contract as the rest of the app.
 
 Application headings are compact and use slightly tightened tracking. Avoid marketing-scale display text inside routed workspaces. Use sentence case for actions and headings. Uppercase is limited to short table headings and category kickers; never use it for paragraphs or primary actions.
+
+### Mobile type hierarchy
+
+Mobile ships the static Inter family files and maps weight through `Inter-Regular`, `Inter-Medium`, `Inter-SemiBold`, and `Inter-Bold`; the CSS utilities intentionally keep numeric weight at 400 so React Native selects the correct file instead of synthesizing a face. `mobile-display` is reserved for short sign-in branding, `mobile-financial-total` for the day’s net, `mobile-title` for section and detail titles, and `mobile-body`, `mobile-label`, `mobile-caption`, and `mobile-navigation` cover copy, controls, metadata, and bottom-tab labels. Do not mix system or decorative faces into Money.
+
+Money and quantity values use tabular numerals. The day net is right-aligned and allowed up to 68% of the summary lid; row amounts are protected up to 45% and method totals up to 65%. `adjustsFontSizeToFit` and a single line preserve significant digits when values are large. Labels and notes truncate before money; detail views carry full variable-length content.
+
+**The Counted Money Rule.** Financial numerals align, remain visible, and never become the expendable side of a row.
 
 All monetary columns, quantities, dates, times, invoice numbers, and summary values use tabular numerals. Right-align comparable numeric columns. Format money through the shared rupee utilities; never assemble currency strings in a component. Large values must remain readable without changing card height: allow the value region to grow horizontally, use a safe minimum width, and avoid truncating the significant digits. Supporting labels may truncate before the amount does.
 
@@ -371,6 +531,18 @@ Use these route compositions:
 | Onboarding             | A flat `onboarding-panel` beside a readable form column; on narrow screens the form stands alone, and every step fits the supported height.                |
 | Product dialog         | Fixed header and footer, scrollable tab body, and no content behind the footer.                                                                            |
 
+### Mobile layout
+
+Mobile lays out edge-to-edge but keeps content inside platform safe areas. The primary scroll column is centered, capped at 576px, and uses a 16px horizontal inset, 16px section rhythm, and 32px bottom breathing room. This cap lets phones and larger adaptive windows share one calm ledger width without stretching the cashbox compartments.
+
+The Money first viewport follows a stable reading order: compact date header; optional offline notice; day-total lid; two equal-priority action slots that may wrap; received-method ledger; vendor ledger; destructive day action when applicable. The date header gives the numeric date the 28px display role, places the weekday above the month and year beside it, and keeps the 48px calendar action separate on the right. The approved comp is compositional evidence, not a fixed-height poster: native text scaling may introduce vertical scroll, but the hierarchy and action ownership do not change.
+
+Every ordinary mobile action, icon action, composite row affordance, and field is at least 48px high or wide. Method and vendor rows are at least 56px. The static tab bar owns the bottom safe area and exposes reliable destination targets without animated selection. Narrow screens may wrap the two Money actions, but may not compress either below a reliable touch target.
+
+Bottom drawers are content-sized, centered at a 576px maximum, and capped by the task content rather than a full-screen imitation. Form scroll regions cap at 62% of the window height so the title and anchored save action remain visible around the software keyboard. Use keyboard avoidance on entry flows and never let the IME cover the initiating control.
+
+**The Cashbox Order Rule.** Preserve total → actions → received compartments → vendor compartments even when the viewport requires scrolling.
+
 ## Elevation & Depth
 
 Relay uses borders before shadows. Depth communicates stacking, not importance.
@@ -390,6 +562,14 @@ at 10%, `0 8px 24px -8px` at 18%, and `0 20px 48px -16px` at 24%, using #20231f.
 Menus and dialogs remain opaque white, framed, and clearly above their parent surface.
 
 Most interaction feedback is a color or border transition. Use the shared easing tokens and keep routine state changes between 150ms and 200ms. Movement should explain entry, exit, or reordering; it should not animate every row or total update. Avoid bouncy motion in billing entry, save, and destructive flows. Respect `prefers-reduced-motion` and keep the resulting interface fully understandable.
+
+### Mobile depth and motion
+
+Counter Cashbox is border-led and nearly flat. Summary lids, ledgers, fields, offline notices, and the navigation shelf use opaque fills and solid borders; they do not float. Row separators create compartments inside one framed card instead of turning every datum into a separate card. Modal confirmations may use the platform’s large overlay shadow; bottom drawers use the scrim, an opaque white sheet, and a restrained 16px top radius rather than stacked elevation.
+
+Native modal entry currently uses a fade. Loading uses the platform activity indicator colored terracotta and always pairs it with nearby state copy when a silent spinner could be mistaken for a frozen app. Haptics confirm selection or a resolved successful mutation; they never replace visible feedback.
+
+**The Compartments Before Cards Rule.** Group related money rows inside one bordered ledger and separate them with rules; do not promote every row into its own elevated surface.
 
 ### Contextual surface recipes
 
@@ -432,6 +612,12 @@ Controls use the `control` radius; panels, cards, menus, and dialogs use the `pa
 Pills and full circles are semantic exceptions for statuses, avatars, radio-like markers, and switches. A rectangular action does not become a pill merely to appear friendly. Adjacent controls in a segmented group should share a continuous outer silhouette and visible internal separators.
 
 Interactive targets use the density contract: 32px for compact secondary or icon actions, 36px by default, and 40px for exceptional workflow actions. An icon-only control requires an accessible name and a tooltip when its meaning is not universally obvious. Focus rings must follow the actual silhouette, remain visible against adjacent surfaces, and never be removed without an equivalent replacement.
+
+### Mobile shapes
+
+Mobile retains the ledger’s restrained geometry: 6px controls and fields, 8px cards and ledger frames, and a 16px top radius only for bottom drawers. Full pills are limited to the selected bottom-navigation icon capsule and similarly semantic compact selection indicators. Payment-method artwork sits in small tinted icon plates, but the surrounding row remains square-to-restrained and rule-separated.
+
+Pressed mobile controls communicate through opacity or semantic fill; they do not scale. A shape must not shift while saving, deleting, loading, or replacing its label with an activity indicator.
 
 ## Components
 
@@ -483,6 +669,25 @@ Empty states explain what is missing and, only when useful, provide the next act
 
 All interactive work must be possible by keyboard. Use native elements and Radix behavior before custom event handling. Focus order follows the visual task order; Enter must not trigger an unrelated destructive or final action. Icon buttons need `aria-label`; form errors are programmatically associated; dialogs and drawers announce their titles. Color is never the only state indicator.
 
+### Mobile primitives and ledgers
+
+- **Buttons:** `AppButton` composes the shared button primitive into primary, outline, ghost, and destructive variants. All variants keep a 48px minimum height, 6px radius, centered semibold label, optional 18px icon, and action-local activity indicator. Loading preserves normal opacity, sets accessible busy state, disables repeat activation, and may replace the label with the specific pending outcome.
+- **Inputs:** The default field is 48px high with a strong opaque boundary, 6px radius, 16px entered text, normal-weight placeholder, terracotta selection, and an explicit focus border. Composite amount and vendor fields own their outer border. Invalid fields combine a destructive boundary with adjacent readable error text; disabled fields reduce opacity but retain their geometry.
+- **Ledger cards and rows:** `LedgerCard` removes generic card vertical padding so feature components can build contiguous compartments. Use one 8px framed white container with internal dividers, 64px minimum rows, a left identity/name region, a protected right-aligned tabular amount, and a 48px row action. Long names truncate to one line; optional notes use the caption role.
+- **Day-total lid:** The net amount is the dominant right-side value. Received and Paid sit under one divider as equal columns, using teal and terracotta ink respectively. The component stays a single framed surface rather than three cards.
+- **Bottom navigation:** Five top-level destinations share the rounded white Material Ledger shelf. Inactive icons and labels remain muted. The selected destination receives a soft-terracotta icon capsule and terracotta label immediately, without an animated color transition or Android ripple. The navigator owns bottom-safe-area spacing, keeps labels above the system gesture region, and exposes selected accessibility state. Home, Products, and Customers remain honest placeholders until their workflows exist.
+- **Drawers and dialogs:** Entry and date tasks use a bottom drawer with scrim, drag handle, fixed header, scrollable body, and anchored action region. Dirty forms ask before discard; pending forms cannot dismiss. Destructive confirmation uses a centered framed dialog, specific consequence copy, Cancel and destructive actions, inline error, and a locked pending control.
+
+### Mobile async and offline states
+
+Every asynchronous region distinguishes initial loading, background refresh, empty, error, retrying, pending mutation, success, and offline behavior. Loading preserves a useful footprint. Empty states name what is absent. Errors stay at the affected region or action and include a bounded retry when recovery is possible. Pull-to-refresh is disabled while a mutation is locked or the device is offline.
+
+Received and vendor saves use a synchronous lock in addition to disabled UI, then hold `saving` through the network request, Money-cache invalidation, keyboard dismissal, success haptic, saved state, and drawer dismissal or navigation. A failure releases the lock, keeps the user’s draft, and leaves the error beside the form action. Delete controls follow the same local ownership: only the targeted row or confirmation action spins; unrelated rows retain their geometry.
+
+Offline Money remains readable from cached data. The neutral offline notice explicitly says that saving or refreshing is paused; mutation actions are disabled without erasing the content. Never show success, dismiss a sheet, or navigate from an unresolved request or incomplete cache synchronization.
+
+**The Resolved Outcome Rule.** Success haptic, feedback, dismissal, and navigation all derive from the same resolved mutation outcome; no part of the interface may announce completion early.
+
 ## Do's and Don'ts
 
 ### Do
@@ -495,6 +700,9 @@ All interactive work must be possible by keyboard. Use native elements and Radix
 - Keep print styles isolated and verify both 80mm receipt and A4 output after invoice changes.
 - Update a virtualizer estimate whenever the corresponding row height changes.
 - Use `cn()` for conditional classes and shared rupee/date utilities for display formatting.
+- On mobile, preserve the Counter Cashbox reading order, 48px touch floor, 64px ledger rows, safe areas, and 576px content cap.
+- On mobile, keep pending state at the initiating control through cache synchronization, haptic feedback, and dismissal or navigation.
+- On mobile, test cached offline reading, disabled mutations, retry, empty ledgers, long vendor names and notes, large Indian-formatted amounts, software keyboards, and text scaling.
 
 ### Don't
 
@@ -506,6 +714,9 @@ All interactive work must be possible by keyboard. Use native elements and Radix
 - Do not add large marketing headings, oversized empty states, glass effects, gradients, or floating capsules to routed workspaces.
 - Do not modify Shadcn baseline files for one screen; prefer application wrappers or feature composition.
 - Do not allow screen-theme changes to leak into invoice or receipt output.
+- Do not turn mobile Money into a stack of floating rounded finance cards or use elevation to imply data hierarchy.
+- Do not let a pending drawer dismiss, enable a duplicate submission, or move its spinner to a global overlay.
+- Do not use color alone for selected navigation, money direction, offline state, failure, or completion.
 
 ### UI change gate
 
