@@ -6,7 +6,7 @@
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
     "ENVIRONMENT": "development",
-    "BETTER_AUTH_URL": "https://relay-dev-server.prajwal.sh", //"http://192.168.31.224:8787",
+    "BETTER_AUTH_URL": " https://relay-server.prajwalreddy-dev.workers.dev", //"http://192.168.31.224:8787",
     "GOOGLE_CLIENT_ID": "611996715090-9fo2opa30cu8ess9fe9l4j6uvabku55j.apps.googleusercontent.com",
     "ALLOWED_ORIGINS": "relay://,exp://192.168.31.224:8081,http://localhost:8081,http://localhost:19006"
   },
@@ -17,7 +17,8 @@
     {
       "binding": "DB",
       "database_name": "relay-server-db",
-      "migrations_dir": "drizzle"
+      "migrations_dir": "drizzle",
+      "database_id": "5df448c3-e3d3-4a03-b47b-87ba7084d63c"
     }
   ],
   "observability": {
