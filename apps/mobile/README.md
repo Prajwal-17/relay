@@ -84,3 +84,26 @@ minimum touch targets instead of accepting the registry's default visual theme u
 Android and iOS are the primary targets. Real-device review should cover narrow screens, the keyboard,
 native sheets, tab bar safe-area spacing, OAuth cancellation, offline recovery, long names/notes, and
 large Indian-formatted values.
+
+## Android releases
+
+`.github/workflows/mobile-release.yaml` builds Android on a GitHub-hosted runner with Expo Prebuild
+and Gradle, signs the APK and AAB, and publishes both to a GitHub Release. Expo remains the app
+framework; EAS Build and EAS Submit are not used. The APK can be installed directly; the AAB is for
+an optional Play Console upload. This workflow does not build iOS.
+
+The workflow runs when a `mobile-v<version>` tag is pushed. Before tagging, update `expo.version`
+and increment `expo.android.versionCode` in `app.json`; the tag must match the version exactly. For
+example, version `1.0.1` uses tag `mobile-v1.0.1`. Mobile tags are separate from desktop `v*` tags.
+
+GitHub Actions uses repository variable `MOBILE_SERVER_URL` for `EXPO_PUBLIC_SERVER_URL`. Set it to
+the deployed HTTPS Worker origin. Android signing uses these repository secrets:
+
+- `MOBILE_ANDROID_KEYSTORE_BASE64`: base64-encoded JKS upload key
+- `MOBILE_ANDROID_KEYSTORE_PASSWORD`: keystore password
+- `MOBILE_ANDROID_KEY_ALIAS`: key alias
+- `MOBILE_ANDROID_KEY_PASSWORD`: key password
+
+Keep an offline backup of the keystore and passwords. Future APKs must use the same key to update
+installed copies. The first release key was created outside the repository at
+`~/.local/share/relay/mobile-signing/` and uploaded to GitHub Actions secrets; it is not committed.

@@ -14,6 +14,8 @@
       }
     },
     "android": {
+      "package": "com.relay.mobile",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#283129",
         "foregroundImage": "./assets/images/relay-foreground.png",
@@ -26,6 +28,7 @@
       "favicon": "./assets/images/relay-favicon.png"
     },
     "plugins": [
+      "./plugins/withAndroidReleaseSigning",
       "expo-router",
       [
         "expo-splash-screen",
