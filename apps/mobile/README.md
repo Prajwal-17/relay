@@ -33,6 +33,55 @@ the only sign-in method; the first successful sign-in creates the account. Cance
 authentication, loading, empty, and API-error states are handled explicitly. Mutating controls pause
 while offline, while cached TanStack Query data remains visible.
 
+## Android production releases
+
+Android releases use the permanent application ID `com.prajwal17.relay`, an EAS-managed signing
+key, directly installable APKs, remote version codes, and the EAS Update `production` channel. No
+Google Play account is required. The app version in `app.json` is also its update runtime; increment
+it before each new APK release and whenever native code or native configuration changes.
+
+Before the first release, create an Expo access token and save it as the `EXPO_TOKEN` secret on the
+GitHub `production` environment (a repository Actions secret also works). Add
+`EXPO_PUBLIC_SERVER_URL` as a project-scoped, plain-text variable in the EAS `production`
+environment; both builds and updates read the same value from EAS. This URL is embedded in the client
+and is not a secret. Configure the Android signing key in EAS once before the first non-interactive
+build. EAS can generate and retain the key; never commit or casually replace it because every future
+APK must use the same key to update an installed copy of the app.
+
+```bash
+cd apps/mobile
+pnpm dlx eas-cli@latest env:set \
+  --environment production \
+  --name EXPO_PUBLIC_SERVER_URL \
+  --value https://api.example.com \
+  --visibility plaintext \
+  --scope project
+pnpm dlx eas-cli@latest credentials:configure-build --platform android --profile production
+```
+
+Run the `Mobile Android GitHub Release` workflow after incrementing `expo.version` in `app.json`. It
+validates the app and EAS production environment, creates a signed `.apk`, and publishes the APK and
+its SHA-256 checksum as a GitHub Release tagged `mobile-v<version>`. Share that APK with the store's
+devices; Android users may need to allow installing apps from their browser or file manager.
+
+For JavaScript, styling, and asset-only changes, run `Mobile Android Production OTA Update` with an
+update message and rollout percentage. It uses the same production URL from EAS and publishes only
+to Android builds on the `production` channel with the matching app-version runtime. Force-close and
+reopen the app up to twice to download and apply an eligible update. Native dependency, permission,
+Expo SDK, or app-config changes require an app version bump and a new production APK instead.
+
+For a solo release process, the same OTA update can be published directly from the CLI instead of
+GitHub Actions:
+
+```bash
+cd apps/mobile
+pnpm dlx eas-cli@latest update \
+  --channel production \
+  --environment production \
+  --platform android \
+  --message "Describe the change"
+```
+
 ## Design
 
 `global.css` maps desktop `DESIGN.md` semantics into React Native Reusables' standard Tailwind 4
