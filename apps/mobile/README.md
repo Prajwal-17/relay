@@ -35,52 +35,29 @@ while offline, while cached TanStack Query data remains visible.
 
 ## Android production releases
 
-Android releases use the permanent application ID `com.prajwal17.relay`, an EAS-managed signing
-key, directly installable APKs, remote version codes, and the EAS Update `production` channel. No
-Google Play account is required. The app version in `app.json` is also its update runtime; increment
-it before each new APK release and whenever native code or native configuration changes.
+Android releases keep the application ID `com.prajwal17.relay`. GitHub Actions generates the native
+project with Expo Prebuild, compiles and signs an APK and AAB with Gradle, and publishes both to a
+GitHub Release. EAS Build, Submit, and Update are not part of the release process. The APK can be
+installed directly; the AAB is available for an optional Play Console upload.
 
-Before the first release, create an Expo access token and save it as the `EXPO_TOKEN` secret on the
-GitHub `production` environment (a repository Actions secret also works). Add
-`EXPO_PUBLIC_SERVER_URL` as a project-scoped, plain-text variable in the EAS `production`
-environment; both builds and updates read the same value from EAS. This URL is embedded in the client
-and is not a secret. Configure the Android signing key in EAS once before the first non-interactive
-build. EAS can generate and retain the key; never commit or casually replace it because every future
-APK must use the same key to update an installed copy of the app.
+Set the repository variable `MOBILE_SERVER_URL` to the deployed HTTPS Worker origin. The URL is
+embedded in the app at build time. The workflow also needs four repository secrets:
 
-```bash
-cd apps/mobile
-pnpm dlx eas-cli@latest env:set \
-  --environment production \
-  --name EXPO_PUBLIC_SERVER_URL \
-  --value https://api.example.com \
-  --visibility plaintext \
-  --scope project
-pnpm dlx eas-cli@latest credentials:configure-build --platform android --profile production
-```
+- `MOBILE_ANDROID_KEYSTORE_BASE64`: base64-encoded JKS upload key
+- `MOBILE_ANDROID_KEYSTORE_PASSWORD`: keystore password
+- `MOBILE_ANDROID_KEY_ALIAS`: key alias
+- `MOBILE_ANDROID_KEY_PASSWORD`: key password
 
-Run the `Mobile Android GitHub Release` workflow after incrementing `expo.version` in `app.json`. It
-validates the app and EAS production environment, creates a signed `.apk`, and publishes the APK and
-its SHA-256 checksum as a GitHub Release tagged `mobile-v<version>`. Share that APK with the store's
-devices; Android users may need to allow installing apps from their browser or file manager.
+The first release key is backed up outside the repository at
+`~/.local/share/relay/mobile-signing/`. Back up that directory securely: future APKs need the same
+key to update installed copies. APKs signed with the earlier test key must be uninstalled before a
+newly signed release can be installed.
 
-For JavaScript, styling, and asset-only changes, run `Mobile Android Production OTA Update` with an
-update message and rollout percentage. It uses the same production URL from EAS and publishes only
-to Android builds on the `production` channel with the matching app-version runtime. Force-close and
-reopen the app up to twice to download and apply an eligible update. Native dependency, permission,
-Expo SDK, or app-config changes require an app version bump and a new production APK instead.
-
-For a solo release process, the same OTA update can be published directly from the CLI instead of
-GitHub Actions:
-
-```bash
-cd apps/mobile
-pnpm dlx eas-cli@latest update \
-  --channel production \
-  --environment production \
-  --platform android \
-  --message "Describe the change"
-```
+For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.2`). The
+tag must match `expo.version`. The `Mobile Android GitHub Release` workflow builds on the GitHub
+runner and publishes the signed binaries and SHA-256 checksums. JavaScript-only changes also require
+a new APK because there is no over-the-air release channel.
 
 ## Design
 

@@ -5,142 +5,132 @@ on:
     tags:
       - "mobile-v*.*.*"
 
-permissions: {}
+permissions:
+  contents: write
 
 concurrency:
-  group: mobile-android-production-release
+  group: mobile-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  release:
-    name: Build and publish Android APK
+  android:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     environment: production
-    permissions:
-      contents: write
     env:
-      CI: "true"
-
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_PUBLIC_SERVER_URL: ${{ vars.MOBILE_SERVER_URL }}
     steps:
-      - name: Check out source
+      - name: Check out release tag
         uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9.0.0
+          run_install: false
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.17.0
+          node-version: "22"
           cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Set up EAS
-        uses: expo/expo-github-action@v9
+      - name: Check release configuration
+        run: |
+          node <<'NODE'
+          const { expo } = require('./apps/mobile/app.json');
+          const expectedTag = `mobile-v${expo.version}`;
+          if (process.env.GITHUB_REF_NAME !== expectedTag) {
+            throw new Error(`Tag must match app.json version: ${expectedTag}`);
+          }
+          if (expo.android.package !== 'com.prajwal17.relay') {
+            throw new Error('Keep the existing Android package ID com.prajwal17.relay');
+          }
+          if (!Number.isInteger(expo.android.versionCode) || expo.android.versionCode < 1) {
+            throw new Error('Set a positive android.versionCode in apps/mobile/app.json');
+          }
+          const url = new URL(process.env.EXPO_PUBLIC_SERVER_URL);
+          if (url.protocol !== 'https:') {
+            throw new Error('Set the MOBILE_SERVER_URL repository variable to the deployed HTTPS Worker origin');
+          }
+          NODE
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
         with:
-          eas-version: latest
-          packager: pnpm
-          token: ${{ secrets.EXPO_TOKEN }}
+          packages: platform-tools
 
-      - name: Install workspace dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint mobile app
-        run: pnpm --dir apps/mobile lint
+      - name: Check mobile source
+        run: |
+          pnpm --dir apps/mobile lint
+          pnpm --dir apps/mobile typecheck
 
-      - name: Typecheck mobile app
-        run: pnpm --dir apps/mobile typecheck
-
-      - name: Verify release configuration
-        id: release
-        shell: bash
+      - name: Restore Android upload key
         env:
-          GH_TOKEN: ${{ github.token }}
-          PUSHED_TAG: ${{ github.ref_name }}
+          MOBILE_ANDROID_KEYSTORE_BASE64: ${{ secrets.MOBILE_ANDROID_KEYSTORE_BASE64 }}
+          MOBILE_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEYSTORE_PASSWORD }}
+          MOBILE_ANDROID_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_KEY_ALIAS }}
+          MOBILE_ANDROID_KEY_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEY_PASSWORD }}
         run: |
-          set -euo pipefail
-          app_version=$(node -p "require('./apps/mobile/app.json').expo.version")
-          package_id=$(node -p "require('./apps/mobile/app.json').expo.android.package")
-          expected_tag="mobile-v${app_version}"
-          test -n "$app_version"
-          test "$package_id" = "com.prajwal17.relay"
-          if [ "$PUSHED_TAG" != "$expected_tag" ]; then
-            echo "::error::Pushed tag ${PUSHED_TAG} does not match expo.version in apps/mobile/app.json (expected ${expected_tag})."
-            exit 1
-          fi
-          if gh release view "$PUSHED_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "::error::GitHub Release ${PUSHED_TAG} already exists."
-            exit 1
-          fi
-          echo "app_version=$app_version" >> "$GITHUB_OUTPUT"
-          echo "release_tag=$PUSHED_TAG" >> "$GITHUB_OUTPUT"
-          echo "Building Relay ${app_version} (${package_id})"
+          for name in MOBILE_ANDROID_KEYSTORE_BASE64 MOBILE_ANDROID_KEYSTORE_PASSWORD MOBILE_ANDROID_KEY_ALIAS MOBILE_ANDROID_KEY_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "Missing GitHub Actions secret: $name" >&2
+              exit 1
+            fi
+          done
+          printf '%s' "$MOBILE_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/relay-upload.jks"
+          chmod 600 "$RUNNER_TEMP/relay-upload.jks"
 
-      - name: Verify production environment
-        working-directory: apps/mobile
-        run: >-
-          eas env:exec
-          production
-          'test -n "$EXPO_PUBLIC_SERVER_URL"'
-          --non-interactive
+      - name: Generate native Android project
+        run: pnpm --dir apps/mobile exec expo prebuild --platform android --clean --no-install
 
-      - name: Build signed production APK
-        id: build
-        shell: bash
-        working-directory: apps/mobile
-        run: |
-          set -euo pipefail
-          build_result="$RUNNER_TEMP/eas-build.json"
-          eas build \
-            --platform android \
-            --profile production \
-            --non-interactive \
-            --wait \
-            --json > "$build_result"
-
-          build_id=$(jq -r 'if type == "array" then .[0].id else .id end' "$build_result")
-          test -n "$build_id"
-          test "$build_id" != "null"
-          echo "build_id=$build_id" >> "$GITHUB_OUTPUT"
-
-      - name: Download production APK
-        id: download
-        shell: bash
-        working-directory: apps/mobile
+      - name: Build signed APK and AAB
+        working-directory: apps/mobile/android
         env:
-          APP_VERSION: ${{ steps.release.outputs.app_version }}
-          BUILD_ID: ${{ steps.build.outputs.build_id }}
-        run: |
-          set -euo pipefail
-          download_dir="$RUNNER_TEMP/relay-android-production"
-          build_details="$RUNNER_TEMP/eas-build-details.json"
-          mkdir -p "$download_dir"
-          eas build:view "$BUILD_ID" --json > "$build_details"
+          ORG_GRADLE_PROJECT_RELAY_UPLOAD_STORE_FILE: ${{ runner.temp }}/relay-upload.jks
+          ORG_GRADLE_PROJECT_RELAY_UPLOAD_STORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEYSTORE_PASSWORD }}
+          ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_KEY_ALIAS }}
+          ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon :app:assembleRelease :app:bundleRelease
 
-          build_url=$(jq -r '.artifacts.buildUrl // .artifacts.applicationArchiveUrl // empty' "$build_details")
-          apk_path="$download_dir/Relay-${APP_VERSION}-${BUILD_ID}.apk"
-          test -n "$build_url"
-          curl --fail --location --silent --show-error --retry 3 "$build_url" --output "$apk_path"
-          test -s "$apk_path"
-          sha256sum "$apk_path" > "${apk_path}.sha256"
-          echo "apk_path=$apk_path" >> "$GITHUB_OUTPUT"
+      - name: Verify and stage release files
+        run: |
+          version=$(node -p 'require("./apps/mobile/app.json").expo.version')
+          mkdir -p release
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "release/Relay-mobile-$version.apk"
+          cp apps/mobile/android/app/build/outputs/bundle/release/app-release.aab "release/Relay-mobile-$version.aab"
+          apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+          test -n "$apksigner"
+          "$apksigner" verify "release/Relay-mobile-$version.apk"
+          jarsigner -verify "release/Relay-mobile-$version.aab"
+          cd release
+          sha256sum ./*.apk ./*.aab > SHA256SUMS
 
       - name: Publish GitHub Release
-        shell: bash
         env:
-          APP_VERSION: ${{ steps.release.outputs.app_version }}
-          APK_PATH: ${{ steps.download.outputs.apk_path }}
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release.outputs.release_tag }}
         run: |
-          set -euo pipefail
-          gh release create "$RELEASE_TAG" \
-            "$APK_PATH" \
-            "${APK_PATH}.sha256" \
-            --repo "$GITHUB_REPOSITORY" \
-            --target "$GITHUB_SHA" \
-            --title "Relay Android ${APP_VERSION}" \
-            --notes ""
+          tag="$GITHUB_REF_NAME"
+          version=$(node -p 'require("./apps/mobile/app.json").expo.version')
+          if gh release view "$tag" --json isDraft --jq .isDraft >/dev/null 2>&1; then
+            if [ "$(gh release view "$tag" --json isDraft --jq .isDraft)" != true ]; then
+              echo "Release $tag is already published; refusing to replace its binaries." >&2
+              exit 1
+            fi
+            gh release upload "$tag" release/* --clobber
+          else
+            gh release create "$tag" release/* --verify-tag --draft --latest=false \
+              --title "Relay Mobile $version" \
+              --notes "Signed Android APK for direct installation and AAB for Play Console upload."
+          fi
+          gh release edit "$tag" --draft=false --latest=false
