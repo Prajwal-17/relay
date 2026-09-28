@@ -94,27 +94,23 @@ jobs:
       - name: Generate native Android project
         run: pnpm --dir apps/mobile exec expo prebuild --platform android --clean --no-install
 
-      - name: Build signed APK and AAB
+      - name: Build signed APK
         working-directory: apps/mobile/android
         env:
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_STORE_FILE: ${{ runner.temp }}/relay-upload.jks
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_STORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEYSTORE_PASSWORD }}
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_KEY_ALIAS }}
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEY_PASSWORD }}
-        run: ./gradlew --no-daemon :app:assembleRelease :app:bundleRelease
+        run: ./gradlew --no-daemon :app:assembleRelease
 
       - name: Verify and stage release files
         run: |
           version=$(node -p 'require("./apps/mobile/app.json").expo.version')
           mkdir -p release
           cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "release/Relay-mobile-$version.apk"
-          cp apps/mobile/android/app/build/outputs/bundle/release/app-release.aab "release/Relay-mobile-$version.aab"
           apksigner=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
           test -n "$apksigner"
           "$apksigner" verify "release/Relay-mobile-$version.apk"
-          jarsigner -verify "release/Relay-mobile-$version.aab"
-          cd release
-          sha256sum ./*.apk ./*.aab > SHA256SUMS
 
       - name: Publish GitHub Release
         env:
@@ -122,15 +118,16 @@ jobs:
         run: |
           tag="$GITHUB_REF_NAME"
           version=$(node -p 'require("./apps/mobile/app.json").expo.version')
+          apk="release/Relay-mobile-$version.apk"
           if gh release view "$tag" --json isDraft --jq .isDraft >/dev/null 2>&1; then
             if [ "$(gh release view "$tag" --json isDraft --jq .isDraft)" != true ]; then
               echo "Release $tag is already published; refusing to replace its binaries." >&2
               exit 1
             fi
-            gh release upload "$tag" release/* --clobber
+            gh release upload "$tag" "$apk" --clobber
           else
-            gh release create "$tag" release/* --verify-tag --draft --latest=false \
+            gh release create "$tag" "$apk" --verify-tag --draft --latest=false \
               --title "Relay Mobile $version" \
-              --notes "Signed Android APK for direct installation and AAB for Play Console upload."
+              --notes "Signed Android APK for direct installation."
           fi
           gh release edit "$tag" --draft=false --latest=false

@@ -36,9 +36,9 @@ while offline, while cached TanStack Query data remains visible.
 ## Android production releases
 
 Android releases keep the application ID `com.prajwal17.relay`. GitHub Actions generates the native
-project with Expo Prebuild, compiles and signs an APK and AAB with Gradle, and publishes both to a
-GitHub Release. EAS Build, Submit, and Update are not part of the release process. The APK can be
-installed directly; the AAB is available for an optional Play Console upload.
+project with Expo Prebuild, compiles and signs an APK with Gradle, and publishes the APK to a GitHub
+Release. EAS Build, Submit, and Update are not part of the release process. The APK can be installed
+directly.
 
 Set the repository variable `MOBILE_SERVER_URL` to the deployed HTTPS Worker origin. The URL is
 embedded in the app at build time. The workflow also needs four repository secrets:
@@ -54,10 +54,10 @@ key to update installed copies. APKs signed with the earlier test key must be un
 newly signed release can be installed.
 
 For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
-push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.2`). The
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.3`). The
 tag must match `expo.version`. The `Mobile Android GitHub Release` workflow builds on the GitHub
-runner and publishes the signed binaries and SHA-256 checksums. JavaScript-only changes also require
-a new APK because there is no over-the-air release channel.
+runner and publishes the signed APK. JavaScript-only changes also require a new APK because there is
+no over-the-air release channel.
 
 ## Design
 
