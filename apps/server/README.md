@@ -30,6 +30,11 @@ pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
 ```
 
+The mobile release uses `https://relay-dev-server.prajwal.sh` as its backend origin. The
+`relay-dev-server.prajwal.sh/*` Worker route in `wrangler.jsonc` must stay attached to
+`relay-server`; it serves requests even when the old Cloudflare Tunnel is down. Check
+`https://relay-dev-server.prajwal.sh/health` after changing routing or deploying the Worker.
+
 Create or attach a D1 database named `relay-server-db`, then add its generated `database_id` to the
 D1 binding if Wrangler does not provision it automatically. Apply migrations before deploying:
 

@@ -54,7 +54,7 @@ key to update installed copies. APKs signed with the earlier test key must be un
 newly signed release can be installed.
 
 For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
-push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.3`). The
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.4`). The
 tag must match `expo.version`. The `Mobile Android GitHub Release` workflow builds on the GitHub
 runner and publishes the signed APK. JavaScript-only changes also require a new APK because there is
 no over-the-air release channel.
