@@ -70,16 +70,55 @@ jobs:
           test "$ROLLOUT_PERCENTAGE" -ge 1
           test "$ROLLOUT_PERCENTAGE" -le 100
 
+      - name: Verify OTA-capable release configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node <<'NODE'
+          const { expo } = require('./apps/mobile/app.json');
+          const projectId = '31611b11-e654-4010-b20a-78d4bcb6dbba';
+          if (expo.extra?.eas?.projectId !== projectId || expo.owner !== 'prajwal-17' || expo.slug !== 'relay') {
+            throw new Error('Mobile app must be linked to the Relay EAS project');
+          }
+          if (expo.updates?.url !== `https://u.expo.dev/${projectId}` || expo.updates?.requestHeaders?.['expo-channel-name'] !== 'production') {
+            throw new Error('Mobile app must use the production EAS Update channel');
+          }
+          if (expo.runtimeVersion?.policy !== 'appVersion') {
+            throw new Error('Mobile updates must use the appVersion runtime policy');
+          }
+          if (!require('./apps/mobile/package.json').dependencies['expo-updates']) {
+            throw new Error('expo-updates is required in the APK');
+          }
+          NODE
+          version=$(node -p 'require("./apps/mobile/app.json").expo.version')
+          gh release view "mobile-v$version" --json isDraft --jq .isDraft | grep -qx false || {
+            echo "Publish and install OTA-capable mobile-v$version APK before sending an update." >&2
+            exit 1
+          }
+
       - name: Verify production environment
         working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: >-
           eas env:exec
           production
           'test -n "$EXPO_PUBLIC_SERVER_URL"'
           --non-interactive
 
+      - name: Ensure production update channel
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if ! eas channel:view production --non-interactive >/dev/null 2>&1; then
+            eas channel:create production --non-interactive
+          fi
+
       - name: Publish Android production update
         working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: >-
           eas update
           --channel production

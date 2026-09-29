@@ -32,8 +32,9 @@ Run lint and typecheck before declaring any task done.
 ## Android releases
 
 GitHub Actions builds and signs Android release binaries and publishes them to GitHub Releases.
-Expo Prebuild generates the native project; Gradle compiles it on the GitHub runner. Do not use EAS
-Build, Submit, or Update for releases. See `apps/mobile/README.md` and
+Expo Prebuild generates the native project; Gradle compiles it on the GitHub runner. EAS Update
+publishes JavaScript and asset changes to OTA-capable APKs; native changes require a new APK. Do not
+use EAS Build or Submit for releases. See `apps/mobile/README.md` and
 `.github/workflows/mobile-android-production.yaml` for release inputs.
 
 ## Rules
