@@ -1,5 +1,5 @@
 import { router, usePathname } from "expo-router";
-import { Banknote, House, Package, UsersRound, type LucideIcon } from "lucide-react-native";
+import { Banknote, Package, UsersRound, type LucideIcon } from "lucide-react-native";
 import { View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
@@ -8,11 +8,6 @@ import { Text } from "@/components/ui/text";
 import { usePalette } from "@/theme/palette";
 
 const destinations: Record<string, { title: string; icon: LucideIcon; description: string }> = {
-  "/home": {
-    title: "Home",
-    icon: House,
-    description: "A broader view of the shop will live here. Today’s money is ready now."
-  },
   "/products": {
     title: "Products",
     icon: Package,
@@ -29,7 +24,7 @@ const destinations: Record<string, { title: string; icon: LucideIcon; descriptio
 export default function ComingSoonScreen() {
   const colors = usePalette();
   const pathname = usePathname();
-  const destination = destinations[pathname] ?? destinations["/home"];
+  const destination = destinations[pathname] ?? destinations["/products"];
   const Icon = destination.icon;
 
   return (
