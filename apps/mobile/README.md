@@ -42,7 +42,7 @@ while offline, while cached TanStack Query data remains visible.
 Android releases keep the application ID `com.prajwal17.relay`. GitHub Actions generates the native
 project with Expo Prebuild, compiles and signs an APK with Gradle, and publishes the APK to a GitHub
 Release. EAS Build and Submit are not part of the release process. The APK can be installed directly.
-Starting with `mobile-v0.0.6`, the Gradle build also includes `expo-updates` and points to Relay's
+Starting with `mobile-v0.0.7`, the Gradle build also includes `expo-updates` and points to Relay's
 `production` EAS Update channel. Earlier APKs cannot receive OTA updates; install the new signed APK
 once before testing OTA. Keep the same Android signing key for updates to install over an existing app.
 
@@ -60,12 +60,12 @@ key to update installed copies. APKs signed with the earlier test key must be un
 newly signed release can be installed.
 
 For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
-push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.6`). The
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.7`). The
 tag must match `expo.version`. The `Mobile Android GitHub Release` workflow builds on the GitHub
 runner and publishes the signed APK. A native dependency, config, or Expo SDK change still needs a
 new APK and app version. The `appVersion` runtime policy keeps OTA updates within that app version.
 
-For JavaScript, styling, or asset changes after installing the `0.0.6` APK, run the
+For JavaScript, styling, or asset changes after installing the `0.0.7` APK, run the
 `Mobile Android Production OTA Update` GitHub workflow from the commit to publish. Provide a message
 and rollout percentage. Set the repository secret `EXPO_TOKEN`, and set
 `EXPO_PUBLIC_SERVER_URL` in the EAS `production` environment to the same HTTPS backend used by the

@@ -130,7 +130,10 @@ jobs:
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_STORE_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEYSTORE_PASSWORD }}
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_ALIAS: ${{ secrets.MOBILE_ANDROID_KEY_ALIAS }}
           ORG_GRADLE_PROJECT_RELAY_UPLOAD_KEY_PASSWORD: ${{ secrets.MOBILE_ANDROID_KEY_PASSWORD }}
-        run: ./gradlew --no-daemon :app:assembleRelease
+        run: >-
+          ./gradlew --no-daemon --max-workers=2 --no-parallel
+          '-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8'
+          :app:assembleRelease
 
       - name: Verify and stage release files
         run: |
