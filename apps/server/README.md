@@ -34,13 +34,16 @@ The mobile release uses `https://relay-dev-server.prajwal.sh` as its backend ori
 `relay-dev-server.prajwal.sh/*` Worker route in `wrangler.jsonc` must stay attached to
 `relay-server`; it serves requests even when the old Cloudflare Tunnel is down. Check
 `https://relay-dev-server.prajwal.sh/health` after changing routing or deploying the Worker.
+Keep the deployed `BETTER_AUTH_URL` equal to the mobile release backend origin, then verify that
+Google sign-in sends its callback to `https://relay-dev-server.prajwal.sh/api/auth/callback/google`.
+Changing `wrangler.jsonc` alone does not update the deployed Worker; run `pnpm run deploy`.
 
 Create or attach a D1 database named `relay-server-db`, then add its generated `database_id` to the
 D1 binding if Wrangler does not provision it automatically. Apply migrations before deploying:
 
 ```bash
 pnpm db:migrate:remote
-pnpm deploy
+pnpm run deploy
 ```
 
 ## Google OAuth

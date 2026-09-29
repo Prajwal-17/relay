@@ -2,7 +2,7 @@
   "expo": {
     "name": "Relay",
     "slug": "relay",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "orientation": "portrait",
     "icon": "./assets/images/relay-icon.png",
     "scheme": "relay",
@@ -15,7 +15,7 @@
     },
     "android": {
       "package": "com.prajwal17.relay",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
         "backgroundColor": "#283129",
         "foregroundImage": "./assets/images/relay-foreground.png",
