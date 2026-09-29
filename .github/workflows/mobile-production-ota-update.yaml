@@ -1,0 +1,90 @@
+name: Mobile Android Production OTA Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: "Short description shown in EAS Update"
+        required: true
+        type: string
+      rollout_percentage:
+        description: "Percentage of eligible production users that receive the update"
+        required: true
+        default: 100
+        type: number
+
+permissions: {}
+
+concurrency:
+  group: mobile-android-production-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    name: Publish production update
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    env:
+      CI: "true"
+      ROLLOUT_PERCENTAGE: ${{ inputs.rollout_percentage }}
+      UPDATE_MESSAGE: ${{ inputs.message }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.0.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Set up EAS
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          packager: pnpm
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint mobile app
+        run: pnpm --dir apps/mobile lint
+
+      - name: Typecheck mobile app
+        run: pnpm --dir apps/mobile typecheck
+
+      - name: Validate rollout percentage
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$ROLLOUT_PERCENTAGE" -ge 1
+          test "$ROLLOUT_PERCENTAGE" -le 100
+
+      - name: Verify production environment
+        working-directory: apps/mobile
+        run: >-
+          eas env:exec
+          production
+          'test -n "$EXPO_PUBLIC_SERVER_URL"'
+          --non-interactive
+
+      - name: Publish Android production update
+        working-directory: apps/mobile
+        run: >-
+          eas update
+          --channel production
+          --environment production
+          --platform android
+          --message "$UPDATE_MESSAGE"
+          --rollout-percentage "$ROLLOUT_PERCENTAGE"
+          --non-interactive
