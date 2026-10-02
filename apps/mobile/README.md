@@ -1,8 +1,12 @@
 # Relay Mobile
 
 Relay Mobile is the authenticated Expo companion for the shop's daily Money workflow. Google sign-in
-opens Money first. Home, Products, and Customers remain simple “Coming soon” placeholders until those
-workflows are ready; Profile contains the account and sign-out action.
+opens Money first. Home is a sample dashboard; Products and Customers remain simple “Coming soon”
+placeholders until those workflows are ready. Profile contains the account and sign-out action.
+
+The Home dashboard reads its illustrative shop, sales, chart, transaction, and product content from
+[`src/features/home/dashboard-data.json`](src/features/home/dashboard-data.json). These figures are
+separate from the authenticated Money API and are labeled as sample data on screen.
 
 ## Stack
 

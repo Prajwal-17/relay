@@ -8,7 +8,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { RotateCcw, WifiOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { ActivityIndicator, Image, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
@@ -52,10 +52,30 @@ function SessionLayout() {
   const [retryingSession, setRetryingSession] = useState(false);
 
   useEffect(() => {
-    if (!session.isPending) void SplashScreen.hideAsync();
-  }, [session.isPending]);
+    void SplashScreen.hideAsync();
+  }, []);
 
-  if (session.isPending && !retryingSession) return null;
+  if (session.isPending && !retryingSession) {
+    return (
+      <SafeAreaView className="bg-background flex-1" edges={["top", "bottom"]}>
+        <View className="flex-1 items-center">
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator accessibilityLabel="Starting Relay" color={colors.primary} />
+          </View>
+          <View className="flex-row items-center gap-2 pb-8">
+            <Image
+              accessible={false}
+              source={require("../../assets/images/relay-splash.png")}
+              style={{ width: 32, height: 32, tintColor: colors.primary }}
+            />
+            <Text className="text-foreground text-xl" style={{ fontFamily: "Inter-Bold" }}>
+              Relay
+            </Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if ((session.error && !session.data) || retryingSession) {
     return (

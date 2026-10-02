@@ -1,1 +1,1 @@
-export { default } from "@/features/coming-soon/coming-soon-screen";
+export { default } from "@/features/home/dashboard-screen";

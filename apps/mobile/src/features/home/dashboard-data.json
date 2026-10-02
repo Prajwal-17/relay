@@ -1,0 +1,89 @@
+{
+  "shop": {
+    "name": "Maya's Market",
+    "subtitle": "An example day at Maya's Market",
+    "sampleLabel": "SAMPLE"
+  },
+  "periods": [
+    {
+      "id": "today",
+      "label": "Day",
+      "salesLabel": "Day's sales",
+      "sales": "₹24,580",
+      "change": "+12.8%",
+      "comparison": "vs. previous day",
+      "orders": "42",
+      "average": "₹585",
+      "chartLabel": "Last 7 days",
+      "chartValue": "₹1,48,250",
+      "chartSummary": "Sales rose overall through the example week, peaking on Saturday.",
+      "chartBars": [38, 55, 46, 70, 61, 87, 74],
+      "chartDays": ["M", "T", "W", "T", "F", "S", "S"]
+    },
+    {
+      "id": "week",
+      "label": "Week",
+      "salesLabel": "Week's sales",
+      "sales": "₹1,48,250",
+      "change": "+8.4%",
+      "comparison": "vs. previous week",
+      "orders": "263",
+      "average": "₹564",
+      "chartLabel": "Daily sales",
+      "chartValue": "₹1,48,250",
+      "chartSummary": "Daily sales rose overall through the example week, peaking on Saturday.",
+      "chartBars": [38, 55, 46, 70, 61, 87, 74],
+      "chartDays": ["M", "T", "W", "T", "F", "S", "S"]
+    },
+    {
+      "id": "month",
+      "label": "Month",
+      "salesLabel": "Month's sales",
+      "sales": "₹6,42,800",
+      "change": "+16.2%",
+      "comparison": "vs. previous month",
+      "orders": "1,124",
+      "average": "₹572",
+      "chartLabel": "Weekly sales",
+      "chartValue": "₹6,42,800",
+      "chartSummary": "Weekly sales rose overall through the example month, peaking in week four.",
+      "chartBars": [43, 51, 63, 78],
+      "chartDays": ["W1", "W2", "W3", "W4"]
+    }
+  ],
+  "transactions": [
+    {
+      "id": "RL-1042",
+      "customer": "Anita Sharma",
+      "detail": "4 items · 10:42 AM",
+      "amount": "₹1,280",
+      "status": "Paid"
+    },
+    {
+      "id": "RL-1041",
+      "customer": "Walk-in customer",
+      "detail": "2 items · 10:18 AM",
+      "amount": "₹650",
+      "status": "Paid"
+    },
+    {
+      "id": "RL-1040",
+      "customer": "Rahul Mehta",
+      "detail": "6 items · 9:56 AM",
+      "amount": "₹2,340",
+      "status": "Pending"
+    },
+    {
+      "id": "RL-1039",
+      "customer": "Priya Nair",
+      "detail": "3 items · 9:31 AM",
+      "amount": "₹890",
+      "status": "Paid"
+    }
+  ],
+  "products": [
+    { "name": "Organic Basmati Rice", "detail": "5 kg bag", "price": "₹620" },
+    { "name": "Cold Pressed Oil", "detail": "1 L bottle", "price": "₹340" },
+    { "name": "Whole Wheat Flour", "detail": "10 kg bag", "price": "₹480" }
+  ]
+}

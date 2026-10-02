@@ -12,7 +12,7 @@ Relay Mobile serves shop owners and counter staff who use an Android phone or iP
 
 ## Purpose
 
-Relay Mobile is the authenticated companion for Relay's daily Money workflow. Its primary job is to make received payments and vendor payments fast to record, easy to verify, and difficult to duplicate or lose. Money is the only live operational workflow today. Home, Products, and Customers remain honest placeholders until those workflows are implemented; Profile contains account identity and sign-out.
+Relay Mobile is the authenticated companion for Relay's daily Money workflow. Its primary job is to make received payments and vendor payments fast to record, easy to verify, and difficult to duplicate or lose. Money is the only live operational workflow today. Home presents a clearly labeled sample daily briefing; Products and Customers remain honest placeholders until those workflows are implemented. Profile contains account identity and sign-out.
 
 ## Context of use
 

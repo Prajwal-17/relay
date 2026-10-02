@@ -62,6 +62,7 @@ export function VendorNameInput({
             variant="bare"
             editable={!disabled}
             accessibilityLabel="Vendor name"
+            autoFocus
             maxLength={120}
             aria-invalid={Boolean(error)}
             className="text-foreground min-h-12 min-w-0 flex-1 px-3 text-base outline-none"
