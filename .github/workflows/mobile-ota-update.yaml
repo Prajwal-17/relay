@@ -1,0 +1,109 @@
+name: Android Production OTA Update
+run-name: ${{ inputs.commit_title || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_title:
+        description: "Optional run title (leave empty to use the workflow name)"
+        required: false
+        type: string
+      rollout_percentage:
+        description: "Percentage of users to receive the update"
+        required: true
+        default: 100
+        type: number
+      existing_update_group:
+        description: "Update group ID to change its rollout (leave empty to publish)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-android-production-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      CI: "true"
+      APP_VARIANT: production
+      ROLLOUT_PERCENTAGE: ${{ inputs.rollout_percentage }}
+      EXISTING_UPDATE_GROUP: ${{ inputs.existing_update_group }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Set up EAS
+        uses: expo/expo-github-action@v9
+        with:
+          eas-version: latest
+          packager: pnpm
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Validate rollout percentage
+        run: |
+          test "$ROLLOUT_PERCENTAGE" -ge 1
+          test "$ROLLOUT_PERCENTAGE" -le 100
+
+      - name: Install dependencies
+        if: ${{ inputs.existing_update_group == '' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Check mobile source
+        if: ${{ inputs.existing_update_group == '' }}
+        run: |
+          pnpm --dir apps/mobile lint
+          pnpm --dir apps/mobile typecheck
+
+      - name: Check published APK release
+        if: ${{ inputs.existing_update_group == '' }}
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p 'require("./apps/mobile/app.json").expo.version')
+          gh release view "mobile-v$version" --json isDraft --jq .isDraft | grep -qx false
+
+      - name: Publish Android production update
+        if: ${{ inputs.existing_update_group == '' }}
+        working-directory: apps/mobile
+        shell: bash
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          args=(
+            --channel production
+            --environment production
+            --platform android
+            --message "$(git log -1 --format=%s)"
+            --non-interactive
+          )
+          if [ "$ROLLOUT_PERCENTAGE" -lt 100 ]; then
+            args+=(--rollout-percentage "$ROLLOUT_PERCENTAGE")
+          fi
+          eas update "${args[@]}"
+
+      - name: Change existing rollout
+        if: ${{ inputs.existing_update_group != '' }}
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: >-
+          eas update:edit "$EXISTING_UPDATE_GROUP"
+          --rollout-percentage "$ROLLOUT_PERCENTAGE"
+          --non-interactive

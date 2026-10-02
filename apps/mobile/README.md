@@ -37,6 +37,54 @@ the only sign-in method; the first successful sign-in creates the account. Cance
 authentication, loading, empty, and API-error states are handled explicitly. Mutating controls pause
 while offline, while cached TanStack Query data remains visible.
 
+## Android production releases
+
+Release publishing in `mobile-release.yaml` uses GitHub CLI, as does the desktop release workflow.
+
+Android releases keep the application ID `com.prajwal17.relay`. GitHub Actions generates the native
+project with Expo Prebuild, compiles and signs an APK with Gradle, and publishes the APK to a GitHub
+Release. EAS Build and Submit are not part of the release process. The APK can be installed directly.
+Starting with `mobile-v0.0.7`, the Gradle build also includes `expo-updates` and points to Relay's
+`production` EAS Update channel. Earlier APKs cannot receive OTA updates; install the new signed APK
+once before testing OTA. Keep the same Android signing key for updates to install over an existing app.
+
+Set the repository variable `MOBILE_SERVER_URL` to the deployed HTTPS Worker origin. The URL is
+embedded in the app at build time. The workflow also needs four repository secrets:
+
+- `MOBILE_ANDROID_KEYSTORE_BASE64`: base64-encoded JKS upload key
+- `MOBILE_ANDROID_KEYSTORE_PASSWORD`: keystore password
+- `MOBILE_ANDROID_KEY_ALIAS`: key alias
+- `MOBILE_ANDROID_KEY_PASSWORD`: key password
+
+The first release key is backed up outside the repository at
+`~/.local/share/relay/mobile-signing/`. Back up that directory securely: future APKs need the same
+key to update installed copies. APKs signed with the earlier test key must be uninstalled before a
+newly signed release can be installed.
+
+For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.7`). The
+tag must match `expo.version`. The `Mobile Android GitHub Release` workflow runs lint and typecheck,
+generates the Android project, builds a signed APK, and creates a GitHub Release with that APK.
+Confirm the app version, backend URL, and Google sign-in configuration before tagging; the workflow
+does not perform backend or OAuth smoke checks. Re-running publication for an existing release fails
+instead of replacing its APK. A native dependency, config, or Expo SDK change still needs a
+new APK and app version. The `appVersion` runtime policy keeps OTA updates within that app version.
+
+For JavaScript, styling, or asset changes after installing the `0.0.7` APK, run the
+`Mobile Android Production OTA Update` GitHub workflow from the commit to publish. The EAS update
+message comes from that commit's subject; provide only the rollout percentage. Use `100` for an
+immediate full release or `1`–`99` for a partial rollout; the workflow omits EAS's rollout flag for a
+full release. Set the repository secret `EXPO_TOKEN`, and set
+`EXPO_PUBLIC_SERVER_URL` in the EAS `production` environment to the same HTTPS backend used by the
+APK (`MOBILE_SERVER_URL`). The workflow requires a published GitHub Release for the current app
+version. Configure the `production` EAS channel and environment before using the workflow; it publishes
+to that channel. Force close and reopen the release app up to twice to download and apply the update.
+A partial rollout must be completed or
+reverted before publishing another update for the same runtime. To increase an existing rollout,
+run the same workflow with its EAS update group ID in `existing_update_group` and set
+`rollout_percentage` to the new total percentage (use `100` to finish it). This edits the existing
+update; leave `existing_update_group` empty to publish a new one.
+
 ## Design
 
 `global.css` maps desktop `DESIGN.md` semantics into React Native Reusables' standard Tailwind 4
@@ -53,6 +101,18 @@ visibly pending and duplicate-safe through the server request, active-query sync
 feedback, and any success haptic; sheets and dialogs do not dismiss early.
 
 ## Development
+
+For a standalone Android test APK, open **Actions → Android Development Build → Run workflow**.
+Choose a source branch (default: `dev`) and optionally a backend URL. The URL defaults to the repository
+variable `MOBILE_DEV_SERVER_URL`, then `MOBILE_SERVER_URL`. Download `mobile-android-dev` from the run's
+**Artifacts** section and install `Relay-Dev.apk`.
+The selected branch must include the development variant config and scheme-aware auth client.
+
+The workflow uses `APP_VARIANT=development` to build `com.prajwal17.relay.dev` with the `relay-dev://`
+callback scheme. It installs alongside Relay, uses the template's debug signing key, and bundles the
+selected branch's JavaScript without requiring Metro. OTA updates are disabled for this variant.
+Add `relay-dev://` and `relay-dev://*` to the chosen backend's `ALLOWED_ORIGINS` for Google sign-in.
+The workflow uploads an artifact only; it does not publish a release or an EAS update.
 
 Start the server first, then point Expo at it. Android emulators use `10.0.2.2` instead of
 `localhost`; physical devices need a reachable LAN or deployed Worker URL. For a phone on the same

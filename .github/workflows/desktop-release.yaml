@@ -1,0 +1,81 @@
+name: Desktop Production Build and Release
+run-name: ${{ github.event.head_commit.message }}
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build App
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pnpm --filter @relay/desktop run build:win
+          else
+            pnpm --filter @relay/desktop run build:linux
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          if-no-files-found: error
+          path: |
+            apps/desktop/dist/latest.yml
+            apps/desktop/dist/latest-linux.yml
+            apps/desktop/dist/*.exe
+            apps/desktop/dist/*.AppImage
+            apps/desktop/dist/*.deb
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p 'require("./apps/desktop/package.json").version')
+          gh release create "$GITHUB_REF_NAME" \
+            "artifacts/build-windows-latest/Relay-$version.exe" \
+            "artifacts/build-ubuntu-latest/Relay-$version.AppImage" \
+            "artifacts/build-ubuntu-latest/Relay-$version.deb" \
+            artifacts/build-windows-latest/latest.yml \
+            artifacts/build-ubuntu-latest/latest-linux.yml \
+            --verify-tag --latest \
+            --title "Desktop v$version" \
+            --notes "Windows + Linux builds"

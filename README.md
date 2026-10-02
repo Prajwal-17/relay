@@ -78,6 +78,23 @@ Run these from the repository root:
 
 Packaged artifacts are written to `apps/desktop/dist/`.
 
+For downloadable desktop test builds, open **Actions → Desktop Development Build → Run workflow**
+on GitHub and select the source branch (default: `dev`). The workflow runs only manually and
+uploads Windows (`.exe`) and Linux (`.AppImage`, `.deb`) packages to the run's **Artifacts**
+section as `build-windows-latest` and `build-ubuntu-latest`. These builds use the `Relay-Dev`
+identity and do not create a release.
+
+For Android test APKs, use **Actions → Android Development Build → Run workflow**. Choose a
+branch (default: `dev`) and download `mobile-android-dev` from **Artifacts**. See the
+[mobile README](apps/mobile/README.md#development) for backend and Google sign-in setup.
+
+Desktop (`v*.*.*`) and Android (`mobile-v*.*.*`) tag releases publish with GitHub CLI. All workflows
+use the pnpm version declared in the root `package.json` and Node.js 22.17.0.
+
+Workflow run titles use the commit message for tag releases. Manual desktop, Android build,
+and OTA workflows accept an optional `commit_title` input. When provided, it becomes the run
+title; otherwise, the run displays the workflow name, such as **Android Development Build**.
+
 ## Runtime at a glance
 
 Electron initializes and migrates a local SQLite database, then forks a Hono API server. The

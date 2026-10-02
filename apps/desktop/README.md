@@ -253,8 +253,11 @@ Reports and test results are ignored under `playwright-report/` and `test-result
 
 ## Packaging and releases
 
-- A push to `dev` builds and uploads unsigned Windows and Linux development artifacts.
-- A push to `master` builds production artifacts and creates a GitHub release.
+- The manual `Desktop Development Build` workflow uploads Windows and Linux test artifacts from a
+  selected branch (default: `dev`).
+- A push of a `v*.*.*` tag builds production artifacts and creates a GitHub release.
+- Releases and assets are published by `github-actions[bot]` using the automatic `GITHUB_TOKEN`
+  with `contents: write` on the release job. No personal `GH_TOKEN` secret is required.
 - Windows output is an NSIS installer.
 - Linux output includes AppImage and Debian packages.
 

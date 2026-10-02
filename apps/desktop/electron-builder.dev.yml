@@ -48,6 +48,6 @@ npmRebuild: false
 publish:
   provider: github
   owner: Prajwal-17
-  repo: pos
+  repo: relay
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/

@@ -17,3 +17,4 @@ apps/desktop/playwright/.cache/
 .impeccable/
 dist/
 .expo/
+skills-lock.json

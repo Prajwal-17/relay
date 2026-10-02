@@ -1,38 +1,43 @@
-name: Manual Build
+name: Desktop Development Build
+run-name: ${{ inputs.commit_title || github.workflow }}
 
 on:
   workflow_dispatch:
     inputs:
+      commit_title:
+        description: "Optional run title (leave empty to use the workflow name)"
+        required: false
+        type: string
       branch:
         description: "Branch to build from"
         required: true
         default: "dev"
         type: string
 
+permissions:
+  contents: read
+
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    env:
-      GH_TOKEN: ${{secrets.GH_TOKEN}}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Setup Node JS
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22.17.0
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
-        with:
-          version: 10
+          cache: pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -46,17 +51,11 @@ jobs:
             pnpm --filter @relay/desktop run build:linux:dev
           fi
 
-      - name: Get package version
-        id: package-version
-        shell: bash
-        run: |
-          version=$(jq -r .version apps/desktop/package.json)
-          echo "current-version=$version" >> $GITHUB_OUTPUT
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: build-${{ matrix.os }}
+          if-no-files-found: error
           path: |
             apps/desktop/dist/latest.yml
             apps/desktop/dist/latest-linux.yml

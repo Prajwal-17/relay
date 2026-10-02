@@ -1,0 +1,87 @@
+name: Android Development Build
+run-name: ${{ inputs.commit_title || github.workflow }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_title:
+        description: "Optional run title (leave empty to use the workflow name)"
+        required: false
+        type: string
+      branch:
+        description: "Branch to build from"
+        required: true
+        default: "dev"
+        type: string
+      server_url:
+        description: "Backend URL (defaults to MOBILE_DEV_SERVER_URL, then MOBILE_SERVER_URL)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      CI: "1"
+      EXPO_NO_TELEMETRY: "1"
+      APP_VARIANT: development
+      EXPO_PUBLIC_SERVER_URL: ${{ inputs.server_url || vars.MOBILE_DEV_SERVER_URL || vars.MOBILE_SERVER_URL }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check mobile source
+        run: |
+          pnpm --dir apps/mobile lint
+          pnpm --dir apps/mobile typecheck
+
+      - name: Generate native Android project
+        run: pnpm --dir apps/mobile exec expo prebuild --platform android --clean --no-install
+
+      - name: Build standalone test APK
+        working-directory: apps/mobile/android
+        run: >-
+          ./gradlew --no-daemon --max-workers=2 --no-parallel
+          '-Dorg.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1536m -Dfile.encoding=UTF-8'
+          :app:assembleRelease
+
+      - name: Prepare test APK
+        run: |
+          mkdir -p artifacts
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk artifacts/Relay-Dev.apk
+
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-android-dev
+          path: artifacts/Relay-Dev.apk
+          if-no-files-found: error

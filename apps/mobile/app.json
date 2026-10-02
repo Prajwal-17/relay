@@ -1,8 +1,23 @@
 {
   "expo": {
     "name": "Relay",
-    "slug": "mobile",
-    "version": "1.0.0",
+    "slug": "relay",
+    "version": "0.0.7",
+    "owner": "prajwal-17",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/31611b11-e654-4010-b20a-78d4bcb6dbba",
+      "requestHeaders": {
+        "expo-channel-name": "production"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "31611b11-e654-4010-b20a-78d4bcb6dbba"
+      }
+    },
     "orientation": "portrait",
     "icon": "./assets/images/relay-icon.png",
     "scheme": "relay",
@@ -14,6 +29,8 @@
       }
     },
     "android": {
+      "package": "com.prajwal17.relay",
+      "versionCode": 7,
       "adaptiveIcon": {
         "backgroundColor": "#283129",
         "foregroundImage": "./assets/images/relay-foreground.png",
@@ -26,6 +43,7 @@
       "favicon": "./assets/images/relay-favicon.png"
     },
     "plugins": [
+      "./plugins/withAndroidReleaseSigning",
       "expo-router",
       [
         "expo-splash-screen",
