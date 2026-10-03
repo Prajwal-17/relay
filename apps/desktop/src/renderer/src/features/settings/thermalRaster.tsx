@@ -76,6 +76,7 @@ async function waitForRasterFonts() {
 async function captureRaster(node: ReactNode): Promise<MonochromeRasterData> {
   const container = document.createElement("div");
   container.setAttribute("aria-hidden", "true");
+  container.setAttribute("data-thermal-capture", "");
   Object.assign(container.style, {
     position: "fixed",
     left: "-100000px",
@@ -116,10 +117,24 @@ async function captureRaster(node: ReactNode): Promise<MonochromeRasterData> {
       useCORS: false,
       imageTimeout: 0,
       onclone: (clonedDocument) => {
-        clonedDocument.querySelectorAll<HTMLElement>("*").forEach((element) => {
-          element.style.textShadow = "none";
-          element.style.filter = "none";
-        });
+        // html2canvas parses body/root backgrounds and every border color, even
+        // zero-width borders. Screen OKLCH/color-mix tokens must never reach it.
+        // Apply this only to the clone so the live app and preview stay intact.
+        const printStyles = clonedDocument.createElement("style");
+        printStyles.textContent = `
+          html, body { background: #ffffff !important; color: #000000 !important; }
+          [data-thermal-capture], [data-thermal-capture] *,
+          [data-thermal-capture] *::before, [data-thermal-capture] *::after {
+            color: #000000 !important;
+            border-color: #000000 !important;
+            outline-color: #000000 !important;
+            text-decoration-color: #000000 !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+            filter: none !important;
+          }
+        `;
+        clonedDocument.head.append(printStyles);
       }
     });
     const context = canvas.getContext("2d", { willReadFrequently: true });

@@ -18,7 +18,8 @@ export type ApiRequestOptions = {
 export class PublicApi {
   constructor(
     readonly baseUrl = API_BASE_URL,
-    private readonly log: ApiLogEntry[] = []
+    private readonly log: ApiLogEntry[] = [],
+    private readonly apiToken?: string
   ) {}
 
   async request<T>(method: string, pathname: string, options: ApiRequestOptions = {}): Promise<T> {
@@ -32,7 +33,10 @@ export class PublicApi {
     try {
       const response = await fetch(url, {
         method,
-        headers: options.body === undefined ? undefined : { "content-type": "application/json" },
+        headers: {
+          ...(options.body === undefined ? {} : { "content-type": "application/json" }),
+          ...(this.apiToken ? { "X-Relay-Api-Token": this.apiToken } : {})
+        },
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
         signal: options.signal
       });

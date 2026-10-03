@@ -11,7 +11,7 @@ export function billingRow(page: Page, index: number): Locator {
 }
 
 export function productInput(row: Locator): Locator {
-  return row.getByPlaceholder("Search products");
+  return row.locator("[data-billing-product-input]");
 }
 
 export function quantityInput(row: Locator): Locator {
@@ -27,7 +27,7 @@ export async function openBillingRoute(page: Page, type: BillingType, id?: strin
   await page.evaluate((nextRoute) => {
     window.location.hash = `#${nextRoute}`;
   }, route);
-  await expect(page.getByPlaceholder("Search products").first()).toBeVisible();
+  await expect(page.locator("[data-billing-product-input]").first()).toBeVisible();
   await expect(page.getByRole("combobox")).toBeVisible();
 }
 

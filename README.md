@@ -88,7 +88,7 @@ For Android test APKs, use **Actions → Android Development Build → Run workf
 branch (default: `dev`) and download `mobile-android-dev` from **Artifacts**. See the
 [mobile README](apps/mobile/README.md#development) for backend and Google sign-in setup.
 
-Desktop (`v*.*.*`) and Android (`mobile-v*.*.*`) tag releases publish with GitHub CLI. All workflows
+Desktop (`desktop-v*.*.*`) and Android (`mobile-v*.*.*`) tag releases publish with GitHub CLI. All workflows
 use the pnpm version declared in the root `package.json` and Node.js 22.17.0.
 
 Workflow run titles use the commit message for tag releases. Manual desktop, Android build,

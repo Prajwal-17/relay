@@ -716,14 +716,13 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
 
         <div
           ref={dropdownContainerRef}
-          data-surface="overlay"
           style={{
             width: dropdownLayout.width,
             height: dropdownLayout.height,
             maxHeight: dropdownLayout.height,
             left: dropdownLayout.left
           }}
-          className="bg-popover border-frame absolute top-[calc(100%+0.5rem)] z-30 flex flex-col overflow-hidden rounded-(--radius-panel) border shadow-md"
+          className="bg-background border-frame absolute top-[calc(100%+0.5rem)] z-30 flex flex-col overflow-hidden rounded-(--radius-panel) border shadow-md"
         >
           {isError && searchResults.length === 0 ? (
             <ErrorState
@@ -822,9 +821,6 @@ const SearchDropdown = ({ rowId }: { rowId: string }) => {
                           data-search-dropdown-index={virtualRow.index}
                         >
                           <div
-                            data-surface={
-                              highlightedIndex === virtualRow.index ? "selected" : "panel"
-                            }
                             className={`group relative flex items-center gap-1.5 rounded-(--radius-control) px-1 transition-colors duration-150 hover:cursor-pointer ${
                               highlightedIndex === virtualRow.index
                                 ? "bg-selected text-foreground hover:bg-selected"

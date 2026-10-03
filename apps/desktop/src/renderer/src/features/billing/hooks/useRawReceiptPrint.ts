@@ -185,8 +185,9 @@ async function prepareRequiredReceiptRaster(
         cause: error
       });
     }
-    console.warn("High-quality receipt preparation failed; device text will be used.", error);
-    return undefined;
+    throw new Error("The receipt image could not be prepared. Nothing was printed. Try again.", {
+      cause: error
+    });
   }
 }
 

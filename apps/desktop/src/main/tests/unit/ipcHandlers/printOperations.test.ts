@@ -213,31 +213,38 @@ describe("authoritative RAW print operations", () => {
   it.each([
     ["missing", undefined],
     ["invalid", { body: { ...raster().body, width: 575 } }]
-  ])("falls back before transport for %s receipt raster data", async (_label, value) => {
+  ])("rejects %s receipt raster data without sending a text job", async (_label, value) => {
     const result = await printReceipt(receipt(), value);
 
     expect(result).toMatchObject({
-      status: "success",
-      data: { modeUsed: "device-text", fellBack: true }
+      status: "error"
     });
-    expect(mocks.sendRaw).toHaveBeenCalledTimes(1);
-    expect((mocks.sendRaw.mock.calls[0]![1] as Buffer).toString("ascii")).toContain(
-      "Invoice no: 42"
-    );
+    expect(mocks.sendRaw).not.toHaveBeenCalled();
   });
 
-  it("falls back the complete combined job when either raster document is unavailable", async () => {
-    const result = await printReceiptWithLedger(receipt(), statement(), raster(), undefined);
+  it.each(["receipt", "ledger"])(
+    "rejects the complete combined job when the %s image is missing",
+    async (missing) => {
+      const result = await printReceiptWithLedger(
+        receipt(),
+        statement(),
+        missing === "receipt" ? undefined : raster(),
+        missing === "ledger" ? undefined : raster()
+      );
 
-    expect(result).toMatchObject({
-      status: "success",
-      data: { modeUsed: "device-text", fellBack: true }
-    });
-    const text = (mocks.sendRaw.mock.calls[0]![1] as Buffer).toString("ascii");
-    expect(text).toContain("Invoice no: 42");
-    expect(text).toContain("ACCOUNTS");
-    expect(mocks.sendRaw).toHaveBeenCalledTimes(1);
-  });
+      expect(result.status).toBe("error");
+      expect(mocks.sendRaw).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each([undefined, { body: { ...raster().body, width: 575 } }])(
+    "rejects a missing or invalid ledger image before transport",
+    async (value) => {
+      const result = await printLedger(statement(), value);
+      expect(result.status).toBe("error");
+      expect(mocks.sendRaw).not.toHaveBeenCalled();
+    }
+  );
 
   it("prints a validated ledger raster in raster mode", async () => {
     const result = await printLedger(statement(), raster(0x22));

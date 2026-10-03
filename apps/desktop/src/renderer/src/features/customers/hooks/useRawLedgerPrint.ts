@@ -233,7 +233,12 @@ export function useRawLedgerPrint() {
         try {
           raster = await prepareRasterLedger(statement, options);
         } catch (error) {
-          console.warn("High-quality ledger preparation failed; device text will be used.", error);
+          throw new Error(
+            "The ledger image could not be prepared. Nothing was printed. Try again.",
+            {
+              cause: error
+            }
+          );
         }
       }
       return { statement, raster };
