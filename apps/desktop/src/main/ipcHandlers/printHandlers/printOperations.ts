@@ -233,27 +233,18 @@ export async function printReceipt(
     const authoritativeReceipt = withReceiptFinishing(receipt, printing);
     validateRawReceiptData(authoritativeReceipt);
     let payload: Buffer;
-    let modeUsed = printing.defaultPrintMode;
-    let fellBack = false;
+    const modeUsed = printing.defaultPrintMode;
 
     if (printing.defaultPrintMode === "device-text") {
       const qrRaster = getValidatedReceiptQrRaster(raster, Boolean(authoritativeReceipt.upi));
       payload = buildEscPosReceipt(authoritativeReceipt, qrRaster);
     } else {
-      try {
-        validateRasterReceiptSegments(raster, Boolean(authoritativeReceipt.upi));
-        payload = buildEscPosRasterReceipt(authoritativeReceipt, raster);
-      } catch (error) {
-        console.warn("Raster receipt preparation was rejected; using device text.", error);
-        const qrRaster = getValidatedReceiptQrRaster(raster, Boolean(authoritativeReceipt.upi));
-        payload = buildEscPosReceipt(authoritativeReceipt, qrRaster);
-        modeUsed = "device-text";
-        fellBack = true;
-      }
+      validateRasterReceiptSegments(raster, Boolean(authoritativeReceipt.upi));
+      payload = buildEscPosRasterReceipt(authoritativeReceipt, raster);
     }
 
     const bytesWritten = await sendRawToWindowsPrinter(printerName, payload);
-    return { status: "success", data: { bytesWritten, modeUsed, fellBack } };
+    return { status: "success", data: { bytesWritten, modeUsed, fellBack: false } };
   } catch (error) {
     return errorResponse(error);
   }
@@ -269,25 +260,17 @@ export async function printLedger(
     const authoritativeStatement = withLedgerFinishing(statement, printing);
     validateRawLedgerStatementData(authoritativeStatement);
     let payload: Buffer;
-    let modeUsed = printing.defaultPrintMode;
-    let fellBack = false;
+    const modeUsed = printing.defaultPrintMode;
 
     if (printing.defaultPrintMode === "device-text") {
       payload = buildEscPosLedgerStatement(authoritativeStatement);
     } else {
-      try {
-        validateRasterLedgerSegments(raster);
-        payload = buildEscPosRasterLedgerStatement(authoritativeStatement, raster);
-      } catch (error) {
-        console.warn("Raster ledger preparation was rejected; using device text.", error);
-        payload = buildEscPosLedgerStatement(authoritativeStatement);
-        modeUsed = "device-text";
-        fellBack = true;
-      }
+      validateRasterLedgerSegments(raster);
+      payload = buildEscPosRasterLedgerStatement(authoritativeStatement, raster);
     }
 
     const bytesWritten = await sendRawToWindowsPrinter(printerName, payload);
-    return { status: "success", data: { bytesWritten, modeUsed, fellBack } };
+    return { status: "success", data: { bytesWritten, modeUsed, fellBack: false } };
   } catch (error) {
     return errorResponse(error);
   }
@@ -308,8 +291,7 @@ export async function printReceiptWithLedger(
     validateRawReceiptData(authoritativeReceipt);
     validateRawLedgerStatementData(authoritativeStatement);
     let payload: Buffer;
-    let modeUsed = printing.defaultPrintMode;
-    let fellBack = false;
+    const modeUsed = printing.defaultPrintMode;
 
     if (printing.defaultPrintMode === "device-text") {
       const qrRaster = getValidatedReceiptQrRaster(
@@ -322,33 +304,18 @@ export async function printReceiptWithLedger(
         qrRaster
       );
     } else {
-      try {
-        validateRasterReceiptSegments(receiptRaster, Boolean(authoritativeReceipt.upi));
-        validateRasterLedgerSegments(ledgerRaster);
-        payload = buildEscPosRasterReceiptWithLedger(
-          authoritativeReceipt,
-          authoritativeStatement,
-          receiptRaster,
-          ledgerRaster
-        );
-      } catch (error) {
-        console.warn("Combined raster preparation was rejected; using device text.", error);
-        const qrRaster = getValidatedReceiptQrRaster(
-          receiptRaster,
-          Boolean(authoritativeReceipt.upi)
-        );
-        payload = buildEscPosReceiptWithLedger(
-          authoritativeReceipt,
-          authoritativeStatement,
-          qrRaster
-        );
-        modeUsed = "device-text";
-        fellBack = true;
-      }
+      validateRasterReceiptSegments(receiptRaster, Boolean(authoritativeReceipt.upi));
+      validateRasterLedgerSegments(ledgerRaster);
+      payload = buildEscPosRasterReceiptWithLedger(
+        authoritativeReceipt,
+        authoritativeStatement,
+        receiptRaster,
+        ledgerRaster
+      );
     }
 
     const bytesWritten = await sendRawToWindowsPrinter(printerName, payload);
-    return { status: "success", data: { bytesWritten, modeUsed, fellBack } };
+    return { status: "success", data: { bytesWritten, modeUsed, fellBack: false } };
   } catch (error) {
     return errorResponse(error);
   }

@@ -1,6 +1,7 @@
 import { chromium, test as base, type Browser, type Page, type TestInfo } from "@playwright/test";
 import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { promises as fs } from "node:fs";
+import { randomUUID } from "node:crypto";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -25,6 +26,7 @@ export class DevelopmentElectron {
   readonly output: string[] = [];
   readonly rendererErrors: string[] = [];
   readonly failedApiResponses: string[] = [];
+  private readonly apiToken = randomUUID();
   private state: LaunchState | null = null;
   private unexpectedExit: string | null = null;
 
@@ -49,7 +51,7 @@ export class DevelopmentElectron {
 
   get api(): PublicApi {
     if (!this.state) throw new Error("Development Electron is not running.");
-    return new PublicApi(`http://127.0.0.1:${this.state.apiPort}`);
+    return new PublicApi(`http://127.0.0.1:${this.state.apiPort}`, [], this.apiToken);
   }
 
   get apiPort(): number {
@@ -82,6 +84,7 @@ export class DevelopmentElectron {
         NODE_ENV: "development",
         ELECTRON_DISABLE_SANDBOX: "1",
         M_VITE_USER_DATA_DIR: this.userDataDirectory,
+        M_VITE_API_TOKEN: this.apiToken,
         M_VITE_API_PORT: String(apiPort)
       }).filter((entry): entry is [string, string] => typeof entry[1] === "string")
     );
@@ -150,7 +153,7 @@ export class DevelopmentElectron {
       this.state = { ...provisional, browser, page };
       await resizeToCanonicalViewport(page);
       await assertCanonicalViewport(page);
-      await waitForApi(apiPort, child, startupDeadline);
+      await waitForApi(apiPort, child, startupDeadline, this.apiToken);
       reportStartup("local API is ready");
     } catch (error) {
       reportStartup(`failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -270,14 +273,20 @@ async function waitForCdp(port: number, child: ChildProcess, deadline: number): 
   throw new Error(`Timed out waiting for Electron CDP on port ${port}.`);
 }
 
-async function waitForApi(port: number, child: ChildProcess, deadline: number): Promise<void> {
+async function waitForApi(
+  port: number,
+  child: ChildProcess,
+  deadline: number,
+  apiToken: string
+): Promise<void> {
   while (Date.now() < deadline) {
     if (child.exitCode !== null)
       throw new Error("electron-vite dev stopped before Hono was ready.");
     try {
       const response = await fetchWithDeadline(
         `http://127.0.0.1:${port}/api/onboarding/status`,
-        deadline
+        deadline,
+        { "X-Relay-Api-Token": apiToken }
       );
       if (response.ok) return;
     } catch {
@@ -319,14 +328,18 @@ async function waitForMainRenderer(
   throw new Error("Timed out waiting for the main development renderer.");
 }
 
-async function fetchWithDeadline(url: string, deadline: number): Promise<Response> {
+async function fetchWithDeadline(
+  url: string,
+  deadline: number,
+  headers?: Record<string, string>
+): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(
     () => controller.abort(),
     Math.min(1_000, remainingMilliseconds(deadline))
   );
   try {
-    return await fetch(url, { signal: controller.signal });
+    return await fetch(url, { signal: controller.signal, headers });
   } finally {
     clearTimeout(timeout);
   }

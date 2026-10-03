@@ -106,7 +106,9 @@ export default function ProductHeader() {
             <Separator />
 
             <div className="p-4">
-              <p className="supporting-text mb-2.5">Status</p>
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
+                Status
+              </p>
               <div className="space-y-1">
                 {PRODUCT_STATUS_OPTIONS.map((option) => (
                   <button
@@ -128,7 +130,9 @@ export default function ProductHeader() {
             <Separator />
 
             <div className="p-4">
-              <p className="supporting-text mb-2.5">Price Range</p>
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
+                Price Range
+              </p>
               <div className="flex items-center gap-2.5">
                 <Input
                   type="number"
@@ -151,7 +155,9 @@ export default function ProductHeader() {
             <Separator />
 
             <div className="p-4">
-              <p className="supporting-text mb-2.5">Properties</p>
+              <p className="text-muted-foreground mb-2.5 text-xs font-semibold tracking-wider uppercase">
+                Properties
+              </p>
               <div className="space-y-1">
                 <button
                   onClick={toggleMrpFilter}
@@ -219,7 +225,7 @@ export default function ProductHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56 rounded-xl">
-            <DropdownMenuLabel className="text-muted-foreground field-label">
+            <DropdownMenuLabel className="text-muted-foreground text-sm font-semibold tracking-wider uppercase">
               Sort by
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

@@ -148,6 +148,17 @@ changes.
 
 Detailed implementation rules live in [AGENTS.md](../../AGENTS.md).
 
+### Thermal printing
+
+High-quality printing captures a 576-dot monochrome image, then sends ESC/POS raster data to
+the configured Windows printer. The capture clone resets screen colors to print-safe sRGB;
+keep this isolation when changing the screen theme. Receipt, payment QR, and ledger capture
+are covered by the development Electron `thermal-raster` journey.
+
+The selected print mode is authoritative. A failed or invalid raster stops the whole job before
+printer transport; it never automatically switches to device text. Device text remains an
+explicit choice in Printing settings. Transport failures are never automatically retried.
+
 ## Accounting model
 
 Sales and customer accounting are intentionally separate. Every sale contributes its full

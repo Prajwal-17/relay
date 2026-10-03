@@ -1,5 +1,16 @@
 # Changelog
 
+## v4.4.10 - 03 Oct 2026
+
+Patch release restoring the previous desktop appearance and fixing high-quality thermal printing.
+
+### Fixed
+
+- Restore the desktop colors, borders, controls, typography, and billing styles from before the recent design-system restyle
+- Fix receipt, payment QR, and customer ledger raster capture failing when screen-theme colors reach the image renderer
+- Keep the selected print mode: failed raster preparation now reports an error without automatically printing device text
+- Reject incomplete combined receipt-and-ledger image jobs before sending anything to the printer
+
 ## v4.4.9 - 03 Oct 2026
 
 Patch release fixing autosave failures when editing older custom billing items and making the desktop title bar more compact.

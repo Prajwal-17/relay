@@ -56,7 +56,7 @@ export const ProductViewMode = () => {
         <DataField
           label="Product Name"
           value={formData.name || "—"}
-          valueClassName="text-xl font-semibold"
+          valueClassName="text-xl font-bold"
           className="sm:col-span-2"
         />
 
@@ -69,9 +69,9 @@ export const ProductViewMode = () => {
           <DataField
             label="Purchase Price"
             value={displayPurchasePrice || "—"}
-            valueClassName="text-lg font-semibold"
+            valueClassName="text-lg font-bold"
           />
-          <DataField label="MRP" value={displayMrp || "—"} valueClassName="text-lg font-semibold" />
+          <DataField label="MRP" value={displayMrp || "—"} valueClassName="text-lg font-bold" />
         </div>
 
         <DataField
@@ -131,7 +131,9 @@ function DataField({
 }) {
   return (
     <div className={`flex min-w-0 flex-col gap-1 ${className}`}>
-      <span className="supporting-text">{label}</span>
+      <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {label}
+      </span>
       <span className={`text-foreground ${valueClassName}`} style={{ overflowWrap: "anywhere" }}>
         {value}
       </span>

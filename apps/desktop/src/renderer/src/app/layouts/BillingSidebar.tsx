@@ -1,4 +1,4 @@
-import { relaySmallAppIcon as relayAppIcon } from "@/lib/appIcon";
+import relayAppIcon from "@assets/desktop/app-icon-small.svg";
 import { navLinks } from "@/app/navigation";
 import { apiClient } from "@/lib/apiClient";
 import { cn } from "@/lib/utils";
