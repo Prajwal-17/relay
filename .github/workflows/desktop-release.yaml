@@ -4,7 +4,7 @@ run-name: ${{ github.event.head_commit.message }}
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "desktop-v*.*.*"
 
 permissions:
   contents: read
@@ -70,7 +70,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           version=$(node -p 'require("./apps/desktop/package.json").version')
-          test "$GITHUB_REF_NAME" = "v$version"
+          test "$GITHUB_REF_NAME" = "desktop-v$version"
           notes_file="$RUNNER_TEMP/desktop-release-notes.md"
           awk -v tag="$GITHUB_REF_NAME" '
             /^## / {
@@ -89,5 +89,5 @@ jobs:
             artifacts/build-windows-latest/latest.yml \
             artifacts/build-ubuntu-latest/latest-linux.yml \
             --verify-tag --latest \
-            --title "Desktop v$version" \
+            --title "desktop-v$version" \
             --notes-file "$notes_file"

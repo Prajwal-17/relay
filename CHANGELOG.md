@@ -1,6 +1,6 @@
 # Changelog
 
-## v4.4.10 - 03 Oct 2026
+## desktop-v4.4.10 - 03 Oct 2026
 
 Patch release restoring the previous desktop appearance and fixing high-quality thermal printing.
 
@@ -11,7 +11,11 @@ Patch release restoring the previous desktop appearance and fixing high-quality 
 - Keep the selected print mode: failed raster preparation now reports an error without automatically printing device text
 - Reject incomplete combined receipt-and-ledger image jobs before sending anything to the printer
 
-## v4.4.9 - 03 Oct 2026
+### Changed
+
+- Use `desktop-vX.Y.Z` for desktop Git tags and GitHub release names
+
+## desktop-v4.4.9 - 03 Oct 2026
 
 Patch release fixing autosave failures when editing older custom billing items and making the desktop title bar more compact.
 
@@ -25,7 +29,7 @@ Patch release fixing autosave failures when editing older custom billing items a
 - Recover missing names from stored item labels while preserving historical snapshots, prices, quantities, and product links
 - Use orange development icons and charcoal production icons consistently in app chrome and native launchers
 
-## v4.4.8 - 12 Sep 2026
+## desktop-v4.4.8 - 12 Sep 2026
 
 Patch release preserving deleted estimates for data integrity while removing them from user-facing workflows.
 
@@ -40,7 +44,7 @@ Patch release preserving deleted estimates for data integrity while removing the
 
 - Show whole rupees for thermal receipt line items while keeping subtotal and total amounts at two decimal places
 
-## v4.4.7 - 07 Sep 2026
+## desktop-v4.4.7 - 07 Sep 2026
 
 Patch release completing the Relay rebrand and packaging cleanup.
 
@@ -55,7 +59,7 @@ Patch release completing the Relay rebrand and packaging cleanup.
 
 - Remove the app product name from thermal receipts, receipt previews, and PDF invoices
 
-## v4.4.6 - 05 Sep 2026
+## desktop-v4.4.6 - 05 Sep 2026
 
 Patch release improving billing safeguards, product price visibility, customer workflows, and thermal ledger printing.
 
@@ -77,7 +81,7 @@ Patch release improving billing safeguards, product price visibility, customer w
 - Preserve product purchase prices on saved sale and estimate items so under-cost warnings remain accurate while editing
 - Preserve customer types when opening prefilled billing flows
 
-## v4.4.3 - 02 Sep 2026
+## desktop-v4.4.3 - 02 Sep 2026
 
 Patch release preventing stale UPI payment QRs and making billing product search more compact on low-resolution screens.
 
@@ -91,7 +95,7 @@ Patch release preventing stale UPI payment QRs and making billing product search
 - Render a fresh UPI QR for every receipt so printers cannot reuse a QR or locked amount from an earlier bill
 - Skip QR output safely when a fresh image cannot be generated instead of risking stale printer-memory content
 
-## v4.4.2 - 01 Sep 2026
+## desktop-v4.4.2 - 01 Sep 2026
 
 Patch release correcting billing totals and simplifying default UPI account selection.
 
@@ -100,7 +104,7 @@ Patch release correcting billing totals and simplifying default UPI account sele
 - Round payable totals consistently across billing, receipts, QR payments, PDFs, sales, and estimates while preserving exact subtotals
 - Show only account names in the default UPI account dropdown in settings
 
-## v4.4.1 - 01 Sep 2026
+## desktop-v4.4.1 - 01 Sep 2026
 
 Patch release focused on faster billing, clearer printing controls, and a more reliable multi-tab workspace.
 
@@ -119,7 +123,7 @@ Patch release focused on faster billing, clearer printing controls, and a more r
 - Prevent extra billing workspace whitespace and outer-page scrolling
 - Keep long UPI IDs, payee names, and account labels within their available controls and dialogs
 
-## v4.4.0 - 29 Aug 2026
+## desktop-v4.4.0 - 29 Aug 2026
 
 Major release with customer accounting, billing updates, printing, and UI improvements.
 
@@ -154,7 +158,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Fix app zoom resets when switching or focusing windows
 - Make database upgrades backward compatible
 
-## v4.3.1 — 05 Jul 2026
+## desktop-v4.3.1 — 05 Jul 2026
 
 ### Features
 
@@ -178,7 +182,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Use a clearer search highlight color
 - Make product delete buttons destructive
 
-## v4.3.0 — 04 Jul 2026
+## desktop-v4.3.0 — 04 Jul 2026
 
 **Major release — UI revamp, product images, onboarding, and event-driven sync**
 
@@ -217,7 +221,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Product snapshot generation format
 - Summary footer UI issues
 
-## v4.2.2 — 08 Mar 2026
+## desktop-v4.2.2 — 08 Mar 2026
 
 ### Features
 
@@ -237,13 +241,13 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Zoom issues, redundant searchDropdown render logic
 - `totalRevenue` and `totalTxn` fetched from last page
 
-## v4.2.1 — 03 Mar 2026
+## desktop-v4.2.1 — 03 Mar 2026
 
 - Configure Windows App User Model ID (taskbar grouping & notifications)
 - Improve summary footer
 - Fix: wrong MRP format in `generateProductSnapshot` params
 
-## v4.2.0 — 03 Mar 2026
+## desktop-v4.2.0 — 03 Mar 2026
 
 ### Features
 
@@ -271,36 +275,36 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Close dropdown menu after triggering transaction conversion
 - Hono race condition
 
-## v4.1.7 — 25 Feb 2026
+## desktop-v4.1.7 — 25 Feb 2026
 
 - Fix: pass correct MRP format to `generateProductSnapshot`
 
-## v4.1.6 — 05 Feb 2026
+## desktop-v4.1.6 — 05 Feb 2026
 
 - Display `productSnapshot` instead of product name in ViewModal
 - Fix: infinite autosave trigger & line items comparison
 
-## v4.1.5 — 04 Feb 2026
+## desktop-v4.1.5 — 04 Feb 2026
 
 - Redirect to dashboard after print
 
-## v4.1.4 — 03 Feb 2026
+## desktop-v4.1.4 — 03 Feb 2026
 
 - Add GSTIN to PDF, fix PDF qty & name → `productSnapshot`
 - Fix: `item.name` does not exist on adding new product
 
-## v4.1.3 — 02 Feb 2026
+## desktop-v4.1.3 — 02 Feb 2026
 
 - Add clear button to input & fix overlapping
 - Fix: `checkedQty` unit to milli
 
-## v4.1.2 — 02 Feb 2026
+## desktop-v4.1.2 — 02 Feb 2026
 
 - Remove `isNewCustomer` & original `customerId` state
 - Fix currency formatting, delete estimate
 - Mark txn as paid when converting estimate → sale
 
-## v4.1.1 — 01 Feb 2026
+## desktop-v4.1.1 — 01 Feb 2026
 
 ### Improvements
 
@@ -315,7 +319,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Invalid datetime when navigated from home page
 - Restrict user from entering limited decimals
 
-## v4.1.0 — 29 Jan 2026
+## desktop-v4.1.0 — 29 Jan 2026
 
 **Major release — billing page rewrite, Hono API migration, autosave**
 
@@ -351,69 +355,69 @@ Major release with customer accounting, billing updates, printing, and UI improv
 
 ---
 
-## v3.2.6 — 12 Dec 2025
+## desktop-v3.2.6 — 12 Dec 2025
 
 - Fix: zod schema error in product dialog
 - Fix: `setProductId` to null in product dialog
 
-## v3.2.4 — 12 Dec 2025
+## desktop-v3.2.4 — 12 Dec 2025
 
 - Add zod validation for product endpoints
 - Migrate products API to locally hosted Hono server
 - Fix: zod schema and validation in input forms & controller
 
-## v3.2.3 — 29 Nov 2025
+## desktop-v3.2.3 — 29 Nov 2025
 
 - Fix: update product in billing page
 
-## v3.2.2 — 24 Nov 2025
+## desktop-v3.2.2 — 24 Nov 2025
 
 - Fix: product dialog form state & add/update product endpoints
 - Fix: update product history
 
-## v3.2.1 — 10 Nov 2025
+## desktop-v3.2.1 — 10 Nov 2025
 
 - View transaction — check off items
 - Add `checked_qty` field to `saleItems` & `estimateItems`
 - Batch check/uncheck actions button
 
-## v3.1.8 — 09 Nov 2025
+## desktop-v3.1.8 — 09 Nov 2025
 
 - UI fixes & changes
 - Fix: paid & unpaid status
 
-## v3.1.7 — 07 Nov 2025
+## desktop-v3.1.7 — 07 Nov 2025
 
 - Fix: type error in conversion
 
-## v3.1.6 — 07 Nov 2025
+## desktop-v3.1.6 — 07 Nov 2025
 
 - Fix: date reset on new transaction
 
-## v3.1.5 — 06 Nov 2025
+## desktop-v3.1.5 — 06 Nov 2025
 
 - Clear search button, increased font weight
 - Fix: history entry on no data change & init history entry
 - Fix: weight validation to null string instead of null
 
-## v3.1.4 — 04 Nov 2025
+## desktop-v3.1.4 — 04 Nov 2025
 
 - Fix: print margins in bill preview
 
-## v3.1.3 — 04 Nov 2025
+## desktop-v3.1.3 — 04 Nov 2025
 
 - Fix: print bottom margin
 
-## v3.1.2 — 03 Nov 2025
+## desktop-v3.1.2 — 03 Nov 2025
 
 - Fix: prevent store reset race condition on navigation
 
-## v3.1.1 — 03 Nov 2025
+## desktop-v3.1.1 — 03 Nov 2025
 
 - Fix: invalid datetime in billing component
 - Fix: receipt save as PDF
 
-## v3.1.0 — 02 Nov 2025
+## desktop-v3.1.0 — 02 Nov 2025
 
 ### Features
 
@@ -429,7 +433,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Convert rupees to paisa in save sale & estimate
 - `transaction_type` typo in `deleteMutation`
 
-## v3.0.1 — 25 Oct 2025
+## desktop-v3.0.1 — 25 Oct 2025
 
 ### Features
 
@@ -447,7 +451,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Default datetime from UTC to ISO string format & date range query
 - Hardcoded styles → CSS variables
 
-## v3.0.0 — 23 Oct 2025
+## desktop-v3.0.0 — 23 Oct 2025
 
 **Major release — React Query migration, React Router v6, UI overhaul**
 
@@ -474,7 +478,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 
 ---
 
-## v2.3.3 — 29 Sep 2025
+## desktop-v2.3.3 — 29 Sep 2025
 
 ### Features
 
@@ -491,7 +495,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Prevent deletion of `sale_items` / `estimate_items` tables in migration
 - Delete product endpoint
 
-## v2.3.2 — 20 Sep 2025
+## desktop-v2.3.2 — 20 Sep 2025
 
 - Customer input validation
 - Remove customer name & contact from sales/estimates — use unique field reference
@@ -499,12 +503,12 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Fix: customer change & update while billing
 - Fix: hydration error in dashboard table and customer header
 
-## v2.3.1 — 18 Sep 2025
+## desktop-v2.3.1 — 18 Sep 2025
 
 - Eslint fix
 - Fix: copy to clipboard
 
-## v2.3.0 — 18 Sep 2025
+## desktop-v2.3.0 — 18 Sep 2025
 
 ### Features
 
@@ -523,7 +527,7 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Overflow scroll in customers page
 - Early function call `clearTransactionState` before printing
 
-## v2.2.5 — 10 Sep 2025
+## desktop-v2.2.5 — 10 Sep 2025
 
 ### Features
 
@@ -545,18 +549,18 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Save & print by sharing receipt ref
 - MRP input zero bug in product dialog
 
-## v2.2.4 — 04 Sep 2025
+## desktop-v2.2.4 — 04 Sep 2025
 
 - Convert estimate ↔ sale
 - Add purchase price field for products
 - Fetch sales/estimates in desc order
 - Schema: invoice no & estimate no set to unique
 
-## v2.2.3 — 01 Sep 2025
+## desktop-v2.2.3 — 01 Sep 2025
 
 - Fix: view button in customers page
 
-## v2.2.2 — 01 Sep 2025
+## desktop-v2.2.2 — 01 Sep 2025
 
 **Major release — customers, sales dashboard, estimates**
 
@@ -581,27 +585,27 @@ Major release with customer accounting, billing updates, printing, and UI improv
 - Accessing env variables in production
 - Preserve qty after selecting new item
 
-## v2.1.2–v2.1.9 — 26–27 Aug 2025
+## desktop-v2.1.2–v2.1.9 — 26–27 Aug 2025
 
 _Build & release pipeline iterations — package.json, build.yml, auto-updater setup_
 
-## v2.1.1 — 26 Aug 2025
+## desktop-v2.1.1 — 26 Aug 2025
 
 - Fix: edit button not working in estimates page
 - Fix: zoom screen width
 
-## v2.1.0 — 26 Aug 2025
+## desktop-v2.1.0 — 26 Aug 2025
 
 - Update products directly in billing page
 - Weight + unit + MRP displayed next to product name with search logic
 - Fix: force reset zoom
 - Fix: remove placeholder in product dialog & fix UI not reflecting after update
 
-## v2.0.1 — 26 Aug 2025
+## desktop-v2.0.1 — 26 Aug 2025
 
 - Add electron-updater
 
-## v2.0.0 — 25 Aug 2025
+## desktop-v2.0.0 — 25 Aug 2025
 
 **Major release — products management**
 
@@ -629,7 +633,7 @@ _Build & release pipeline iterations — package.json, build.yml, auto-updater s
 
 ---
 
-## v1.0.0 — 23 Aug 2025
+## desktop-v1.0.0 — 23 Aug 2025
 
 **Initial release**
 

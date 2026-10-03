@@ -47,6 +47,7 @@ deb:
 npmRebuild: false
 publish:
   provider: github
+  tagNamePrefix: desktop-v
   owner: Prajwal-17
   repo: relay
 electronDownload:

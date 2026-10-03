@@ -266,7 +266,7 @@ Reports and test results are ignored under `playwright-report/` and `test-result
 
 - The manual `Desktop Development Build` workflow uploads Windows and Linux test artifacts from a
   selected branch (default: `dev`).
-- A push of a `v*.*.*` tag builds production artifacts and creates a GitHub release.
+- A push of a `desktop-v*.*.*` tag builds production artifacts and creates a GitHub release.
 - Release notes come from the matching version section in the root `CHANGELOG.md`.
 - Releases and assets are published by `github-actions[bot]` using the automatic `GITHUB_TOKEN`
   with `contents: write` on the release job. No personal `GH_TOKEN` secret is required.

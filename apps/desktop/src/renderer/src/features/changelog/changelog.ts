@@ -10,7 +10,7 @@ export type ChangelogRelease = {
 };
 
 export function parseReleaseHeading(label: string): ChangelogRelease | null {
-  const match = /^(v.+?)\s+(?:—|-)\s+(.+)$/u.exec(label.trim());
+  const match = /^((?:desktop-)?v.+?)\s+(?:—|-)\s+(.+)$/u.exec(label.trim());
   if (!match) return null;
 
   const version = match[1]!.trim();
