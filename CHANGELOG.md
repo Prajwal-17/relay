@@ -1,13 +1,18 @@
 # Changelog
 
-## v4.4.12 - 03 Oct 2026
+## v4.4.9 - 03 Oct 2026
 
-Patch release fixing autosave failures when editing older custom billing items.
+Patch release fixing autosave failures when editing older custom billing items and making the desktop title bar more compact.
+
+### Improvements
+
+- Reduce the desktop title bar height from 36px to 28px
 
 ### Fixed
 
 - Fix "Save failed" when editing older custom items with missing names in estimates and editable sales
 - Recover missing names from stored item labels while preserving historical snapshots, prices, quantities, and product links
+- Use orange development icons and charcoal production icons consistently in app chrome and native launchers
 
 ## v4.4.8 - 12 Sep 2026
 

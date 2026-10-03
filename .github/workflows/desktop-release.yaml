@@ -70,6 +70,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           version=$(node -p 'require("./apps/desktop/package.json").version')
+          test "$GITHUB_REF_NAME" = "v$version"
+          notes_file="$RUNNER_TEMP/desktop-release-notes.md"
+          awk -v tag="$GITHUB_REF_NAME" '
+            /^## / {
+              if (found) exit
+              found = $2 == tag
+              next
+            }
+            found { print }
+            END { if (!found) exit 1 }
+          ' CHANGELOG.md > "$notes_file"
+          test -s "$notes_file"
           gh release create "$GITHUB_REF_NAME" \
             "artifacts/build-windows-latest/Relay-$version.exe" \
             "artifacts/build-ubuntu-latest/Relay-$version.AppImage" \
@@ -78,4 +90,4 @@ jobs:
             artifacts/build-ubuntu-latest/latest-linux.yml \
             --verify-tag --latest \
             --title "Desktop v$version" \
-            --notes "Windows + Linux builds"
+            --notes-file "$notes_file"
