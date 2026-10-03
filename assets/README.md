@@ -7,8 +7,8 @@ This directory is the shared source of truth for the Relay app icon.
 - `desktop/icon.png`, `icon.ico`, and `icon.icns` serve Electron and native launchers.
 - `mobile/` contains Android adaptive foreground/background vectors and opaque square store PNGs.
 
-The white mark sits on Relay's terracotta `counter-accent`. This is a fixed brand treatment;
-icons do not inherit hover, status, or surrounding surface colors. The charcoal workspace remains
+Desktop production uses the white mark on charcoal `primary`; desktop development and mobile
+use terracotta `counter-accent`. Icons do not inherit hover, status, or surrounding surface colors. The charcoal workspace remains
 unchanged. Existing in-app imports automatically pick up the recolored SVGs.
 
 ## Regenerate
@@ -34,7 +34,7 @@ operating systems can cache installed app icons.
 ## Development identity
 
 Development uses `app-icon-dev.svg` / `app-icon-dev-small.svg` and `icon-dev.png` / `.ico` / `.icns`:
-charcoal (`primary`) with the white Relay mark and vector DEV lettering. Production retains terracotta.
+terracotta (`counter-accent`) with the white Relay mark and vector DEV lettering. Production uses charcoal (`primary`).
 The same export command generates both sets. Renderer imports go through `lib/appIcon.ts` and select
 by Vite `MODE`; native windows use the initialized main-process `MODE`. Development packages copy
 the dev icon as `relay-icon.png` and use the dev ICO/ICNS for their launcher. Restart Electron after

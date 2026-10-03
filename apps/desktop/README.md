@@ -287,8 +287,8 @@ development Electron launch.
 
 ### Development icons
 
-`pnpm dev` uses the charcoal DEV icon in app chrome and native windows. Production uses the
-terracotta icon. Shared SVG selection lives in renderer `lib/appIcon.ts`; native selection lives
+`pnpm dev` uses the orange/terracotta DEV icon in app chrome and native windows. Production uses
+the charcoal/black icon. Shared SVG selection lives in renderer `lib/appIcon.ts`; native selection lives
 in `src/main/appIcon.ts`. Restart the Electron process to refresh native icons.
 
 `pnpm build:dev` compiles with `--mode development`; `build:win:dev` and `build:linux:dev` use it
