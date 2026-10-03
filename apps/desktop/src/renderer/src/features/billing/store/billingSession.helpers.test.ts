@@ -101,6 +101,56 @@ describe("billing sparse position helpers", () => {
   });
 });
 
+describe("legacy billing item hydration", () => {
+  it.each([
+    ["", null],
+    ["   ", null],
+    ["", crypto.randomUUID()],
+    ["   ", crypto.randomUUID()]
+  ] as const)(
+    "recovers blank name %j from the stored snapshot with product ID %j",
+    (name, productId) => {
+      const item = {
+        ...persistedItem("IDLI RAVA PKT", POSITION_GAP * 2),
+        name,
+        productId,
+        price: 4600,
+        mrp: null,
+        purchasePrice: null,
+        quantity: 20000,
+        totalPrice: 92000,
+        checkedQty: 20000
+      };
+
+      expect(normalizeLineItems([item])[0]).toMatchObject({
+        id: item.id,
+        productId,
+        name: "IDLI RAVA PKT",
+        productSnapshot: item.productSnapshot,
+        price: "46",
+        mrp: null,
+        purchasePrice: null,
+        quantity: "20",
+        totalPrice: 92000,
+        checkedQty: 20,
+        position: item.position,
+        syncStatus: SYNCSTATUS.SYNCED,
+        revision: 0
+      });
+      expect(item.name).toBe(name);
+    }
+  );
+
+  it("retains an existing name that differs from the historical snapshot", () => {
+    const item = { ...persistedItem("Rice 25kg 1500Rs", 0), name: "Rice" };
+
+    expect(normalizeLineItems([item])[0]).toMatchObject({
+      name: "Rice",
+      productSnapshot: "Rice 25kg 1500Rs"
+    });
+  });
+});
+
 function persistedItem(productSnapshot: string, position: number): UnifiedTransactionItem {
   return {
     id: crypto.randomUUID(),

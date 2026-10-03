@@ -63,7 +63,7 @@ newly signed release can be installed.
 
 For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
 push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.7`). The
-tag must match `expo.version`. The `Mobile Android GitHub Release` workflow runs lint and typecheck,
+tag must match `expo.version`. The `Android Release` workflow runs lint and typecheck,
 generates the Android project, builds a signed APK, and creates a GitHub Release with that APK.
 Confirm the app version, backend URL, and Google sign-in configuration before tagging; the workflow
 does not perform backend or OAuth smoke checks. Re-running publication for an existing release fails
@@ -71,7 +71,7 @@ instead of replacing its APK. A native dependency, config, or Expo SDK change st
 new APK and app version. The `appVersion` runtime policy keeps OTA updates within that app version.
 
 For JavaScript, styling, or asset changes after installing the `0.0.7` APK, run the
-`Mobile Android Production OTA Update` GitHub workflow from the commit to publish. The EAS update
+`Android Production OTA Update` GitHub workflow from the commit to publish. The EAS update
 message comes from that commit's subject; provide only the rollout percentage. Use `100` for an
 immediate full release or `1`–`99` for a partial rollout; the workflow omits EAS's rollout flag for a
 full release. Set the repository secret `EXPO_TOKEN`, and set

@@ -1,5 +1,14 @@
 # Changelog
 
+## v4.4.12 - 03 Oct 2026
+
+Patch release fixing autosave failures when editing older custom billing items.
+
+### Fixed
+
+- Fix "Save failed" when editing older custom items with missing names in estimates and editable sales
+- Recover missing names from stored item labels while preserving historical snapshots, prices, quantities, and product links
+
 ## v4.4.8 - 12 Sep 2026
 
 Patch release preserving deleted estimates for data integrity while removing them from user-facing workflows.

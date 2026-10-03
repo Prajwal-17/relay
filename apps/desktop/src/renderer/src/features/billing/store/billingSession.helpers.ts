@@ -94,7 +94,8 @@ export function normalizeLineItems(itemsArray: UnifiedTransactionItem[]) {
     id: item.id,
     rowId: uuidv4(),
     productId: item.productId,
-    name: item.name,
+    // Older custom items stored their label only in the historical snapshot.
+    name: item.name.trim() || item.productSnapshot,
     productSnapshot: item.productSnapshot,
     weight: item.weight,
     unit: item.unit,
