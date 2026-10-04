@@ -1,6 +1,11 @@
 import { z } from "zod";
+import {
+  calendarWeekday,
+  differenceInCalendarDays,
+  parseLocalDate
+} from "@relay/shared/date-utils";
 
-import { isValidLedgerDate } from "./money.utils";
+import { isValidCalendarDate, isValidLedgerDate } from "./money.utils";
 
 const MAX_AMOUNT = Number.MAX_SAFE_INTEGER;
 
@@ -27,6 +32,9 @@ export const vendorPaymentSchema = z.object({
   note: z.string().trim().max(240).optional()
 });
 
+export const receivedPaymentUpdateSchema = receivedPaymentSchema.omit({ date: true });
+export const vendorPaymentUpdateSchema = vendorPaymentSchema.omit({ date: true });
+
 export const paymentMethodCreateSchema = z.object({
   name: z.string().trim().min(1).max(60)
 });
@@ -40,11 +48,31 @@ export const paymentMethodUpdateSchema = z
     message: "Provide a payment method change."
   });
 
-export const overviewQuerySchema = z.object({
-  date: localDateSchema,
+export const summariesQuerySchema = z.object({
   year: z.coerce.number().int().min(2000).max(2200),
   month: z.coerce.number().int().min(1).max(12)
 });
+
+export const overviewQuerySchema = summariesQuerySchema.extend({ date: localDateSchema });
+
+export const weekQuerySchema = z
+  .object({
+    startDate: localDateSchema,
+    endDate: z.string().refine(isValidCalendarDate, "Choose a valid end date.")
+  })
+  .refine(
+    ({ startDate, endDate }) => {
+      const start = parseLocalDate(startDate);
+      const end = parseLocalDate(endDate);
+      return (
+        start !== null &&
+        end !== null &&
+        calendarWeekday(start) === 0 &&
+        differenceInCalendarDays(end, start) === 6
+      );
+    },
+    { message: "Choose one Sunday–Saturday week." }
+  );
 
 export const receivedEntriesQuerySchema = z.object({
   date: localDateSchema,
@@ -58,3 +86,6 @@ export const vendorSearchSchema = z.object({
 
 export type ReceivedPaymentInput = z.infer<typeof receivedPaymentSchema>;
 export type VendorPaymentInput = z.infer<typeof vendorPaymentSchema>;
+
+export type ReceivedPaymentUpdateInput = z.infer<typeof receivedPaymentUpdateSchema>;
+export type VendorPaymentUpdateInput = z.infer<typeof vendorPaymentUpdateSchema>;

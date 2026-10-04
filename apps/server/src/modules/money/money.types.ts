@@ -20,6 +20,7 @@ export type VendorPayment = {
   amount: number;
   note: string | null;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type DailyEntry = {
@@ -45,4 +46,11 @@ export type ReceivedEntry = {
   amount: number;
   note: string | null;
   createdAt: string;
+  updatedAt: string;
+};
+
+export type MoneyDay = {
+  date: LocalDate;
+  entry: DailyEntry | null;
+  receivedCounts: { paymentMethodId: number | null; count: number }[];
 };

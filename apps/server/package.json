@@ -9,14 +9,16 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "wrangler deploy --dry-run --outdir dist",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
     "check-types": "tsc --noEmit",
     "cf-typegen": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply relay-server-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply relay-server-db --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply relay-server-db --remote",
+    "test": "node --import ../../scripts/register-tests.ts --test tests/*.test.ts"
   },
   "dependencies": {
+    "@relay/shared": "workspace:*",
     "@better-auth/expo": "^1.7.0",
     "better-auth": "^1.7.0",
     "drizzle-orm": "^0.45.2",

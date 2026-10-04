@@ -1,12 +1,14 @@
 import {
   and,
   asc,
+  count,
   desc,
   eq,
   gte,
   inArray,
   isNull,
   lt,
+  lte,
   max,
   ne,
   notExists,
@@ -14,6 +16,7 @@ import {
   sum
 } from "drizzle-orm";
 import { HTTPException } from "hono/http-exception";
+import { addCalendarDays, monthStart, parseLocalDate, shiftMonth } from "@relay/shared/date-utils";
 
 import { createDatabase, type CloudDatabase } from "../../db/client";
 import {
@@ -27,12 +30,12 @@ import type {
   DailyEntry,
   DaySummary,
   LocalDate,
+  MoneyDay,
   PaymentMethod,
   ReceivedEntry
 } from "./money.types";
 import { nowIso } from "./money.utils";
-
-const PRESET_PAYMENT_METHODS = ["Paytm", "PhonePe", "Google Pay", "Other"] as const;
+import { ENTRY_PROVIDERS } from "./payment-catalog";
 
 function isUniqueError(error: unknown): boolean {
   return String(error instanceof Error && error.cause ? error.cause : error)
@@ -49,7 +52,7 @@ export async function ensureDefaultPaymentMethods(
   await db
     .insert(paymentMethods)
     .values(
-      PRESET_PAYMENT_METHODS.map((name) => ({
+      ENTRY_PROVIDERS.map((name) => ({
         userId,
         name,
         isPreset: true,
@@ -97,7 +100,8 @@ export async function getDailyEntry(
         vendorName: vendorPayments.vendorName,
         amount: vendorPayments.amount,
         note: vendorPayments.note,
-        createdAt: vendorPayments.createdAt
+        createdAt: vendorPayments.createdAt,
+        updatedAt: vendorPayments.updatedAt
       })
       .from(vendorPayments)
       .where(and(eq(vendorPayments.userId, userId), eq(vendorPayments.date, date)))
@@ -107,15 +111,118 @@ export async function getDailyEntry(
   return { ...entry, paymentTotals, vendorPayments: payments };
 }
 
+/** A bounded range uses four queries, regardless of the number of populated days. */
+export async function listMoneyDays(
+  database: D1Database,
+  userId: string,
+  startDate: LocalDate,
+  endDate: LocalDate
+): Promise<MoneyDay[]> {
+  const db = createDatabase(database);
+  const [days, totals, payments, counts] = await db.batch([
+    db
+      .select()
+      .from(dailyEntries)
+      .where(
+        and(
+          eq(dailyEntries.userId, userId),
+          gte(dailyEntries.date, startDate),
+          lte(dailyEntries.date, endDate)
+        )
+      ),
+    db
+      .select({
+        date: dailyPaymentTotals.date,
+        paymentMethodId: paymentMethods.id,
+        paymentMethodName: paymentMethods.name,
+        amount: dailyPaymentTotals.amount,
+        isPaymentMethodArchived: paymentMethods.isArchived
+      })
+      .from(dailyPaymentTotals)
+      .innerJoin(paymentMethods, eq(paymentMethods.id, dailyPaymentTotals.paymentMethodId))
+      .where(
+        and(
+          eq(dailyPaymentTotals.userId, userId),
+          gte(dailyPaymentTotals.date, startDate),
+          lte(dailyPaymentTotals.date, endDate)
+        )
+      )
+      .orderBy(desc(paymentMethods.isPreset), paymentMethods.id),
+    db
+      .select({
+        date: vendorPayments.date,
+        id: vendorPayments.id,
+        vendorName: vendorPayments.vendorName,
+        amount: vendorPayments.amount,
+        note: vendorPayments.note,
+        createdAt: vendorPayments.createdAt,
+        updatedAt: vendorPayments.updatedAt
+      })
+      .from(vendorPayments)
+      .where(
+        and(
+          eq(vendorPayments.userId, userId),
+          gte(vendorPayments.date, startDate),
+          lte(vendorPayments.date, endDate)
+        )
+      )
+      .orderBy(vendorPayments.id),
+    db
+      .select({
+        date: receivedEntries.date,
+        paymentMethodId: receivedEntries.paymentMethodId,
+        count: count()
+      })
+      .from(receivedEntries)
+      .where(
+        and(
+          eq(receivedEntries.userId, userId),
+          gte(receivedEntries.date, startDate),
+          lte(receivedEntries.date, endDate)
+        )
+      )
+      .groupBy(receivedEntries.date, receivedEntries.paymentMethodId)
+  ]);
+  const result: MoneyDay[] = [];
+  for (let date = startDate; date <= endDate; ) {
+    const day = days.find((row) => row.date === date);
+    result.push({
+      date,
+      entry: day
+        ? {
+            date,
+            cashAmount: day.cashAmount,
+            createdAt: day.createdAt,
+            updatedAt: day.updatedAt,
+            paymentTotals: totals
+              .filter((row) => row.date === date)
+              .map(({ date: _, ...row }) => row),
+            vendorPayments: payments
+              .filter((row) => row.date === date)
+              .map(({ date: _, ...row }) => row)
+          }
+        : null,
+      receivedCounts: counts.filter((row) => row.date === date).map(({ date: _, ...row }) => row)
+    });
+    date = addCalendarDays(parseLocalDate(date)!, 1);
+  }
+  return result;
+}
+
+export async function getMoneyDay(database: D1Database, userId: string, date: LocalDate) {
+  const [day] = await listMoneyDays(database, userId, date, date);
+  return day!;
+}
+
 export async function listMonthSummaries(
   database: D1Database,
   userId: string,
   year: number,
   month: number
 ): Promise<DaySummary[]> {
-  const start = `${year}-${String(month).padStart(2, "0")}-01`;
-  const nextDate = new Date(Date.UTC(year, month, 1));
-  const end = `${nextDate.getUTCFullYear()}-${String(nextDate.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  const calendarMonth = { year, month: month - 1 };
+  const start = monthStart(calendarMonth);
+  const end = monthStart(shiftMonth(calendarMonth, 1));
   const db = createDatabase(database);
 
   const onlineTotals = db
@@ -227,7 +334,7 @@ export async function createPaymentMethod(
   try {
     const [created] = await db
       .insert(paymentMethods)
-      .values({ userId, name, createdAt: now, updatedAt: now })
+      .values({ userId, name, isPreset: true, createdAt: now, updatedAt: now })
       .returning({
         id: paymentMethods.id,
         name: paymentMethods.name,
@@ -292,7 +399,8 @@ export async function listReceivedEntries(
       id: receivedEntries.id,
       amount: receivedEntries.amount,
       note: receivedEntries.note,
-      createdAt: receivedEntries.createdAt
+      createdAt: receivedEntries.createdAt,
+      updatedAt: receivedEntries.updatedAt
     })
     .from(receivedEntries)
     .where(
@@ -309,17 +417,48 @@ export async function listReceivedEntries(
     .limit(50);
 }
 
+export async function listReceivedCounts(database: D1Database, userId: string, date: LocalDate) {
+  return createDatabase(database)
+    .select({ paymentMethodId: receivedEntries.paymentMethodId, count: count() })
+    .from(receivedEntries)
+    .where(and(eq(receivedEntries.userId, userId), eq(receivedEntries.date, date)))
+    .groupBy(receivedEntries.paymentMethodId);
+}
+
+export async function getReceivedTotal(database: D1Database, userId: string, date: LocalDate) {
+  const db = createDatabase(database);
+  const [cash, online] = await Promise.all([
+    getPaymentMethodTotal(database, userId, date, null),
+    db
+      .select({ amount: sum(dailyPaymentTotals.amount).mapWith(Number) })
+      .from(dailyPaymentTotals)
+      .where(and(eq(dailyPaymentTotals.userId, userId), eq(dailyPaymentTotals.date, date)))
+  ]);
+  return cash + (online[0]?.amount ?? 0);
+}
+
 export async function getReceivedEntryById(
   database: D1Database,
   userId: string,
   id: number
-): Promise<{ id: number; date: LocalDate; paymentMethodId: number | null; amount: number } | null> {
+): Promise<{
+  id: number;
+  date: LocalDate;
+  paymentMethodId: number | null;
+  amount: number;
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+} | null> {
   const [entry] = await createDatabase(database)
     .select({
       id: receivedEntries.id,
       date: receivedEntries.date,
       paymentMethodId: receivedEntries.paymentMethodId,
-      amount: receivedEntries.amount
+      amount: receivedEntries.amount,
+      note: receivedEntries.note,
+      createdAt: receivedEntries.createdAt,
+      updatedAt: receivedEntries.updatedAt
     })
     .from(receivedEntries)
     .where(and(eq(receivedEntries.id, id), eq(receivedEntries.userId, userId)))
@@ -390,6 +529,17 @@ export async function searchVendorNames(
   return rows.map((row) => row.name);
 }
 
+export async function listVendorNames(database: D1Database, userId: string): Promise<string[]> {
+  const name = sql<string>`trim(${vendorPayments.vendorName})`;
+  const rows = await createDatabase(database)
+    .select({ name })
+    .from(vendorPayments)
+    .where(and(eq(vendorPayments.userId, userId), ne(name, "")))
+    .groupBy(sql`${name} COLLATE NOCASE`)
+    .orderBy(desc(max(vendorPayments.id)));
+  return rows.map((row) => row.name);
+}
+
 export async function deleteDailyEntry(
   database: D1Database,
   userId: string,
@@ -455,21 +605,21 @@ export async function deleteVendorPayment(
   database: D1Database,
   userId: string,
   id: number
-): Promise<boolean> {
+): Promise<LocalDate | null> {
   const db = createDatabase(database);
   const [entry] = await db
     .select({ date: vendorPayments.date })
     .from(vendorPayments)
     .where(and(eq(vendorPayments.id, id), eq(vendorPayments.userId, userId)))
     .limit(1);
-  if (!entry) return false;
+  if (!entry) return null;
   const removePayment = db
     .delete(vendorPayments)
     .where(and(eq(vendorPayments.id, id), eq(vendorPayments.userId, userId)))
     .returning({ id: vendorPayments.id });
   const [removed] = await db.batch([removePayment, pruneEmptyDay(db, userId, entry.date)]);
-  if (!removed.length) return false;
-  return true;
+  if (!removed.length) return null;
+  return entry.date;
 }
 
 function pruneEmptyDay(db: CloudDatabase, userId: string, date: LocalDate) {
@@ -498,4 +648,21 @@ function pruneEmptyDay(db: CloudDatabase, userId: string, date: LocalDate) {
       )
     )
   );
+}
+
+export async function getVendorPaymentById(database: D1Database, userId: string, id: number) {
+  const [payment] = await createDatabase(database)
+    .select({
+      id: vendorPayments.id,
+      date: vendorPayments.date,
+      vendorName: vendorPayments.vendorName,
+      amount: vendorPayments.amount,
+      note: vendorPayments.note,
+      createdAt: vendorPayments.createdAt,
+      updatedAt: vendorPayments.updatedAt
+    })
+    .from(vendorPayments)
+    .where(and(eq(vendorPayments.id, id), eq(vendorPayments.userId, userId)))
+    .limit(1);
+  return payment ?? null;
 }
