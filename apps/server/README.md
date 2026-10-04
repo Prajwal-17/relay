@@ -21,22 +21,31 @@ pnpm db:migrate:local
 pnpm dev
 ```
 
-`wrangler.jsonc` contains safe development values for `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, and
-`ALLOWED_ORIGINS`. Override them in the Cloudflare environment for deployment. Store secrets with
-Wrangler, never in `wrangler.jsonc`:
+`pnpm dev` selects Wrangler's `development` environment. Start your Cloudflare Tunnel with
+`https://relay-dev-tunnel.prajwal.sh` forwarding to `http://localhost:8787`. Expo Go and Relay-Dev
+use that HTTPS origin for API requests and Google sign-in. Local D1 migrations select the same
+environment and use local storage; remote migrations still target the production database.
+
+`wrangler.jsonc` keeps production as the default deployment configuration:
+
+| Command           | Environment       | `BETTER_AUTH_URL`                     |
+| ----------------- | ----------------- | ------------------------------------- |
+| `pnpm dev`        | Local development | `https://relay-dev-tunnel.prajwal.sh` |
+| `pnpm run deploy` | Production        | `https://relay-server.prajwal.sh`     |
+
+Variables and D1 bindings are explicitly configured for each environment. Store production secrets
+with Wrangler, never in `wrangler.jsonc`; local secrets stay in the ignored `.dev.vars` file:
 
 ```bash
 pnpm exec wrangler secret put BETTER_AUTH_SECRET
 pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
 ```
 
-The mobile release uses `https://relay-dev-server.prajwal.sh` as its backend origin. The
-`relay-dev-server.prajwal.sh/*` Worker route in `wrangler.jsonc` must stay attached to
-`relay-server`; it serves requests even when the old Cloudflare Tunnel is down. Check
-`https://relay-dev-server.prajwal.sh/health` after changing routing or deploying the Worker.
-Keep the deployed `BETTER_AUTH_URL` equal to the mobile release backend origin, then verify that
-Google sign-in sends its callback to `https://relay-dev-server.prajwal.sh/api/auth/callback/google`.
-Changing `wrangler.jsonc` alone does not update the deployed Worker; run `pnpm run deploy`.
+Production's `relay-server.prajwal.sh` custom domain is attached to the `relay-server` Worker and
+serves requests independently of the development tunnel. Check
+`https://relay-server.prajwal.sh/health` after deploying. The development environment has no Worker
+routes, so your tunnel continues to reach the local server. Configuration changes take effect on the
+deployed Worker only after `pnpm run deploy`.
 
 Create or attach a D1 database named `relay-server-db`, then add its generated `database_id` to the
 D1 binding if Wrangler does not provision it automatically. Apply migrations before deploying:
@@ -48,15 +57,17 @@ pnpm run deploy
 
 ## Google OAuth
 
-Create a Google OAuth web client. Set its authorized redirect URI to:
+Use the configured Google OAuth web client and register both authorized redirect URIs:
 
 ```text
-https://YOUR_WORKER_DOMAIN/api/auth/callback/google
+https://relay-dev-tunnel.prajwal.sh/api/auth/callback/google
+https://relay-server.prajwal.sh/api/auth/callback/google
 ```
 
-Set `BETTER_AUTH_URL` to that Worker origin and `GOOGLE_CLIENT_ID` to the web client ID. The mobile
-client returns through the `relay://` app scheme, which is included in Better Auth's trusted
-origins. Expo development origins must be added explicitly to `ALLOWED_ORIGINS` when needed.
+`BETTER_AUTH_URL` already matches each environment's origin. Update `GOOGLE_CLIENT_ID` in both
+environments if you replace the web client. Production returns through `relay://`; development also
+trusts `relay-dev://` and Expo Go callback origins. For browser testing through a different LAN
+origin, add its exact URL to development's `ALLOWED_ORIGINS`.
 
 ## Schema
 

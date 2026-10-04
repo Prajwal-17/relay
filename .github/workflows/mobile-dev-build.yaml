@@ -14,7 +14,7 @@ on:
         default: "dev"
         type: string
       server_url:
-        description: "Backend URL (defaults to MOBILE_DEV_SERVER_URL, then MOBILE_SERVER_URL)"
+        description: "Backend URL (defaults to https://relay-dev-tunnel.prajwal.sh)"
         required: false
         type: string
 
@@ -29,7 +29,7 @@ jobs:
       CI: "1"
       EXPO_NO_TELEMETRY: "1"
       APP_VARIANT: development
-      EXPO_PUBLIC_SERVER_URL: ${{ inputs.server_url || vars.MOBILE_DEV_SERVER_URL || vars.MOBILE_SERVER_URL }}
+      EXPO_PUBLIC_SERVER_URL: ${{ inputs.server_url || 'https://relay-dev-tunnel.prajwal.sh' }}
     steps:
       - name: Check out source
         uses: actions/checkout@v4

@@ -119,8 +119,9 @@ Starting with `mobile-v0.0.7`, the Gradle build also includes `expo-updates` and
 `production` EAS Update channel. Earlier APKs cannot receive OTA updates; install the new signed APK
 once before testing OTA. Keep the same Android signing key for updates to install over an existing app.
 
-Set the repository variable `MOBILE_SERVER_URL` to the deployed HTTPS Worker origin. The URL is
-embedded in the app at build time. The workflow also needs four repository secrets:
+Production APKs and OTA updates use `https://relay-server.prajwal.sh` for both API requests and
+Better Auth. The release URL is fixed in the auth client, so local tunnel overrides and old GitHub
+or EAS server URL variables cannot change it. The workflow needs four repository secrets:
 
 - `MOBILE_ANDROID_KEYSTORE_BASE64`: base64-encoded JKS upload key
 - `MOBILE_ANDROID_KEYSTORE_PASSWORD`: keystore password
@@ -145,9 +146,8 @@ For JavaScript, styling, or asset changes after installing the `0.0.7` APK, run 
 `Android Production OTA Update` GitHub workflow from the commit to publish. The EAS update
 message comes from that commit's subject; provide only the rollout percentage. Use `100` for an
 immediate full release or `1`–`99` for a partial rollout; the workflow omits EAS's rollout flag for a
-full release. Set the repository secret `EXPO_TOKEN`, and set
-`EXPO_PUBLIC_SERVER_URL` in the EAS `production` environment to the same HTTPS backend used by the
-APK (`MOBILE_SERVER_URL`). The workflow requires a published GitHub Release for the current app
+full release. Set the repository secret `EXPO_TOKEN`; no server URL variable is required in the EAS
+`production` environment. The workflow requires a published GitHub Release for the current app
 version. Configure the `production` EAS channel and environment before using the workflow; it publishes
 to that channel. Force close and reopen the release app up to twice to download and apply the update.
 A partial rollout must be completed or
@@ -200,8 +200,8 @@ haptics. Date/method/vendor selection, received/vendor saves, and sign-out stay 
 ## Development
 
 For a standalone Android test APK, open **Actions → Android Development Build → Run workflow**.
-Choose a source branch (default: `dev`) and optionally a backend URL. The URL defaults to the repository
-variable `MOBILE_DEV_SERVER_URL`, then `MOBILE_SERVER_URL`. Download `mobile-android-dev` from the run's
+Choose a source branch (default: `dev`) and optionally a backend URL. The URL defaults to
+`https://relay-dev-tunnel.prajwal.sh`. Download `mobile-android-dev` from the run's
 **Artifacts** section and install `Relay-Dev.apk`.
 The selected branch must include the development variant config and scheme-aware auth client.
 
@@ -211,11 +211,11 @@ selected branch's JavaScript without requiring Metro. OTA updates are disabled f
 Add `relay-dev://` and `relay-dev://*` to the chosen backend's `ALLOWED_ORIGINS` for Google sign-in.
 The workflow uploads an artifact only; it does not publish a release or an EAS update.
 
-Start the server first, then point Expo at it. Android emulators use `10.0.2.2` instead of
-`localhost`; physical devices need a reachable LAN or deployed Worker URL. For a phone on the same
-Wi-Fi, set `EXPO_PUBLIC_SERVER_URL` and `BETTER_AUTH_URL` to the computer's current LAN IP, and make
-`ALLOWED_ORIGINS` match the Expo LAN origin. Wrangler's dev script listens on the LAN so the phone
-can reach it.
+Expo Go and Relay-Dev default to `https://relay-dev-tunnel.prajwal.sh`. Start the local server and
+your Cloudflare Tunnel, forwarding that domain to `http://localhost:8787`, before opening the app.
+Metro's `--tunnel` option only tunnels the JavaScript development server; it does not start the
+backend tunnel. `EXPO_PUBLIC_SERVER_URL` can override the backend for development only. If you
+override it, keep the server's development `BETTER_AUTH_URL` aligned so OAuth callbacks work.
 
 ```bash
 pnpm install
@@ -224,7 +224,6 @@ pnpm --dir apps/server db:migrate:local
 pnpm --dir apps/server dev
 
 cp apps/mobile/.env.example apps/mobile/.env.local
-# Set EXPO_PUBLIC_SERVER_URL in apps/mobile/.env.local
 pnpm --dir apps/mobile start
 ```
 

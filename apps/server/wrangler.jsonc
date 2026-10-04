@@ -3,14 +3,14 @@
   "name": "relay-server",
   "main": "src/index.ts",
   "workers_dev": true,
-  "routes": [{ "pattern": "relay-dev-server.prajwal.sh/*", "zone_name": "prajwal.sh" }],
+  "routes": [{ "pattern": "relay-server.prajwal.sh", "custom_domain": true }],
   "compatibility_date": "2026-09-18",
   "compatibility_flags": ["nodejs_compat"],
   "vars": {
-    "ENVIRONMENT": "development",
-    "BETTER_AUTH_URL": "https://relay-dev-tunnel.prajwal.sh",
+    "ENVIRONMENT": "production",
+    "BETTER_AUTH_URL": "https://relay-server.prajwal.sh",
     "GOOGLE_CLIENT_ID": "611996715090-9fo2opa30cu8ess9fe9l4j6uvabku55j.apps.googleusercontent.com",
-    "ALLOWED_ORIGINS": "relay://,exp://192.168.31.224:8081,http://localhost:8081,http://localhost:19006"
+    "ALLOWED_ORIGINS": "relay://,https://relay-server.prajwal.sh"
   },
   "secrets": {
     "required": ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_SECRET"]
@@ -23,6 +23,29 @@
       "database_id": "5df448c3-e3d3-4a03-b47b-87ba7084d63c"
     }
   ],
+  "env": {
+    "development": {
+      "routes": [],
+      "workers_dev": false,
+      "vars": {
+        "ENVIRONMENT": "development",
+        "BETTER_AUTH_URL": "https://relay-dev-tunnel.prajwal.sh",
+        "GOOGLE_CLIENT_ID": "611996715090-9fo2opa30cu8ess9fe9l4j6uvabku55j.apps.googleusercontent.com",
+        "ALLOWED_ORIGINS": "relay://,relay-dev://,relay-dev://*,https://relay-dev-tunnel.prajwal.sh,http://localhost:8081,http://localhost:19006"
+      },
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_SECRET"]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "relay-server-db",
+          "migrations_dir": "drizzle",
+          "database_id": "5df448c3-e3d3-4a03-b47b-87ba7084d63c"
+        }
+      ]
+    }
+  },
   "observability": {
     "enabled": true,
     "logs": {
