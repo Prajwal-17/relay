@@ -15,6 +15,11 @@ export function Pressable({
       accessibilityRole="button"
       {...props}
       disabled={disabled}
+      aria-disabled={Boolean(disabled)}
+      aria-busy={props["aria-busy"] ?? accessibilityState?.busy}
+      aria-checked={props["aria-checked"] ?? accessibilityState?.checked}
+      aria-expanded={props["aria-expanded"] ?? accessibilityState?.expanded}
+      aria-selected={props["aria-selected"] ?? accessibilityState?.selected}
       accessibilityState={{ ...accessibilityState, disabled: Boolean(disabled) }}
       className={cn(
         "web:focus-visible:outline web:focus-visible:outline-2 web:focus-visible:outline-offset-2 web:focus-visible:outline-ring",

@@ -1,4 +1,4 @@
-import { ArrowLeft } from "lucide-react-native";
+import { ArrowLeft, RefreshCw } from "lucide-react-native";
 import { View } from "react-native";
 
 import { Pressable } from "@/components/ui/pressable";
@@ -6,15 +6,20 @@ import { Text } from "@/components/ui/text";
 import { formatDisplayDate } from "@/lib/format/dates";
 import { usePalette } from "@/theme/palette";
 import type { LocalDate } from "../money.types";
+import { MoneyIconAction } from "./money-icon-action";
 
 export function PaymentHeader({
   name,
   date,
-  onClose
+  onClose,
+  onRefresh,
+  refreshing
 }: {
   name: string;
   date: LocalDate | null;
   onClose: () => void;
+  onRefresh: () => void;
+  refreshing: boolean;
 }) {
   const colors = usePalette();
   return (
@@ -39,6 +44,12 @@ export function PaymentHeader({
             <Text className="text-muted-foreground mt-0.5 text-xs">{formatDisplayDate(date)}</Text>
           ) : null}
         </View>
+        <MoneyIconAction
+          icon={RefreshCw}
+          label="Refresh entries"
+          disabled={refreshing}
+          onPress={onRefresh}
+        />
       </View>
     </View>
   );

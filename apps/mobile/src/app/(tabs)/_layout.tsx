@@ -1,8 +1,9 @@
 import { Tabs } from "expo-router";
 import { Banknote, House, Package, UserRound, UsersRound } from "lucide-react-native";
-import { Pressable as NativePressable, View } from "react-native";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Pressable } from "@/components/ui/pressable";
 import { usePalette } from "@/theme/palette";
 
 export const unstable_settings = {
@@ -14,7 +15,7 @@ const items = {
   products: { label: "Products", icon: Package },
   money: { label: "Money", icon: Banknote },
   customers: { label: "Customers", icon: UsersRound },
-  profile: { label: "Profile", icon: UserRound }
+  profile: { label: "Account", icon: UserRound }
 } as const;
 
 export default function TabLayout() {
@@ -23,6 +24,7 @@ export default function TabLayout() {
 
   return (
     <Tabs
+      initialRouteName="money"
       backBehavior="history"
       screenOptions={({ route }) => {
         const item = items[route.name as keyof typeof items];
@@ -41,7 +43,7 @@ export default function TabLayout() {
             pressOpacity: _pressOpacity,
             ref: _ref,
             ...props
-          }) => <NativePressable {...props} android_ripple={{ color: "transparent" }} />,
+          }) => <Pressable {...props} android_ripple={{ color: "transparent" }} />,
           tabBarInactiveTintColor: colors["muted-foreground"],
           tabBarIcon: ({ focused }) => (
             <View
@@ -61,8 +63,8 @@ export default function TabLayout() {
           tabBarStyle: {
             backgroundColor: colors.card,
             borderTopColor: colors.border,
-            borderTopLeftRadius: 22,
-            borderTopRightRadius: 22,
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
             borderTopWidth: 1,
             height: 62 + insets.bottom,
             overflow: "hidden",
@@ -76,7 +78,7 @@ export default function TabLayout() {
       <Tabs.Screen name="products" options={{ title: "Products" }} />
       <Tabs.Screen name="money" options={{ title: "Money" }} />
       <Tabs.Screen name="customers" options={{ title: "Customers" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen name="profile" options={{ title: "Account" }} />
     </Tabs>
   );
 }

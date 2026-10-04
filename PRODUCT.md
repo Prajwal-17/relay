@@ -12,7 +12,7 @@ Relay Mobile serves shop owners and counter staff who use an Android phone or iP
 
 ## Purpose
 
-Relay Mobile is the authenticated companion for Relay's daily Money workflow. Its primary job is to make received payments and vendor payments fast to record, easy to verify, and difficult to duplicate or lose. Money is the only live operational workflow today. Home presents a clearly labeled sample daily briefing; Products and Customers remain honest placeholders until those workflows are implemented. Profile contains account identity and sign-out.
+Relay Mobile is the authenticated companion for Relay's daily Money workflow. Its primary job is to make received payments and vendor payments fast to record, easy to verify, and difficult to duplicate or lose. Money is the default and only live operational workflow today. The bottom navigation exposes Home, Products, Money, Customers, and Account. Home, Products, and Customers show only their title, icon, and “Coming soon”; there is no sample dashboard or fake business data. Account contains Google identity, email, and sign-out. Money opens dedicated received/vendor entry screens, with separate history and vendor details screens. Its month-only header leads a flat, swipeable business week.
 
 ## Context of use
 
@@ -25,10 +25,11 @@ Relay Mobile is the authenticated companion for Relay's daily Money workflow. It
 ## Durable product constraints
 
 - Money values are integer paisa in storage and transit and are formatted through shared rupee utilities.
-- Business dates use Asia/Kolkata and future dates cannot be selected or submitted.
+- Business dates use Asia/Kolkata and future dates cannot be selected or submitted. Today refreshes on resume and across midnight; all entry timestamps use AM/PM IST.
+- New receipts use Cash (null method ID), PhonePe, or Paytm with user-owned API IDs. Earlier provider IDs, receipt names, history, and totals remain intact.
 - Authentication uses Google through Better Auth; session restoration finishes before protected routes render.
 - TanStack Query owns server state. A mutation remains visibly pending at its initiating control until the request and required cache synchronization have definitively succeeded or failed.
-- Success haptics, dismissal, navigation, and confirmation feedback occur from the same resolved mutation outcome. Duplicate submissions stay locked throughout that lifecycle.
+- Dismissal, navigation, and confirmation feedback occur from the same resolved mutation outcome. Haptics are limited to completed deletions. Duplicate submissions stay locked throughout that lifecycle.
 - Offline, loading, empty, success, error, destructive, long-name, long-note, and large-value states are first-class product states.
 - Home, Products, and Customers must not imply functionality that does not exist.
 - The mobile application has no local business database and does not import desktop data.
@@ -40,7 +41,7 @@ Relay Mobile is the authenticated companion for Relay's daily Money workflow. It
 - Mobile uses native-safe hexadecimal sRGB values mapped directly from Relay Desktop's approved OKLCH roles. Visual directions may change composition and material character, but may not introduce a competing palette.
 - Existing identity assets live in `apps/mobile/assets/images/` and payment marks in `apps/mobile/assets/payment-methods/`.
 - Inter remains the primary operational typeface.
-- Confirmed mobile direction: Counter Cashbox governs the visual world and operational state language; the bottom navigation uses the restrained Material Ledger treatment with a white shelf, compact selected container, and terracotta active icon and label.
+- Confirmed mobile direction: Quick Ledger uses Relay’s existing semantic palette and Inter, with a Sunday-first business week, framed Cash/PhonePe/Paytm compartments, and fixed recording actions above the five-tab navigation. Earlier methods remain visible in history and day totals.
 
 ## Product principles
 
@@ -53,13 +54,14 @@ Relay Mobile is the authenticated companion for Relay's daily Money workflow. It
 ## Accessibility baseline
 
 - Meet WCAG AA contrast for text, meaningful icons, focus indicators, and control boundaries.
-- Maintain at least 44×44 point touch targets and avoid color-only state communication.
+- Maintain 48px ordinary touch targets and avoid color-only state communication. The dense calendar grid may use 44px-wide cells at a 320px viewport; its cell height remains at least 48px.
 - Support screen-reader labels, selected/busy/disabled state, dynamic content announcements, keyboard avoidance, and readable text scaling.
-- Motion and haptics are functional feedback, not the sole indication of completion.
+- Motion is functional feedback; deletion haptics supplement the visible result.
 
 ## Evidence
 
 - User confirmation on 26 September 2026: the primary users are shop owners/counter staff on Android and iOS; Money is the only live workflow; Home, Products, and Customers remain placeholders.
+- User confirmation on 4 October 2026: remove demo and unused screen code, open Money by default, and expose the other tab icons with simple “Coming soon” screens.
 - `README.md`
 - `apps/mobile/README.md`
 - `apps/mobile/src/features/money/`

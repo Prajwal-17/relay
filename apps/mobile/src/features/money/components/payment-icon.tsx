@@ -10,10 +10,12 @@ const GOOGLE_PAY = require("../../../../assets/payment-methods/google-pay.png");
 
 export function PaymentIcon({
   name,
-  kind = "upi"
+  kind = "upi",
+  compact = false
 }: {
   name?: string;
   kind?: "cash" | "upi" | "vendor";
+  compact?: boolean;
 }) {
   const colors = usePalette();
   const provider = name?.trim().toLowerCase();
@@ -28,7 +30,10 @@ export function PaymentIcon({
   const Icon = kind === "cash" ? Banknote : kind === "vendor" ? Store : QrCode;
 
   return (
-    <View accessible={false} className="h-10 w-14 shrink-0 items-center justify-center">
+    <View
+      accessible={false}
+      className={cn("shrink-0 items-center justify-center", compact ? "h-8 w-[52px]" : "h-10 w-14")}
+    >
       {image && kind === "upi" ? (
         <Image
           className={image === GOOGLE_PAY ? "h-6 w-10" : "h-6 w-11"}

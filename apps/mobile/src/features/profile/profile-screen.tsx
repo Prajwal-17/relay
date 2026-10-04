@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
 import { LogOut, ShieldCheck } from "lucide-react-native";
 import { useState } from "react";
 import { View } from "react-native";
@@ -22,7 +21,6 @@ export default function ProfileScreen() {
       if (result.error) throw new Error(result.error.message || "Could not sign out.");
     },
     onSuccess: async () => {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       queryClient.clear();
     }
   });
@@ -43,6 +41,9 @@ export default function ProfileScreen() {
         }}
       />
       <View className="mx-auto w-full max-w-xl px-4 pt-4">
+        <Text accessibilityRole="header" className="text-foreground mb-4 text-lg font-semibold">
+          Account
+        </Text>
         <View className="border-frame bg-card rounded-card border p-4">
           <View className="flex-row items-center gap-3">
             <View className="bg-counter-accent-soft h-12 w-12 items-center justify-center rounded-full">

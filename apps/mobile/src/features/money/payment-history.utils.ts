@@ -1,13 +1,23 @@
-const dateTimeFormatter = new Intl.DateTimeFormat("en-IN", {
-  timeZone: "Asia/Kolkata",
-  day: "numeric",
-  month: "short",
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true
-});
+import { formatDateStrToISTDateObject, formatDateStrToISTDateStr } from "@relay/shared/date-utils";
 
 export function paymentTime(timestamp: string): string {
-  if (Number.isNaN(Date.parse(timestamp))) return "Time unavailable";
-  return dateTimeFormatter.format(new Date(timestamp));
+  const { timePart } = formatDateStrToISTDateStr(timestamp);
+  return timePart === "-" ? "Time unavailable" : timePart.toUpperCase();
+}
+
+export function paymentDateTime(timestamp: string): string {
+  const { fullDate, timePart } = formatDateStrToISTDateStr(timestamp);
+  return fullDate === "-" ? "Time unavailable" : `${fullDate} · ${timePart.toUpperCase()}`;
+}
+
+export function entryDateTimes(createdAt: string, updatedAt?: string) {
+  const created = formatDateStrToISTDateObject(createdAt);
+  const updated = updatedAt ? formatDateStrToISTDateObject(updatedAt) : null;
+  return {
+    created: paymentDateTime(createdAt),
+    updated:
+      created && updated && updated.getTime() > created.getTime()
+        ? paymentDateTime(updatedAt!)
+        : null
+  };
 }

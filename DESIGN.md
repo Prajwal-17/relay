@@ -1,6 +1,6 @@
 ---
 name: Relay
-description: "A dependable counter operating system: compact Counter Ledger on desktop and touch-first Counter Cashbox on mobile."
+description: "A dependable counter operating system: compact Counter Ledger on desktop and touch-first Quick Ledger on mobile."
 colors:
   canvas: "#f5f5f2"
   surface-1: "#ffffff"
@@ -297,11 +297,11 @@ components:
     textColor: "{colors.mobile-foreground}"
     typography: "{typography.mobile-financial-total}"
     rounded: "{rounded.mobile-card}"
-    padding: "20px"
+    padding: "0"
   mobile-navigation-item:
     textColor: "{colors.mobile-muted-foreground}"
     typography: "{typography.mobile-navigation}"
-    height: "58px"
+    height: "50px"
   mobile-navigation-item-active:
     textColor: "{colors.mobile-counter-accent-foreground}"
     typography: "{typography.mobile-navigation-active}"
@@ -332,13 +332,13 @@ The product follows these priorities, in order:
 
 Relay currently has one supported light visual system. Do not introduce an isolated dark section or a second visual language without a product-level decision and a complete token set.
 
-### Mobile: Counter Cashbox
+### Mobile: Quick Ledger
 
-Relay Mobile translates the same identity into **Counter Cashbox**: a touch-first cashbox whose broad daily total forms the lid and whose received methods and vendor payments read as aligned compartments. It is an adaptive native Operate surface for short, repeated, often one-handed sessions. The visual world stays warm, crisp, and accountable—never a stack of interchangeable finance cards.
+Relay Mobile translates the same identity into **Quick Ledger**: a touch-first cashbox whose broad daily total forms the lid and whose received methods and vendor payments read as aligned compartments. It is an adaptive native Operate surface for short, repeated, often one-handed sessions. The visual world stays warm, crisp, and accountable—never a stack of interchangeable finance cards.
 
-The mobile shell uses a static **Material Ledger** tab bar: a quiet white rounded shelf, a compact soft-terracotta selected icon capsule, and a terracotta active icon and label. Selection color changes immediately without a tab transition or Android ripple. The shell owns the bottom safe area and leaves clear space above the system gesture region. The hierarchy is day and net position first, received and paid totals second, recording actions third, then the method and vendor ledgers. Product truth always outranks the approved comp: pending, offline, empty, error, destructive, long-name, and large-value states are part of the finished system.
+The mobile shell uses a static **Material Ledger** tab bar: a quiet white shelf exposing Home, Products, Money, Customers, and Account, a compact soft-terracotta selected icon capsule, and a terracotta active icon and label. Money is the default destination. Home, Products, and Customers use one plain centered placeholder with the destination icon, title, and “Coming soon”; no demo figures, cards, or extra actions. Selection color changes immediately without a tab transition or Android ripple. The shell owns the bottom safe area and leaves clear space above the system gesture region. The hierarchy is business date and week, then net/received/paid totals, followed by method and vendor ledgers. Recording actions stay fixed above the bottom tabs. Product truth always outranks the approved comp: pending, offline, empty, error, destructive, long-name, and large-value states are part of the finished system.
 
-**The Action Owns the State Rule.** The control that initiates a mutation remains the single visible owner of pending state and stays locked until the request, required cache invalidation, success haptic, and dismissal or navigation have resolved.
+**The Action Owns the State Rule.** The control that initiates a mutation remains the single visible owner of pending state and stays locked until the request, required local cache updates, deletion haptic when applicable, and dismissal or navigation have resolved.
 
 ## Colors
 
@@ -409,7 +409,7 @@ Application headings are compact and use slightly tightened tracking. Avoid mark
 
 Mobile ships the static Inter family files and maps weight through `Inter-Regular`, `Inter-Medium`, `Inter-SemiBold`, and `Inter-Bold`; the CSS utilities intentionally keep numeric weight at 400 so React Native selects the correct file instead of synthesizing a face. `mobile-display` is reserved for short sign-in branding, `mobile-financial-total` for the day’s net, `mobile-title` for section and detail titles, and `mobile-body`, `mobile-label`, `mobile-caption`, and `mobile-navigation` cover copy, controls, metadata, and bottom-tab labels. Do not mix system or decorative faces into Money.
 
-Money and quantity values use tabular numerals. The day net is right-aligned and allowed up to 68% of the summary lid; row amounts are protected up to 45% and method totals up to 65%. `adjustsFontSizeToFit` and a single line preserve significant digits when values are large. Labels and notes truncate before money; detail views carry full variable-length content.
+Money and quantity values use tabular numerals. Quick Ledger aligns the day net right when it fits and stacks it at narrow widths, larger text sizes, or large values. Very long net values use the existing 18px monetary row size. Received/Paid compartments stack when their amounts need the full width. Each day-total amount stays on one line; horizontal scrolling preserves the complete value at larger text sizes without splitting digit groups or limiting system font scaling. Received method, history, and detail amounts use 16px or larger type and keep the full currency value on one line, with local horizontal scrolling when needed. Method amounts move below their identity when space is limited; provider compartments become full-width rows before values collide. Vendor lists truncate names and notes first; history and detail views carry full content.
 
 **The Counted Money Rule.** Financial numerals align, remain visible, and never become the expendable side of a row.
 
@@ -469,15 +469,25 @@ Use these route compositions:
 
 ### Mobile layout
 
-Mobile lays out edge-to-edge but keeps content inside platform safe areas. The primary scroll column is centered, capped at 576px, and uses a 16px horizontal inset, 16px section rhythm, and 32px bottom breathing room. This cap lets phones and larger adaptive windows share one calm ledger width without stretching the cashbox compartments.
+Mobile lays out edge-to-edge but keeps content inside platform safe areas. The primary scroll column is centered, capped at 576px, and uses a 16px horizontal inset and 16px section rhythm. Money leaves 16px below its scrolling ledger. This cap lets phones and larger adaptive windows share one calm ledger width without stretching the cashbox compartments.
 
-The Money first viewport follows a stable reading order: compact date header; optional offline notice; day-total lid; two equal-priority action slots that may wrap; received-method ledger; vendor ledger; destructive day action when applicable. The date header gives the numeric date the 28px display role, places the weekday above the month and year beside it, and keeps the 48px calendar action separate on the right. The approved comp is compositional evidence, not a fixed-height poster: native text scaling may introduce vertical scroll, but the hierarchy and action ownership do not change.
+The Money reading order is a pinned month-only header and flat Sunday–Saturday week pager, followed by a scrolling ledger: optional offline notice, net/received/paid totals, received methods, vendor payments, and the destructive day action when applicable. The month has an accessible month/year label. The header includes a calendar action and Today only when the selected date differs from today. The week has no arrows, entry dots, enclosing card, fill, border, or rounded container; an underline marks the selected date. Its seven equal cells fill the column's horizontal inset, remain at least 44px wide at 320px, and share a 64px pager height that grows with text size. Native horizontal paging moves by seven days while preserving the weekday. Week pages have fixed positions in a virtualized list; older history appends without reordering pages or recentering after a swipe. An uncached week fetch starts when paging settles; selecting another day in that week reads its cached ledger immediately. Forward paging clamps to today and cannot pass the current week. Week settling pauses while Money is hidden; background callbacks cannot change entry/history route parameters. Loading and error states belong only to the dynamic ledger region; header and week geometry remain stable. Pull-to-refresh feedback runs only after a user pull, never for automatic or date-change fetches.
 
-Every ordinary mobile action, icon action, composite row affordance, and field is at least 48px high or wide. Method and vendor rows are at least 56px. The static tab bar owns the bottom safe area and exposes reliable destination targets without animated selection. Narrow screens may wrap the two Money actions, but may not compress either below a reliable touch target.
+Cash spans the full framed method ledger above equal PhonePe/Paytm compartments. Each whole row or compartment opens its method history; there are no inline add controls. Provider compartments become full-width rows for large values or increased font scaling, while amounts retain complete one-line currency values with local horizontal scrolling. Method values use neutral ink; received totals use teal and paid totals use rust. Conditional Earlier payment methods rows show original provider names and balances and open history. Archived or unsupported providers remain readable without an Add entry action. Missing cached receipt counts omit the count label. Received skeletons preserve the Cash-above-providers topology.
 
-Bottom drawers are content-sized, centered at a 576px maximum, and capped by the task content rather than a full-screen imitation. Form scroll regions cap at 62% of the window height so the title and anchored save action remain visible around the software keyboard. Use keyboard avoidance on entry flows and never let the IME cover the initiating control.
+Every ordinary mobile action, icon action, composite row affordance, and field is at least 48px high or wide. Method and vendor rows are at least 64px; the two-column provider compartments are at least 96px. Money icon actions use an 18px icon and a centered 30px feedback surface inside their 48px target. Add received and Pay vendor stay outside the scrolling ledger in a fixed action region above the static five-tab navigation. Money recording actions and history's Add entry use compact 13px labels while retaining 48px targets and 8px vertical footer padding; Money buttons use 12px horizontal padding. The tabs own the bottom safe area; actions may wrap at larger text sizes.
 
-**The Cashbox Order Rule.** Preserve total → actions → received compartments → vendor compartments even when the viewport requires scrolling.
+Received and vendor entry use a dedicated full-screen route with an opaque white surface, safe areas, a Back/title/date header, a scrolling form, and an anchored keyboard-aware save footer. Keyboard avoidance covers the whole screen and accounts for its measured window origin; the header and save footer retain their height while the form scrolls above the keypad. The form focuses the amount when ready, opening the decimal keypad. Amount fields show an aligned decorative ₹ icon beside numeric text, with no visible label or placeholder; an accessible Amount label remains. The decimal keypad supplies numeric entry. Preserve the native draft while editing instead of rewriting or rolling back text during keyboard composition. Invalid drafts remain editable, show a field error, and disable Save; saving requires digits, at most one decimal point, and up to two fractional digits. Text selection and cursors use the platform default colors. Optional notes use a single 48px field with the counter beside the label. Received entry offers Cash/PhonePe/Paytm with marks, labels, checks, and selected accessibility state. Changing a method preserves amount and note. Next focuses the next field when the native IME supports it and never saves implicitly. The footer contains only the save action. The native navigator explicitly keeps status-bar icons visible and dark over authenticated light surfaces; the app root has a matching light background. Dirty drafts ask before screen Back, system Back, or stack-gesture removal. Pending saves lock inputs, provider selection, Back, and submit through request, local cache updates, and return to the originating history or Money.
+
+History's Add entry opens received entry with the original business date and actual provider ID, or Cash, preselected; a successful save updates the affected Money caches from the mutation response before returning to that history. Vendor rows open a full-screen card route using the shared `EntryPage` Back/title header. Details show the full vendor name, note, amount, and Created at. Received history and vendor details show Updated at after an edit, using the entry timestamps and shared IST formatting without a timezone suffix. Received history rows and vendor details expose Edit. The shared entry screen prefills editable fields and saves changes with the original entry ID, date, and `createdAt` preserved; `updatedAt` advances on a successful edit. Historical received methods remain editable on their original entries; method changes use Cash, PhonePe, or Paytm. A pending vendor deletion locks screen Back and route removal through local cache updates, deletion feedback, and return.
+
+The date drawer is content-sized, centered at a 576px maximum, and uses 16px top corners. Its handle and header drag downward to dismiss, with a damped spring return for short or canceled gestures and gentle upward resistance. Entry, exit, and drag share one translation so interrupted gestures stay continuous. The backdrop follows the sheet, and the modal remains mounted until exit completes. Modal overlays keep a light status-bar surface and visible dark system icons above the scrim.
+
+The calendar is a Sunday-first single month with natural 4/5/6-row height, separate matching chevrons, entry dots, and Go to today. Date cells are at least 48px high; at 320px the dense grid uses at least 44px width. Increased text size and short windows scroll rather than clip. Future dates and next-month navigation beyond the current IST month are guarded in code. Today refreshes on resume and across midnight.
+
+Mobile uses Reanimated for native motion. Button, Money icon, and provider contents scale to 0.97 over 100ms on press and return over 140ms, inside fixed touch targets. Money uses 110ms icon feedback and 120ms provider selection with the shared strong ease-out curve. The calendar drawer slides from its measured full height over 260ms using `cubic-bezier(0.32, 0.72, 0, 1)` and exits over 180ms with the shared ease-out curve. System reduced motion removes travel and makes selection/press states immediate. Keyboard activation stays immediate, and month/date changes do not replay drawer entrance. Timestamps are consistently `09:14 AM` / `04:05 PM` without a timezone suffix; business dates remain in their own context. Account shows identity, Google sign-in/email, and confirmed sign-out.
+
+**The Quick Ledger Order Rule.** Preserve date → week → totals → received compartments → vendor compartments while recording actions remain fixed above the tabs.
 
 ## Elevation & Depth
 
@@ -494,9 +504,9 @@ Most interaction feedback is a color or border transition. Use the shared easing
 
 ### Mobile depth and motion
 
-Counter Cashbox is border-led and nearly flat. Summary lids, ledgers, fields, offline notices, and the navigation shelf use opaque fills and solid borders; they do not float. Row separators create compartments inside one framed card instead of turning every datum into a separate card. Modal confirmations may use the platform’s large overlay shadow; bottom drawers use the scrim, an opaque white sheet, and a restrained 16px top radius rather than stacked elevation.
+Quick Ledger is border-led and nearly flat. Summary lids, ledgers, fields, offline notices, and the navigation shelf use opaque fills and solid borders; they do not float. Row separators create compartments inside one framed card instead of turning every datum into a separate card. Modal confirmations may use the platform’s large overlay shadow; bottom drawers use the scrim, an opaque white sheet, and a restrained 16px top radius rather than stacked elevation.
 
-Native modal entry currently uses a fade. Loading uses the platform activity indicator colored terracotta and always pairs it with nearby state copy when a silent spinner could be mistaken for a frozen app. Haptics confirm selection or a resolved successful mutation; they never replace visible feedback.
+The Money calendar drawer enters once over 260ms from below the viewport and exits over 180ms; reduced motion makes it immediate. Icon and provider feedback use 110ms and 120ms respectively. Other drawer presentations use a 180ms opacity fade. Initial mobile Money, entry, and history loading uses React Native Reusables skeletons matching the final layout, with a quiet opacity pulse disabled under reduced motion. Small waits use an inline activity indicator. Accessible loading labels say only “Loading”; avoid task-specific loading prose. Haptics occur only after a completed deletion; selections, saves, and sign-out remain silent.
 
 **The Compartments Before Cards Rule.** Group related money rows inside one bordered ledger and separate them with rules; do not promote every row into its own elevated surface.
 
@@ -512,7 +522,7 @@ Interactive targets use the density contract: 32px for compact secondary or icon
 
 Mobile retains the ledger’s restrained geometry: 6px controls and fields, 8px cards and ledger frames, and a 16px top radius only for bottom drawers. Full pills are limited to the selected bottom-navigation icon capsule and similarly semantic compact selection indicators. Payment-method artwork sits in small tinted icon plates, but the surrounding row remains square-to-restrained and rule-separated.
 
-Pressed mobile controls communicate through opacity or semantic fill; they do not scale. A shape must not shift while saving, deleting, loading, or replacing its label with an activity indicator.
+Pressed mobile control contents scale subtly inside fixed touch targets, with immediate feedback under reduced motion or keyboard activation. A control's footprint must not shift while saving, deleting, loading, or replacing its label with an activity indicator.
 
 ## Components
 
@@ -566,22 +576,28 @@ All interactive work must be possible by keyboard. Use native elements and Radix
 
 ### Mobile primitives and ledgers
 
-- **Buttons:** `AppButton` composes the shared button primitive into primary, outline, ghost, and destructive variants. All variants keep a 48px minimum height, 6px radius, centered semibold label, optional 18px icon, and action-local activity indicator. Loading preserves normal opacity, sets accessible busy state, disables repeat activation, and may replace the label with the specific pending outcome.
+Use React Native Reusables' UniWind registry as the base for mobile button, card, icon, input, text, and skeleton primitives. Relay's semantic palette, typography, geometry, and reduced-motion support belong in shared adaptations; application wrappers own workflow behavior. Screens compose these primitives rather than introducing parallel button or input systems.
+
+- **Buttons:** `AppButton` composes the shared button primitive into primary, outline, ghost, and destructive variants. All variants keep a 48px minimum height, 6px radius, centered semibold label, optional 18px icon, and action-local activity indicator. The compact option uses a 13px label without shrinking the target. Loading preserves normal opacity, sets accessible busy state, disables repeat activation, and may replace the label with the specific pending outcome.
 - **Inputs:** The default field is 48px high with a strong opaque boundary, 6px radius, 16px entered text, normal-weight placeholder, terracotta selection, and an explicit focus border. Composite amount and vendor fields own their outer border. Invalid fields combine a destructive boundary with adjacent readable error text; disabled fields reduce opacity but retain their geometry.
 - **Ledger cards and rows:** `LedgerCard` removes generic card vertical padding so feature components can build contiguous compartments. Use one 8px framed white container with internal dividers, 64px minimum rows, a left identity/name region, a protected right-aligned tabular amount, and a 48px row action. Long names truncate to one line; optional notes use the caption role.
-- **Day-total lid:** The net amount is the dominant right-side value. Received and Paid sit under one divider as equal columns, using teal and terracotta ink respectively. The component stays a single framed surface rather than three cards.
-- **Bottom navigation:** Five top-level destinations share the rounded white Material Ledger shelf. Inactive icons and labels remain muted. The selected destination receives a soft-terracotta icon capsule and terracotta label immediately, without an animated color transition or Android ripple. The navigator owns bottom-safe-area spacing, keeps labels above the system gesture region, and exposes selected accessibility state. Home, Products, and Customers remain honest placeholders until their workflows exist.
-- **Drawers and dialogs:** Entry and date tasks use a bottom drawer with scrim, drag handle, fixed header, scrollable body, and anchored action region. Dirty forms ask before discard; pending forms cannot dismiss. Destructive confirmation uses a centered framed dialog, specific consequence copy, Cancel and destructive actions, inline error, and a locked pending control.
+- **Day-total lid:** The net amount is the dominant right-side value. Received and Paid sit under one divider as equal columns, using teal and terracotta ink respectively; large values reflow to full-width rows. Complete amounts remain on one line with horizontal overflow available at larger text sizes. The component stays a single framed surface rather than three cards.
+- **Vendor combobox:** searchable combobox built from the shared input and row primitives. The full saved-name catalog is fetched once and filtered locally into a bounded, keyboard-friendly list below the field. An unmatched nonempty name offers Add vendor beneath the results; selection fills the field and closes the list. New names become reusable when the payment is saved. Initial catalog loading uses skeletons; failures offer Retry without erasing the draft. Refresh vendors reloads names only when requested.
+- **Received method ledger:** Cash occupies a full-width row above two equal provider compartments. Each entire compartment opens history. Large values or increased font scaling switch providers to full-width rows; amounts stay at least 16px and use local horizontal scrolling when necessary. Add entry belongs in eligible method history, with its date and actual method preselected.
+- **Bottom navigation:** Home, Products, Money, Customers, and Account share the flat white navigation shelf; Money opens by default. Every destination retains its icon and accessible label. Inactive icons and labels remain muted. The selected destination receives a soft-terracotta icon capsule and terracotta label immediately, without an animated color transition or Android ripple. The navigator owns bottom-safe-area spacing, keeps labels above the system gesture region, and exposes selected accessibility state. Home, Products, and Customers share the minimal “Coming soon” placeholder.
+- **Entry screens, drawers, and dialogs:** Received/vendor entry uses a full-screen route with fixed header, scrollable form, and anchored save footer. Vendor details reuses the full-screen header and scrollable content, preserving complete values and locking removal while deleting. Dirty forms ask before discard; pending forms cannot leave. Date selection uses a bottom drawer with scrim and drag handle. Destructive confirmation uses a centered framed dialog, specific consequence copy, Cancel and destructive actions, inline error, and a locked pending control.
 
 ### Mobile async and offline states
 
-Every asynchronous region distinguishes initial loading, background refresh, empty, error, retrying, pending mutation, success, and offline behavior. Loading preserves a useful footprint. Empty states name what is absent. Errors stay at the affected region or action and include a bounded retry when recovery is possible. Pull-to-refresh is disabled while a mutation is locked or the device is offline.
+Money uses one cached week query shared by the ledger and entry screens, filtered paginated history queries, and one vendor-name catalog query. Data remains cached for the authenticated session. Money does not refetch on mount, focus, reconnect, timers, or automatic failure retries. Initial cache misses and explicit pagination fetch; the user refreshes the week, history, calendar, or vendor catalog explicitly. Successful writes patch only affected caches from their canonical API responses without synchronization GETs. Edit query keys use entry type and ID and are seeded from the selected row; normal edit navigation performs no GET. Updates replace existing received rows within their loaded cursor ranges and update vendor details from the shared week cache. Sign-out clears cached data.
 
-Received and vendor saves use a synchronous lock in addition to disabled UI, then hold `saving` through the network request, Money-cache invalidation, keyboard dismissal, success haptic, saved state, and drawer dismissal or navigation. A failure releases the lock, keeps the user’s draft, and leaves the error beside the form action. Delete controls follow the same local ownership: only the targeted row or confirmation action spins; unrelated rows retain their geometry.
+Every asynchronous region distinguishes initial loading, user-requested refresh, empty, error, retrying, pending mutation, success, and offline behavior. Loading preserves a useful footprint. Empty states name what is absent. Errors stay at the affected region or action and include a bounded retry when recovery is possible. Pull-to-refresh is disabled while a mutation is locked or the device is offline.
 
-Offline Money remains readable from cached data. The neutral offline notice explicitly says that saving or refreshing is paused; mutation actions are disabled without erasing the content. Never show success, dismiss a sheet, or navigate from an unresolved request or incomplete cache synchronization.
+Received and vendor saves use a synchronous lock in addition to disabled UI, then hold `saving` through the network request, local Money-cache updates, keyboard dismissal, committed state, and drawer dismissal or navigation. A failure releases the lock, keeps the user’s draft, and leaves the error beside the form action. Delete controls follow the same local ownership: only the targeted row or confirmation action spins; unrelated rows retain their geometry. Only completed deletions trigger haptics.
 
-**The Resolved Outcome Rule.** Success haptic, feedback, dismissal, and navigation all derive from the same resolved mutation outcome; no part of the interface may announce completion early.
+Offline Money remains readable from cached data. The neutral offline notice explicitly says that saving or refreshing is paused; mutation actions are disabled without erasing the content. Never show success, dismiss a sheet, or navigate from an unresolved request or incomplete local cache updates.
+
+**The Resolved Outcome Rule.** Feedback, dismissal, and navigation all derive from the same resolved mutation outcome; no part of the interface may announce completion early. Haptics are reserved for completed deletions.
 
 ## Do's and Don'ts
 
@@ -595,8 +611,8 @@ Offline Money remains readable from cached data. The neutral offline notice expl
 - Keep print styles isolated and verify both 80mm receipt and A4 output after invoice changes.
 - Update a virtualizer estimate whenever the corresponding row height changes.
 - Use `cn()` for conditional classes and shared rupee/date utilities for display formatting.
-- On mobile, preserve the Counter Cashbox reading order, 48px touch floor, 64px ledger rows, safe areas, and 576px content cap.
-- On mobile, keep pending state at the initiating control through cache synchronization, haptic feedback, and dismissal or navigation.
+- On mobile, preserve the Quick Ledger reading order, 48px touch floor, 64px ledger rows, safe areas, and 576px content cap.
+- On mobile, keep pending state at the initiating control through local cache updates, deletion haptics when applicable, and dismissal or navigation.
 - On mobile, test cached offline reading, disabled mutations, retry, empty ledgers, long vendor names and notes, large Indian-formatted amounts, software keyboards, and text scaling.
 
 ### Don't

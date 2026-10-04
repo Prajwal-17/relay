@@ -1,131 +1,142 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import * as Haptics from "expo-haptics";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Keyboard } from "react-native";
 
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
-import { parseRupeeInput } from "@/lib/format/money";
+import { paisaToInput, parseRupeeInput } from "@/lib/format/money";
 import { confirmAction } from "@/lib/confirm-action";
-import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
-import { moneyKeys } from "../money.keys";
-import { addVendorPayment } from "../money.repository";
+import { applyMoneyMutation } from "../money.cache";
+import type { EditableVendorPayment } from "../money.types";
+import { addVendorPayment, updateVendorPayment } from "../money.repository";
+import { createEntrySaveFlow } from "../save-flow";
 
 interface VendorPaymentOptions {
   date: string;
   onClose: () => void;
+  paidAmount: number;
+  initialEntry?: EditableVendorPayment;
 }
 
-export function useVendorPayment(options?: VendorPaymentOptions) {
-  const params = useLocalSearchParams<{ date?: string }>();
-  const date = parseLocalDate(options?.date ?? params.date);
+export function useVendorPayment(options: VendorPaymentOptions) {
+  const date = parseLocalDate(options.date);
   const valid = date !== null && !isFutureDate(date);
   const queryClient = useQueryClient();
-  const router = useRouter();
   const { isOffline } = useNetworkStatus();
-  const [saved, setSaved] = useState(false);
   const [savingFlow, setSavingFlow] = useState(false);
-  const [vendorName, setVendorName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const savePayment = useMutation({ mutationFn: addVendorPayment });
+  const [committed, setCommitted] = useState(false);
+  const initial = options.initialEntry;
+  const [vendorName, setVendorName] = useState(() => initial?.vendorName ?? "");
+  const [amount, setAmount] = useState(() => (initial ? paisaToInput(initial.amount) : ""));
+  const [note, setNote] = useState(() => initial?.note ?? "");
+  const [requestError, setRequestError] = useState<string | null>(null);
+  const savePayment = useMutation({
+    mutationFn: (input: Parameters<typeof addVendorPayment>[0]) =>
+      initial
+        ? updateVendorPayment(initial.id, {
+            vendorName: input.vendorName,
+            amount: input.amount,
+            note: input.note
+          })
+        : addVendorPayment(input)
+  });
   const saving = savingFlow;
   const error =
-    savePayment.error instanceof Error
+    requestError ??
+    (savePayment.error instanceof Error
       ? savePayment.error.message
       : savePayment.error
-        ? "Could not add vendor payment."
-        : null;
-  const lock = useRef(false);
-  const dirty = Boolean(vendorName.trim() || amount.trim() || note.trim());
+        ? "Could not save vendor payment."
+        : null);
+  const [saveFlow] = useState(createEntrySaveFlow);
   const parsed = parseRupeeInput(amount, "Payment");
+  const dirty = initial
+    ? vendorName.trim() !== initial.vendorName ||
+      parsed.paisa !== initial.amount ||
+      note.trim() !== (initial.note ?? "")
+    : Boolean(vendorName.trim() || amount.trim() || note.trim());
+  const amountError =
+    parsed.error ??
+    (!Number.isSafeInteger(options.paidAmount - (initial?.amount ?? 0) + (parsed.paisa ?? 0))
+      ? "The new vendor total is too large."
+      : null);
   const vendorError =
     vendorName.trim().length === 0
       ? "Enter a vendor or payee name."
       : vendorName.trim().length > 120
         ? "Vendor name must be 120 characters or fewer."
         : null;
-  const canSave =
-    valid &&
-    !isOffline &&
-    !saved &&
-    !saving &&
-    !vendorError &&
-    !parsed.error &&
-    (parsed.paisa ?? 0) > 0 &&
-    note.length <= 240;
+  const canSave = committed
+    ? !isOffline && !saving
+    : valid &&
+      (!initial || dirty) &&
+      !isOffline &&
+      !saving &&
+      !vendorError &&
+      !amountError &&
+      (parsed.paisa ?? 0) > 0 &&
+      note.length <= 240;
 
   const goBack = useCallback(() => {
-    if (options) {
-      if (saving) return;
-      if (dirty && !saved) {
-        confirmAction(
-          "Discard vendor payment?",
-          "This payment has not been added.",
-          "Discard",
-          options.onClose
-        );
-      } else options.onClose();
+    if (saveFlow.locked) return;
+    if (saveFlow.committed) {
+      options.onClose();
       return;
     }
-    if (router.canGoBack()) router.back();
-    else router.replace("/money");
-  }, [dirty, options, router, saved, saving]);
-
-  useConfirmSheetDismissal({
-    blocked: !options && (dirty || saving) && !saved,
-    canDiscard: !saving,
-    title: "Discard vendor payment?",
-    message: "This payment has not been added."
-  });
-
-  useEffect(() => {
-    if (saved) {
-      if (options) options.onClose();
-      else goBack();
-    }
-  }, [saved, goBack, options]);
+    if (dirty) {
+      confirmAction(
+        initial ? "Discard changes?" : "Discard vendor payment?",
+        initial ? "Your changes have not been saved." : "This payment has not been added.",
+        "Discard",
+        options.onClose
+      );
+    } else options.onClose();
+  }, [dirty, initial, options, saveFlow]);
 
   async function save() {
-    if (lock.current || !canSave || !date || parsed.paisa === null) return;
-    lock.current = true;
-    setSavingFlow(true);
-    savePayment.reset();
-    try {
-      await savePayment.mutateAsync({
-        date,
-        vendorName: vendorName.trim(),
-        amount: parsed.paisa,
-        note: note.trim() || undefined
-      });
-      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
-    } catch {
-      lock.current = false;
-      setSavingFlow(false);
-      return;
-    }
-    Keyboard.dismiss();
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    setSaved(true);
+    if (!canSave || !date || parsed.paisa === null) return;
+    await saveFlow.run({
+      pending: setSavingFlow,
+      committed: () => {
+        setCommitted(true);
+      },
+      error: setRequestError,
+      request: () =>
+        savePayment.mutateAsync({
+          date,
+          vendorName: vendorName.trim(),
+          amount: parsed.paisa,
+          note: note.trim() || undefined
+        }),
+      synchronize: (result) => applyMoneyMutation(queryClient, result),
+      feedback: () => Keyboard.dismiss(),
+      complete: options.onClose
+    });
   }
 
   function updateVendorName(value: string) {
+    if (saveFlow.locked || saveFlow.committed) return;
+    setRequestError(null);
     savePayment.reset();
     setVendorName(value);
   }
 
   function updateAmount(value: string) {
+    if (saveFlow.locked || saveFlow.committed) return;
+    setRequestError(null);
     savePayment.reset();
     setAmount(value);
   }
 
   function updateNote(value: string) {
+    if (saveFlow.locked || saveFlow.committed) return;
+    setRequestError(null);
     savePayment.reset();
     setNote(value);
   }
 
   return {
+    editing: Boolean(initial),
     date,
     valid,
     vendorName,
@@ -133,9 +144,13 @@ export function useVendorPayment(options?: VendorPaymentOptions) {
     amount,
     note,
     saving,
+    dirty,
+    committed,
     error,
     isOffline,
-    amountError: parsed.error,
+    amountError,
+    parsedAmount: parsed.paisa ?? 0,
+    draftLocked: saving || committed,
     canSave,
     setVendorName: updateVendorName,
     setAmount: updateAmount,

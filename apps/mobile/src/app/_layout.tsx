@@ -6,6 +6,7 @@ import { Stack } from "expo-router";
 import { ThemeProvider } from "expo-router/react-navigation";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import * as SystemUI from "expo-system-ui";
 import { RotateCcw, WifiOff } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, View } from "react-native";
@@ -23,6 +24,7 @@ import { usePalette } from "@/theme/palette";
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const colors = usePalette();
   const [loaded, fontError] = useFonts({
     "Inter-Regular": require("../../assets/fonts/Inter-Regular.ttf"),
     "Inter-Medium": require("../../assets/fonts/Inter-Medium.ttf"),
@@ -30,11 +32,16 @@ export default function RootLayout() {
     "Inter-Bold": require("../../assets/fonts/Inter-Bold.ttf")
   });
 
+  useEffect(() => {
+    // Edge-to-edge system bars expose the native root behind the React screen.
+    void SystemUI.setBackgroundColorAsync(colors.background);
+  }, [colors.background]);
+
   if (!loaded && !fontError) return null;
 
   return (
     <ThemeProvider value={NAV_THEME.light}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.background }}>
         <SafeAreaProvider>
           <QueryProvider>
             <SessionLayout />
@@ -58,9 +65,10 @@ function SessionLayout() {
   if (session.isPending && !retryingSession) {
     return (
       <SafeAreaView className="bg-background flex-1" edges={["top", "bottom"]}>
+        <StatusBar hidden={false} style="dark" />
         <View className="flex-1 items-center">
           <View className="flex-1 items-center justify-center">
-            <ActivityIndicator accessibilityLabel="Starting Relay" color={colors.primary} />
+            <ActivityIndicator accessibilityLabel="Loading" color={colors.primary} />
           </View>
           <View className="flex-row items-center gap-2 pb-8">
             <Image
@@ -80,6 +88,7 @@ function SessionLayout() {
   if ((session.error && !session.data) || retryingSession) {
     return (
       <SafeAreaView className="bg-background flex-1 items-center justify-center px-6">
+        <StatusBar hidden={false} style="dark" />
         <View className="border-border bg-card rounded-card w-full max-w-sm items-center border p-6">
           <View className="bg-counter-accent-soft mb-4 h-12 w-12 items-center justify-center rounded-full">
             <WifiOff color={colors["counter-accent"]} size={24} strokeWidth={1.8} />
@@ -108,18 +117,15 @@ function SessionLayout() {
     );
   }
 
-  const sheetOptions = {
-    presentation: "formSheet" as const,
-    headerShown: false,
-    headerBackButtonMenuEnabled: false,
-    sheetGrabberVisible: true,
-    contentStyle: { backgroundColor: colors.background }
-  };
-
   return (
     <>
       <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }}
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.background },
+          statusBarHidden: false,
+          statusBarStyle: session.data ? "dark" : "light"
+        }}
       >
         <Stack.Protected guard={!session.data}>
           <Stack.Screen name="sign-in" />
@@ -127,17 +133,14 @@ function SessionLayout() {
         <Stack.Protected guard={Boolean(session.data)}>
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="payment" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="vendor-payment"
-            options={{ ...sheetOptions, sheetAllowedDetents: [0.78, 0.96] }}
-          />
+          <Stack.Screen name="money-entry" options={{ headerShown: false, presentation: "card" }} />
           <Stack.Screen
             name="vendor-details"
-            options={{ ...sheetOptions, sheetAllowedDetents: "fitToContents" }}
+            options={{ headerShown: false, presentation: "card" }}
           />
         </Stack.Protected>
       </Stack>
-      <StatusBar style={session.data ? "dark" : "light"} />
+      <StatusBar hidden={false} style={session.data ? "dark" : "light"} />
     </>
   );
 }

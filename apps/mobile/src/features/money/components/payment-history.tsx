@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react-native";
+import { Pencil, Trash2 } from "lucide-react-native";
 import { ActivityIndicator, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
@@ -8,7 +8,8 @@ import { Text } from "@/components/ui/text";
 import { formatRupee } from "@/lib/format/money";
 import { usePalette } from "@/theme/palette";
 import type { ReceivedEntry } from "../money.types";
-import { paymentTime } from "../payment-history.utils";
+import { entryDateTimes } from "../payment-history.utils";
+import { MoneyAmount } from "./money-amount";
 
 interface PaymentHistoryProps {
   entries: ReceivedEntry[];
@@ -18,6 +19,7 @@ interface PaymentHistoryProps {
   deletingId: number | null;
   deletionDisabled: boolean;
   onDelete: (entry: ReceivedEntry) => void;
+  onEdit: (entry: ReceivedEntry) => void;
 }
 
 export function PaymentHistory({
@@ -27,7 +29,8 @@ export function PaymentHistory({
   loadMore,
   deletingId,
   deletionDisabled,
-  onDelete
+  onDelete,
+  onEdit
 }: PaymentHistoryProps) {
   const colors = usePalette();
   return (
@@ -41,45 +44,59 @@ export function PaymentHistory({
         </LedgerCard>
       ) : (
         <LedgerCard>
-          {entries.map((entry, index) => (
-            <View
-              key={entry.id}
-              className={`gap-1 px-4 py-3 ${index < entries.length - 1 ? "border-border border-b" : ""}`}
-            >
-              <View className="flex-row items-center gap-2">
-                <Text className="text-muted-foreground min-w-0 flex-1 text-xs tabular-nums">
-                  {paymentTime(entry.createdAt)}
-                </Text>
-                <Text
-                  adjustsFontSizeToFit
-                  className="text-foreground max-w-[60%] text-right text-base font-semibold tabular-nums"
-                  numberOfLines={1}
-                >
-                  + {formatRupee(entry.amount)}
-                </Text>
-                <Pressable
-                  accessibilityLabel={`Delete entry of ${formatRupee(entry.amount)}`}
-                  accessibilityRole="button"
-                  accessibilityState={{
-                    disabled: deletionDisabled || deletingId !== null,
-                    busy: deletingId === entry.id
-                  }}
-                  disabled={deletionDisabled || deletingId !== null}
-                  className="min-h-12 min-w-12 items-center justify-center"
-                  onPress={() => onDelete(entry)}
-                >
-                  {deletingId === entry.id ? (
-                    <ActivityIndicator color={colors.destructive} size="small" />
-                  ) : (
-                    <Trash2 color={colors.destructive} size={18} strokeWidth={1.8} />
-                  )}
-                </Pressable>
+          {entries.map((entry, index) => {
+            const times = entryDateTimes(entry.createdAt, entry.updatedAt);
+            return (
+              <View
+                key={entry.id}
+                className={`gap-1 px-4 py-3 ${index < entries.length - 1 ? "border-border border-b" : ""}`}
+              >
+                <View className="flex-row items-center gap-2">
+                  <View className="min-w-0 flex-1 gap-1">
+                    <MoneyAmount amount={entry.amount} />
+                    <Text className="text-muted-foreground text-xs tabular-nums">
+                      Created {times.created}
+                    </Text>
+                    {times.updated ? (
+                      <Text className="text-muted-foreground text-xs tabular-nums">
+                        Updated {times.updated}
+                      </Text>
+                    ) : null}
+                  </View>
+                  <Pressable
+                    accessibilityLabel={`Edit entry of ${formatRupee(entry.amount)}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: deletionDisabled || deletingId !== null }}
+                    disabled={deletionDisabled || deletingId !== null}
+                    className="min-h-12 min-w-12 items-center justify-center"
+                    onPress={() => onEdit(entry)}
+                  >
+                    <Pencil color={colors["muted-foreground"]} size={18} strokeWidth={1.8} />
+                  </Pressable>
+                  <Pressable
+                    accessibilityLabel={`Delete entry of ${formatRupee(entry.amount)}`}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: deletionDisabled || deletingId !== null,
+                      busy: deletingId === entry.id
+                    }}
+                    disabled={deletionDisabled || deletingId !== null}
+                    className="min-h-12 min-w-12 items-center justify-center"
+                    onPress={() => onDelete(entry)}
+                  >
+                    {deletingId === entry.id ? (
+                      <ActivityIndicator color={colors.destructive} size="small" />
+                    ) : (
+                      <Trash2 color={colors.destructive} size={18} strokeWidth={1.8} />
+                    )}
+                  </Pressable>
+                </View>
+                {entry.note ? (
+                  <Text className="text-foreground text-sm leading-5">{entry.note}</Text>
+                ) : null}
               </View>
-              {entry.note ? (
-                <Text className="text-foreground text-sm leading-5">{entry.note}</Text>
-              ) : null}
-            </View>
-          ))}
+            );
+          })}
         </LedgerCard>
       )}
       {hasMore ? (
