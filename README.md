@@ -43,7 +43,7 @@ apps/desktop/src/
 
 ## Requirements
 
-- Node.js 22
+- Node.js 22 for desktop; Node.js 24 for mobile checks and tests
 - pnpm via Corepack; use the version declared in the root `package.json`
 - Windows or Linux for packaged builds
 
@@ -90,7 +90,8 @@ branch (default: `dev`) and download `mobile-android-dev` from **Artifacts**. Se
 [mobile README](apps/mobile/README.md#development) for backend and Google sign-in setup.
 
 Desktop (`desktop-v*.*.*`) and Android (`mobile-v*.*.*`) tag releases publish with GitHub CLI. All workflows
-use the pnpm version declared in the root `package.json` and Node.js 22.17.0.
+use the pnpm version declared in the root `package.json`. Android release and OTA workflows use
+Node.js 24 to run the mobile tests; desktop and development-build workflows use Node.js 22.17.0.
 
 Workflow run titles use the commit message for tag releases. Manual desktop, Android build,
 and OTA workflows accept an optional `commit_title` input. When provided, it becomes the run

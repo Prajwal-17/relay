@@ -115,39 +115,44 @@ Release publishing in `mobile-release.yaml` uses GitHub CLI, as does the desktop
 Android releases keep the application ID `com.prajwal17.relay`. GitHub Actions generates the native
 project with Expo Prebuild, compiles and signs an APK with Gradle, and publishes the APK to a GitHub
 Release. EAS Build and Submit are not part of the release process. The APK can be installed directly.
-Starting with `mobile-v0.0.7`, the Gradle build also includes `expo-updates` and points to Relay's
-`production` EAS Update channel. Earlier APKs cannot receive OTA updates; install the new signed APK
-once before testing OTA. Keep the same Android signing key for updates to install over an existing app.
+The `0.1.0` APK includes `expo-updates` and points to the existing `@prajwal-17/relay` project's
+`production` EAS Update channel. Install this signed APK before testing OTA for runtime `0.1.0`.
+Keep the same Android signing key for future APKs to install over this release.
 
 Production APKs and OTA updates use `https://relay-server.prajwal.sh` for both API requests and
 Better Auth. The release URL is fixed in the auth client, so local tunnel overrides and old GitHub
 or EAS server URL variables cannot change it. The workflow needs four repository secrets:
 
-- `MOBILE_ANDROID_KEYSTORE_BASE64`: base64-encoded JKS upload key
-- `MOBILE_ANDROID_KEYSTORE_PASSWORD`: keystore password
-- `MOBILE_ANDROID_KEY_ALIAS`: key alias
-- `MOBILE_ANDROID_KEY_PASSWORD`: key password
+- `ANDROID_KEYSTORE_BASE64`: base64-encoded production JKS signing keystore
+- `ANDROID_KEYSTORE_PASSWORD`: keystore password
+- `ANDROID_KEY_ALIAS`: key alias
+- `ANDROID_KEY_PASSWORD`: key password
 
-The first release key is backed up outside the repository at
-`~/.local/share/relay/mobile-signing/`. Back up that directory securely: future APKs need the same
-key to update installed copies. APKs signed with the earlier test key must be uninstalled before a
-newly signed release can be installed.
+Set these in **GitHub → Settings → Secrets and variables → Actions → Repository secrets**.
+The workflow uses only the `ANDROID_*` names. Verify the keystore, alias, and both passwords belong
+to the same production key. Keep an encrypted backup of the JKS, alias, and passwords outside the
+repository; the suggested local directory is `~/.local/share/relay/mobile-signing-v010/`. Verify that
+backup exists before releasing: future APKs need the same key to update installed copies. APKs signed
+with the earlier test key must be uninstalled before the newly signed release can be installed.
 
 For each release, increment both `expo.version` and `expo.android.versionCode` in `app.json`, then
-push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.0.7`). The
-tag must match `expo.version`. The `Android Release` workflow runs lint and typecheck,
+push a `mobile-v<version>` tag pointing to the release commit (for example, `mobile-v0.1.0`). The
+workflow rejects tags that do not match `expo.version` and missing signing secrets. The
+`Android Release` workflow uses Node.js 24 to run lint, typecheck, and tests,
 generates the Android project, builds a signed APK, and creates a GitHub Release with that APK.
 Confirm the app version, backend URL, and Google sign-in configuration before tagging; the workflow
 does not perform backend or OAuth smoke checks. Re-running publication for an existing release fails
 instead of replacing its APK. A native dependency, config, or Expo SDK change still needs a
 new APK and app version. The `appVersion` runtime policy keeps OTA updates within that app version.
 
-For JavaScript, styling, or asset changes after installing the `0.0.7` APK, run the
+For JavaScript, styling, or asset changes after installing the `0.1.0` APK, run the
 `Android Production OTA Update` GitHub workflow from the commit to publish. The EAS update
 message comes from that commit's subject; provide only the rollout percentage. Use `100` for an
 immediate full release or `1`–`99` for a partial rollout; the workflow omits EAS's rollout flag for a
-full release. Set the repository secret `EXPO_TOKEN`; no server URL variable is required in the EAS
-`production` environment. The workflow requires a published GitHub Release for the current app
+full release. Set a valid Expo access token in the repository secret `EXPO_TOKEN`; replace it there
+if you rotate or revoke the previous token. The APK signing key is separate from this token.
+No server URL variable is required in the EAS `production` environment. The workflow runs lint,
+typecheck, and tests on Node.js 24 before publishing and requires a published GitHub Release for the current app
 version. Configure the `production` EAS channel and environment before using the workflow; it publishes
 to that channel. Force close and reopen the release app up to twice to download and apply the update.
 A partial rollout must be completed or

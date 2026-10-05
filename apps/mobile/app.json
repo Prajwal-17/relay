@@ -2,7 +2,7 @@
   "expo": {
     "name": "Relay",
     "slug": "relay",
-    "version": "0.0.7",
+    "version": "0.1.0",
     "owner": "prajwal-17",
     "runtimeVersion": {
       "policy": "appVersion"
@@ -30,7 +30,7 @@
     },
     "android": {
       "package": "com.prajwal17.relay",
-      "versionCode": 7,
+      "versionCode": 8,
       "adaptiveIcon": {
         "backgroundColor": "#283129",
         "foregroundImage": "./assets/images/relay-foreground.png",

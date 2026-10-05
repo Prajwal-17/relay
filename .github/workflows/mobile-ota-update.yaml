@@ -45,7 +45,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22.17.0
+          node-version: "24"
           cache: pnpm
 
       - name: Set up EAS
@@ -69,6 +69,7 @@ jobs:
         run: |
           pnpm --dir apps/mobile lint
           pnpm --dir apps/mobile typecheck
+          pnpm --dir apps/mobile test
 
       - name: Check published APK release
         if: ${{ inputs.existing_update_group == '' }}
