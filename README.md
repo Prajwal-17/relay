@@ -1,7 +1,7 @@
 # Relay
 
 Workspace packages use the `@relay` scope: `@relay/workspace`, `@relay/desktop`,
-`@relay/eslint-config` and `@relay/typescript-config`. Native app identities remain Relay / Relay-Dev.
+`@relay/eslint-config`, `@relay/typescript-config`, and `@relay/shared`. Native app identities remain Relay / Relay-Dev.
 
 Relay is an offline-first desktop billing application for retail counters. It manages
 sales, estimates, products, customer accounts, payments, receipts, and PDF invoices without
@@ -24,6 +24,7 @@ assets/
   desktop/                Shared Relay desktop identity assets
   mobile/                 Shared Relay mobile identity assets
 packages/
+  shared/                 Common TypeScript date utilities for desktop, mobile, and server
   eslint-config/          Shared lint configuration
   typescript-config/      Shared TypeScript configuration
 DESIGN.md                 Desktop UI and design-system contract
@@ -61,20 +62,20 @@ Electron before launch.
 
 Run these from the repository root:
 
-| Command                               | Purpose                                            |
-| ------------------------------------- | -------------------------------------------------- |
-| `pnpm dev`                            | Start workspace development tasks                  |
-| `pnpm build`                          | Build all workspace packages                       |
-| `pnpm lint`                           | Lint all workspace packages                        |
-| `pnpm format`                         | Format the workspace                               |
-| `pnpm --dir apps/mobile format`        | Format the mobile app                                |
-| `pnpm --dir apps/mobile format:check`  | Check mobile formatting without changing files      |
-| `pnpm --dir apps/server format`        | Format the server app                                |
-| `pnpm --dir apps/server format:check`  | Check server formatting without changing files      |
-| `pnpm --dir apps/desktop typecheck`   | Typecheck application and all test code            |
-| `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once                     |
-| `pnpm --dir apps/desktop build:win`   | Build the Windows installer                        |
-| `pnpm --dir apps/desktop build:linux` | Build Linux AppImage and Debian packages           |
+| Command                               | Purpose                                        |
+| ------------------------------------- | ---------------------------------------------- |
+| `pnpm dev`                            | Start workspace development tasks              |
+| `pnpm build`                          | Build all workspace packages                   |
+| `pnpm lint`                           | Lint all workspace packages                    |
+| `pnpm format`                         | Format the workspace                           |
+| `pnpm --dir apps/mobile format`       | Format the mobile app                          |
+| `pnpm --dir apps/mobile format:check` | Check mobile formatting without changing files |
+| `pnpm --dir apps/server format`       | Format the server app                          |
+| `pnpm --dir apps/server format:check` | Check server formatting without changing files |
+| `pnpm --dir apps/desktop typecheck`   | Typecheck application and all test code        |
+| `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once                |
+| `pnpm --dir apps/desktop build:win`   | Build the Windows installer                    |
+| `pnpm --dir apps/desktop build:linux` | Build Linux AppImage and Debian packages       |
 
 Packaged artifacts are written to `apps/desktop/dist/`.
 

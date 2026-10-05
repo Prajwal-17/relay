@@ -1,6 +1,7 @@
 import { WifiOff } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { router } from "expo-router";
+import { RefreshControl, ScrollView, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -11,13 +12,25 @@ import { formatRupee } from "@/lib/format/money";
 import { usePalette } from "@/theme/palette";
 import { PaymentHeader } from "./components/payment-header";
 import { PaymentHistory } from "./components/payment-history";
+import { PaymentHistorySkeleton } from "./components/money-skeletons";
+import { MoneyAmount } from "./components/money-amount";
 import { usePaymentEntry } from "./hooks/use-payment-entry";
 import type { ReceivedEntry } from "./money.types";
+import { isEntryProvider } from "./payment-catalog";
 
 export default function PaymentScreen() {
   const colors = usePalette();
   const entry = usePaymentEntry();
   const [deleteTarget, setDeleteTarget] = useState<ReceivedEntry | null>(null);
+  const supportedMethod = entry.paymentMethodId === null || isEntryProvider(entry.method.name);
+  const canAdd =
+    entry.valid &&
+    supportedMethod &&
+    !entry.method.archived &&
+    !entry.isOffline &&
+    !entry.loading &&
+    !entry.loadError &&
+    entry.deletingId === null;
 
   return (
     <SafeAreaView className="bg-background flex-1" edges={["top", "bottom", "left", "right"]}>
@@ -41,8 +54,23 @@ export default function PaymentScreen() {
           });
         }}
       />
-      <PaymentHeader name={entry.method.name} date={entry.date} onClose={entry.goBack} />
+      <PaymentHeader
+        name={entry.method.name}
+        date={entry.date}
+        onClose={entry.goBack}
+        refreshing={entry.retrying || entry.isOffline || entry.deletingId !== null || !entry.valid}
+        onRefresh={() => void entry.load()}
+      />
       <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={entry.retrying}
+            enabled={!entry.isOffline && entry.deletingId === null && entry.valid}
+            onRefresh={() => void entry.load()}
+            colors={[colors["counter-accent"]]}
+            tintColor={colors["counter-accent"]}
+          />
+        }
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         contentContainerClassName="items-center px-4 pt-4 pb-6"
@@ -62,11 +90,8 @@ export default function PaymentScreen() {
               Choose a valid date and payment method from Money.
             </Text>
           ) : entry.loading ? (
-            <View className="items-center gap-3 py-8">
-              <ActivityIndicator color={colors["counter-accent"]} />
-              <Text className="text-muted-foreground">Loading entries…</Text>
-            </View>
-          ) : entry.loadError ? (
+            <PaymentHistorySkeleton />
+          ) : entry.loadError && !entry.hasData ? (
             <View className="gap-3 p-4">
               <Text accessibilityRole="alert" className="text-destructive">
                 {entry.loadError}
@@ -83,18 +108,16 @@ export default function PaymentScreen() {
             </View>
           ) : (
             <>
-              <LedgerCard className="border-frame flex-row flex-wrap items-center justify-between gap-2 p-4">
+              {entry.loadError ? (
+                <Text accessibilityRole="alert" className="text-destructive text-sm">
+                  Could not refresh. Showing saved entries; use Refresh to try again.
+                </Text>
+              ) : null}
+              <LedgerCard className="border-frame gap-2 p-4">
                 <Text className="text-muted-foreground text-sm font-medium">
                   Total for this method
                 </Text>
-                <Text
-                  adjustsFontSizeToFit
-                  accessibilityLiveRegion="polite"
-                  className="text-foreground max-w-[65%] text-right text-xl font-semibold tabular-nums"
-                  numberOfLines={1}
-                >
-                  {formatRupee(entry.total)}
-                </Text>
+                <MoneyAmount amount={entry.total} className="text-xl" selectable />
               </LedgerCard>
               <PaymentHistory
                 entries={entry.entries}
@@ -103,6 +126,7 @@ export default function PaymentScreen() {
                 loadMore={entry.loadMore}
                 deletingId={entry.deletingId}
                 deletionDisabled={entry.isOffline}
+                onEdit={entry.editEntry}
                 onDelete={(target) => {
                   entry.clearDeleteError();
                   setDeleteTarget(target);
@@ -117,6 +141,30 @@ export default function PaymentScreen() {
           )}
         </View>
       </ScrollView>
+      {entry.valid && !entry.method.archived && (entry.loading || supportedMethod) ? (
+        <View className="border-frame bg-card border-t px-4 py-2">
+          <View className="w-full max-w-xl self-center">
+            <AppButton
+              compact
+              disabled={!canAdd}
+              accessibilityHint={`Records another ${entry.method.name || "received"} entry for this date`}
+              onPress={() => {
+                if (!canAdd || !entry.date) return;
+                router.push({
+                  pathname: "/money-entry",
+                  params: {
+                    date: entry.date,
+                    kind: "received",
+                    method: entry.paymentMethodId === null ? "cash" : String(entry.paymentMethodId)
+                  }
+                });
+              }}
+            >
+              Add entry
+            </AppButton>
+          </View>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }

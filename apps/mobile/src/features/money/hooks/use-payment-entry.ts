@@ -1,38 +1,46 @@
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { Keyboard } from "react-native";
 
 import { isFutureDate, parseLocalDate } from "@/lib/format/dates";
-import { parseRupeeInput } from "@/lib/format/money";
+import { paisaToInput, parseRupeeInput } from "@/lib/format/money";
 import { confirmAction } from "@/lib/confirm-action";
-import { useConfirmSheetDismissal } from "@/lib/navigation/use-confirm-sheet-dismissal";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
+import { applyMoneyMutation } from "../money.cache";
 import { moneyKeys } from "../money.keys";
+import { receivedHistoryOptions } from "../money.queries";
+import type {
+  DailyEntry,
+  PaymentMethod,
+  EditableReceivedEntry,
+  ReceivedEntry
+} from "../money.types";
+import { entryMethods } from "../payment-catalog";
+import { createEntrySaveFlow } from "../save-flow";
+import { summarizeEntry } from "../money.utils";
 import {
   addReceivedPayment,
-  deleteReceivedEntry,
-  getDailyEntry,
-  listPaymentMethods,
-  listReceivedEntries
+  updateReceivedPayment,
+  deleteReceivedEntry
 } from "../money.repository";
 
 interface PaymentEntryOptions {
   date: string;
   method: string;
-  name: string;
-  archived: boolean;
-  total: number;
+  paymentMethods: PaymentMethod[];
+  dayEntry: DailyEntry | null;
   onClose: () => void;
+  initialEntry?: EditableReceivedEntry;
 }
 
 export function usePaymentEntry(options?: PaymentEntryOptions) {
-  const params = useLocalSearchParams<{ date?: string; method?: string; mode?: string }>();
+  const params = useLocalSearchParams<{ date?: string; method?: string }>();
   const date = parseLocalDate(options?.date ?? params.date);
-  const methodParam = options?.method ?? params.method;
+  const [selectedMethod, setSelectedMethod] = useState(() => options?.method ?? "cash");
+  const methodParam = options ? selectedMethod : params.method;
   const paymentMethodId = methodParam === "cash" ? null : Number(methodParam);
-  const mode: "history" | "add" = options ? "add" : "history";
   const valid =
     date !== null &&
     !isFutureDate(date) &&
@@ -40,71 +48,67 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isOffline } = useNetworkStatus();
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
+  const initial = options?.initialEntry;
+  const [amount, setAmount] = useState(() => (initial ? paisaToInput(initial.amount) : ""));
+  const [note, setNote] = useState(() => initial?.note ?? "");
   const [requestError, setRequestError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [savingFlow, setSavingFlow] = useState(false);
-  const saveLock = useRef(false);
-
-  const detailsQuery = useQuery({
-    queryKey: ["money", "payment-details", date ?? "invalid", paymentMethodId ?? "cash"],
-    enabled: valid && !options,
-    queryFn: async ({ signal }) => {
-      if (!date) throw new Error("Choose a valid payment date.");
-      const [entry, methods] = await Promise.all([
-        getDailyEntry(date, signal),
-        listPaymentMethods(true, signal)
-      ]);
-      const paymentMethod = methods.find((item) => item.id === paymentMethodId);
-      if (paymentMethodId !== null && !paymentMethod) throw new Error("Payment method not found.");
-      return {
-        method: {
-          name: paymentMethod?.name ?? "Cash",
-          archived: paymentMethod?.isArchived ?? false
-        },
-        total:
-          paymentMethodId === null
-            ? (entry?.cashAmount ?? 0)
-            : (entry?.paymentTotals.find((row) => row.paymentMethodId === paymentMethodId)
-                ?.amount ?? 0)
-      };
-    },
-    refetchOnMount: "always"
-  });
+  const [committed, setCommitted] = useState(false);
+  const [saveFlow] = useState(createEntrySaveFlow);
+  const availableMethods: PaymentMethod[] = options ? entryMethods(options.paymentMethods) : [];
+  const originalMethod =
+    initial && initial.paymentMethodId !== null
+      ? options?.paymentMethods.find((method) => method.id === initial.paymentMethodId)
+      : undefined;
+  if (originalMethod && !availableMethods.some((method) => method.id === originalMethod.id))
+    availableMethods.push(originalMethod);
+  const selectedProvider = availableMethods.find((method) => method.id === paymentMethodId);
 
   const historyQuery = useInfiniteQuery({
-    queryKey: date
-      ? moneyKeys.receivedEntries(date, paymentMethodId)
-      : (["money", "received-entries", "invalid"] as const),
-    enabled: valid && mode === "history",
-    initialPageParam: undefined as number | undefined,
-    queryFn: ({ pageParam, signal }) => {
-      if (!date) throw new Error("Choose a valid payment date.");
-      return listReceivedEntries(date, paymentMethodId, pageParam, signal);
-    },
-    getNextPageParam: (lastPage) => (lastPage.length === 50 ? lastPage.at(-1)?.id : undefined),
-    refetchOnMount: "always"
+    ...receivedHistoryOptions(date, paymentMethodId),
+    enabled: valid && !options
   });
 
-  const addPayment = useMutation({ mutationFn: addReceivedPayment });
+  const addPayment = useMutation({
+    mutationFn: (input: Parameters<typeof addReceivedPayment>[0]) =>
+      initial
+        ? updateReceivedPayment(initial.id, {
+            paymentMethodId: input.paymentMethodId,
+            amount: input.amount,
+            note: input.note
+          })
+        : addReceivedPayment(input)
+  });
   const deletePayment = useMutation({
     mutationFn: deleteReceivedEntry,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
+    onSuccess: async (result, id) => {
+      await applyMoneyMutation(queryClient, result, { methodId: paymentMethodId, deletedId: id });
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     }
   });
+  const history = historyQuery.data?.pages[0];
   const method = options
-    ? { name: options.name, archived: options.archived }
-    : (detailsQuery.data?.method ?? { name: "", archived: false });
-  const total = options ? options.total : (detailsQuery.data?.total ?? 0);
-  const entries = historyQuery.data?.pages.flat() ?? [];
+    ? {
+        name: paymentMethodId === null ? "Cash" : (selectedProvider?.name ?? ""),
+        archived: paymentMethodId !== null && !selectedProvider
+      }
+    : {
+        name: history ? (history.method?.name ?? "Cash") : "",
+        archived: history?.method?.isArchived ?? false
+      };
+  const total = options
+    ? paymentMethodId === null
+      ? (options.dayEntry?.cashAmount ?? 0)
+      : (options.dayEntry?.paymentTotals.find((row) => row.paymentMethodId === paymentMethodId)
+          ?.amount ?? 0)
+    : (history?.total ?? 0);
+  const daySummary = options?.dayEntry ? summarizeEntry(options.dayEntry) : null;
+  const entries = historyQuery.data?.pages.flatMap((page) => page.entries) ?? [];
   const hasMore = Boolean(historyQuery.hasNextPage);
   const loadingMore = historyQuery.isFetchingNextPage;
-  const loading = valid && !options && (detailsQuery.isPending || historyQuery.isPending);
-  const retrying = !options && (detailsQuery.isFetching || historyQuery.isRefetching);
-  const loadCause = options ? null : (detailsQuery.error ?? historyQuery.error);
+  const loading = valid && !options && historyQuery.isPending;
+  const retrying = !options && historyQuery.isRefetching;
+  const loadCause = options ? null : historyQuery.error;
   const loadError =
     loadCause instanceof Error ? loadCause.message : loadCause ? "Could not load entries." : null;
   const saving = savingFlow;
@@ -124,30 +128,42 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
         : null);
   const parsed = parseRupeeInput(amount, "Payment");
   const parsedAmount = parsed.paisa ?? 0;
-  const nextTotal = total + parsedAmount;
+  const nextTotal =
+    (options ? (daySummary?.receivedAmount ?? 0) : total) - (initial?.amount ?? 0) + parsedAmount;
   const amountError =
     parsed.error || (!Number.isSafeInteger(nextTotal) ? "The new total is too large." : null);
-  const canSave =
-    valid &&
-    mode === "add" &&
-    !isOffline &&
-    !saving &&
-    !saved &&
-    !loading &&
-    !loadError &&
-    !method.archived &&
-    !amountError &&
-    parsedAmount > 0 &&
-    note.length <= 240;
-  const dirty = amount.trim().length > 0 || note.trim().length > 0;
+  const dirty = initial
+    ? parsedAmount !== initial.amount ||
+      note.trim() !== (initial.note ?? "") ||
+      paymentMethodId !== initial.paymentMethodId
+    : amount.trim().length > 0 || note.trim().length > 0;
+  const canSave = committed
+    ? !isOffline && !saving
+    : valid &&
+      Boolean(options) &&
+      (!initial || dirty) &&
+      !isOffline &&
+      !saving &&
+      !loading &&
+      !loadError &&
+      !method.archived &&
+      !amountError &&
+      parsedAmount > 0 &&
+      note.length <= 240;
 
   const goBack = useCallback(() => {
     if (options) {
-      if (saving) return;
-      if (dirty && !saved) {
+      if (saveFlow.locked) return;
+      if (saveFlow.committed) {
+        options.onClose();
+        return;
+      }
+      if (dirty) {
         confirmAction(
-          "Discard this entry?",
-          "This amount has not been added to Money.",
+          initial ? "Discard changes?" : "Discard this entry?",
+          initial
+            ? "Your changes have not been saved."
+            : "This amount has not been added to Money.",
           "Discard",
           options.onClose
         );
@@ -156,61 +172,49 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
     }
     if (router.canGoBack()) router.back();
     else router.replace("/money");
-  }, [dirty, options, router, saved, saving]);
+  }, [dirty, initial, options, router, saveFlow]);
 
-  const refetchDetails = detailsQuery.refetch;
   const refetchHistory = historyQuery.refetch;
   async function load() {
     setRequestError(null);
-    await Promise.all([
-      refetchDetails(),
-      mode === "history" ? refetchHistory() : Promise.resolve()
-    ]);
+    if (!options) await refetchHistory();
   }
 
-  useConfirmSheetDismissal({
-    blocked: !options && (dirty || saving) && !saved,
-    canDiscard: !saving,
-    title: "Discard this entry?",
-    message: "This amount has not been added to Money."
-  });
-
-  useEffect(() => {
-    if (saved) {
-      if (options) options.onClose();
-      else goBack();
-    }
-  }, [goBack, options, saved]);
-
   async function save() {
-    if (!canSave || !date || saveLock.current) return;
-    saveLock.current = true;
-    setSavingFlow(true);
-    setRequestError(null);
-    addPayment.reset();
-    try {
-      await addPayment.mutateAsync({
-        date,
-        paymentMethodId,
-        amount: parsedAmount,
-        note: note.trim() || undefined
-      });
-      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
-    } catch {
-      saveLock.current = false;
-      setSavingFlow(false);
-      return;
-    }
-    Keyboard.dismiss();
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
-    setSaved(true);
+    if (!canSave || !date || !options) return;
+    await saveFlow.run({
+      pending: setSavingFlow,
+      committed: () => {
+        setCommitted(true);
+      },
+      error: setRequestError,
+      request: () =>
+        addPayment.mutateAsync({
+          date,
+          paymentMethodId,
+          amount: parsedAmount,
+          note: note.trim() || undefined
+        }),
+      synchronize: (result) =>
+        applyMoneyMutation(queryClient, result, { methodId: paymentMethodId }),
+      feedback: () => Keyboard.dismiss(),
+      complete: options.onClose
+    });
+  }
+
+  function selectMethod(id: number | null) {
+    if (!options || saveFlow.locked || saveFlow.committed || id === paymentMethodId) return;
+    if (id !== null && !availableMethods.some((method) => method.id === id)) return;
+    setSelectedMethod(id === null ? "cash" : String(id));
+    setSaveError(null);
   }
 
   async function loadMore() {
     if (!date || !hasMore || loadingMore || saving) return;
     setRequestError(null);
     try {
-      await historyQuery.fetchNextPage();
+      const result = await historyQuery.fetchNextPage();
+      if (result.isError) throw result.error;
     } catch {
       setRequestError("Could not load older entries. Please try again.");
     }
@@ -222,7 +226,7 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
   }
 
   async function deleteEntry(id: number): Promise<boolean> {
-    if (isOffline || deletePayment.isPending || mode !== "history") return false;
+    if (isOffline || deletePayment.isPending || options) return false;
     deletePayment.reset();
     try {
       await deletePayment.mutateAsync(id);
@@ -232,10 +236,30 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
     }
   }
 
+  function editEntry(entry: ReceivedEntry) {
+    if (!date || isOffline || deletingId !== null) return;
+    queryClient.setQueryData(moneyKeys.entry("received", entry.id), {
+      ...entry,
+      kind: "received",
+      date,
+      paymentMethodId
+    } satisfies EditableReceivedEntry);
+    router.push({
+      pathname: "/money-entry",
+      params: {
+        date,
+        kind: "received",
+        entryId: String(entry.id),
+        method: paymentMethodId === null ? "cash" : String(paymentMethodId)
+      }
+    });
+  }
+
   return {
+    editing: Boolean(initial),
+    editEntry,
     date,
     paymentMethodId,
-    mode,
     valid,
     method,
     total,
@@ -243,6 +267,7 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
     hasMore,
     loadingMore,
     loading,
+    hasData: Boolean(history),
     retrying,
     loadError,
     deleteError,
@@ -250,13 +275,22 @@ export function usePaymentEntry(options?: PaymentEntryOptions) {
     amount,
     note,
     saving,
+    dirty,
+    committed,
     saveError,
     amountError,
     canSave,
     parsedAmount,
+    availableMethods,
+    selectMethod,
+    draftLocked: saving || committed,
     isOffline,
-    setAmount,
-    setNote,
+    setAmount: (value: string) => {
+      if (!saveFlow.locked && !saveFlow.committed) setAmount(value);
+    },
+    setNote: (value: string) => {
+      if (!saveFlow.locked && !saveFlow.committed) setNote(value);
+    },
     setSaveError,
     goBack,
     load,

@@ -11,7 +11,9 @@ export function formatRupee(paisa: number): string {
 
 export function paisaToInput(paisa: number): string {
   if (paisa === 0) return "";
-  return (paisa / 100).toFixed(2).replace(/\.00$/, "");
+  const whole = Math.floor(paisa / 100);
+  const fraction = paisa % 100;
+  return fraction === 0 ? String(whole) : `${whole}.${String(fraction).padStart(2, "0")}`;
 }
 
 export function formatCompactRupee(paisa: number): string {
@@ -31,12 +33,16 @@ function trimCompact(value: number): string {
 
 export type ParsedAmount = { paisa: number; error: null } | { paisa: null; error: string };
 
+/** Validate the untouched input draft; never rewrite text while the IME is composing. */
 export function parseRupeeInput(value: string, label = "Amount"): ParsedAmount {
-  const normalized = value.trim().replace(/,/g, "");
-  if (!normalized) return { paisa: 0, error: null };
+  const normalized = value.trim();
+  if (!normalized || normalized === ".") return { paisa: 0, error: null };
 
-  if (!/^\d+(?:\.\d{0,2})?$/.test(normalized)) {
-    return { paisa: null, error: `${label} must be a positive amount with up to 2 decimals.` };
+  if (!/^(?:\d+(?:\.\d{0,2})?|\.\d{1,2})$/.test(normalized)) {
+    return {
+      paisa: null,
+      error: `${label} must be a number with at most one decimal point and 2 decimal places.`
+    };
   }
 
   const [whole, fraction = ""] = normalized.split(".");

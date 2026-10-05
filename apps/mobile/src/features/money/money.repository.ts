@@ -1,12 +1,12 @@
 import { apiRequest } from "@/lib/api/api-client";
 import type { LedgerMonth } from "@/lib/format/dates";
 import type {
-  DailyEntry,
+  DaySummary,
+  MoneyEditableEntry,
   LocalDate,
-  MoneyOverview,
-  PaymentMethod,
-  PaymentMethodUpdate,
-  ReceivedEntry,
+  MoneyWeek,
+  MoneyMutationResult,
+  ReceivedHistoryPage,
   ReceivedPaymentInput,
   VendorPaymentInput
 } from "./money.types";
@@ -15,87 +15,85 @@ function jsonBody(value: unknown): RequestInit {
   return { body: JSON.stringify(value) };
 }
 
-export function getMoneyOverview(
-  month: LedgerMonth,
-  date: LocalDate,
+export function getMonthSummaries(month: LedgerMonth, signal?: AbortSignal): Promise<DaySummary[]> {
+  const query = new URLSearchParams({ year: String(month.year), month: String(month.month + 1) });
+  return apiRequest(`/api/money/summaries?${query}`, { signal });
+}
+
+export function getMoneyWeek(
+  startDate: LocalDate,
+  endDate: LocalDate,
   signal?: AbortSignal
-): Promise<MoneyOverview> {
-  const query = new URLSearchParams({
-    date,
-    year: String(month.year),
-    month: String(month.month + 1)
-  });
-  return apiRequest(`/api/money/overview?${query}`, { signal });
+): Promise<MoneyWeek> {
+  const query = new URLSearchParams({ startDate, endDate });
+  return apiRequest(`/api/money/weeks?${query}`, { signal });
 }
 
-export function getDailyEntry(date: LocalDate, signal?: AbortSignal): Promise<DailyEntry | null> {
-  return apiRequest(`/api/money/days/${date}`, { signal });
-}
-
-export function deleteDailyEntry(date: LocalDate): Promise<void> {
+export function deleteDailyEntry(date: LocalDate): Promise<MoneyMutationResult> {
   return apiRequest(`/api/money/days/${date}`, { method: "DELETE" });
 }
 
-export function listPaymentMethods(
-  includeArchived = false,
-  signal?: AbortSignal
-): Promise<PaymentMethod[]> {
-  return apiRequest(`/api/money/payment-methods?includeArchived=${includeArchived}`, { signal });
-}
-
-export function createPaymentMethod(name: string): Promise<PaymentMethod> {
-  return apiRequest("/api/money/payment-methods", {
-    method: "POST",
-    ...jsonBody({ name })
-  });
-}
-
-export function updatePaymentMethod(
-  id: number,
-  input: PaymentMethodUpdate
-): Promise<PaymentMethod> {
-  return apiRequest(`/api/money/payment-methods/${id}`, {
-    method: "PATCH",
-    ...jsonBody(input)
-  });
-}
-
-export function addReceivedPayment(input: ReceivedPaymentInput): Promise<void> {
+export function addReceivedPayment(input: ReceivedPaymentInput): Promise<MoneyMutationResult> {
   return apiRequest("/api/money/received-payments", {
     method: "POST",
     ...jsonBody(input)
   });
 }
 
-export function addVendorPayment(input: VendorPaymentInput): Promise<void> {
+export function addVendorPayment(input: VendorPaymentInput): Promise<MoneyMutationResult> {
   return apiRequest("/api/money/vendor-payments", {
     method: "POST",
     ...jsonBody(input)
   });
 }
 
-export function deleteVendorPayment(id: number): Promise<void> {
+export function deleteVendorPayment(id: number): Promise<MoneyMutationResult> {
   return apiRequest(`/api/money/vendor-payments/${id}`, { method: "DELETE" });
 }
 
-export function listReceivedEntries(
+export function getReceivedHistory(
   date: LocalDate,
   paymentMethodId: number | null,
   beforeId?: number,
   signal?: AbortSignal
-): Promise<ReceivedEntry[]> {
+): Promise<ReceivedHistoryPage> {
   const query = new URLSearchParams({
     date,
     paymentMethod: paymentMethodId === null ? "cash" : String(paymentMethodId)
   });
   if (beforeId !== undefined) query.set("beforeId", String(beforeId));
-  return apiRequest(`/api/money/received-entries?${query}`, { signal });
+  return apiRequest(`/api/money/received-history?${query}`, { signal });
 }
 
-export function deleteReceivedEntry(id: number): Promise<void> {
+export function deleteReceivedEntry(id: number): Promise<MoneyMutationResult> {
   return apiRequest(`/api/money/received-entries/${id}`, { method: "DELETE" });
 }
 
-export function listRecentVendorNames(search: string, signal?: AbortSignal): Promise<string[]> {
-  return apiRequest(`/api/money/vendors?q=${encodeURIComponent(search.trim())}`, { signal });
+export function listVendorNames(signal?: AbortSignal): Promise<string[]> {
+  return apiRequest("/api/money/vendors", { signal });
+}
+
+export function getMoneyEntry(
+  kind: "received" | "vendor",
+  id: number,
+  signal?: AbortSignal
+): Promise<MoneyEditableEntry> {
+  return apiRequest(
+    `/api/money/${kind === "received" ? "received-entries" : "vendor-payments"}/${id}`,
+    { signal }
+  );
+}
+
+export function updateReceivedPayment(
+  id: number,
+  input: Omit<ReceivedPaymentInput, "date">
+): Promise<MoneyMutationResult> {
+  return apiRequest(`/api/money/received-entries/${id}`, { method: "PATCH", ...jsonBody(input) });
+}
+
+export function updateVendorPayment(
+  id: number,
+  input: Omit<VendorPaymentInput, "date">
+): Promise<MoneyMutationResult> {
+  return apiRequest(`/api/money/vendor-payments/${id}`, { method: "PATCH", ...jsonBody(input) });
 }

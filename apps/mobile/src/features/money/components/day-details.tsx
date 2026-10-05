@@ -1,4 +1,4 @@
-import { ChevronRight, Plus } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 import { View } from "react-native";
 
 import { Pressable } from "@/components/ui/pressable";
@@ -10,12 +10,10 @@ import { PaymentIcon } from "./payment-icon";
 
 export function DayDetails({
   entry,
-  onAdd,
   onOpen,
   disabled
 }: {
   entry: DailyEntry | null;
-  onAdd: () => void;
   onOpen: (payment: VendorPayment) => void;
   disabled: boolean;
 }) {
@@ -24,22 +22,9 @@ export function DayDetails({
 
   return (
     <View className="gap-2">
-      <View className="flex-row flex-wrap items-center justify-between gap-2">
-        <View>
-          <Text accessibilityRole="header" className="text-foreground text-lg font-semibold">
-            Vendor payments
-          </Text>
-        </View>
-        <Pressable
-          disabled={disabled}
-          accessibilityLabel="Add vendor payment"
-          className="min-h-12 flex-row items-center gap-1 px-2"
-          onPress={onAdd}
-        >
-          <Plus color={colors["counter-accent"]} size={18} strokeWidth={2} />
-          <Text className="text-counter-accent-foreground text-sm font-semibold">Add</Text>
-        </Pressable>
-      </View>
+      <Text accessibilityRole="header" className="text-foreground text-[15px] font-semibold">
+        Paid to vendors
+      </Text>
 
       {payments.length ? (
         <View className="border-border bg-card rounded-card overflow-hidden border">
@@ -49,7 +34,7 @@ export function DayDetails({
               accessibilityLabel={`${payment.vendorName}, ${formatRupee(payment.amount)}. View details`}
               disabled={disabled}
               onPress={() => onOpen(payment)}
-              className={`min-h-14 flex-row items-center gap-2 px-3 py-1.5 ${
+              className={`min-h-16 flex-row items-center gap-2 px-3 py-1.5 ${
                 index < payments.length - 1 ? "border-border border-b" : ""
               }`}
             >

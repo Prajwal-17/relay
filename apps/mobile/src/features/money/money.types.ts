@@ -22,6 +22,7 @@ export interface VendorPayment {
   amount: number;
   note: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface DailyEntry {
@@ -47,12 +48,43 @@ export interface ReceivedEntry {
   amount: number;
   note: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
-export interface MoneyOverview {
-  summaries: DaySummary[];
+export interface MoneyDay {
+  date: LocalDate;
   entry: DailyEntry | null;
+  receivedCounts: { paymentMethodId: number | null; count: number }[];
+}
+
+export interface MoneyWeek {
+  startDate: LocalDate;
+  endDate: LocalDate;
+  days: MoneyDay[];
   paymentMethods: PaymentMethod[];
+}
+
+export interface ReceivedHistoryPage {
+  entries: ReceivedEntry[];
+  total: number;
+  method: PaymentMethod | null;
+  nextCursor: number | null;
+}
+
+export type EditableReceivedEntry = ReceivedEntry & {
+  kind: "received";
+  date: LocalDate;
+  paymentMethodId: number | null;
+};
+export type EditableVendorPayment = VendorPayment & { kind: "vendor"; date: LocalDate };
+export type MoneyEditableEntry = EditableReceivedEntry | EditableVendorPayment;
+
+export interface MoneyMutationResult {
+  day: MoneyDay;
+  receivedEntry?: ReceivedEntry;
+  vendorNames?: string[];
+  editedEntry?: MoneyEditableEntry;
+  previousPaymentMethodId?: number | null;
 }
 
 export interface ReceivedPaymentInput {
@@ -67,9 +99,4 @@ export interface VendorPaymentInput {
   vendorName: string;
   amount: number;
   note?: string;
-}
-
-export interface PaymentMethodUpdate {
-  name?: string;
-  isArchived?: boolean;
 }

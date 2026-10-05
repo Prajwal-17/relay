@@ -91,6 +91,17 @@ describe("formatDateObjToHHmmss", () => {
 });
 
 describe("formatDateStrToISTDateObject", () => {
+  it("handles calendar-only dates as IST midnight", () => {
+    expect(formatDateStrToISTDateObject("2025-08-31")?.toISOString()).toBe(
+      "2025-08-30T18:30:00.000Z"
+    );
+  });
+
+  it("rejects impossible times rather than rolling to the next business day", () => {
+    expect(formatDateStrToISTDateObject("2025-08-31T24:00:00Z")).toBeNull();
+    expect(formatDateStrToISTDateObject("2025-08-31T06:60:00Z")).toBeNull();
+  });
+
   it("parses an IST wall-clock timestamp to its UTC instant", () => {
     // 06:38:13 IST = 01:08:13 UTC
     expect(formatDateStrToISTDateObject("2025-08-31 06:38:13")?.toISOString()).toBe(
@@ -129,6 +140,18 @@ describe("formatDateStrToISTDateObject", () => {
 });
 
 describe("formatDateStrToISTDateStr", () => {
+  it("uses IST for timezone-less timestamps instead of the host timezone", () => {
+    vi.stubEnv("TZ", "America/Los_Angeles");
+    try {
+      expect(formatDateStrToISTDateStr("2025-08-31 06:38:13")).toEqual({
+        fullDate: "31 Aug 2025",
+        timePart: "06:38 am"
+      });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("splits a UTC instant into IST date and 12-hour time parts", () => {
     // 10:00Z + 5:30 = 15:30 IST
     expect(formatDateStrToISTDateStr(VALID_UTC_DATE_STRING)).toEqual({

@@ -36,7 +36,7 @@
         "foregroundImage": "./assets/images/relay-foreground.png",
         "monochromeImage": "./assets/images/relay-foreground.png"
       },
-      "predictiveBackGestureEnabled": true
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "output": "single",

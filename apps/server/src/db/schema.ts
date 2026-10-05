@@ -139,7 +139,8 @@ export const vendorPayments = sqliteTable(
     vendorName: text("vendor_name").notNull(),
     amount: integer("amount").notNull(),
     note: text("note"),
-    createdAt: text("created_at").notNull()
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull()
   },
   (table) => [
     index("vendor_payments_user_date_idx").on(table.userId, table.date, table.id),
@@ -160,7 +161,8 @@ export const receivedEntries = sqliteTable(
     }),
     amount: integer("amount").notNull(),
     note: text("note"),
-    createdAt: text("created_at").notNull()
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull()
   },
   (table) => [
     index("received_entries_user_method_idx").on(

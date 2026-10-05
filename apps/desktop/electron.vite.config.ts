@@ -8,7 +8,8 @@ export default defineConfig({
     envPrefix: "M_VITE_",
     build: {
       externalizeDeps: {
-        exclude: ["electron-updater"]
+        // Shared utilities export TypeScript source and must ship in the main bundle.
+        exclude: ["electron-updater", "@relay/shared"]
       },
       rollupOptions: {
         input: {

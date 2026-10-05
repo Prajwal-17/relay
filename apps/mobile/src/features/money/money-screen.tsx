@@ -1,101 +1,90 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Haptics from "expo-haptics";
-import { router, useLocalSearchParams } from "expo-router";
-import { BanknoteArrowDown, CalendarDays, Store, Trash2, WifiOff } from "lucide-react-native";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, View } from "react-native";
+import { router, useIsFocused, useLocalSearchParams, useNavigation } from "expo-router";
+import { BanknoteArrowDown, Store, Trash2, WifiOff } from "lucide-react-native";
+import { useState } from "react";
+import { RefreshControl, ScrollView, View } from "react-native";
 
 import { AppButton } from "@/components/ui/app-button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { IconButton } from "@/components/ui/icon-button";
 import { SafeAreaView } from "@/components/ui/safe-area-view";
 import { Text } from "@/components/ui/text";
-import {
-  formatDisplayDate,
-  getDisplayDateParts,
-  getTodayIST,
-  isFutureDate,
-  monthFromDate,
-  parseLocalDate
-} from "@/lib/format/dates";
+import { isKeyboardPress } from "@/lib/animations/motion";
+import { formatDisplayDate, isFutureDate, parseLocalDate } from "@/lib/format/dates";
 import { formatRupee } from "@/lib/format/money";
 import { useNetworkStatus } from "@/lib/network/use-network-status";
 import { usePalette } from "@/theme/palette";
-import { AddReceivedDrawer } from "./components/add-received-drawer";
-import { AddVendorDrawer } from "./components/add-vendor-drawer";
+import { BusinessDateHeader } from "./components/business-date-header";
+import { WeekStrip } from "./components/week-strip";
+import { useBusinessToday } from "./hooks/use-business-today";
+import { isEntryProvider } from "./payment-catalog";
 import { DateDrawer } from "./components/date-drawer";
 import { DayDetails } from "./components/day-details";
 import { DayTotals } from "./components/day-totals";
+import { MoneyLedgerSkeleton } from "./components/money-skeletons";
 import { ReceivedMethods } from "./components/received-methods";
-import { moneyKeys } from "./money.keys";
-import { deleteDailyEntry, getMoneyOverview } from "./money.repository";
+import { applyMoneyMutation } from "./money.cache";
+import { moneyWeekOptions } from "./money.queries";
+import { deleteDailyEntry } from "./money.repository";
 import type { LocalDate, VendorPayment } from "./money.types";
 import { summarizeEntry } from "./money.utils";
 
 export default function MoneyScreen() {
+  const navigation = useNavigation();
+  const focused = useIsFocused();
   const colors = usePalette();
   const queryClient = useQueryClient();
   const [dateDrawerOpen, setDateDrawerOpen] = useState(false);
-  const [addMethod, setAddMethod] = useState<{
-    method: string;
-    name: string;
-    archived: boolean;
-    total: number;
-  } | null>(null);
-  const [vendorDrawerOpen, setVendorDrawerOpen] = useState(false);
+  const [dateDrawerMotion, setDateDrawerMotion] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ date: LocalDate; message: string } | null>(
     null
   );
   const params = useLocalSearchParams<{ date?: string }>();
   const { isOffline } = useNetworkStatus();
-  const today = getTodayIST();
+  const today = useBusinessToday();
   const requestedDate = parseLocalDate(params.date);
   const selectedDate: LocalDate =
-    requestedDate && !isFutureDate(requestedDate) ? requestedDate : today;
-  const month = useMemo(() => monthFromDate(selectedDate), [selectedDate]);
-  const displayDate = useMemo(() => getDisplayDateParts(selectedDate), [selectedDate]);
-
-  const ledger = useQuery({
-    queryKey: moneyKeys.overview(month, selectedDate),
-    queryFn: ({ signal }) => getMoneyOverview(month, selectedDate, signal),
-    refetchOnMount: "always"
-  });
+    requestedDate && !isFutureDate(requestedDate, today) ? requestedDate : today;
+  const ledger = useQuery(moneyWeekOptions(selectedDate));
   const deleteEntry = useMutation({
     mutationFn: deleteDailyEntry,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: moneyKeys.all });
+    onSuccess: async (result) => {
+      await applyMoneyMutation(queryClient, result, "delete-day");
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       setDeleteTarget(null);
     }
   });
 
-  const entry = ledger.data?.entry ?? null;
+  const day = ledger.data?.days.find((row) => row.date === selectedDate);
+  const entry = day?.entry ?? null;
   const paymentMethods = ledger.data?.paymentMethods ?? [];
   const summary = entry ? summarizeEntry(entry) : null;
   const loading = ledger.isPending;
-  const refreshing = ledger.isRefetching && !ledger.isPending;
   const error = ledger.error;
   const interactionLocked = deleteEntry.isPending;
   const refreshDisabled = interactionLocked || isOffline;
+  function selectDate(date: LocalDate) {
+    if (!navigation.isFocused() || interactionLocked || isFutureDate(date, today)) return;
+    router.setParams({ date: date === today ? undefined : date });
+  }
+
   function openPayment(paymentMethodId: number | null, mode: "add" | "history") {
+    if (interactionLocked) return;
     if (mode === "add") {
+      if (isOffline) return;
       if (paymentMethodId === null) {
-        setAddMethod({
-          method: "cash",
-          name: "Cash",
-          archived: false,
-          total: entry?.cashAmount ?? 0
+        router.push({
+          pathname: "/money-entry",
+          params: { date: selectedDate, kind: "received", method: "cash" }
         });
       } else {
         const paymentMethod = paymentMethods.find((item) => item.id === paymentMethodId);
-        if (!paymentMethod) return;
-        setAddMethod({
-          method: String(paymentMethodId),
-          name: paymentMethod.name,
-          archived: paymentMethod.isArchived,
-          total:
-            entry?.paymentTotals.find((item) => item.paymentMethodId === paymentMethodId)?.amount ??
-            0
+        if (!paymentMethod || paymentMethod.isArchived || !isEntryProvider(paymentMethod.name))
+          return;
+        router.push({
+          pathname: "/money-entry",
+          params: { date: selectedDate, kind: "received", method: String(paymentMethodId) }
         });
       }
       return;
@@ -104,8 +93,7 @@ export default function MoneyScreen() {
       pathname: "/payment",
       params: {
         date: selectedDate,
-        method: paymentMethodId === null ? "cash" : String(paymentMethodId),
-        mode: "history"
+        method: paymentMethodId === null ? "cash" : String(paymentMethodId)
       }
     });
   }
@@ -115,12 +103,19 @@ export default function MoneyScreen() {
       pathname: "/vendor-details",
       params: {
         id: String(payment.id),
+        date: selectedDate,
         vendorName: payment.vendorName,
         amount: String(payment.amount),
         note: payment.note ?? "",
-        createdAt: payment.createdAt
+        createdAt: payment.createdAt,
+        updatedAt: payment.updatedAt
       }
     });
+  }
+
+  function openVendorEntry() {
+    if (interactionLocked || isOffline || !ledger.data) return;
+    router.push({ pathname: "/money-entry", params: { date: selectedDate, kind: "vendor" } });
   }
 
   function openDeleteDialog() {
@@ -150,33 +145,52 @@ export default function MoneyScreen() {
       />
       <DateDrawer
         open={dateDrawerOpen}
+        animate={dateDrawerMotion}
         selectedDate={selectedDate}
-        onClose={() => setDateDrawerOpen(false)}
-        onSelect={(date) => {
+        today={today}
+        onClose={(event) => {
+          setDateDrawerMotion(!event || !isKeyboardPress(event));
           setDateDrawerOpen(false);
-          router.setParams({ date });
+        }}
+        onSelect={(date, event) => {
+          setDateDrawerMotion(!event || !isKeyboardPress(event));
+          selectDate(date);
+          setDateDrawerOpen(false);
         }}
       />
-      {addMethod !== null ? (
-        <AddReceivedDrawer
-          date={selectedDate}
-          payment={addMethod}
-          onClose={() => setAddMethod(null)}
-        />
-      ) : null}
-      {vendorDrawerOpen ? (
-        <AddVendorDrawer date={selectedDate} onClose={() => setVendorDrawerOpen(false)} />
-      ) : null}
+      <View className="px-4 pt-2" testID="money-date-navigation">
+        <View className="w-full max-w-xl gap-1 self-center">
+          <BusinessDateHeader
+            date={selectedDate}
+            today={today}
+            disabled={interactionLocked}
+            onToday={() => selectDate(today)}
+            onCalendar={(event) => {
+              setDateDrawerMotion(!isKeyboardPress(event));
+              setDateDrawerOpen(true);
+            }}
+          />
+          <WeekStrip
+            date={selectedDate}
+            today={today}
+            disabled={interactionLocked || !focused}
+            onSelect={selectDate}
+          />
+        </View>
+      </View>
       <ScrollView
+        testID="money-ledger-scroll"
         className="flex-1"
-        contentContainerClassName="items-center px-4 pt-2 pb-4"
+        contentContainerClassName="items-center px-4 pt-4 pb-4"
         keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             enabled={!refreshDisabled}
             onRefresh={() => {
-              if (!refreshDisabled) void ledger.refetch();
+              if (refreshDisabled || refreshing) return;
+              setRefreshing(true);
+              void ledger.refetch().finally(() => setRefreshing(false));
             }}
             colors={[colors["counter-accent"]]}
             tintColor={colors["counter-accent"]}
@@ -184,30 +198,6 @@ export default function MoneyScreen() {
         }
       >
         <View className="w-full max-w-xl gap-4">
-          <View className="min-h-16 flex-row items-center justify-between gap-4 px-0.5">
-            <View className="min-w-0 flex-1 flex-row items-center gap-3">
-              <Text
-                className="text-foreground text-[28px] leading-8 font-bold tracking-tight tabular-nums"
-                selectable
-              >
-                {displayDate.day}
-              </Text>
-              <View className="min-w-0">
-                <Text className="text-muted-foreground text-[13px] leading-4" selectable>
-                  {displayDate.weekday}
-                </Text>
-                <Text className="text-foreground text-base leading-5 font-semibold" selectable>
-                  {displayDate.month} {displayDate.year}
-                </Text>
-              </View>
-            </View>
-            <IconButton
-              icon={CalendarDays}
-              label={`Open calendar. Selected ${formatDisplayDate(selectedDate)}`}
-              onPress={() => setDateDrawerOpen(true)}
-            />
-          </View>
-
           {isOffline ? (
             <View className="border-border bg-muted rounded-control flex-row items-center gap-2 border px-3 py-2.5">
               <WifiOff color={colors["muted-foreground"]} size={17} strokeWidth={1.8} />
@@ -218,13 +208,8 @@ export default function MoneyScreen() {
           ) : null}
 
           {loading ? (
-            <View className="border-border bg-card rounded-card min-h-48 items-center justify-center gap-3 border py-6">
-              <ActivityIndicator color={colors["counter-accent"]} />
-              <Text accessibilityLiveRegion="polite" className="text-muted-foreground text-sm">
-                Loading today&apos;s money…
-              </Text>
-            </View>
-          ) : error ? (
+            <MoneyLedgerSkeleton />
+          ) : error && !ledger.data ? (
             <View className="gap-4 py-4">
               <Text accessibilityRole="alert" className="text-destructive text-sm leading-5">
                 {error instanceof Error ? error.message : "Could not load money."}
@@ -244,42 +229,35 @@ export default function MoneyScreen() {
             </View>
           ) : (
             <>
-              <DayTotals received={summary?.receivedAmount ?? 0} paid={summary?.paidAmount ?? 0} />
-
-              <View className="flex-row flex-wrap gap-3">
-                <AppButton
-                  className="min-w-[46%] grow"
-                  icon={BanknoteArrowDown}
-                  disabled={interactionLocked}
-                  accessibilityHint="Opens a form to record money received"
-                  onPress={() => openPayment(null, "add")}
-                >
-                  Add received
-                </AppButton>
-                <AppButton
-                  className="min-w-[46%] grow"
-                  icon={Store}
-                  variant="outline"
-                  disabled={interactionLocked}
-                  accessibilityHint="Opens a form to record a vendor payment"
-                  onPress={() => setVendorDrawerOpen(true)}
-                >
-                  Pay vendor
-                </AppButton>
-              </View>
+              {error ? (
+                <View className="gap-2">
+                  <Text accessibilityRole="alert" className="text-destructive text-sm">
+                    Could not refresh. Showing the last saved ledger.
+                  </Text>
+                  <AppButton
+                    variant="outline"
+                    disabled={isOffline}
+                    loading={ledger.isFetching}
+                    onPress={() => void ledger.refetch()}
+                  >
+                    Try again
+                  </AppButton>
+                </View>
+              ) : null}
+              <DayTotals
+                received={summary?.receivedAmount ?? 0}
+                paid={summary?.paidAmount ?? 0}
+                isToday={selectedDate === today}
+              />
 
               <ReceivedMethods
                 entry={entry}
                 paymentMethods={paymentMethods}
+                receivedCounts={day?.receivedCounts}
                 disabled={interactionLocked}
-                onOpen={openPayment}
+                onOpen={(method) => openPayment(method, "history")}
               />
-              <DayDetails
-                entry={entry}
-                disabled={interactionLocked}
-                onAdd={() => setVendorDrawerOpen(true)}
-                onOpen={openVendorDetails}
-              />
+              <DayDetails entry={entry} disabled={interactionLocked} onOpen={openVendorDetails} />
 
               {entry ? (
                 <View className="mt-2 pt-3">
@@ -305,6 +283,31 @@ export default function MoneyScreen() {
           )}
         </View>
       </ScrollView>
+      <View className="border-frame bg-card border-t px-4 py-2">
+        <View className="w-full max-w-xl flex-row flex-wrap gap-2 self-center">
+          <AppButton
+            compact
+            className="min-w-[46%] flex-1 px-3"
+            icon={Store}
+            variant="outline"
+            disabled={interactionLocked || isOffline || !ledger.data}
+            accessibilityHint="Opens a form to record a vendor payment"
+            onPress={openVendorEntry}
+          >
+            Pay vendor
+          </AppButton>
+          <AppButton
+            compact
+            className="min-w-[46%] flex-1 px-3"
+            icon={BanknoteArrowDown}
+            disabled={interactionLocked || isOffline || !ledger.data}
+            accessibilityHint="Opens a form to record money received"
+            onPress={() => openPayment(null, "add")}
+          >
+            Add received
+          </AppButton>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }

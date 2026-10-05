@@ -26,7 +26,6 @@ function Input({ className, variant = "default", onFocus, onBlur, ...props }: In
   return (
     <TextInput
       placeholderTextColor={colors.placeholder}
-      selectionColor={colors.ring}
       onFocus={(event) => {
         setFocused(true);
         onFocus?.(event);

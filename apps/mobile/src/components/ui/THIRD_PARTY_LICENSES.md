@@ -1,10 +1,10 @@
 # React Native Reusables
 
-`button.tsx`, `card.tsx`, `icon.tsx`, `input.tsx`, and `text.tsx` are adapted from the
+`button.tsx`, `card.tsx`, `icon.tsx`, `input.tsx`, `skeleton.tsx`, and `text.tsx` are adapted from the
 [React Native Reusables](https://github.com/founded-labs/react-native-reusables) UniWind registry.
 
-Relay adaptations use its semantic palette, Inter typography and 44px minimum
-touch targets. Feature behavior belongs in application wrappers, not these
+Relay adaptations use its semantic palette, Inter typography, reduced motion, and 48px ordinary
+touch targets (44px-wide cells in dense calendars and week pagers). Feature behavior belongs in application wrappers, not these
 source-owned primitives. `components.json` and the `ui:add` script keep future
 registry additions on the same UniWind path.
 

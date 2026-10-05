@@ -9,10 +9,13 @@ void WebBrowser.maybeCompleteAuthSession();
 const configuredScheme = Constants.expoConfig?.scheme;
 const scheme = Array.isArray(configuredScheme) ? configuredScheme[0] : configuredScheme;
 
-export const serverUrl = (process.env.EXPO_PUBLIC_SERVER_URL ?? "http://localhost:8787").replace(
-  /\/$/,
-  ""
-);
+const isDevelopment = __DEV__ || scheme === "relay-dev";
+
+export const serverUrl = (
+  isDevelopment
+    ? process.env.EXPO_PUBLIC_SERVER_URL?.trim() || "https://relay-dev-tunnel.prajwal.sh"
+    : "https://relay-server.prajwal.sh"
+).replace(/\/+$/, "");
 
 export const authClient = createAuthClient({
   baseURL: serverUrl,
