@@ -102,5 +102,5 @@ jobs:
           apk="$RUNNER_TEMP/Relay-mobile-$version.apk"
           cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "$apk"
           gh release create "$GITHUB_REF_NAME" "$apk" --verify-tag --latest=false \
-            --title "Relay Mobile $version" \
+            --title "Mobile v$version" \
             --notes "Signed Android APK for direct installation."

@@ -89,5 +89,5 @@ jobs:
             artifacts/build-windows-latest/latest.yml \
             artifacts/build-ubuntu-latest/latest-linux.yml \
             --verify-tag --latest \
-            --title "desktop-v$version" \
+            --title "Desktop v$version" \
             --notes-file "$notes_file"
