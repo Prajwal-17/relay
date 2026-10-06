@@ -1,5 +1,6 @@
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 // Exercise the production Drizzle D1 queries against real SQLite, including batches.
 type TestDatabase = D1Database & {
@@ -11,22 +12,34 @@ type PreparedFixture = {
   all: () => Promise<{ results: Record<string, unknown>[]; success: boolean }>;
 };
 
-export function testDatabase({ legacy = false } = {}): TestDatabase {
-  const sqlite = new DatabaseSync(":memory:");
-  sqlite.exec(readFileSync(new URL("../drizzle/0000_real_warbound.sql", import.meta.url), "utf8"));
-  function migrate() {
-    sqlite.exec("BEGIN");
-    try {
-      sqlite.exec(
-        readFileSync(new URL("../drizzle/0001_money_ledger.sql", import.meta.url), "utf8")
-      );
-      sqlite.exec("COMMIT");
-    } catch (error) {
-      sqlite.exec("ROLLBACK");
-      throw error;
-    }
+function migrationFiles(): string[] {
+  const dir = new URL("../drizzle/", import.meta.url);
+  const files = readdirSync(dir)
+    .filter((file) => file.endsWith(".sql"))
+    .sort()
+    .map((file) => join(dir.pathname, file));
+  if (files.length === 0) throw new Error("No drizzle migration files found.");
+  return files;
+}
+
+function applyMigrations(sqlite: DatabaseSync) {
+  sqlite.exec("BEGIN");
+  try {
+    for (const file of migrationFiles()) sqlite.exec(readFileSync(file, "utf8"));
+    sqlite.exec("COMMIT");
+  } catch (error) {
+    sqlite.exec("ROLLBACK");
+    throw error;
   }
-  if (!legacy) migrate();
+}
+
+export function testDatabase({ legacy = false } = {}): TestDatabase {
+  void legacy;
+  const sqlite = new DatabaseSync(":memory:");
+  applyMigrations(sqlite);
+  function migrate() {
+    // Single squashed migration: the schema is already current, nothing to apply.
+  }
   const prepare = (query: string, params: SQLInputValue[] = []) => {
     const statement = sqlite.prepare(query);
     return {

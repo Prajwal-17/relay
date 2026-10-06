@@ -55,8 +55,8 @@ test("combined migration preserves provider IDs, receipts, original names, and t
   const db = testDatabase({ legacy: true });
   db.user("legacy");
   db.user("empty");
-  const google = legacy(db, "legacy", "Google Pay");
-  const phone = legacy(db, "legacy", "pHoNePe", 1);
+  const google = legacy(db, "legacy", "Google Pay", 1);
+  const phone = legacy(db, "legacy", "pHoNePe", 0);
   db.sqlite
     .prepare(
       "INSERT INTO daily_entries (user_id, entry_date, cash_amount, created_at, updated_at) VALUES (?, ?, 100, ?, ?)"
@@ -69,9 +69,9 @@ test("combined migration preserves provider IDs, receipts, original names, and t
     .run("legacy", date, google);
   db.sqlite
     .prepare(
-      "INSERT INTO received_entries (user_id, entry_date, payment_method_id, amount, created_at) VALUES (?, ?, ?, 500, ?)"
+      "INSERT INTO received_entries (user_id, entry_date, payment_method_id, amount, created_at, updated_at) VALUES (?, ?, ?, 500, ?, ?)"
     )
-    .run("legacy", date, google, date);
+    .run("legacy", date, google, date, date);
   const before = await listMonthSummaries(db, "legacy", 2025, 12);
   db.migrate();
   assert.deepEqual(await listMonthSummaries(db, "legacy", 2025, 12), before);

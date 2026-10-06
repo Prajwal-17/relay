@@ -19,24 +19,24 @@ for (const state of ["populated", "deleted", "fresh"] as const) {
       if (state !== "fresh") {
         db.sqlite
           .prepare(
-            "INSERT INTO received_entries (id, user_id, entry_date, payment_method_id, amount, note, created_at) VALUES (?, ?, '2026-10-01', ?, 125, 'Original note', ?)"
+            "INSERT INTO received_entries (id, user_id, entry_date, payment_method_id, amount, note, created_at, updated_at) VALUES (?, ?, '2026-10-01', ?, 125, 'Original note', ?, ?)"
           )
-          .run(10, "a", method, created);
+          .run(10, "a", method, created, created);
         db.sqlite
           .prepare(
-            "INSERT INTO received_entries (id, user_id, entry_date, amount, created_at) VALUES (200, 'b', '2026-10-02', 200, ?)"
+            "INSERT INTO received_entries (id, user_id, entry_date, amount, created_at, updated_at) VALUES (200, 'b', '2026-10-02', 200, ?, ?)"
           )
-          .run(created);
+          .run(created, created);
         db.sqlite
           .prepare(
-            "INSERT INTO vendor_payments (id, user_id, entry_date, vendor_name, amount, note, created_at) VALUES (?, ?, '2026-10-01', 'Vendor', 125, 'Original note', ?)"
+            "INSERT INTO vendor_payments (id, user_id, entry_date, vendor_name, amount, note, created_at, updated_at) VALUES (?, ?, '2026-10-01', 'Vendor', 125, 'Original note', ?, ?)"
           )
-          .run(10, "a", created);
+          .run(10, "a", created, created);
         db.sqlite
           .prepare(
-            "INSERT INTO vendor_payments (id, user_id, entry_date, vendor_name, amount, created_at) VALUES (200, 'b', '2026-10-02', 'Other vendor', 200, ?)"
+            "INSERT INTO vendor_payments (id, user_id, entry_date, vendor_name, amount, created_at, updated_at) VALUES (200, 'b', '2026-10-02', 'Other vendor', 200, ?, ?)"
           )
-          .run(created);
+          .run(created, created);
         for (const table of tables)
           db.sqlite.exec(
             `DELETE FROM ${table} WHERE ${state === "deleted" ? "1 = 1" : "id = 200"}`
@@ -51,11 +51,11 @@ for (const state of ["populated", "deleted", "fresh"] as const) {
       }));
       db.migrate();
       for (const [index, table] of tables.entries()) {
-        const rows = db.sqlite.prepare(`SELECT * FROM ${table} ORDER BY id`).all();
-        assert.deepEqual(
-          rows.map(({ updated_at, ...row }) => row),
-          snapshots[index].rows
-        );
+        const rows = db.sqlite
+          .prepare(`SELECT * FROM ${table} ORDER BY id`)
+          .all()
+          .map((row) => ({ ...row }));
+        assert.deepEqual(rows, snapshots[index].rows);
         for (const row of rows) assert.equal(row.updated_at, row.created_at);
         assert.deepEqual(
           db.sqlite.prepare(`PRAGMA foreign_key_list(${table})`).all(),

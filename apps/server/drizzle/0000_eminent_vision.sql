@@ -36,7 +36,7 @@ CREATE TABLE `daily_payment_totals` (
 	`payment_method_id` integer NOT NULL,
 	`amount` integer NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods`(`id`) ON UPDATE no action ON DELETE restrict,
+	FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods`(`id`) ON UPDATE no action ON DELETE cascade,
 	CONSTRAINT "daily_payment_totals_positive" CHECK("daily_payment_totals"."amount" > 0)
 );
 --> statement-breakpoint
@@ -61,8 +61,9 @@ CREATE TABLE `received_entries` (
 	`amount` integer NOT NULL,
 	`note` text,
 	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
-	FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods`(`id`) ON UPDATE no action ON DELETE restrict,
+	FOREIGN KEY (`payment_method_id`) REFERENCES `payment_methods`(`id`) ON UPDATE no action ON DELETE cascade,
 	CONSTRAINT "received_entries_positive" CHECK("received_entries"."amount" > 0)
 );
 --> statement-breakpoint
@@ -100,6 +101,7 @@ CREATE TABLE `vendor_payments` (
 	`amount` integer NOT NULL,
 	`note` text,
 	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade,
 	CONSTRAINT "vendor_payments_positive" CHECK("vendor_payments"."amount" > 0)
 );

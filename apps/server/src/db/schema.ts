@@ -115,7 +115,7 @@ export const dailyPaymentTotals = sqliteTable(
     date: text("entry_date").notNull(),
     paymentMethodId: integer("payment_method_id")
       .notNull()
-      .references(() => paymentMethods.id, { onDelete: "restrict" }),
+      .references(() => paymentMethods.id, { onDelete: "cascade" }),
     amount: integer("amount").notNull()
   },
   (table) => [
@@ -157,7 +157,7 @@ export const receivedEntries = sqliteTable(
       .references(() => users.id, { onDelete: "cascade" }),
     date: text("entry_date").notNull(),
     paymentMethodId: integer("payment_method_id").references(() => paymentMethods.id, {
-      onDelete: "restrict"
+      onDelete: "cascade"
     }),
     amount: integer("amount").notNull(),
     note: text("note"),
