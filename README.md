@@ -1,117 +1,70 @@
 # Relay
 
-Workspace packages use the `@relay` scope: `@relay/workspace`, `@relay/desktop`,
-`@relay/eslint-config`, `@relay/typescript-config`, and `@relay/shared`. Native app identities remain Relay / Relay-Dev.
+Relay is a retail billing and money management application.
 
-Relay is an offline-first desktop billing application for retail counters. It manages
-sales, estimates, products, customer accounts, payments, receipts, and PDF invoices without
-requiring a remote backend.
+- **Desktop:** Offline billing, sales and estimates, product management, customer accounts,
+  receipts, and PDF invoices.
+- **Mobile:** Daily money tracking, Cash/PhonePe/Paytm receipts, vendor payments, and transaction
+  history with Google sign-in.
+- **Server:** Authentication and data storage for the mobile app.
 
-## Capabilities
-
-- Fast keyboard-and-mouse billing for sales and estimates
-- Product catalog with search, pricing history, images, and soft delete
-- Customer accounts, payments, adjustments, and transaction ledgers
-- Printable receipts and A4 PDF invoices
-- Local dashboards, store settings, onboarding, and data export
-
-## Repository
-
-```text
-apps/
-  desktop/                Electron application and local API
-assets/
-  desktop/                Shared Relay desktop identity assets
-  mobile/                 Shared Relay mobile identity assets
-packages/
-  shared/                 Common TypeScript date utilities for desktop, mobile, and server
-  eslint-config/          Shared lint configuration
-  typescript-config/      Shared TypeScript configuration
-DESIGN.md                 Desktop UI and design-system contract
-AGENTS.md                 Engineering rules for coding agents
-```
-
-The desktop application contains four source areas:
-
-```text
-apps/desktop/src/
-  main/       Electron main process, Hono server, SQLite, and native handlers
-  preload/    Safe renderer-to-Electron bridge
-  renderer/   React application
-  shared/     Types, schemas, constants, and cross-process utilities
-```
+Desktop and mobile currently maintain separate records.
 
 ## Requirements
 
-- Node.js 22 for desktop; Node.js 24 for mobile checks and tests
-- pnpm via Corepack; use the version declared in the root `package.json`
-- Windows or Linux for packaged builds
+- Node.js 24 (desktop also supports Node.js 22)
+- pnpm 9.0.0
 
-## Quick start
+## Setup
+
+Install workspace dependencies from the repository root:
 
 ```bash
-corepack enable
 pnpm install
+```
+
+## Environment
+
+Configuration is per app; no root `.env` is required.
+
+```bash
+cp apps/mobile/.env.example apps/mobile/.env.local
+cp apps/server/.dev.vars.example apps/server/.dev.vars
+```
+
+- **Mobile:** `EXPO_PUBLIC_SERVER_URL` specifies the development backend's HTTPS URL.
+- **Server:** `.dev.vars` requires `BETTER_AUTH_SECRET` and `GOOGLE_CLIENT_SECRET`. Google OAuth
+  and the HTTPS tunnel are covered in the [server environment guide](apps/server/README.md#environment).
+- **Desktop:** `.env` is optional. Copy `apps/desktop/.env.example` to `apps/desktop/.env` for
+  local overrides; see [desktop environment configuration](apps/desktop/README.md#environment).
+
+Apply the server's local database migrations:
+
+```bash
+pnpm --dir apps/server db:migrate:local
+```
+
+## Development
+
+```bash
 pnpm dev
 ```
 
-The development command starts Electron with hot reload and rebuilds `better-sqlite3` for
-Electron before launch.
+Starts desktop, mobile's Expo development server, and the API at `http://localhost:8787`.
+Mobile requires Expo Go or a simulator and a reachable HTTPS backend. The backend tunnel runs
+separately.
 
-## Common commands
+## Build
 
-Run these from the repository root:
+```bash
+pnpm build
+```
 
-| Command                               | Purpose                                        |
-| ------------------------------------- | ---------------------------------------------- |
-| `pnpm dev`                            | Start workspace development tasks              |
-| `pnpm build`                          | Build all workspace packages                   |
-| `pnpm lint`                           | Lint all workspace packages                    |
-| `pnpm format`                         | Format the workspace                           |
-| `pnpm --dir apps/mobile format`       | Format the mobile app                          |
-| `pnpm --dir apps/mobile format:check` | Check mobile formatting without changing files |
-| `pnpm --dir apps/server format`       | Format the server app                          |
-| `pnpm --dir apps/server format:check` | Check server formatting without changing files |
-| `pnpm --dir apps/desktop typecheck`   | Typecheck application and all test code        |
-| `pnpm --dir apps/desktop test --run`  | Run the desktop test suite once                |
-| `pnpm --dir apps/desktop build:win`   | Build the Windows installer                    |
-| `pnpm --dir apps/desktop build:linux` | Build Linux AppImage and Debian packages       |
+Builds desktop to `apps/desktop/out/` and the server bundle to `apps/server/dist/`.
+Android APKs use GitHub Actions; desktop installers use the app-specific packaging commands.
 
-Packaged artifacts are written to `apps/desktop/dist/`.
+## Applications
 
-For downloadable desktop test builds, open **Actions → Desktop Development Build → Run workflow**
-on GitHub and select the source branch (default: `dev`). The workflow runs only manually and
-uploads Windows (`.exe`) and Linux (`.AppImage`, `.deb`) packages to the run's **Artifacts**
-section as `build-windows-latest` and `build-ubuntu-latest`. These builds use the `Relay-Dev`
-identity and do not create a release.
-
-For Android test APKs, use **Actions → Android Development Build → Run workflow**. Choose a
-branch (default: `dev`) and download `mobile-android-dev` from **Artifacts**. See the
-[mobile README](apps/mobile/README.md#development) for backend and Google sign-in setup.
-
-Desktop (`desktop-v*.*.*`) and Android (`mobile-v*.*.*`) tag releases publish with GitHub CLI. All workflows
-use the pnpm version declared in the root `package.json`. Android release and OTA workflows use
-Node.js 24 to run the mobile tests; desktop and development-build workflows use Node.js 22.17.0.
-
-Workflow run titles use the commit message for tag releases. Manual desktop, Android build,
-and OTA workflows accept an optional `commit_title` input. When provided, it becomes the run
-title; otherwise, the run displays the workflow name, such as **Android Development Build**.
-
-## Runtime at a glance
-
-Electron initializes and migrates a local SQLite database, then forks a Hono API server. The
-React renderer talks to that server over local HTTP. The preload bridge is reserved for native
-operations such as printing, file selection, product images, and PDF export.
-
-Development and production use separate application data directories and ports so an installed
-copy cannot conflict with local development.
-
-Relay uses Relay application IDs, package names, data-directory names, local storage keys, API
-token headers, and `relay.db` consistently across development, packaged, and standalone runs.
-Changing from the former identity intentionally starts a new data location.
-
-## Project documentation
-
-- [Desktop development and operations](apps/desktop/README.md)
-- [UI and design-system contract](DESIGN.md)
-- [Agent engineering instructions](AGENTS.md)
+- [Desktop](apps/desktop/README.md)
+- [Mobile](apps/mobile/README.md)
+- [Server](apps/server/README.md)

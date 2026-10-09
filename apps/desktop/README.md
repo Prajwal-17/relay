@@ -1,309 +1,65 @@
 # Relay Desktop
 
-The production application in the Relay monorepo. It combines an Electron shell, a React
-renderer, a forked Hono API server, and a local SQLite database into one offline-first desktop
-package.
+Offline retail billing application built with Electron, React, and SQLite.
 
-For repository setup and workspace commands, see the [root README](../../README.md).
+- Sales and estimates
+- Product catalog and pricing
+- Customer accounts, payments, and balances
+- Printed receipts, PDF invoices, and sales summaries
 
-## Runtime architecture
+The application includes a local API and database. Relay Server is not required.
 
-```text
-Electron main process
-  ├─ configures app paths and native IPC handlers
-  ├─ initializes and migrates SQLite
-  ├─ forks the Hono API child process
-  └─ creates the renderer window
+## Setup
 
-React renderer ── local HTTP ──> Hono ──> service ──> repository ──> SQLite
-       │
-       └──────── preload bridge ────────> native print/file/image/PDF operations
-```
-
-| Area     | Location        | Responsibility                                             |
-| -------- | --------------- | ---------------------------------------------------------- |
-| Main     | `src/main/`     | Electron lifecycle, database, API, IPC, packaging behavior |
-| Preload  | `src/preload/`  | Context-isolated native API exposed to the renderer        |
-| Renderer | `src/renderer/` | React UI, routing, queries, and client state               |
-| Shared   | `src/shared/`   | Types, Zod schemas, constants, and utilities               |
-
-The renderer uses a hash router because production is loaded through Electron's `file://`
-protocol. Normal application data travels over HTTP; IPC is reserved for Electron-only
-capabilities.
-
-### Renderer source map
-
-`src/renderer/src/` is organized by ownership:
-
-`app/` contains routing, layouts, navigation, bootstrap, and app-shell stores; `pages/`
-contains flat route entries; `features/` contains domain UI, hooks, and workflow stores;
-`components/` contains shared app UI and vendored primitives; and `hooks/`, `lib/`,
-`constants/`, `types/`, and `utils/` contain renderer-wide infrastructure.
-
-## Development
-
-From the repository root:
+Install dependencies using the [workspace setup](../../README.md#setup).
+All commands below run from `apps/desktop`:
 
 ```bash
-pnpm install
-pnpm --dir apps/desktop dev
+cd apps/desktop
 ```
 
-Or from this directory:
+## Environment
+
+Environment configuration is optional. For local overrides:
+
+```bash
+cp .env.example .env
+```
+
+- `M_VITE_API_PORT`: local API port; defaults to `4723` in development and `4722` in production.
+- `M_VITE_USER_DATA_DIR`: custom data directory; must be an existing absolute path.
+
+Development loads `.env` and `.env.development`. Existing process variables take precedence,
+followed by `.env`. Database creation and migrations run automatically at startup.
+
+## Development
 
 ```bash
 pnpm dev
 ```
 
-`pnpm dev` rebuilds the native SQLite module for Electron before starting hot reload. For
-renderer-only debugging, `pnpm dev:standalone` starts the Hono server and browser Vite client;
-native preload features are unavailable in that mode.
+Starts Electron with hot reload and rebuilds the native SQLite module.
+Development uses the **Relay-Dev** identity and a separate data directory from production.
 
-## Commands
-
-Run these from `apps/desktop` unless shown otherwise.
-
-| Command               | Purpose                                            |
-| --------------------- | -------------------------------------------------- |
-| `pnpm dev`            | Start Electron development mode                    |
-| `pnpm dev:standalone` | Start the local API and browser renderer           |
-| `pnpm build`          | Typecheck and create the production Electron build |
-| `pnpm start`          | Preview the production build                       |
-| `pnpm lint`           | Run ESLint                                         |
-| `pnpm typecheck`      | Typecheck application and all test code            |
-| `pnpm typecheck:test` | Typecheck Vitest and Playwright code               |
-| `pnpm test:e2e`       | Rebuild for Electron and run Playwright            |
-| `pnpm run test --run` | Rebuild for Node and run Vitest once               |
-| `pnpm format`         | Format the desktop package                         |
-| `pnpm db:migrate:dev` | Apply development migrations                       |
-| `pnpm db:studio:dev`  | Open Drizzle Studio for development data           |
-| `pnpm db:push:dev`    | Push the schema to the development database        |
-| `pnpm build:win`      | Build the Windows installer                        |
-| `pnpm build:linux`    | Build AppImage and Debian packages                 |
-
-Production database commands use the corresponding `:prod` suffix. Packaging output is written
-to `dist/`; Electron build output is written to `out/`.
-
-## Local data and environment
-
-- Development app name: `Relay-Dev`
-- Production app name: `Relay`
-- Data directories: `Relay-Dev` and `Relay`
-- Development API port: `4723`
-- Production API port: `4722`
-- Database: `<Electron userData>/relay.db`
-- Product images: `<Electron userData>/product-images/`
-
-SQLite runs in WAL mode. Schema and data migrations are applied automatically during startup. The
-`drizzle/` directory is required at runtime and is bundled into packaged applications; a missing
-migration directory is a startup-blocking error.
-
-The main process loads `.env`, then `.env.<MODE>`, without overriding variables already present
-in the environment. Main-process variables use the `M_VITE_` prefix; renderer variables use
-`VITE_`. See `.env.example` for supported project-specific values. Development and production
-data remain isolated.
-
-Relay package names, `com.relay*.app` IDs, user-data directory names, local storage keys, and
-`X-Relay-Api-Token` are used consistently. This is an intentional identity reset; data from the
-previous application identity is not moved automatically.
-
-## Automatic database upgrades
-
-Before opening the application, the main process checks both the Drizzle schema journal and
-`app_data_migrations`. An up-to-date database follows the normal startup path without showing an
-upgrade window. Pending upgrades use a compact splash to report backup, schema, named data-repair,
-verification, and server-start phases. The forked API server repeats the initialization check, but
-all completed work is tracked and therefore skipped.
-
-Data repairs are registered under `src/main/db/dataMigrations/`. Every repair runs in its own SQLite
-transaction and inserts its migration ID only after the repair succeeds. Failed repairs roll back
-and Retry resumes from the first unapplied ID. Fresh empty databases skip legacy placeholder data
-and continue to onboarding; non-empty legacy databases receive the required default store, walk-in
-customer, and preferences.
-
-Before changing a non-empty database, Relay uses SQLite's consistent backup API and an atomic
-temporary-file rename. Only the latest pre-upgrade backup is kept at
-`<Electron userData>/backups/relay-before-upgrade-latest.db`. A small adjacent marker prevents Retry
-from replacing that backup with partially upgraded data. Backup, migration, or integrity-check
-failures block the API and main window. Relay does not restore automatically; the failure window
-provides Retry, Open backup folder, and Quit.
-
-Packaged builds must include the complete `drizzle/` directory through `extraResources`. Keep the
-development and packaged migration paths covered whenever startup or packaging configuration
-changes.
-
-## Application conventions
-
-- API modules under `src/main/modules/` follow controller → service → repository layering.
-- Money is stored as integer paisa and formatted with utilities in `src/shared/utils/utils.ts`.
-- Fractional quantities use integer milli-units via `src/shared/utils/milliUnits.ts`.
-- Product snapshots are stored on transaction items to preserve historical invoice text.
-- Products are soft-deleted by default.
-- Server data belongs in TanStack Query; cross-component client workflow state belongs in
-  Zustand. Expected request failures stay in local query or mutation state; unexpected render
-  failures are contained by route/application boundaries and reported to the console without
-  customer or transaction state.
-- Billing rows auto-sync after an 800 ms debounce and must be flushed before navigation, print,
-  or export.
-
-Detailed implementation rules live in [AGENTS.md](../../AGENTS.md).
-
-### Thermal printing
-
-High-quality printing captures a 576-dot monochrome image, then sends ESC/POS raster data to
-the configured Windows printer. The capture clone resets screen colors to print-safe sRGB;
-keep this isolation when changing the screen theme. Receipt, payment QR, and ledger capture
-are covered by the development Electron `thermal-raster` journey.
-
-The selected print mode is authoritative. A failed or invalid raster stops the whole job before
-printer transport; it never automatically switches to device text. Device text remains an
-explicit choice in Printing settings. Transport failures are never automatically retried.
-
-## Accounting model
-
-Sales and customer accounting are intentionally separate. Every sale contributes its full
-`grandTotal` to sales and tax reporting. A sale changes a customer balance only when the biller
-selects **Add this sale to customer accounting**; that selection maintains one full-total ledger
-row linked by sale ID. Repeated billing autosaves update that row instead of creating duplicates.
-The configured default/walk-in customer cannot be added to Accounting.
-
-`Record Payment` creates an unallocated customer-level Payment row and stores Cash, UPI, or Card;
-it never changes a sale. `Quick Sale` adds an amount owed, while `Adjust Balance` can increase or
-decrease the overall balance. Overpayments are valid and produce an advance. Customer
-`outstanding_balance` is a recomputed ledger cache and is never directly editable. Credit limits
-do not exist.
-
-Opening Balance is optional only while creating a customer. A positive amount creates the customer
-and one Opening ledger row in the same transaction; existing customers have no later set-opening
-operation. Opening, Quick Sale, Payment, and Adjustment rows may be edited or deleted for 48 hours
-from their immutable ledger `created_at`, then lock permanently. Sale-linked ledger rows are
-changed only through their sale.
-
-Sales use immutable `recorded_at` for the same 48-hour Edit/Delete window; the displayed invoice
-`created_at` cannot extend it. Deleting within the window is a hard, atomic deletion that reverses
-inventory, removes the linked ledger row, and recomputes the customer balance. Estimates remain
-non-payable, and Estimate → Sale creates a normal sale without opting into Accounting.
-
-## Display contract
-
-The reference viewport is **1280 × 650 CSS pixels at 100% Electron zoom**; **1024 × 600** is the
-supported fallback. The main window opens maximized by default. The supported zoom range is
-85%–125%, with 100% as the design baseline.
-
-All UI work must follow the canonical [DESIGN.md](../../DESIGN.md), including density tokens,
-billing behavior, print isolation, accessibility, and viewport verification.
-
-## Tests
-
-Vitest covers API modules through Hono requests backed by a fresh, migrated in-memory SQLite
-database. API suites live under `src/main/tests/integration/<module>/`. Shared currency, date,
-quantity, and product-snapshot utilities have unit tests alongside their source in `src/shared/utils/`.
-
-Reusable integration support is split by responsibility and re-exported through
-`src/main/tests/helpers/index.ts`:
-
-```text
-src/main/tests/
-├── setup/database.mock.ts
-├── helpers/
-│   ├── app.ts
-│   ├── database.ts
-│   ├── http.ts
-│   └── fixtures/
-└── integration/<module>/
-```
-
-Rebuild the native dependency for Node before database tests. Run the complete suite or only the
-products integration suite with:
+## Build
 
 ```bash
-pnpm typecheck:test
-pnpm run test --run
-pnpm run test --run src/main/tests/integration/products
+pnpm build
 ```
 
-### Billing persistence tests
+Compiled output: `out/`.
 
-Vitest is the primary regression layer. It covers exact paisa/milli-unit calculations, revisioned
-autosave coordination, stores, Hono services and repositories, and fresh file-backed migration.
-Playwright keeps three serial business-critical journeys across the development Electron renderer,
-React/Zustand state, the forked Hono server, and an isolated on-disk SQLite database.
-
-Run the complete validation sequence from this directory:
+### Windows installer
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm run test --run
-xvfb-run -a pnpm test:e2e
+pnpm build:win
 ```
 
-The test scripts rebuild `better-sqlite3` for their own runtime before starting: Vitest uses the
-Node ABI, while Electron E2E uses the Electron ABI. Switching between them does not require a
-manual rebuild.
-
-The Playwright fixture starts `electron-vite dev` directly; it never runs
-`pnpm build`, `electron-vite build`, Electron Builder, or a packaged artifact, and it does not use
-pre-existing `out/` files. Electron Vite still performs the main/preload compilation required to
-start its development runtime.
-
-Every journey creates an existing, absolute temporary `M_VITE_USER_DATA_DIR`, allocates unique API
-and remote-debugging ports, and connects to the development renderer over CDP. The configured API
-port is resolved by the main process and shared with preload, renderer, and the forked server. This
-keeps tests independent of real Relay development and production data and allows other
-development instances to remain open.
-
-The fixture owns and terminates the exact development process group, reconnects after full Electron
-restart when required, removes only its own temporary directory, and fails on renderer exceptions,
-unexpected process exits, or unhandled API failures. It also asserts the real content area is
-exactly `1280×650`. Linux headed Electron requires Xvfb; macOS and Windows can run
-`pnpm test:e2e` directly.
-
-Playwright runs one worker with trace on first retry and screenshots/videos retained on failure.
-Reports and test results are ignored under `playwright-report/` and `test-results/`.
-
-## Packaging and releases
-
-- The manual `Desktop Development Build` workflow uploads Windows and Linux test artifacts from a
-  selected branch (default: `dev`).
-- A push of a `desktop-v*.*.*` tag builds production artifacts and creates a GitHub release.
-- Release notes come from the matching version section in the root `CHANGELOG.md`.
-- Releases and assets are published by `github-actions[bot]` using the automatic `GITHUB_TOKEN`
-  with `contents: write` on the release job. No personal `GH_TOKEN` secret is required.
-- Windows output is an NSIS installer.
-- Linux output includes AppImage and Debian packages.
-
-## Troubleshooting
-
-### Native module version mismatch
-
-`better-sqlite3` must match the runtime ABI:
+### Linux packages
 
 ```bash
-pnpm rebuild:electron  # before invoking Electron tooling directly
-pnpm rebuild:node      # before invoking Node database tooling directly
+pnpm build:linux
 ```
 
-The development, database, and test commands already perform the appropriate rebuild.
-
-### Linux Chromium sandbox
-
-The development script sets `ELECTRON_DISABLE_SANDBOX=1`. If Electron is launched outside that
-script, use the same environment setting or configure the installed Chromium sandbox correctly.
-
-### Port already in use
-
-The API defaults to port `4723` in development and `4722` in production. Set a free validated
-`M_VITE_API_PORT` when isolation is needed; the E2E fixture allocates one automatically for every
-development Electron launch.
-
-### Development icons
-
-`pnpm dev` uses the orange/terracotta DEV icon in app chrome and native windows. Production uses
-the charcoal/black icon. Shared SVG selection lives in renderer `lib/appIcon.ts`; native selection lives
-in `src/main/appIcon.ts`. Restart the Electron process to refresh native icons.
-
-`pnpm build:dev` compiles with `--mode development`; `build:win:dev` and `build:linux:dev` use it
-before the development packaging config so renderer and native branding agree. Production build
-commands retain production mode. Regenerate both icon sets with `python3 assets/generate-icons.py`
-from the repository root (see `assets/README.md`).
+Packaging commands include compilation. Artifacts are written to `dist/`: `.exe` on Windows,
+`.AppImage` and `.deb` on Linux.
